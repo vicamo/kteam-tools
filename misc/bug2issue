@@ -24,8 +24,8 @@ def main():
                         'if it exists already')
     parser.add_argument('-p', '--project', default='KERN', help='Jira project key. ' +
                         'If not provided, defaults to \'KERN\'')
-    parser.add_argument('-s', '--status', default='Notice', help='Jira issue status. ' +
-                        'If not provided, defaults to \'Notice\'')
+    parser.add_argument('-s', '--status', default='Untriaged', help='Jira issue status. ' +
+                        'If not provided, defaults to \'Untriaged\'')
     parser.add_argument('bug', type=int, nargs='+',
                         help='LP bug number to create the Jira issue from.')
     args = parser.parse_args()
