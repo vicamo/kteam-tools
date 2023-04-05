@@ -72,7 +72,7 @@ def main():
             'project': {
                 'key': args.project,
             },
-            'summary': jira_summary,
+            'summary': jira_summary[:250],
         }
 
         # Add a link to the LP bug
