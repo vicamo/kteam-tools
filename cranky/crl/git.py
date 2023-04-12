@@ -157,8 +157,11 @@ class GitHandle():
         if result.returncode != 0:
             raise GitError("git config branch.<branch>.merge failed rc={}".format(result.returncode))
 
-    def checkout(self, remote, rmt_branch, branch):
-        rmt_ref = 'refs/remotes/{}/{}'.format(remote, rmt_branch)
+    def remote_ref(self, remote, branch):
+        rmt_ref = 'refs/remotes/{}/{}'.format(remote, branch)
+        return rmt_ref
+
+    def checkout(self, rmt_ref, branch):
         lcl_ref = 'refs/heads/{}'.format(branch)
 
         # Get us onto the branch in question -- if it does not exists

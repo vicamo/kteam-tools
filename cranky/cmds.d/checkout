@@ -56,6 +56,7 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
         remote     = gh.remote
         rmt_branch = gh.remote_branch
         branch     = gh.get_cranky_branch_name(crd=(crd and crd.isoformat()), cycle=cycle)
+        rmt_ref    = gh.remote_ref(remote, rmt_branch)
 
         if cycle:
             # Generate operates on the entire set so we only
@@ -69,17 +70,15 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
             if not cycle_ref:
                 raise CrankyException("Aborting: no cycle '{}' found for {}.".format(cycle, pkg.name))
 
-            branch = "{}-{}".format(branch, cycle_ref.cycle)
-            git = Git(gh.directory)
-            # TODO: teach gh.checkout how to handle a local ref
-            git("checkout -B {} {}".format(branch, cycle_ref.tag))
+            gh.checkout("refs/tags/{}".format(cycle_ref.tag), branch)
         elif crd:
             try:
-                gh.checkout('security', branch, branch)
+                security_ref = gh.remote_ref('security', branch)
+                gh.checkout(security_ref, branch)
             except:
-                gh.checkout(remote, rmt_branch, branch)
+                gh.checkout(rmt_ref, branch)
         else:
-            gh.checkout(remote, rmt_branch, branch)
+            gh.checkout(rmt_ref, branch)
 
         if crd:
             gh.set_upstream(branch, 'security')
