@@ -13,7 +13,6 @@ from glob import glob
 import tempfile
 import re
 
-from ktl.log import cerror, cnotice
 
 def dpkg_compare_versions(v1, op, v2):
     cmd = ["dpkg", "--compare-versions", v1, op, v2]
@@ -143,8 +142,8 @@ def review_dscs(prev_dsc_file, dsc_file, output=None):
         diff_dir = os.path.dirname(os.path.realpath(dsc_file))
         diff_path = os.path.join(diff_dir, "%s_%s.debdiff" % (source_pkg, version))
 
-    cnotice("Generating %s" % diff_path)
-    cnotice("Comparing against version %s" % prev_version)
+    logger.info("Generating %s" % diff_path)
+    logger.info("Comparing against version %s" % prev_version)
 
     with tempfile.TemporaryDirectory() as tmpdir, open(diff_path, "w") as outfile:
         prev_dir = source_pkg + '_' + prev_version
@@ -156,16 +155,16 @@ def review_dscs(prev_dsc_file, dsc_file, output=None):
 
         (ret, stderr) = dpkg_extract(prev_dsc_file, prev_path)
         if ret != 0:
-            cerror("Failed to extract %s." % prev_dsc_file)
-            cerror("Output from dpkg-source:")
+            logger.error("Failed to extract %s." % prev_dsc_file)
+            logger.error("Output from dpkg-source:")
             print(stderr, end='')
             sys.exit(1)
         normalize_tree(prev_path, source_pkg, prev_ver, prev_abi, prev_upload)
 
         (ret, stderr) = dpkg_extract(dsc_file, new_path)
         if ret != 0:
-            cerror("Failed to extract %s." % dsc_file)
-            cerror("Output from dpkg-source:")
+            logger.error("Failed to extract %s." % dsc_file)
+            logger.error("Output from dpkg-source:")
             print(stderr, end='')
             sys.exit(1)
         normalize_tree(new_path, source_pkg, ver, abi, upload)
@@ -174,7 +173,7 @@ def review_dscs(prev_dsc_file, dsc_file, output=None):
         sp = subprocess.Popen(cmd, stdout=outfile, stderr=subprocess.PIPE, cwd=tmpdir)
         stderr = sp.communicate()[1].decode()
         if sp.returncode != 0 and sp.returncode != 1:
-            cerror("Failed to diff trees. Output from 'git diff':")
+            logger.error("Failed to diff trees. Output from 'git diff':")
             print(stderr, end='')
             sys.exit(1)
 
@@ -185,7 +184,7 @@ def review(prev_dsc_dir='', changes_files=[], output=None):
     for changes_file in changes_files:
         count += 1
         if not os.path.exists(changes_file):
-            cerror("%s does not exist" % changes_file)
+            logger.error("%s does not exist" % changes_file)
             sys.exit(1)
 
         (source_pkg, version) = dsc_source_version(changes_file)
@@ -207,7 +206,7 @@ def review(prev_dsc_dir='', changes_files=[], output=None):
                 (prev_dsc_file, prev_version) = (dsc_file, dsc_version)
 
         if not prev_dsc_file:
-            cerror("Previous dsc file not found for %s" % changes_file)
+            logger.error("Previous dsc file not found for %s" % changes_file)
             sys.exit(1)
 
         cmd = ["dcmd", "--dsc", changes_file]
@@ -218,6 +217,9 @@ def review(prev_dsc_dir='', changes_files=[], output=None):
         else:
             output_i = None
         review_dscs(prev_dsc_file, dsc_file, output=output_i)
+
+
+logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(message)s")
