@@ -55,7 +55,7 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
         pkg        = gh.package
         remote     = gh.remote
         rmt_branch = gh.remote_branch
-        branch     = gh.get_cranky_branch_name(crd and crd.isoformat())
+        branch     = gh.get_cranky_branch_name(crd=(crd and crd.isoformat()), cycle=cycle)
 
         if cycle:
             # Generate operates on the entire set so we only
