@@ -6263,7 +6263,7 @@ defaults:
                     gated: false
                     promote-to: 'stable'
                     qa: true
-                    hw-cert: false
+                    hw-cert: true
                     publish-to:
                         arm64: ['latest']
                         armhf: ['latest']
