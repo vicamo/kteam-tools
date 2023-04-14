@@ -1,0 +1,62 @@
+#!/bin/bash
+#
+# diff-sauce - compare SAUCE patches applied between two different Ubuntu tags
+#
+# This script can be used to make sure SAUCE patches are not dropped
+# unexpectedly.
+#
+# Example usage:
+#  $ diff-sauce Ubuntu-6.2.0-19.19 Ubuntu-6.2.0-20.20
+
+# Print upstream tag given a specific Ubuntu tag
+get_upstream_tag() {
+    local ubuntu_tag=$1
+    local pattern='^[^0-9]*([0-9]+\.[0-9]+).*$'
+    local version=$(echo "${ubuntu_tag}" | sed -E "s/^Ubuntu-(unstable-)?//; s/$pattern/\1/")
+    echo "v${version}"
+}
+
+# Get the list of SAUCE patches applied to a specific Ubuntu tag
+get_sauce_commits() {
+    local ubuntu_tag=$1
+    local upstream_tag=$(get_upstream_tag ${ubuntu_tag})
+    local commit_range=$(git tag --list --sort=-creatordate "${upstream_tag}*" --merged "${ubuntu_tag}" | head -n 1)"..${ubuntu_tag}"
+    git log --oneline --format=%s "${commit_range}" | grep SAUCE
+}
+
+# Check if a tag exists in the current git repository
+function check_tag_exists() {
+    local tag="$1"
+    if ! git rev-parse --quiet --verify "${tag}" >/dev/null; then
+        echo "error: tag ${tag} does not exist"
+        exit 1
+    fi
+}
+
+# Properly format diff output showing the tags instead of pipes
+function format_tags {
+    local ubuntu_tag1="$1"
+    local ubuntu_tag2="$2"
+    sed -e "s/^--- \/dev\/fd\/[0-9]*/--- ${ubuntu_tag1}/" \
+        -e "s/^+++ \/dev\/fd\/[0-9]*/+++ ${ubuntu_tag2}/"
+}
+
+# Must be executed from a git repository
+if [ ! -d .git ]; then
+    echo "error: must run from an Ubuntu kernel git repository"
+    exit 1
+fi
+
+# Parse arguments
+if [ $# -ne 2 ]; then
+    echo "Usage: diff-sauce <UBUNTU_TAG1> <UBUNTU_TAG2>"
+    exit 1
+fi
+ubuntu_tag1=$1
+ubuntu_tag2=$2
+check_tag_exists "${ubuntu_tag1}"
+check_tag_exists "${ubuntu_tag2}"
+
+# Print the diff of the SAUCE patches between the two Ubuntu tags
+diff -u <(get_sauce_commits "${ubuntu_tag1}") <(get_sauce_commits "${ubuntu_tag2}") | \
+            format_tags "${ubuntu_tag1}" "${ubuntu_tag2}"

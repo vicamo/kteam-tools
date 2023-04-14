@@ -13,6 +13,7 @@ _cranky() {
 		"chroot -h --help create-base create-session map-session run destroy-session HANDLE"
 		"close -h --help -d --dry-run -c --include-config -s --skip-master"
 		"cycles -h --help -v --dry-run destroy list -a --after -b --before -d --descending rebuild -p --package main meta signed lrm lrs lrg lum lbm HANDLE"
+		"diff-sauce TAG"
 		"dput-sources -h --help -f --force -c --current -e --email HANDLE"
 		"fdr -h --help -c --clean"
 		"fix -h --help"
@@ -75,12 +76,24 @@ _cranky_compat_complete() {
 
 _cranky_expand_handles() {
 	local handles
+	local tags
+	local s
 	case "$@" in
+		*TAG*)
+			tags=$(_cranky_get_tags)
+			;;
 		*HANDLE*)
 			handles=$(_cranky_get_handles)
 			;;
 	esac
-	echo "${@//HANDLE/$handles}"
+	s=$@
+	s="${s//HANDLE/$handles}"
+	s="${s//TAG/$tags}"
+	echo "$s"
+}
+
+_cranky_get_tags() {
+	git tag -l --no-color | tr '\n' ' '
 }
 
 _cranky_get_handles() {
