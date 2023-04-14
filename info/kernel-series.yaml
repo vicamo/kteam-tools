@@ -4639,7 +4639,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oem-5.14:
                     type: lrs
-            supported: true
+            supported: false
             owner: tjaalton
             swm:
                 kernel-testing: true
