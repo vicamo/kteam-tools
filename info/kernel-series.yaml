@@ -3084,8 +3084,8 @@ defaults:
                 linux-restricted-signatures-nvidia:
                     type: lrs
             owner: ian-may
-            development: true
-            supported: false
+            development: false
+            supported: true
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
