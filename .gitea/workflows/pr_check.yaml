@@ -1,0 +1,46 @@
+---
+name: PR Pre Checks
+
+on:
+  pull_request:
+    types:
+      - edited
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  unittest:
+    strategy:
+      matrix:
+        image:
+          - ubuntu-22.04
+          - ubuntu-20.04
+          - ubuntu-18.04
+    runs-on: ${{ matrix.image }}
+    steps:
+      - step:
+        name: Clone
+        uses: actions/checkout@v3
+      - step:
+        name: Show Versions
+        run: |
+          cat /etc/os-release
+          python3 --version
+          pip3 list
+      - step:
+        name: Run Tests
+        run: |
+          cd ktl/tests && python3 -m unittest -v
+
+  signoff_check:
+    runs-on: ubuntu-latest
+    steps:
+      - step:
+        name: Clone
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - step:
+        name: Sign-off Check
+        uses: actions/tnt-sign-off-check@v1
