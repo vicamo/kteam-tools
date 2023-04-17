@@ -2660,6 +2660,36 @@ class Package():
 
         return None
 
+    # older_tracker_unprepared
+    #
+    @property
+    def older_tracker_unprepared(s):
+        # The target trackers are returned in cycle order.
+        target_trackers = s.bug.target_trackers
+        #cinfo("older_tracker_in_ppa: {}".format(target_trackers))
+
+        my_cycle_key = s.cycle_key(s.bug.sru_cycle)
+        my_id = str(s.bug.lpbug.id)
+        for tracker_nr, tracker_data in target_trackers:
+            # If we find ourselves then we have considered everything "older".
+            if tracker_nr == my_id:
+                return None
+
+            # If we find we have an older cycle than the current entry we are older
+            # than it.  This only can occur when we are new and have not yet saved
+            # a single status.
+            if my_cycle_key < tracker_data.get('cycle', '-'):
+                return None
+
+            # Consider if this is a blocker if :prepare-packages is not Fix Released.
+            cinfo("    considering {}".format(tracker_nr))
+            pp_status = tracker_data.get('task', {}).get(':prepare-packages', {}).get('status', 'Invalid')
+            if pp_status not in ('Fix Committed', 'Fix Released'):
+                cinfo("      :prepare-packages {} considered blocking".format(pp_status))
+                return tracker_nr
+
+        return None
+
     # occupancy_reference
     def occupancy_reference(s, pocket):
         routing = s.routing(pocket)

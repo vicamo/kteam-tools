@@ -52,14 +52,21 @@ class SynPreparePackages(TaskHandler):
             block = s.bug.source_block_present()
             ready = s.bug.debs.ready_to_prepare()
             older = s.bug.debs.older_tracker_in_ppa
+            unprepared = s.bug.debs.older_tracker_unprepared
             if block is not None:
                 s.task.reason = 'Stalled -- blocked via ' + block
 
-            elif ready and older is not None:
-                s.task.reason = 'Stalled -- tracker for earlier spin still active in PPA'
-                s.bug.monitor_add({
-                    "type": "tracker-modified",
-                    "watch": str(older)})
+            elif ready and (older is not None or unprepared is not None):
+                if older is not None:
+                    s.task.reason = 'Stalled -- tracker for earlier spin still active in PPA'
+                    s.bug.monitor_add({
+                        "type": "tracker-modified",
+                        "watch": str(older)})
+                if unprepared is not None:
+                    s.task.reason = 'Holding -b Not ready to be cranked -- earlier spin needs preparation'
+                    s.bug.monitor_add({
+                        "type": "tracker-modified",
+                        "watch": str(unprepared)})
 
             else:
                 s.task.reason = 'Holding -b Not ready to be cranked'

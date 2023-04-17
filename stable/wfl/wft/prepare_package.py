@@ -91,9 +91,13 @@ class PreparePackage(TaskHandler):
 
             # Check for blocking trackers in a previous cycle.
             if s.bug.debs.older_tracker_in_ppa:
-                cdebug("prepare: older tracker present")
+                cdebug("prepare: older tracker in PPA")
+                break
+            if s.bug.debs.older_tracker_unprepared:
+                cdebug("prepare: older tracker unprepared")
                 break
 
+            # If we are not the primary-package and there is a primary package
             # If we are not the primary-package and there is a primary package
             # hold us until the primary is handled, this keeps the todo list
             # short and sweet.  The very first thing we need to do is to set
@@ -151,6 +155,9 @@ class PreparePackage(TaskHandler):
                 pull_back = True
             if s.bug.debs.older_tracker_in_ppa:
                 cinfo('            A previous cycle tracker is in PPA pulling back from Confirmed', 'yellow')
+                pull_back = True
+            if s.bug.debs.older_tracker_unprepared:
+                cinfo('            A previous cycle tracker is unprepared pulling back from Confirmed', 'yellow')
                 pull_back = True
 
             if pull_back:
