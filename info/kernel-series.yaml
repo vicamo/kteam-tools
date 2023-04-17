@@ -2249,7 +2249,7 @@ defaults:
 
         linux-gcp-5.19:
             routing: ubuntu/4
-            variants: [ '-edge' ]
+            variants: ['--', '-edge' ]
             package-relations: signed-generate
             packages:
                 linux-gcp-5.19:
