@@ -2548,7 +2548,6 @@ defaults:
                     oem:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'certification-testing' ]
 
         linux-oem-6.0:
             routing: ubuntu/4
@@ -2583,7 +2582,6 @@ defaults:
                     oem:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'certification-testing' ]
 
         linux-oem-6.1:
             routing: ubuntu/4
@@ -2618,7 +2616,6 @@ defaults:
                     oem:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
             routing: ubuntu/4
