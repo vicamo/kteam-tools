@@ -120,7 +120,7 @@ Example:
       Sign and upload the kernel source packages of the current directory
       to the standard builder PPA for that kernel.
 
-  $ cranky dput-sources -e kernel.developer@canonical.com build2
+  $ cranky dput-sources -e kernel.developer@canonical.com build#2
       Re-sign the source packages of the current directory using the email
       address provided and upload it to ppa2 builder PPA.
 
