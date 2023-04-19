@@ -3002,10 +3002,10 @@ defaults:
             variants: ['--']
             packages:
                 linux-mtk:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/baoshan/+git/linux-mtk-5.15', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-mtk/+git/jammy', 'master-next']
                 linux-meta-mtk:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/baoshan/+git/linux-meta-baoshan-5.15']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-mtk/+git/jammy']
             supported: false
             owner: shanelin
             development: true
