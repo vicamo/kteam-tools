@@ -44,7 +44,7 @@
           list: 'To Do'
         - name: 'Turn the crank'
         - name: 'SRU -proposed announcement'
-          description: 'Once the main and HWE kernels are in proposed, send the SRU announcement to the mailing lists (use "gen-sru-announce <cycle>" to prepare the content).'
+          description: 'Once the main and HWE kernels are in proposed, send the SRU announcement to the mailing lists (use "gen-sru-announce <cycle>" to prepare the content). Publish the annoucement contents to Discourse (https://discourse.canonical.com/c/engineering/kernel/63).'
         - name: 'Review regression tests results'
           description: '**RT results report:** http://sita/rtr-lvl0.html'
         - name: 'Review automated (ADT) tests results'
