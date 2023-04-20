@@ -51,6 +51,7 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
         if crd:
             gh.fetch_security(fetch=True)
 
+    is_rebuilt = False
     for gh in ghs:
         pkg        = gh.package
         remote     = gh.remote
@@ -61,7 +62,6 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
         if cycle:
             # Generate operates on the entire set so we only
             # need to run it once.
-            is_rebuilt = False
             if not is_rebuilt:
                 CycleRef.generate(ghs.handle, remote=gh.remote)
                 is_rebuilt = True
