@@ -111,6 +111,16 @@ def get_build_status(path, arches):
 
     return status
 
+def get_build_timestamp(path):
+    """ Return the timestamp of the build
+    """
+    f = os.path.join(path, "HEADER.html")
+    if os.path.exists(f):
+        mtime = os.path.getmtime(f)
+        return datetime.utcfromtimestamp(mtime).strftime("%Y-%m-%d")
+
+    return "unknown"
+
 # ----------------------------------------------------------------------------
 # Main entry point
 
@@ -138,6 +148,9 @@ print("""
       }}
       #version {{
         width: 20ch;
+      }}
+      #date {{
+        width: 12ch;
       }}
       #header {{
         background-color: #AEA79F;
@@ -204,9 +217,10 @@ for version in sorted(versions, reverse=True, key=cmp_to_key(cmp_version)):
     main_version = re_main_version.match(version).group(1)
     prev_main_version = re_main_version.match(prev_version).group(1)
 
-    # Get the list of supported arches and the build statuses
+    # Get the list of supported arches and the build statuses and timestamp
     arches = get_arches(main_version)
     status = get_build_status(build_path, arches)
+    ts = get_build_timestamp(build_path)
 
     # Start a new table if the main version jumps
     if main_version != prev_main_version:
@@ -219,6 +233,7 @@ for version in sorted(versions, reverse=True, key=cmp_to_key(cmp_version)):
         print("    <table>")
         print("      <tr>")
         print("        <td id='header'>" + main_version + "</td>")
+        print("        <td id='header'>date</td>")
         for arch in arches:
             print("        <td id='header'>" + arch + "</td>")
         print("      </tr>")
@@ -229,6 +244,7 @@ for version in sorted(versions, reverse=True, key=cmp_to_key(cmp_version)):
     print("      <tr>")
     print("        <td id='version'><a href='" + url + "'>" + version +
           "</a></td>")
+    print("        <td id='date'>" + ts + "</td>")
     for arch in arches:
         arch_url = url if status["old_build"] else url + "/" + arch
         arch_status = status.get(arch, "missing")
