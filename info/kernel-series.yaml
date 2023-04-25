@@ -2045,7 +2045,7 @@ defaults:
 
         linux-aws-5.19:
             routing: ubuntu/4
-            variants: ['--', '-edge' ]
+            variants: ['--' ]
             package-relations: signed-generate
             packages:
                 linux-aws-5.19:
@@ -2069,6 +2069,41 @@ defaults:
             owner: timg-tpi
             backport: true
             derived-from: [ '22.10', 'linux-aws' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-aws-6.2:
+            routing: ubuntu/4
+            variants: [ '-edge' ]
+            package-relations: signed-generate
+            packages:
+                linux-aws-6.2:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/jammy', 'aws-6.2-next']
+                linux-meta-aws-6.2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/jammy', 'aws-6.2']
+                linux-generate-aws-6.2:
+                    type: generate
+                linux-signed-aws-6.2:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/jammy', 'aws-6.2']
+                linux-restricted-modules-aws-6.2:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/jammy', 'aws-6.2']
+                linux-restricted-generate-aws-6.2:
+                    type: lrg
+                linux-restricted-signatures-aws-6.2:
+                    type: lrs
+            supported: true
+            owner: timg-tpi
+            backport: true
+            derived-from: [ '23.04', 'linux-aws' ]
             swm:
                 kernel-testing: true
             testing:
