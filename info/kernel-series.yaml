@@ -905,7 +905,7 @@ defaults:
     sources:
         linux-unstable:
             routing: unstable-ubuntu/4
-            versions: ['6.2.0']
+            versions: ['6.3.0']
             variants: ['-wip']
             package-relations: signed-generate
             packages:
