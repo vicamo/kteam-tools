@@ -6191,7 +6191,6 @@ defaults:
                     xilinx-zynqmp:
                         arches: ['arm64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: ['automated-testing']
 
         linux-intel-iotg-5.15:
             routing: ubuntu/4
