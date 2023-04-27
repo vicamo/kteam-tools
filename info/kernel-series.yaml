@@ -2288,7 +2288,7 @@ defaults:
 
         linux-gcp:
             routing: ubuntu/4
-            variants: ['--']
+            variants: ['-lts-22.04']
             package-relations: signed-generate
             packages:
                 linux-gcp:
