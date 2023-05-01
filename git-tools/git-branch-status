@@ -67,7 +67,7 @@ function rightside() # localref remoteref ahead arrow(1|0) [color]
     local has_omega=0
 
     local hrlen
-    let hrlen="w_right - 3"
+    let hrlen=w_right
     [ $hrlen -lt 1 ] && hrlen=1
 
     local lhr="$hr"
@@ -84,12 +84,12 @@ function rightside() # localref remoteref ahead arrow(1|0) [color]
 
     let rref_len=14
 
-    [ "$remoteref" == "origin/$localref" ] && {
+    [ "${remoteref::7}" == "origin/" ] && {
 	# abbreviate "origin" to unicode omega
 	[ $cfg_omega -gt 0 ] && {
 	    has_omega=1
-	    remoteref="$omega/$localref"
-	    [ $cfg_omega -gt 1 ] && remoteref="$omega"
+	    remoteref="$omega/${remoteref##origin/}"
+	    [ $cfg_omega -gt 1 -a "${remoteref:0,2}" == "$localref" ] && remoteref="$omega"
 	}
 	# abbreviate long remote ref name (> rref_len==14) with ellipsis
 	[ ${#remoteref} -gt 14 ] && remoteref="${remoteref:0:13}$ellipsis"
@@ -119,6 +119,7 @@ function git_descr() # [--all|--tags] {sha}
 #Cstale=`git config --get-color color.status.changed cyan`
 #echo "colors${Cahead}ahead${Cbehind}behind${Cforked}forked${Cstale}stale${Cx}reset"
 
+tty -s && {
 
 # FIXME: just claim new color.appname.key vars?
 CA=`git config --get-color color.diff.new yellow`	# ahead
@@ -133,9 +134,15 @@ CD=`git config --get-color junk 'dim yellow'`
 Cbold=`git config --get-color junk 'bold'`
 Cx=`git config --get-color reset reset`
 
-echo "[${CA}ahead${Cx} ${CU}up-to-date${Cx} ${CS}stale${Cx} ${CF}forked${Cx}]"
+}
 
+[ "$1" = "--no-header" ] && {
+    do_no_header=1
+    shift
+}
 
+[ -n "$do_no_header" ] || \
+  echo "[${CA}ahead${Cx} ${CU}up-to-date${Cx} ${CS}stale${Cx} ${CF}forked${Cx}]"
 
 
 [ "$1" = "-a" -o "$1" = "--assume-upstream" ] && {
@@ -177,8 +184,8 @@ do
     }
 
     merge_base=`git show-branch --merge-base "$refname" "$upstream"`
-    ahead=`git log --oneline --pretty=%h "$merge_base..$refname" | wc -l`
-    behind=`git log --oneline --pretty=%h "$merge_base..$upstream" | wc -l`
+    ahead=`git rev-list --count "$merge_base..$refname"`
+    behind=`git rev-list --count "$merge_base..$upstream"`
 
     merge_base="${merge_base:0:8}"
 
