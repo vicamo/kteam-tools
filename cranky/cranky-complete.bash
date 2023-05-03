@@ -96,12 +96,13 @@ _cranky_get_tags() {
 	git tag -l --no-color | tr '\n' ' '
 }
 
+_cranky_script_file="$0"
 _cranky_get_handles() {
 	# Cache the results here in the script to avoid the annoying
 	# delay caused by invoking the python interpreter and parsing
 	# the YAML file.
 	local base_dir=
-	local script_file="${BASH_SOURCE[0]}"
+	local script_file="${BASH_SOURCE[0]:-$_cranky_script_file}"
 	base_dir="$(dirname "$script_file")"
 	local cache_dir=~/.cache/cranky
 	local cache_file="$cache_dir/handles"
