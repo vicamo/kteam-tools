@@ -404,6 +404,15 @@ class TestUbuntuTagCompare(unittest.TestCase):
         # Assert
         self.assertEqual(a, b)
 
+    def test_series_fips_lrm_respin(self):
+        """Ensure an lrm respin of a fips kernel will be above the respun kernel"""
+        # Setup
+        a = UbuntuTag("Ubuntu-5.15.0-70.77+fips1")
+        b = UbuntuTag("Ubuntu-5.15.0-70.77+fips1+1")
+
+        # Assert
+        self.assertLess(a, b)
+
     def test_non_comparable_package(self):
         """Ensure tags from different packages cannot be compared"""
         # Setup
