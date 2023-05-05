@@ -93,7 +93,7 @@ class SnapcraftData():
 
         rc, output = run_command('snapcraft status {}'.format(snapname))
         if rc != 0:
-            raise SnapcraftDataError('Failed to obtain snapcraft status (output: {output})')
+            raise SnapcraftDataError('Failed to obtain snapcraft status (output: {})'.format(output))
         self.__arch_start = None
         self.__chan_start = None
         self.__vers_start = None
