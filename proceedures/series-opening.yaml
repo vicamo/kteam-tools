@@ -48,13 +48,6 @@ cards:
     prerequisites:
       - "Archive: old-series released"
     list: On Deck
-  - name: "linux-firmware: add new series branch"
-    description: |
-      - In lp:~ubuntu-kernel/ubuntu/+source/linux-firmware
-         - create the new <development-series> branch off of the existing <stable-series> branch
-    prerequisites:
-      - "Add new series to Ubuntu KTL"
-    list: On Deck
   - name: "Apply git gc to all mirrors"
     description: |
       - On kernel.ubuntu.com in /srv/kernel.ubuntu.com/git/kernel-ppa/mirror apply git gc to all repositories.
@@ -142,6 +135,13 @@ cards:
     prerequisites:
       - "Britney running in development"
       - "Add new series to Ubuntu KTL"
+  - name: "linux-firmware: add new series branch"
+    description: |
+      - In lp:~ubuntu-kernel/ubuntu/+source/linux-firmware
+         - create the new <development-series> branch off of the existing <stable-series> branch
+    prerequisites:
+      - "Add new series to Ubuntu KTL"
+    list: Backlog
     list: Backlog
   - name: "Add repositories to wani mirroring"
     description: |
