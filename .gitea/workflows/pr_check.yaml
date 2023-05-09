@@ -10,7 +10,7 @@ on:
       - synchronize
 
 jobs:
-  unittest:
+  multi-series-tests:
     strategy:
       matrix:
         image:
@@ -31,9 +31,10 @@ jobs:
       - step:
         name: Run Tests
         run: |
-          cd ktl/tests && python3 -m unittest -v
+          (cd ktl/tests && python3 -m unittest -v)
 
-  signoff_check:
+  # Tests that are not affected by the host's environment
+  series-agnostic-tests:
     runs-on: ubuntu-latest
     steps:
       - step:
@@ -44,3 +45,7 @@ jobs:
       - step:
         name: Sign-off Check
         uses: actions/tnt-sign-off-check@v1
+      - step:
+        name: Run Tests
+        run: |
+          (cd info/tests && python3 -m unittest -v)
