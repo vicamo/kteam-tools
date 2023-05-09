@@ -39,6 +39,7 @@ class JIRAIssues:
                 self.epic_link = field['key']
 
         self.issues = {}
+        self.transition_ids = {}
 
     def add_issue(self, name, desc=None, state=None, prereqs=None, subtask_of=None):
         """
@@ -90,8 +91,8 @@ class JIRAIssues:
             #    issue.add_field_value('components', {'name': self.component})
 
             if state == 'On Deck':
-                print(" ", "move -> To Do")
-                self.jira.transition_issue(issue, transition='To Do')
+                print(" ", "move -> Triaged")
+                self.transition_issue(issue, transition='Triaged')
             self.issues[name] = issue.key
 
             for prereq in prereqs:
@@ -99,10 +100,21 @@ class JIRAIssues:
                 prereq_key = self.issues[prereq]
                 self.jira.create_issue_link('Blocks', prereq_key, issue.key)
 
+    def transition_issue(self, issue, transition=None):
+        transition_id = self.transition_ids.get(transition)
+        if transition_id is None:
+            transitions = self.jira.transitions(issue)
+            for trans in transitions:
+                if trans["to"]["name"] == transition:
+                    transition_id = trans["id"]
+                    break
+            self.transition_ids[transition] = transition_id
+
+        self.jira.transition_issue(issue, transition_id)
 
     def add_bulk(self, issues):
         for issue in issues:
-            self.add_issue(issue['name'], issue.get('description', ''), issue.get('list', 'In Backlog'), issue.get('prerequisites'), issue.get('subtask-of'))
+            self.add_issue(issue['name'], issue.get('description', ''), issue.get('list', 'BACKLOG'), issue.get('prerequisites'), issue.get('subtask-of'))
 
 
 if __name__ == '__main__':
