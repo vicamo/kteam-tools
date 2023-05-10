@@ -289,7 +289,7 @@ def add_misc(repo_set):
             "~ubuntu-kernel/ubuntu/+source/linux-firmware",
             admins_core,
             people_core + people_tools,
-            [("master", False)] + fw_branches,
+            [("master", True)] + fw_branches,
             "Ubuntu-*",
         ],
         [
@@ -315,7 +315,8 @@ def add_misc(repo_set):
                 repo_rules.add_grant(ref, generate_grant(person=person, create=allow_rewind, push=True, rewind=allow_rewind))
             for admin in admins:
                 repo_rules.add_grant(ref, generate_grant(person=admin, create=True, push=True, rewind=True))
-            if 'owner' not in admins:
+            repo_rules.add_grant(ref, generate_grant(person="/~ubuntu-kernel-bot", create=True, push=True, rewind=True))
+            if admins != 'owner':
                 repo_rules.add_grant(ref, generate_grant(person='owner'))
 
         if tags_wild is not None:
@@ -379,7 +380,7 @@ def add_primary(repo_set):
         #if series.codename != 'bionic':
         #    continue
         if series.opening_ready('repositories') is False:
-            print("IGNORE: {} series not ready", series.code_name)
+            print("IGNORE: {} series not ready", series.codename)
             continue
 
         for source in sorted(series.sources, key=lambda x: x.name):
