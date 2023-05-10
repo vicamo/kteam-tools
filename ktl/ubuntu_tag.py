@@ -9,6 +9,8 @@ import json
 import re
 from abc import abstractmethod
 from typing import Any, List, Tuple
+import apt_pkg
+apt_pkg.init()
 
 
 def _group_nth_int_get(
@@ -245,6 +247,7 @@ class UbuntuTag(_Comparable):
         self._series: str = ""
         self._extra: str = ""
         self._respin_version: Version = Version(0, 0, 0)
+        self._raw_version: str = ""
         self._parse()
 
     @staticmethod
@@ -283,6 +286,13 @@ class UbuntuTag(_Comparable):
         :returns: Package name excluding self.prefix
         """
         return self._package
+
+    @property
+    def version(self) -> str:
+        """
+        :returns: Complete version
+        """
+        return self._raw_version
 
     @property
     def kernel_version(self) -> Version:
@@ -379,11 +389,7 @@ class UbuntuTag(_Comparable):
         elif self.raw_tag == other.raw_tag:
             ret = 0
 
-        # If the versions are not equal we can ignore the respin
-        ret = self.ubuntu_version.compare(other.ubuntu_version)
-        if ret == 0:
-            ret = self.respin.compare(other.respin)
-        return ret
+        return apt_pkg.version_compare(self.version, other.version)
 
     def _parse(self):
         """Parse self into fields
@@ -417,6 +423,8 @@ class UbuntuTag(_Comparable):
         if not prefix.startswith(self.prefix):
             throw(f"Invalid tag prefix, expected '{self.prefix}")
         self._package = prefix.lstrip(self.prefix).strip("-")
+
+        self._raw_version = self.raw_tag[match.start() :]
 
         #
         # The Ubuntu version contains an ABI and upload number.
