@@ -946,7 +946,7 @@ defaults:
 
         linux:
             routing: ubuntu/4
-            versions: ['6.2.0']
+            versions: ['6.3.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             package-relations: signed-generate
             packages:
@@ -968,8 +968,7 @@ defaults:
                 linux-restricted-signatures:
                     type: lrs
             owner: arighi
-            backport: true
-            derived-from: ["23.04", "linux"]
+            backport: false
             swm:
                 kernel-testing: true
             testing:
