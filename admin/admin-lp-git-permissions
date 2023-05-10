@@ -379,7 +379,7 @@ def add_primary(repo_set):
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
         #if series.codename != 'bionic':
         #    continue
-        if series.opening_ready('repositories') is False:
+        if not args.initialise_development and series.opening_ready('repositories') is False:
             print("IGNORE: {} series not ready", series.codename)
             continue
 
@@ -580,6 +580,8 @@ desc = "List or update permissions for kernel team repositories in Launchpad."
 parser = argparse.ArgumentParser(description=desc)
 parser.add_argument("-d", "--dry-run", action="store_true", default=False,
                     help="do not make any changes, just show what would be done")
+parser.add_argument("--initialise-development", action="store_true", default=False,
+                    help="override opening: repositories tag to allow initialisation")
 
 subparsers = parser.add_subparsers(help="commands", dest="command", required=True)
 
