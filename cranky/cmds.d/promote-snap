@@ -86,9 +86,14 @@ class SnapcraftDataError(Exception):
 
 class SnapcraftData():
     def __init__(self, snapname):
+        # Check that we're logged in
+        rc, output = run_command('snapcraft whoami')
+        if rc != 0:
+            raise SnapcraftDataError('You need to log in first by running "snapcraft login"')
+
         rc, output = run_command('snapcraft status {}'.format(snapname))
         if rc != 0:
-            raise SnapcraftDataError('Failed to obtain snapcraft status (output: {output})')
+            raise SnapcraftDataError('Failed to obtain snapcraft status (output: {})'.format(output))
         self.__arch_start = None
         self.__chan_start = None
         self.__vers_start = None

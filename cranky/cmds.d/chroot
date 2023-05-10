@@ -185,6 +185,9 @@ session_chroot_create()
 
 	# Signed v3.1 needs python3
 	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install python3
+
+	# Selftests need llvm
+	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install clang libelf-dev llvm
 }
 
 chroot_update() {
