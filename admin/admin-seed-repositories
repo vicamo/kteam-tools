@@ -11,59 +11,16 @@ import os
 from subprocess             import run, PIPE
 import sys
 
-# Add ../cranky to the Python search path
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                              os.pardir, 'cranky')))
-# Add ../libs to the Python search path
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                              os.pardir, 'libs')))
+from launchpadlib.launchpad             import Launchpad
 
-from crl.handle             import Handle, HandleError
 from ktl.kernel_series      import KernelSeries
 from ktl.log                import cerror, cnotice, cwarn
 
 
-def git_remote_update(repo_dir, remote, url):
-    result = run(["git", "config", "remote.{}.url".format(remote)],
-                 cwd=repo_dir, stdout=PIPE)
-    if result.returncode == 0:
-        current_url = result.stdout.decode('utf-8').strip()
-        if current_url != url:
-            cnotice("Updating remote {} in {}".format(remote, repo_dir))
-            result = run(["git", "config", "remote.{}.url".format(remote),
-                          url], cwd=repo_dir, stdout=PIPE)
-            if result.returncode != 0:
-                cerror("failed to update remote {} url to {} "
-                       "rc={}".format(remote, url, result.returncode))
-                sys.exit(1)
-    else:
-        cnotice("Adding remote {} in {}".format(remote, repo_dir))
-        result = run(["git", "remote", "add", remote, url], cwd=repo_dir)
-        if result.returncode != 0:
-            cerror("failed to add remote {} "
-                   "rc={}".format(remote, result.returncode))
-            sys.exit(1)
-
-    cnotice("Fetching remote {} in {}".format(remote, repo_dir))
-    result = run(["git", "fetch", remote], cwd=repo_dir)
-    if result.returncode != 0:
-        cerror("failed to fetch remote {} "
-               "rc={}".format(remote, result.returncode))
-        sys.exit(1)
-
-
-def git_push(repo_dir, url, source, destination):
-    cnotice("Pushing {} to {}:{}".format(source, url, destination))
-    cmd = ["git", "push", url, "+" + source + ":" + destination]
-    result = run(cmd, cwd=repo_dir)
-    if result.returncode != 0:
-        cerror("git push failed rc={}".format(result.returncode))
-        sys.exit(1)
-
-
 def initialise_repositories(args):
+    lp = Launchpad.login_with('admin-lp-seed-respositories', 'production', version='devel')
+
     ks = KernelSeries()
-    hdl = Handle()
 
     old_series = ks.lookup_series(codename=args.old_series)
     if old_series is None:
@@ -76,41 +33,44 @@ def initialise_repositories(args):
 
     for source in new_series.sources:
         for package in source.packages:
-            print(source.name, package.name)
+            print(source.name, package.name, package.repo)
 
-            tree = hdl.lookup_tree(old_series.codename + ':' + package.name, validate=False)
-
-            print(tree.directory, tree.remote)
-            remote = tree.remote
-
-            if not os.path.exists(tree.directory):
-                cwarn("{} does not exist, skipping".format(tree.directory))
+            # Ignore packages which claim no repositories, for example linux-generate.
+            if package.repo is None:
                 continue
 
-            git_remote_update(tree.directory, remote, tree.package.repo.url)
-
+            # Those which point to an old series should already exist, or are broken, ignore.
             destination = package.repo.url
-
             if args.new_series not in destination:
                 cwarn("{} package url does not reference new series, skipping".format(package.repo.url))
                 continue
-            #if package.type in (None, 'main'):
-            #    git_push(tree.directory, package.repo.url, 'refs/tags/v5.0', 'refs/tags/v5.0')
-            # First push up to a +source/linux/ temporary repository, then rename it over.
-            if package.type in (None, 'main'):
-                bits = destination.split('/')
-                if bits[-3] != 'linux' and bits[-4] == '+source':
-                    bits[-1] += '-' + bits[-3]
-                    bits[-3] = 'linux'
-                    destination = '/'.join(bits)
-            branch = package.repo.branch
-            git_push(tree.directory, destination, 'refs/remotes/' + remote + '/' + branch, 'refs/heads/' + branch)
-            if branch.endswith('-next'):
-                branch = branch[:-5]
-                git_push(tree.directory, destination, 'refs/remotes/' + remote + '/' + branch, 'refs/heads/' + branch)
-            if source.name == 'linux':
-                url = 'git://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/' + package.name + '-' + new_series.codename
-                git_push(tree.directory, url, 'refs/remotes/' + remote + '/' + branch, 'refs/heads/' + branch)
+
+            new_path = "~" + destination.split("~", 1)[-1]
+            if new_path == destination:
+                cwarn("{} package url malformed, skipping".format(package.repo.url))
+                continue
+            owner_name = new_path.split("/")[0][1:]
+            owner = lp.people[owner_name]
+
+            print(" ", owner, new_path)
+            old_path = new_path.replace("/" + args.new_series, "/" + args.old_series)
+
+            new_repo = lp.git_repositories.getByPath(path=new_path)
+            if new_repo is not None:
+                cwarn("{} already exists, skipping".format(package.repo.url))
+                continue
+
+            old_repo = lp.git_repositories.getByPath(path=old_path)
+            print("   old:", old_repo)
+            print("   new:", new_repo)
+
+            new_repo = old_repo.fork(new_owner="/~canonical-kernel-team")
+            print(new_repo)
+            new_repo.name = "mantic"
+            new_repo.lp_save()
+            new_repo.owner = owner
+            new_repo.lp_save()
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -126,7 +86,3 @@ Initialise all of the repositories for an opening series.
     args = parser.parse_args()
 
     initialise_repositories(args)
-    print("""\
-NOTE: all main repositories are pushed to /linux/ to avoid pushing quite
-so many objects.  You will need to rename those now.
-""")
