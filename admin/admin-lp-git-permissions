@@ -312,6 +312,7 @@ def add_misc(repo_set):
         repo_rules.add_tag(os.path.basename(repo_path))
         repo_rules.add_tag('misc')
 
+        # Note: if we are allowing a user to rewind branches we will also grant create.
         for branch, allow_rewind in repo_branches:
             ref = "refs/heads/{}".format(branch)
             for person in people:
@@ -383,7 +384,7 @@ def add_primary(repo_set):
         #if series.codename != 'bionic':
         #    continue
         if not args.initialise_development and series.opening_ready('repositories') is False:
-            print("IGNORE: {} series not ready", series.codename)
+            print("IGNORE: {} series not ready".format(series.codename))
             continue
 
         for source in sorted(series.sources, key=lambda x: x.name):
