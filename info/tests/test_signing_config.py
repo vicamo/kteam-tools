@@ -59,4 +59,4 @@ class TestSigningConfigB(TestSigningConfigCore):
     def test_streams_keys(self):
         self.require_data_dict()
         for key_name in self.data.get("streams", {}):
-            self.assertRegex(key_name, r"^[a-z9-9-]+$", "malformed key name")
+            self.assertRegex(key_name, r"^[a-z0-9-]+$", "malformed key name")
