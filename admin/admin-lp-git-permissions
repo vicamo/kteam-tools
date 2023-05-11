@@ -239,23 +239,70 @@ def sync_tagged(repo_set, tag):
 
 def add_misc(repo_set):
 
-    admins = '/~canonical-kernel-repo-admins-active'
-    people = (
+    admins_core = [
+        '/~canonical-kernel-repo-admins-active',
+    ]
+    admins_test = [
+        '/~canonical-kernel-test-admins',
+    ]
+    people_core = [
         "/~canonical-kernel-committers",
         "/~canonical-kernel-hwe-committers",
+    ]
+    people_tools = [
         "/~canonical-kernel-tools-committers",
-        )
+    ]
 
     series = [x for x in kernel_series.series if x.supported or x.development]
     fw_branches = [(x.codename, x.development) for x in series]
 
-    for repo_path, repo_branches, tags_wild in [
-            ['~canonical-kernel/+git/kteam-tools', [('master', False)], None],
-            ['~canonical-kernel/+git/adt-matrix-hints', [('master', False)], None],
-            ['~canonical-kernel/+git/kernel-versions', [('*', True)], None],
-            ['~canonical-kernel/+git/cbd', [('*', True)], None],
-            ['~ubuntu-kernel/ubuntu/+source/linux-firmware', [('master', False)] + fw_branches, "Ubuntu-*"],
-            ]:
+    # Repo branches is a list of (<branch>, <rewind>) pairs.  Each branch
+    # will have an acl created and if rewind is true that will allow force
+    # push.
+    for repo_path, admins, people, repo_branches, tags_wild in [
+        [
+            "~canonical-kernel/+git/kteam-tools",
+            admins_core,
+            people_core + people_tools,
+            [("master", False)],
+            None,
+        ],
+        [
+            "~canonical-kernel/+git/adt-matrix-hints",
+            admins_core,
+            people_core + people_tools,
+            [("master", False)],
+            None,
+        ],
+        [
+            "~canonical-kernel/+git/kernel-versions",
+            admins_core,
+            people_core + people_tools,
+            [("*", True)],
+            None,
+        ],
+        [
+            "~canonical-kernel/+git/cbd",
+            admins_core,
+            people_core + people_tools,
+            [("*", True)],
+            None,
+        ],
+        [
+            "~ubuntu-kernel/ubuntu/+source/linux-firmware",
+            admins_core,
+            people_core + people_tools,
+            [("master", True)] + fw_branches,
+            "Ubuntu-*",
+        ],
+        [
+            "~canonical-kernel/+git/ksc-test-results",
+            admins_core + admins_test,
+            people_core + people_tools,
+            [("main", False)],
+            None,
+        ],
+    ]:
 
         print("misc: {}".format(os.path.basename(repo_path)))
 
@@ -265,11 +312,14 @@ def add_misc(repo_set):
         repo_rules.add_tag(os.path.basename(repo_path))
         repo_rules.add_tag('misc')
 
+        # Note: if we are allowing a user to rewind branches we will also grant create.
         for branch, allow_rewind in repo_branches:
             ref = "refs/heads/{}".format(branch)
             for person in people:
                 repo_rules.add_grant(ref, generate_grant(person=person, create=allow_rewind, push=True, rewind=allow_rewind))
-            repo_rules.add_grant(ref, generate_grant(person=admins, create=True, push=True, rewind=True))
+            for admin in admins:
+                repo_rules.add_grant(ref, generate_grant(person=admin, create=True, push=True, rewind=True))
+            repo_rules.add_grant(ref, generate_grant(person="/~ubuntu-kernel-bot", create=True, push=True, rewind=True))
             if admins != 'owner':
                 repo_rules.add_grant(ref, generate_grant(person='owner'))
 
@@ -278,8 +328,9 @@ def add_misc(repo_set):
 
             for person in people:
                 repo_rules.add_grant(ref, generate_grant(person=person, create=True))
-            repo_rules.add_grant(ref, generate_grant(person=admins, create=True, push=True, rewind=True))
-            if admins != 'owner':
+            for admin in admins:
+                repo_rules.add_grant(ref, generate_grant(person=admin, create=True, push=True, rewind=True))
+            if 'owner' not in admins:
                 repo_rules.add_grant(ref, generate_grant(person='owner'))
 
 def sync_misc(args):
@@ -332,7 +383,8 @@ def add_primary(repo_set):
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
         #if series.codename != 'bionic':
         #    continue
-        if series.opening_ready('repositories') is False:
+        if not args.initialise_development and series.opening_ready('repositories') is False:
+            print("IGNORE: {} series not ready".format(series.codename))
             continue
 
         for source in sorted(series.sources, key=lambda x: x.name):
@@ -408,6 +460,7 @@ def add_primary(repo_set):
                 people.append('/~canonical-kernel-hwe-committers')
             if is_nvidia(thing.source):
                 people.append('/~nvidia-kernel-committers')
+                repo_rules.add_subscriptions(['/~nvidia-kernel-team'])
             #admins = 'owner'
             #if series.esm or package.name.endswith('ibm-gt'):
             #    admins = '/~canonical-kernel-repo-admins'
@@ -531,6 +584,8 @@ desc = "List or update permissions for kernel team repositories in Launchpad."
 parser = argparse.ArgumentParser(description=desc)
 parser.add_argument("-d", "--dry-run", action="store_true", default=False,
                     help="do not make any changes, just show what would be done")
+parser.add_argument("--initialise-development", action="store_true", default=False,
+                    help="override opening: repositories tag to allow initialisation")
 
 subparsers = parser.add_subparsers(help="commands", dest="command", required=True)
 
