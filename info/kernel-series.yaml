@@ -2272,7 +2272,7 @@ defaults:
 
         linux-hwe-5.19:
             routing: ubuntu/4
-            variants: [ '-hwe-22.04', '-hwe-22.04-edge' ]
+            variants: [ '-hwe-22.04' ]
             package-relations: signed-generate
             packages:
                 linux-hwe-5.19:
@@ -2308,9 +2308,48 @@ defaults:
                         arches: ['arm64']
                         clouds: ['metal']
 
+        linux-lowlatency-hwe-5.19:
+            routing: ubuntu/4
+            variants: [ '-hwe-22.04' ]
+            package-relations: signed-generate
+            packages:
+                linux-lowlatency-hwe-5.19:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'lowlatency-hwe-5.19-next']
+                linux-meta-lowlatency-hwe-5.19:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'lowlatency-hwe-5.19']
+                linux-generate-lowlatency-hwe-5.19:
+                    type: generate
+                linux-signed-lowlatency-hwe-5.19:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'lowlatency-hwe-5.19']
+                linux-restricted-modules-lowlatency-hwe-5.19:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jammy', 'lowlatency-hwe-5.19']
+                linux-restricted-generate-lowlatency-hwe-5.19:
+                    type: lrg
+                linux-restricted-signatures-lowlatency-hwe-5.19:
+                    type: lrs
+            owner: smb
+            supported: true
+            development: false
+            backport: true
+            derived-from: [ '22.10', 'linux-lowlatency' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    lowlatency:
+                        arches: ['amd64', 'arm64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'aws']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-hwe-6.2:
             routing: ubuntu/4
-            variants: [ '-hwe-22.04', '-hwe-22.04-edge' ]
+            variants: [ '-hwe-22.04-edge' ]
             package-relations: signed-generate
             packages:
                 linux-hwe-6.2:
@@ -2348,7 +2387,7 @@ defaults:
 
         linux-lowlatency-hwe-6.2:
             routing: ubuntu/4
-            variants: [ '-hwe-22.04', '-hwe-22.04-edge' ]
+            variants: [ '-hwe-22.04-edge' ]
             package-relations: signed-generate
             packages:
                 linux-lowlatency-hwe-6.2:
@@ -2373,45 +2412,6 @@ defaults:
             development: true
             backport: true
             derived-from: [ '23.04', 'linux-lowlatency' ]
-            swm:
-                kernel-testing: true
-            testing:
-                flavours:
-                    lowlatency:
-                        arches: ['amd64', 'arm64']
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-                    lowlatency-64k:
-                        arches: ['arm64']
-                        clouds: ['metal', 'aws']
-            invalid-tasks: [ 'certification-testing' ]
-
-        linux-lowlatency-hwe-5.19:
-            routing: ubuntu/4
-            variants: [ '-hwe-22.04', '-hwe-22.04-edge' ]
-            package-relations: signed-generate
-            packages:
-                linux-lowlatency-hwe-5.19:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'lowlatency-hwe-5.19-next']
-                linux-meta-lowlatency-hwe-5.19:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'lowlatency-hwe-5.19']
-                linux-generate-lowlatency-hwe-5.19:
-                    type: generate
-                linux-signed-lowlatency-hwe-5.19:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'lowlatency-hwe-5.19']
-                linux-restricted-modules-lowlatency-hwe-5.19:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jammy', 'lowlatency-hwe-5.19']
-                linux-restricted-generate-lowlatency-hwe-5.19:
-                    type: lrg
-                linux-restricted-signatures-lowlatency-hwe-5.19:
-                    type: lrs
-            owner: smb
-            supported: true
-            development: false
-            backport: true
-            derived-from: [ '22.10', 'linux-lowlatency' ]
             swm:
                 kernel-testing: true
             testing:
