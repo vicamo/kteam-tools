@@ -256,6 +256,9 @@ def add_misc(repo_set):
     series = [x for x in kernel_series.series if x.supported or x.development]
     fw_branches = [(x.codename, x.development) for x in series]
 
+    # Repo branches is a list of (<branch>, <rewind>) pairs.  Each branch
+    # will have an acl created and if rewind is true that will allow force
+    # push.
     for repo_path, admins, people, repo_branches, tags_wild in [
         [
             "~canonical-kernel/+git/kteam-tools",
