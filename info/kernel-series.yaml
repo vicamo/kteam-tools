@@ -3448,7 +3448,7 @@ defaults:
                 linux-restricted-signatures-intel-iotg:
                     type: lrs
             supported: true
-            owner: philcox
+            owner: jianhuilee
             development: false
             backport: false
             derived-from: [ '22.04', 'linux' ]
@@ -3469,7 +3469,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22-intel-iotg/+git/jammy']
             supported: true
-            owner: philcox
+            owner: jianhuilee
             development: false
             snaps:
                 intel-iotg-kernel:
@@ -6711,7 +6711,7 @@ defaults:
                 linux-restricted-signatures-intel-iotg-5.15:
                     type: lrs
             supported: true
-            owner: philcox
+            owner: jianhuilee
             development: false
             backport: true
             derived-from: [ '22.04', 'linux-intel-iotg' ]
@@ -6732,7 +6732,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-intel-iotg/+git/focal']
             supported: true
-            owner: philcox
+            owner: jianhuilee
             development: false
             snaps:
                 intel-iotg-kernel:
