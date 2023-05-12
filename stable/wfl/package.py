@@ -2681,11 +2681,20 @@ class Package():
             if my_cycle_key < tracker_data.get('cycle', '-'):
                 return None
 
-            # Consider if this is a blocker if :prepare-packages is not Fix Released.
             cinfo("    considering {}".format(tracker_nr))
+
+            # Consider if this is a blocker if :prepare-packages is not at least Fix Committed
+            # indicating everything is uploaded.
             pp_status = tracker_data.get('task', {}).get(':prepare-packages', {}).get('status', 'Invalid')
             if pp_status not in ('Fix Committed', 'Fix Released'):
                 cinfo("      :prepare-packages {} considered blocking".format(pp_status))
+                return tracker_nr
+
+            # Consider prepare-package a blocker if it is not Fix Released indicating we
+            # have abis available.
+            pp_status = tracker_data.get('task', {}).get('prepare-package', {}).get('status', 'Invalid')
+            if pp_status != 'Fix Released':
+                cinfo("      prepare-package {} considered blocking".format(pp_status))
                 return tracker_nr
 
         return None
