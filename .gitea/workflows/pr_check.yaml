@@ -37,6 +37,22 @@ jobs:
   series-agnostic-tests:
     runs-on: ubuntu-latest
     steps:
+        # Require branches to be namespaced to the user that generates the PR.
+        # Multiple users may contribute to a branch as long as the branch name
+        # is prefixed with the username of the PR owner.
+      - name: Branch Namespace Check
+        run: |
+          branch_owner=${{ github.event.pull_request.user.username }}
+          branch_name=${{ github.event.pull_request.head.ref }}
+          re_namespace="^$branch_owner\/.+"
+          if [[ ! $branch_name =~ $re_namespace ]]
+          then
+            echo "Your branch name is invalid. Please namespace your work."
+            echo "Rename your branch $branch_owner/\$feature"
+            exit 1
+          else
+            echo "Branch name '$branch_name' matches $re_namespace"
+          fi
       - step:
         name: Clone
         uses: actions/checkout@v3
