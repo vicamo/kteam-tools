@@ -8036,7 +8036,7 @@ defaults:
                 linux-restricted-signatures-azure-4.15:
                     type: lrs
             supported: true
-            owner: mhcerri
+            owner: philcox
             backport: false
             derived-from: [ '18.04', 'linux' ]
             swm:
@@ -9211,7 +9211,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-azure-xenial']
             supported: true
-            owner: mhcerri
+            owner: philcox
             backport: true
             derived-from: [ '18.04', 'linux-azure-4.15' ]
             swm:
@@ -9754,7 +9754,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-azure-trusty']
             supported: true
-            owner: mhcerri
+            owner: philcox
             backport: true
             derived-from: [ '18.04', 'linux-azure-4.15' ]
             swm:
