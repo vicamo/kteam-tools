@@ -3559,7 +3559,6 @@ defaults:
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: false
-            invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-mtk:
             variants: ['--']
