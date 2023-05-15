@@ -5032,9 +5032,9 @@ defaults:
                 linux-meta-qcom-qcs410:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/linux-meta-qcom-qcs410-focal']
-            supported: false
+            supported: true
             owner: hwang4
-            development: true
+            development: false
             private: true
             derived-from: [ '20.04', 'linux']
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
@@ -5047,17 +5047,17 @@ defaults:
                 linux-signed-uc20-qcom-qcs410:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/linux-signed-uc20-qcom-qcs410-focal']
-            supported: false
+            supported: true
             owner: hwang4
-            development: true
+            development: false
             private: true
             snaps:
                 mic-qcom-kernel:
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/mic-qcom-kernel', 'uc20']
                     gated: false
                     promote-to: 'stable'
-                    qa: true
-                    hw-cert: false
+                    qa: false
+                    hw-cert: true
                     publish-to:
                         arm64: ['latest']
             derived-from: [ '20.04', 'linux-qcom-qcs410']
