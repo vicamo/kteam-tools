@@ -85,7 +85,8 @@ do
 						debian/rules clean
 						dpkg-buildpackage --no-sign -nc -S
 					) || exit "$?"
-					mv ${ancillary}_* ../../..
+					ancillary_package=$(cd "$ancillary" && dpkg-parsechangelog -SSource)
+					mv ${ancillary_package}_* ../../..
 				done
 			)
 			arc="$?"
