@@ -887,7 +887,8 @@ class FilterSwmStatus:
                         search_data.get('series', '-'),
                         search_data.get('source', '-'),
                         search_data.get('target', '-')]
-                    if bits == search_key:
+                    search_phase = search_data.get('phase', 'unknown')
+                    if bits == search_key and search_phase != "Complete":
                         trackers_mapped.add((command, search_id))
             else:
                 trackers_mapped.add(item)
