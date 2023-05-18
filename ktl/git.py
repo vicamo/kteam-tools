@@ -275,10 +275,11 @@ class Git:
         cls.log_results = {}
         cls.log_results['commits']       = []
         cls.log_results['buglink-index'] = {}
+        # Note that commit_rc assumes no decorate.
+        log_cmd = "git log --pretty=medium --decorate=no"
         if num != -1:
-            status, result = run_command("git log --pretty=medium -%d" % (num), cls.debug)
-        else:
-            status, result = run_command("git log --pretty=medium", cls.debug)
+            log_cmd = "%s -%d" % (log_cmd, num)
+        status, result = run_command(log_cmd, cls.debug)
         commit       = {}
         commit_text  = []
         current_sha1 = 'unknown'
