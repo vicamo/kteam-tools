@@ -704,12 +704,6 @@ class KernelSeriesEntry:
 # KernelSeries
 #
 class KernelSeries:
-    _url = 'https://git.launchpad.net/~canonical-kernel/' \
-        '+git/kteam-tools/plain/info/kernel-series.yaml'
-    _url_local = 'file://' + os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                           '..', 'info', 'kernel-series.yaml'))
-    #_url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
-    #_url = 'file:///home/work/kteam-tools/info/kernel-series.yaml'
     _data_txt = {}
 
     @classmethod
@@ -723,6 +717,16 @@ class KernelSeries:
         return cls._data_txt[url]
 
     def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False), xc=None):
+        self._url = 'https://git.launchpad.net/~canonical-kernel/' \
+            '+git/kteam-tools/plain/info/kernel-series.yaml'
+        try:
+            import ckt_info
+            _local = ckt_info.abspath("info/kernel-series.yaml")
+        except ModuleNotFoundError:
+            _local = os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                                   '..', 'info', 'kernel-series.yaml'))
+        self._url_local = 'file://' + _local
+
         if data or url:
             if url:
                 response = urlopen(url)
