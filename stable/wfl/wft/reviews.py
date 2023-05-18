@@ -300,6 +300,14 @@ class NewReview(SourceReview):
 
         return retval
 
+    @property
+    def signing_bot(s):
+        has_bot = False
+        for task_name in s.bug.tasks_by_name:
+            if task_name.startswith('canonical-signing-jobs'):
+                has_bot = True
+        return has_bot or 'kernel-signing-bot' in s.bug.tags
+
     def evaluate_status(self, status):
         # SIGNING-BOT: we have two different workflows for reviewing and
         # promoting kernels to proposed: the manual two step process which
@@ -312,7 +320,7 @@ class NewReview(SourceReview):
         # kernels are otherwise ready to promote.  If the new-review is then
         # signed off we will also switch into canonical-signing-bot mode, and
         # that task becomes blocking on our workflow.
-        if 'kernel-signing-bot' not in self.bug.tags:
+        if not self.signing_bot:
             # Interlock with manual promotion.  If we move beyond confirmed and
             # we are not under the control of canonical-signing-bot then
             # promote-to-proposed status defines new-review status. Copy it over.
