@@ -391,7 +391,11 @@ class PromoteFromTo(Promoter):
 
     @property
     def signing_bot(s):
-        return 'kernel-signing-bot' in s.bug.tags
+        has_bot = False
+        for task_name in s.bug.tasks_by_name:
+            if task_name.startswith('canonical-signing-jobs'):
+                has_bot = True
+        return has_bot or 'kernel-signing-bot' in s.bug.tags
 
     @property
     def new_review_active(s):
