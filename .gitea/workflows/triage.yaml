@@ -1,0 +1,11 @@
+name: "Pull Request Triage"
+
+# Use a narrowly scope event since we only need to apply labels
+on:
+- pull_request_target
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/tnt-auto-labeler@v1

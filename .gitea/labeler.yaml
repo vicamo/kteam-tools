@@ -1,0 +1,38 @@
+# See: http://10.131.201.69/actions/tnt-auto-labeler
+#
+# Applies this label to the current pull request based
+# on the modified files list. Labels are additive only.
+# 
+# This file is an unnamed dictionary of rules where each
+# key represents a label. A rule has the following fields:
+#  * mode: Controls if 'any' or 'all' patterns must match. Values: 'any', 'all'
+#  * patterns: List of paths, relative to root, can be exact names or glob patterns.
+
+ci:
+  mode: any
+  patterns:
+    - .gitea/*
+
+cranky:
+  mode: any
+  patterns:
+    - cranky/*
+
+data:
+  mode: any
+  patterns:
+    - info/*.yaml
+
+docs:
+  mode: any
+  patterns:
+    - '*README*'
+    - '*readme*'
+    - '*.md'
+
+swm:
+  mode: any
+  patterns:
+    - adt-matrix/*
+    - stable/wfl/*
+    - stable/swm*
