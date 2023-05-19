@@ -72,6 +72,16 @@
 #       indicates that this kernel is copied forward from another kernel;
 #       a Dependency record (see below).  This indicates that we are
 #       updating this kernel via binary copies.
+#  * swm (dictionary)
+#       special operation for swm.
+#       kernel-testing (bool) is whether swm should compose a virtual package
+#       name in the form of "kernel-testing--{soure name}--full--{flavour}",
+#       which will be used as a meta package name passed in test requests for
+#       boot-testing and regression-testing.
+#  * testing (dictionary)
+#       composed by a dictionary of kernel-flavour, with arches (list), cloud
+#       (list) inside. This field is required for swm / shiv to trigger a test
+#       request for boot-testing and regression-testing.
 #  * invalid-tasks (list)
 #       list of task names which should be marked as 'Invalid' on the Launchpad
 #       tracking bug at the moment of its creation.
