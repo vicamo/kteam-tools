@@ -12,7 +12,10 @@ ppa_ps="$2"
 
 here=$(dirname $(readlink -f "$0"))
 
-"$here/ancillary-lookup" "$ppa" "$ppa_ps" | \
+ignore="IGNORE-BUILD"
+[ ! -f "$ignore" ] && touch "$ignore"
+
+"$here/ancillary-lookup" "$ppa" "$ppa_ps" "$ignore" | \
 while read id source urls
 do
 	if [ "$urls" = '-' ]; then
@@ -23,9 +26,15 @@ do
 		continue
 	fi
 
+	if [ $(egrep -c "^$id\$" "$ignore") -ne 0 ]; then
+		echo "$id: non-ancillary form, ignored"
+		continue
+	fi
 	if [ -d "$id" ]; then
 		if [ -f "$id/ignore" ]; then
 			echo "$id: non-ancillary form, ignored"
+			echo "$id" >>"$ignore"
+			rm -rf "./$id/"
 			continue
 		fi
 		(
@@ -76,7 +85,8 @@ do
 						debian/rules clean
 						dpkg-buildpackage --no-sign -nc -S
 					) || exit "$?"
-					mv ${ancillary}_* ../../..
+					ancillary_package=$(cd "$ancillary" && dpkg-parsechangelog -SSource)
+					mv ${ancillary_package}_* ../../..
 				done
 			)
 			arc="$?"
@@ -118,7 +128,7 @@ do
 
 		if [ "$arc" != 0 ]; then
 			echo "$id: ancillary build failed, rc=$arc"
-			continue
+			exit "$arc"
 		fi
 
 		for upload in *_source.changes
@@ -138,4 +148,10 @@ do
 	)
 	rc="$?"
 	echo "$id: ancillary build complete rc=$rc"
+
+	# If this id's download was marked ignore record that and zap it.
+	if [ -f "$id/ignore" ]; then
+		echo "$id" >>"$ignore"
+		rm -rf "./$id/"
+	fi
 done
