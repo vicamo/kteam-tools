@@ -45,6 +45,8 @@ jobs:
       - step:
         name: Sign-off Check
         uses: actions/tnt-sign-off-check@v1
+        with:
+          check-owner-sob: false
       - step:
         name: Run Tests
         run: |
