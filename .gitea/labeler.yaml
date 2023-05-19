@@ -35,3 +35,4 @@ swm:
   patterns:
     - adt-matrix/*
     - stable/wfl/*
+    - stable/swm*
