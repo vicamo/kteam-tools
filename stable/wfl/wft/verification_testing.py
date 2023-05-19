@@ -74,7 +74,7 @@ class VerificationTesting(TaskHandler):
 
         cdebug("SPAM sru_bugs {} {}".format(len(sru_bugs), sru_bugs))
 
-        # If we have a master bug then we ask for its list of bugs and subtract those from ours
+        # If we have a parent tracker then we ask for its list of bugs and subtract those from ours
         master_bug = s.bug.master_bug
         if master_bug is not None:
             master_report = s._sru_report(master_bug.series, master_bug.name)
@@ -132,7 +132,7 @@ class VerificationTesting(TaskHandler):
             return spam_needed
         cdebug("SPAM-V sru_bugs {} {}".format(len(sru_bugs), sru_bugs))
 
-        # If we have a master bug then we ask for its list of bugs and subtract those from ours
+        # If we have a parent tracker then we ask for its list of bugs and subtract those from ours
         master_bug = self.bug.master_bug
         if master_bug is not None:
             master_bugs = master_bug.debs.bugs

@@ -19,7 +19,7 @@ class KernelSnapBase(TaskHandler):
 
         # For a legacy combo variant the debs from which we will make a snap
         # are associated with this bug.  For a snap variant they come from
-        # our master bug.  Add a direct pointer to whichever bug that is.
+        # our parent tracker.  Add a direct pointer to whichever bug that is.
         s.debs_bug = bug
         if s._bug.variant == 'snap-debs':
             master_bug = bug.master_bug

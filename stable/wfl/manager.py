@@ -233,8 +233,8 @@ class WorkflowManager():
     # Returns a tuple (depth, master-bug-number, bug-number) which will be used
     # to sort a list of bug numbers.  By sorting by master-bug chain length we
     # ensure we see all of the top level bugs first, then all direct children,
-    # then all of their direct children and so on.  We then sort by master bug
-    # number in order to group bugs sharing a master bug together.  Finally we
+    # then all of their direct children and so on.  We then sort by parent tracker
+    # number in order to group bugs sharing a parent tracker together.  Finally we
     # sort by the primary bug number to ensure a stable sort order in every
     # run.
     #
@@ -718,7 +718,7 @@ class WorkflowManager():
             s.status_set(bugid, bug.status_summary(), modified=modified)
             bug.accept_new()
 
-            # If we are a new bug and we have a master bug request that
+            # If we are a new bug and we have a parent tracker request that
             # be rescanned to ensure it gains our linkage.
             if bugid not in s.status_start and bug.is_derivative_package:
                 cinfo("new derivative -- triggering master tracker")
@@ -733,7 +733,7 @@ class WorkflowManager():
                     if str(tracker_nr) != str(bugid):
                         rescan.append(str(tracker_nr))
 
-            # If our interlocks have changed and we have a master bug request
+            # If our interlocks have changed and we have a parent tracker request
             # a rescan to ensure it has seen the latest interlocks.
             if bug.interlocks != interlocks_before and bug.is_derivative_package:
                 cinfo("interlocks changed -- triggering master tracker")

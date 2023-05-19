@@ -63,7 +63,7 @@ class SecuritySignoff(TaskHandler):
                             break
                     break
                 except KeyError:
-                    cinfo('    master bug does not contain either security-signoff or verification-testing tasks', 'yellow')
+                    cinfo('    parent tracker does not contain either security-signoff or verification-testing tasks', 'yellow')
 
             s.task.status = 'Confirmed'
             retval = True
@@ -91,7 +91,7 @@ class SecuritySignoff(TaskHandler):
                         s.task.status = master.tasks_by_name['security-signoff'].status
                         retval = True
             except KeyError:
-                cinfo('    master bug does not contain either security-signoff or verification-testing tasks', 'yellow')
+                cinfo('    parent tracker does not contain either security-signoff or verification-testing tasks', 'yellow')
 
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
         return retval
