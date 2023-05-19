@@ -93,7 +93,9 @@ def normalize_tree(path, source_pkg, ver, abi, upload):
             glob("{}/debian/control.stub".format(path)) +
             glob("{}/debian.*/control.stub".format(path)) +
             glob("{}/debian/d-i/kernel-versions".format(path)) +
-            glob("{}/debian.*/d-i/kernel-versions".format(path))
+            glob("{}/debian.*/d-i/kernel-versions".format(path)) +
+            glob("{}/debian/control.common".format(path)) +
+            glob("{}/debian/files.json".format(path))
         ):
         normalize_control_file(control_file, source_pkg, ver, abi, upload)
     # Detect ABI location.
@@ -111,6 +113,12 @@ def normalize_tree(path, source_pkg, ver, abi, upload):
             if '.' in os.path.basename(abi_file):
                 continue
             normalize_abi_file(abi_file)
+
+    # Normalise any ancillaries.
+    for ancillary_dir in (glob("{}/debian/ancillary/*".format(path))):
+        if not os.path.isdir(ancillary_dir):
+            continue
+        normalize_tree(ancillary_dir, source_pkg, ver, abi, upload)
 
 def dsc_source_version(dsc_file):
     basename = os.path.basename(dsc_file)
