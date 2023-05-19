@@ -3569,6 +3569,11 @@ defaults:
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: false
+            testing:
+                flavours:
+                    xilinx-zynqmp:
+                        arches: ['arm64']
+                        clouds: ['metal']
 
         linux-mtk:
             variants: ['--']
