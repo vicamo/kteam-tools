@@ -181,6 +181,9 @@ class PromoteFromTo(Promoter):
             if s.new_review_active and s.bug.task_status('new-review') != 'Fix Released':
                 cinfo('            new-review no longer ready pulling back from Confirmed', 'yellow')
                 pull_back = True
+            if s.new_review_active:
+                s.task.status = 'In Progress'
+                retval = True
             for task_src in s.task_srcs:
                 if s.bug.task_status(task_src) not in ('Fix Released', 'Invalid'):
                     cinfo('            {} no longer ready pulling back from Confirmed'.format(task_src), 'yellow')
