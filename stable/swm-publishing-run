@@ -15,7 +15,7 @@ esac
 
 {
 	echo "Starting $(date)"
-	HOME=$HOME/shankbot timeout 3600 "$here/swm-publishing" "$@"
+	timeout 3600 "$here/swm-publishing" "$@"
 	HOME=$HOME/shankbot timeout 900 "$here/swm-britney-sync" "lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu" "kernel-release-hints"
 	echo "Complete $(date)"
 } 2>&1 | tee -a "$HOME/logs/swm-publishing.log"
