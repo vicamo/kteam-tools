@@ -10,6 +10,7 @@ import yaml
 from  debian.debian_support             import version_compare
 
 from lazr.restfulclient.errors          import NotFound, Unauthorized, ServerError
+from httplib2.socks                     import HTTPError
 
 from ktl.msgq                           import MsgQueue, MsgQueueCkct
 from ktl.utils                          import date_to_string, dump
@@ -1520,6 +1521,9 @@ class Package():
                         continue
                     except ServerError:
                         raise WorkflowCrankError("launchpad librarian unavailable")
+                    except HTTPError as e:
+                        if e.args[0] == 403:
+                            continue
                     break
 
         cleave(self.__class__.__name__ + '.bugs {}'.format(bugs))
