@@ -45,10 +45,10 @@ class TheApp(object):
     #
     def layout_cycle(s, date):
         sru_cycle = SruCycle().lookup_cycle(date)
-        # If the cycle is not yet defined, assume a 3 week cadance.
+        # If the cycle is not yet defined, assume a 4 week cadance.
         if sru_cycle is None:
             cycle_start = s.sd(date)
-            cycle_end = cycle_start + timedelta(days=20)
+            cycle_end = cycle_start + timedelta(days=27)
         else:
             cycle_start = sru_cycle.start_date
             cycle_end = sru_cycle.release_date - timedelta(days=1)
