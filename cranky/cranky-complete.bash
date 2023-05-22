@@ -31,7 +31,6 @@ _cranky() {
 		"review-master-changes -h --help"
 		"rmadison -h --help -a --show-all -e --show-extended -p --pocket release updates security proposed HANDLE"
 		"shell-helper -h handle-to-series-source series-codename source-packages-path tree-type tree-main-path list-handles list-variants config"
-		"spin -h --help -d --dry-run --devel HANDLE"
 		"tag -h --help -v --verbose -f --force"
 		"test-build -h --help -a --arch -c --commit -d --dry-run -f --fail -p --purge -t --target"
 		"update-dependent -h --help --ignore-abi-check"
