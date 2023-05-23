@@ -1084,6 +1084,10 @@ class WorkflowBug():
 
         return tasks_by_name
 
+    def add_task(self, task_name):
+        task = self.lpbug.addTask(target='/kernel-sru-workflow/' + task_name)
+        self._tasks_by_name[task_name] = WorkflowBugTask(task, task_name, self.debs, self)
+
     # valid_package
     #
     def valid_package(s, pkg):

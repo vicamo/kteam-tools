@@ -3004,3 +3004,109 @@ class Package():
         subject = "[" + s.series + "] " + s.name + " " + flavour + " " + s.version + where
         s.bug.announce('swm-testing-started', subject=subject, body=json.dumps(msg, sort_keys=True, indent=4))
         #s.bug.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com,sean.feole@canonical.com')
+
+    # meta_check
+    #
+    def meta_check(self):
+        cinfo("meta_check: meta is ready...")
+        bi = self.build_info
+
+        pocket_data = bi["meta"].get("build")
+        if pocket_data is None:
+            return
+
+        meta_version = pocket_data.version
+        signing_present = "signed" in bi
+
+        src = pocket_data.source
+        cinfo("meta_check: source={}\n".format(pocket_data.source))
+        if src is None:
+            return
+
+        bins = src.getPublishedBinaries(active_binaries_only=False)
+        bins_image = []
+        for binary in bins:
+            binary_name = binary.binary_package_name
+            if "-image-" in binary_name:
+                bins_image.append(binary)
+        #cinfo("meta_check: bins_image={}".format(bins_image))
+        bins_image_names = set([binary.binary_package_name for binary in bins_image])
+
+        variant_change = False
+        version_change = False
+
+        previously_published = False
+        for pocket_data in (bi["meta"].get("Updates"), bi["meta"].get("Release")):
+            if pocket_data is None:
+                continue
+            if pocket_data.route is None:
+                continue
+            lp_archive, pocket = pocket_data.route
+            if lp_archive is None:
+                continue
+
+            if pocket_data.version is None:
+                continue
+            if pocket_data.version == meta_version:
+                continue
+
+            # See if we have different names in this pocket.
+            src = pocket_data.source
+            cinfo("meta_check: previous src={}\n".format(pocket_data.source))
+            previously_published = True
+            bins = src.getPublishedBinaries(active_binaries_only=False)
+            bins_image_prev = []
+            for binary in bins:
+                binary_name = binary.binary_package_name
+                if "-image-" in binary_name:
+                    bins_image_prev.append(binary)
+            #cinfo("meta_check: bins_image_prev={}".format(bins_image))
+
+            bins_image_prev_names = set([binary.binary_package_name for binary in bins_image_prev])
+            if bins_image_prev_names != bins_image_names:
+                cinfo("meta_check: names are different variant change prev={} curr={}".format(bins_image_prev_names, bins_image_names))
+                variant_change = True
+
+            # See if we can see different versions of this package in the released
+            # pocket.
+            some = False
+            for binary in bins_image:
+                pubs = lp_archive.getPublishedBinaries(
+                    order_by_date=True,
+                    exact_match=True,
+                    distro_arch_series=binary.distro_arch_series,
+                    pocket=pocket,
+                    status='Published',
+                    binary_name=binary.binary_package_name,
+                )
+                for pub in pubs:
+                    prev_version = pub.binary_package_version
+                    if prev_version == meta_version:
+                        continue
+                    some = True
+
+                    if meta_version.split('.')[0:2] != prev_version.split('.')[0:2]:
+                        cinfo("meta_check: major versions are different prev={} curr={}".format(prev_version.split('.')[0:2], meta_version.split('.')[0:2]))
+                        version_change = True
+            if some:
+                break
+
+        signing_signoff = signing_present and not previously_published
+        kernel_signoff = version_change or variant_change
+
+        if kernel_signoff and "kernel-signoff" not in self.bug.tasks_by_name:
+            cinfo("meta_check: kernel-signoff required")
+            self.bug.add_task("kernel-signoff")
+        if signing_signoff and "signing-signoff" not in self.bug.tasks_by_name:
+            cinfo("meta_check: signing-signoff required")
+            self.bug.add_task("signing-signoff")
+
+        messages = []
+        if signing_signoff:
+            messages.append("New kernel with signed kernels; signing-review required.")
+        if variant_change:
+            messages.append("linux-image name changes detected, review variant/flavour changes; kernel-signoff required.")
+        if version_change:
+            messages.append("linux-image major version change detected, upgrade testing required; kernel-signoff required.")
+        if len(messages) > 0:
+            self.bug.add_comment("Kernel requires additional signoff", "\n".join(messages))

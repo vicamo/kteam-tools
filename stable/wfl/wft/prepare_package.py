@@ -267,6 +267,10 @@ class PreparePackage(TaskHandler):
             if not s.bug.debs.routing('ppa'):
                 s.bug.dup_replaces()
 
+            # If we have ppa routing then we should check binaries.
+            if pkg == "meta" and s.bug.debs.routing('ppa'):
+                s.bug.debs.meta_check()
+
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
             try:
