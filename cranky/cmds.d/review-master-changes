@@ -46,6 +46,46 @@ Configuration file:
 EOF
 }
 
+# Given a master kernel version for example taken from the changelog), return
+# the commit ID of the release of that kernel version in the current tree.
+version2commit() {
+	base_version="$1"
+
+	# Find a remote tag that matches the base_version
+	parent_src=$(dpkg-parsechangelog -l"$DEBIAN_MASTER"/changelog -SSource | sed -e 's/^linux//')
+	base_tag=$(git ls-remote --tags "$RELEASE_REPO" |
+			   awk '{sub(/^.*\//, "", $2); print $2}' |
+			   grep -E 'Ubuntu'"$parent_src"'-'"$base_version"'$' |
+			   sort | tail -n1)
+	if [ -z "$base_tag" ]; then
+		echo "Could not find a base tag for $base_version in the remote: $RELEASE_REPO"
+		exit 1
+	fi
+
+	# Fetch the previous base version for review
+	if ! output=$(git fetch "$RELEASE_REPO" "$base_tag" 2>&1); then
+		echo "Failed to fetch tag \"$base_tag\" from remote $RELEASE_REPO"
+		echo "$output"
+		exit 1
+	fi
+
+	# Get the commit message for the previous base version
+	prev_commit_message=$(git rev-list --format=%s --max-count=1 FETCH_HEAD | tail +2)
+	if [ -z "$prev_commit_message" ]; then
+		echo "Failed to get commit message for tag \"$base_tag\""
+		exit 1
+	fi
+
+	# Find the previous commit ID in the current tree
+	prev_commit_id=$(git rev-list --max-count=1 -F --grep "$prev_commit_message" HEAD)
+	if [ -z "$prev_commit_id" ]; then
+		echo "Failed to get the previous base commit id in the current branch."
+		exit 1
+	fi
+
+	printf "%s" "$prev_commit_id"
+}
+
 # Load values from the config file and fallback to the default values
 git_cmd=$("$C" shell-helper config review-master-changes.git-cmd .)
 git_cmd="${git_cmd:-$default_git_cmd}"
@@ -123,7 +163,6 @@ fi
 offset=0
 base_version=
 while true; do
-
 	changes=$(dpkg-parsechangelog -l"$DEBIAN/changelog" -SChanges -c1 -o"$offset")
 	if ! [ "$changes" ]; then
 		echo "Failed to retrieve base master version from changelog file: $DEBIAN/changelog"
@@ -141,37 +180,7 @@ if [ -z "$base_version" ]; then
 	exit 1
 fi
 
-# List the remote tags
-parent_src=$(dpkg-parsechangelog -l"$DEBIAN_MASTER"/changelog -SSource | sed -e 's/^linux//')
-base_tag=$(git ls-remote --tags "$RELEASE_REPO" |
-		   awk '{sub(/^.*\//, "", $2); print $2}' |
-		   grep -E 'Ubuntu'"$parent_src"'-'"$base_version"'$' |
-		   sort | tail -n1)
-if [ -z "$base_tag" ]; then
-	echo "Could not find a base tag for $base_version in the remote: $RELEASE_REPO"
-	exit 1
-fi
-
-# Fetch the previous base version for review
-if ! output=$(git fetch "$RELEASE_REPO" "$base_tag" 2>&1); then
-	echo "Failed to fetch tag \"$base_tag\" from remote $RELEASE_REPO"
-	echo "$output"
-	exit 1
-fi
-
-# Get the commit message for the previous base version
-prev_commit_message=$(git rev-list --format=%s --max-count=1 FETCH_HEAD | tail +2)
-if [ -z "$prev_commit_message" ]; then
-	echo "Failed to get commit message for tag \"$base_tag\""
-	exit 1
-fi
-
-# Find the previous commit ID in the current tree
-prev_commit_id=$(git rev-list --max-count=1 -F --grep "$prev_commit_message" HEAD)
-if [ -z "$prev_commit_id" ]; then
-	echo "Failed to get the previous base commit id in the current branch."
-	exit 1
-fi
+prev_commit_id="$(version2commit "$base_version")"
 
 echo "Listing changes in \"${DEBIAN_MASTER}/\" since $prev_commit_id..."
 echo
