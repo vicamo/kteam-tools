@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timedelta
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from logging import basicConfig, DEBUG, INFO, WARNING
+
 from ktl.log import center, cleave, cdebug, Clog
 from ktl.launchpad import Launchpad
 from ktl.git import Git
@@ -31,46 +32,46 @@ class WorkflowBugTask(object):
 
     # __init__
     #
-    def __init__(s, lp_task, task_name):
-        s.__status = None
-        s.__assignee = None
-        setattr(s, 'name', task_name)
-        setattr(s, 'importance', lp_task.importance)
-        setattr(s, 'lp_task', lp_task)
-        s.__modified = False
-        s.bug = lp_task.bug
+    def __init__(self, lp_task, task_name):
+        self.__status = None
+        self.__assignee = None
+        setattr(self, 'name', task_name)
+        setattr(self, 'importance', lp_task.importance)
+        setattr(self, 'lp_task', lp_task)
+        self.__modified = False
+        self.bug = lp_task.bug
 
     # status
     #
     @property
-    def status(s):
+    def status(self):
         '''
         Property: Gets the status for the task.
         '''
-        if s.__status is None:
-            s.__status = s.lp_task.status
-        return s.__status
+        if self.__status is None:
+            self.__status = self.lp_task.status
+        return self.__status
 
     # assignee
     #
     @property
-    def assignee(s):
+    def assignee(self):
         '''
         Property: Gets the assignee for the task.
         '''
-        if s.__assignee is None:
-            assignee = s.lp_task.assignee
+        if self.__assignee is None:
+            assignee = self.lp_task.assignee
             if assignee is None:
-                s.__assignee = '*Unassigned'
+                self.__assignee = '*Unassigned'
             else:
-                s.__assignee = assignee.display_name
-        return s.__assignee
+                self.__assignee = assignee.display_name
+        return self.__assignee
 
     # modified
     #
     @property
-    def modified(s):
-        return s.__modified
+    def modified(self):
+        return self.__modified
 
 # Tracking
 #
@@ -79,16 +80,16 @@ class Tracking():
     '''
     # __init__
     #
-    def __init__(s, args):
-        s.args = args
-        s.launchpad = Launchpad('start-sru-cycle').service
-        s.project_tracked = 'kernel-sru-workflow'
+    def __init__(self, args):
+        self.args = args
+        self.launchpad = Launchpad('start-sru-cycle').service
+        self.project_tracked = 'kernel-sru-workflow'
 
-    def trackers(s, project):
+    def trackers(self, project):
         '''
         Return a list of all the tracking bugs that need to be processed.
         '''
-        center(s.__class__.__name__ + '.trackers')
+        center(self.__class__.__name__ + '.trackers')
 
         retval = {}
 
@@ -101,7 +102,7 @@ class Tracking():
         # The tracking bugs that we are interested in should have been created recently (days).
         #
         search_since = datetime.utcnow() - timedelta(days=45)
-        lp_project = s.launchpad.projects[project]
+        lp_project = self.launchpad.projects[project]
         tasks = lp_project.searchTasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
 
         for task in tasks:
@@ -109,11 +110,11 @@ class Tracking():
             cdebug('    LP: #%s - %s' % (bug.id, bug.title))
             retval[bug.id] = bug.title
 
-        cleave(s.__class__.__name__ + '.trackers')
+        cleave(self.__class__.__name__ + '.trackers')
         return retval
 
     @property
-    def repo_info(s):
+    def repo_info(self):
         # Check: Are we currently in a git repository?
         #
         if not Git.is_repo():
@@ -130,29 +131,29 @@ class Tracking():
 
     # create_tasks_by_name_mapping
     #
-    def create_tasks_by_name_mapping(s, bugid, project):
+    def create_tasks_by_name_mapping(self, bugid, project):
         '''
         We are only interested in the tasks that are specific to the workflow project. Others
         are ignored.
         '''
-        center(s.__class__.__name__ + '.create_tasks_by_name_mapping')
+        center(self.__class__.__name__ + '.create_tasks_by_name_mapping')
         tasks_by_name = {}
 
         cdebug('    Scanning bug tasks:', 'cyan')
 
-        lpbug = s.launchpad.bugs[bugid]
+        lpbug = self.launchpad.bugs[bugid]
         for task in lpbug.bug_tasks:
             task_name = task.bug_target_name
             # task_name = task.bug_target_name.replace(project, '').replace('/', '').split(' ', 1)[0]
             task_name = task.bug_target_name.replace(project, '').replace('/', '')
             tasks_by_name[task_name] = WorkflowBugTask(task, task_name)
 
-        cleave(s.__class__.__name__ + '.create_tasks_by_name_mapping')
+        cleave(self.__class__.__name__ + '.create_tasks_by_name_mapping')
         return tasks_by_name
 
     # bug_to_sru_cycle
     #
-    def bug_to_sru_cycle(s, bug):
+    def bug_to_sru_cycle(self, bug):
         cycle = '--'
         for tag in bug.tags:
             if tag.startswith('kernel-sru-cycle-'):
@@ -163,32 +164,32 @@ class Tracking():
 
     # main
     #
-    def main(s):
+    def main(self):
         retval = 1
         try:
             # If no source is supplied use information from the current working
             # directory.
-            if s.args.source is None:
-                target_package, target_series = s.repo_info
-            elif s.args.source is not None and s.args.version is not None:
-                target_series, target_package = s.args.source.split(':')
+            if self.args.source is None:
+                target_package, target_series = self.repo_info
+            elif self.args.source is not None and self.args.version is not None:
+                target_series, target_package = self.args.source.split(':')
             else:
                 raise AppError('--source and --version required')
             # print("{} {}".format(target_series, target_package))
 
             found_tasks = []
-            for (bugid, title) in s.trackers(s.project_tracked).items():
+            for (bugid, title) in self.trackers(self.project_tracked).items():
                 # The title has an optional series/ prefix (will become manditory).
                 if (not title.startswith(target_package + ':') and
                         not title.startswith(target_series + '/' + target_package + ':')):
                     continue
-                tasks_by_name = s.create_tasks_by_name_mapping(bugid, s.project_tracked)
+                tasks_by_name = self.create_tasks_by_name_mapping(bugid, self.project_tracked)
                 found_tasks.append((bugid, tasks_by_name))
 
             # Look through the list and see what we have -- pick out the open ones.
             found = []
             for (bugid, tasks_by_name) in found_tasks:
-                lpbug = s.launchpad.bugs[bugid]
+                lpbug = self.launchpad.bugs[bugid]
                 # Ignore this bug if we cannot determine the series.
                 if '%s (Ubuntu %s)' % (target_package, target_series.title()) not in tasks_by_name and \
                         target_series not in lpbug.tags:
@@ -199,11 +200,11 @@ class Tracking():
                 # Ignore this bug if it was created for tests
                 if 'kernel-release-tracking-bug-test' in lpbug.tags:
                     continue
-                if not s.args.re_run and '<version to be filled>' not in lpbug.title:
+                if not self.args.re_run and '<version to be filled>' not in lpbug.title:
                     continue
-                if s.args.sru_cycle:
-                    cycle = s.bug_to_sru_cycle(lpbug)
-                    if cycle != s.args.sru_cycle and cycle.split('-')[0] != s.args.sru_cycle:
+                if self.args.sru_cycle:
+                    cycle = self.bug_to_sru_cycle(lpbug)
+                    if cycle != self.args.sru_cycle and cycle.split('-')[0] != self.args.sru_cycle:
                         continue
                 found.append((bugid, tasks_by_name, lpbug))
 
@@ -212,30 +213,30 @@ class Tracking():
                 exit(retval)
             elif len(found) != 1:
                 for (bugid, tasks_by_name, lpbug) in found:
-                    print("FOUND: LP: #{} ({}) {}".format(bugid, lpbug.title, s.bug_to_sru_cycle(lpbug)))
+                    print("FOUND: LP: #{} ({}) {}".format(bugid, lpbug.title, self.bug_to_sru_cycle(lpbug)))
 
                 raise AppError('Multiple tracking bugs matching package %s series %s' % (target_package, target_series))
                 exit(retval)
 
             (bugid, tasks_by_name, lpbug) = found[0]
 
-            print("LP: #{} ({}) {}".format(bugid, lpbug.title, s.bug_to_sru_cycle(lpbug)))
+            print("LP: #{} ({}) {}".format(bugid, lpbug.title, self.bug_to_sru_cycle(lpbug)))
 
             # -------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
 
             # Pull the entire changelog file into a list
             #
-            if s.args.version is None:
+            if self.args.version is None:
                 target_version = Debian.changelog(local=True)[0]['version']
             else:
-                target_version = s.args.version
+                target_version = self.args.version
             title = "%s/%s: %s -proposed tracker" % (target_series, target_package, target_version)
             print(" -> %s" % title)
 
             # If we were directed to a version then we will just use that version and write it to the bug.
-            if s.args.version is not None:
-                if s.args.dry_run:
+            if self.args.version is not None:
+                if self.args.dry_run:
                     print("Dry Run -- no changes made")
                 else:
                     lpbug.title = title
@@ -257,13 +258,13 @@ class Tracking():
                 if pocket_vers == target_version:
                     raise AppError('Target version(%s) already in %s!' % (target_version, pocket_name))
 
-            if s.args.dry_run:
+            if self.args.dry_run:
                 print("Dry Run -- no changes made")
                 return 0
 
             changelog, changelog_path = Debian.raw_changelog(local=True)
 
-            if s.args.compat:
+            if self.args.compat:
                 with open(changelog_path, 'r') as f:
                     thelog = f.readlines()
                 with open(changelog_path, 'w') as f:
@@ -301,9 +302,9 @@ class Tracking():
                 # Record the tacking bug number.
                 tracking = os.path.join(debian, 'tracking-bug')
                 with open(tracking, 'w') as f:
-                    print(bugid, s.bug_to_sru_cycle(lpbug), file=f)
+                    print(bugid, self.bug_to_sru_cycle(lpbug), file=f)
 
-                if s.args.cve:
+                if self.args.cve:
                     bug_msg = "{} ({} (LP: #{}))".format(bugid, title, bugid)
                 else:
                     bug_msg = bugid
@@ -325,7 +326,7 @@ Properties: no-test-build
 
             retval = 0
 
-            if not s.args.cve:
+            if not self.args.cve:
                 lpbug.title = title
                 lpbug.lp_save()
 
@@ -336,7 +337,7 @@ Properties: no-test-build
                     if task.status == 'Invalid':
                         continue
                     task.status = "In Progress"
-                    task.assignee = s.launchpad.me
+                    task.assignee = self.launchpad.me
                     task.lp_save()
 
         except AppError as e:
