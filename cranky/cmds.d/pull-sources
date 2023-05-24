@@ -1,0 +1,112 @@
+#!/bin/bash -eu
+#
+# Download a set of kernel source packages
+#
+
+function out()
+{
+	local rc=$?
+
+	trap - EXIT INT TERM HUP
+
+	if [ "${rc}" -ne 0 ] ; then
+		echo "Script failed" >&2
+	fi
+
+	exit "${rc}"
+}
+
+function get_params()
+{
+	local dir=$1
+	local DEBIAN src version series
+
+	(
+		cd "$dir" || exit 1
+
+		DEBIAN=debian
+		# shellcheck disable=SC1091
+		if [ -e debian/debian.env ] ; then
+			. debian/debian.env
+		fi
+
+		src=$(dpkg-parsechangelog -l "${DEBIAN}"/changelog -S Source)
+		series=$(dpkg-parsechangelog -l "${DEBIAN}"/changelog -S Distribution)
+		version=$(dpkg-parsechangelog -c 1 -o 1 -l "${DEBIAN}"/changelog -S Version)
+
+		echo ${src} ${version} ${series}
+	
+	)
+}
+
+function dget_src()
+{
+	local dir=$1
+	params=$(get_params "$dir")
+	${C} pull-source ${params}
+}
+
+function usage()
+{
+	cat <<EOF
+Usage: cranky pull-sources [-h] HANDLE
+
+Download the kernel source packages specified by HANDLE to the current
+directory. The trees for the HANDLE need to be checked out and prepared,
+and the versions downloaded will be the previous one by looking at the
+changelog. It uses cranky pull-source command, thus using getabis files.
+
+Positional arguments:
+  HANDLE       Handle to a kernel source tree, either a path to a kernel
+               source tree or a handle in <series>:<package> format. If not
+               given the current working directory is used.
+
+Optional arguments:
+  -h, --help     Show this help text and exit.
+
+Example:
+  $ cranky pull-sources bionic:linux-hwe-5.4
+      Looks into checked out trees for bionic:linux-hwe-5.4 and downloads
+      all the source packages (main, meta, signed, lrm) for that kernel.
+
+EOF
+}
+
+handle=
+
+while [ ${#} -gt 0 ] ; do
+	case "${1}" in
+		-h|--help)
+			usage
+			exit
+			;;
+		-*)
+			usage
+			exit 2
+			;;
+		*)
+			if [ -z "${handle}" ] ; then
+				handle=${1}
+			else
+				usage
+				exit 2
+			fi
+			;;
+	esac
+	shift
+done
+
+if [ -z "${handle}" ] ; then
+	handle=${PWD}
+fi
+
+trap out EXIT INT TERM HUP
+
+readarray -t srcs < <("$C" shell-helper source-packages-path "${handle}")
+if [ "${#srcs[@]}" -eq 0 ] ; then
+	exit 1
+fi
+
+for src in "${srcs[@]}" ; do
+	dget_src "${src}"
+done
