@@ -1,78 +1,393 @@
-#!/bin/bash -eu
+#!/usr/bin/env python3
+#
+import sys
+import os
 
-function usage()
-{
-	cat <<EOF
-Usage: cranky link-tb [-d] [-h] [-r] [-s SRU_CYCLE]
+from datetime                           import datetime, timedelta
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, INFO, WARNING
+from ktl.log                            import center, cleave, cdebug, cinfo, Clog
+from ktl.launchpad                      import Launchpad
+from ktl.git                            import Git
+from ktl.debian                         import Debian
+from ktl.shell                          import sh
 
-Find and update the Launchpad tracking bug to reflect the proposed
-kernel version being created, and make a local git commit with a link
-to it.
+# AppError
+#
+# A general exception that can be raised when an error is encountered in the app.
+#
+class AppError(Exception):
+    # __init__
+    #
+    def __init__(self, error=''):
+        self.msg = error
 
-Optional arguments:
-  -d, --dry-run                      Don't actually modify the local tree or
-                                     the launchpad bug
-  -h, --help                         Show this help message and exit.
-  -r, --re-run                       Run even if the tracking bug shows that
-                                     link-tb has been run before
-  -s, --sru-cycle <SRU_CYCLE>        Specify the SRU cycle tag to look for
-                                     when looking for a TB
-  -c, --cve                          For embargoed CVE cranks. Do not update
-                                     the tracking bug, update only the local
-                                     file ('tracking-bug') committing with the
-                                     private BugLink format.
-Examples:
-  Running without arguments will try to locate the right tracking bug from the
-  most recent SRU cycle:
-    \$ cranky link-tb
+# WorkflowBugTask
+#
+class WorkflowBugTask(object):
+    dryrun = False
+    no_assignments    = False
+    no_status_changes = False
 
-  Running with --sru-cycle will limit the search for the tracking bug
-  to bugs tagged with the given SRU cycle tag:
-    \$ cranky link-tb --sru-cycle 2019.02.04-1
+    # __init__
+    #
+    def __init__(s, lp_task, task_name):
+        s.__status   = None
+        s.__assignee = None
+        setattr(s, 'name', task_name)
+        setattr(s, 'importance', lp_task.importance)
+        setattr(s, 'lp_task', lp_task)
+        s.__modified = False
+        s.bug = lp_task.bug
 
-  Running with --dry-run will still locate the TB but will NOT update
-  the Launchpad bug or the local git tree. Useful for testing:
-    \$ cranky link-tb --dry-run -s 2019.01.14-3
+    # status
+    #
+    @property
+    def status(s):
+        '''
+        Property: Gets the status for the task.
+        '''
+        if s.__status is None:
+            s.__status = s.lp_task.status
+        return s.__status
 
-  Running with --re-run can be used if "link-tb" has already been
-  previously run for this release. This will overwrite any info in the
-  bug that was added from a previous execution of "link-tb":
-    \$ cranky link-tb --re-run
+    # assignee
+    #
+    @property
+    def assignee(s):
+        '''
+        Property: Gets the assignee for the task.
+        '''
+        if s.__assignee is None:
+            assignee = s.lp_task.assignee
+            if assignee is None:
+                s.__assignee = '*Unassigned'
+            else:
+                s.__assignee = assignee.display_name
+        return s.__assignee
 
-EOF
-	exit 2
-}
+    # modified
+    #
+    @property
+    def modified(s):
+        return s.__modified
 
-args=()
-while [ "${#}" -gt 0 ] ; do
-	case "${1}" in
-		-s|--sru-cycle)
-			shift
-			echo "SRU-cycle: $1"
-			args+=('--sru-cycle' "$1")
-			;;
-		-d|--dry-run)
-			echo "(This is a dry-run)"
-			args+=('--dry-run')
-			;;
-		-r|--re-run)
-			echo "(This is a re-run)"
-			args+=('--re-run')
-			;;
-		-c|--cve)
-			echo "(Running in CVE mode)"
-			args+=('--cve')
-			;;
-		-h|--help)
-			usage
-			;;
-		*)
-			echo "error: Unrecognized argument ${1}"
-			usage
-			;;
-	esac
-	shift
-done
+# Tracking
+#
+class Tracking():
+    '''
+    '''
+    # __init__
+    #
+    def __init__(s, args):
+        s.args = args
+        s.launchpad = Launchpad('start-sru-cycle').service
+        s.project_tracked = 'kernel-sru-workflow'
 
-cranky_root=$(dirname "$C")
-"$cranky_root/../stable/link-to-tracker" "${args[@]}"
+    def trackers(s, project):
+        '''
+        Return a list of all the tracking bugs that need to be processed.
+        '''
+        center(s.__class__.__name__ + '.trackers')
+
+        retval = {}
+
+        cdebug('project: %s' % project)
+        search_tags            = []
+        search_tags_combinator = "All"
+        # A list of the bug statuses that we care about
+        #
+        search_status          = ["New", "In Progress", "Incomplete", "Fix Committed"]
+        # The tracking bugs that we are interested in should have been created recently (days).
+        #
+        search_since           = datetime.utcnow() - timedelta(days=45)
+        lp_project = s.launchpad.projects[project]
+        tasks = lp_project.searchTasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
+
+        for task in tasks:
+            bug = task.bug
+            cdebug('    LP: #%s - %s' % (bug.id, bug.title))
+            retval[bug.id] = bug.title
+
+        cleave(s.__class__.__name__ + '.trackers')
+        return retval
+
+    @property
+    def repo_info(s):
+        # Check: Are we currently in a git repository?
+        #
+        if not Git.is_repo():
+            raise AppError('This script can only be run from within a git repository.')
+
+        changelog = Debian.changelog(local=True)
+
+        if changelog[0]['series'] == 'UNRELEASED':
+            series = changelog[1]['series']
+        else:
+            series = changelog[0]['series']
+
+        return changelog[0]['package'], series
+
+    # create_tasks_by_name_mapping
+    #
+    def create_tasks_by_name_mapping(s, bugid, project):
+        '''
+        We are only interested in the tasks that are specific to the workflow project. Others
+        are ignored.
+        '''
+        center(s.__class__.__name__ + '.create_tasks_by_name_mapping')
+        tasks_by_name = {}
+
+        cdebug('    Scanning bug tasks:', 'cyan')
+
+        lpbug = s.launchpad.bugs[bugid]
+        for task in lpbug.bug_tasks:
+            task_name       = task.bug_target_name
+            # task_name       = task.bug_target_name.replace(project, '').replace('/', '').split(' ', 1)[0]
+            task_name       = task.bug_target_name.replace(project, '').replace('/', '')
+            tasks_by_name[task_name] = WorkflowBugTask(task, task_name)
+
+        cleave(s.__class__.__name__ + '.create_tasks_by_name_mapping')
+        return tasks_by_name
+
+    # bug_to_sru_cycle
+    #
+    def bug_to_sru_cycle(s, bug):
+        cycle = '--'
+        for tag in bug.tags:
+            if tag.startswith('kernel-sru-cycle-'):
+                cycle = tag[17:]
+                break
+
+        return cycle
+
+    # main
+    #
+    def main(s):
+        retval = 1
+        try:
+            # If no source is supplied use information from the current working
+            # directory.
+            if s.args.source is None:
+                target_package, target_series = s.repo_info
+            elif s.args.source is not None and s.args.version is not None:
+                target_series, target_package = s.args.source.split(':')
+            else:
+                raise AppError('--source and --version required')
+            #print("{} {}".format(target_series, target_package))
+
+            found_tasks = []
+            for (bugid, title) in s.trackers(s.project_tracked).items():
+                # The title has an optional series/ prefix (will become manditory).
+                if (not title.startswith(target_package + ':') and
+                        not title.startswith(target_series + '/' + target_package + ':')):
+                    continue
+                tasks_by_name = s.create_tasks_by_name_mapping(bugid, s.project_tracked)
+                found_tasks.append((bugid, tasks_by_name))
+
+            # Look through the list and see what we have -- pick out the open ones.
+            found = []
+            for (bugid, tasks_by_name) in found_tasks:
+                lpbug = s.launchpad.bugs[bugid]
+                # Ignore this bug if we cannot determine the series.
+                if '%s (Ubuntu %s)' % (target_package, target_series.title()) not in tasks_by_name and \
+                        target_series not in lpbug.tags:
+                    continue
+                # Ignore this bug if it is not a 'debs' variant.
+                if ' -proposed tracker' not in lpbug.title:
+                    continue
+                # Ignore this bug if it was created for tests
+                if 'kernel-release-tracking-bug-test' in lpbug.tags:
+                    continue
+                if not s.args.re_run and '<version to be filled>' not in lpbug.title:
+                    continue
+                if s.args.sru_cycle:
+                    cycle = s.bug_to_sru_cycle(lpbug)
+                    if cycle != s.args.sru_cycle and cycle.split('-')[0] != s.args.sru_cycle:
+                        continue
+                found.append((bugid, tasks_by_name, lpbug))
+
+            if len(found) == 0:
+                raise AppError('Cannot find tracking bug matching package %s series %s' % (target_package,target_series))
+                exit(retval)
+            elif len(found) != 1:
+                for (bugid, tasks_by_name, lpbug) in found:
+                    print("FOUND: LP: #{} ({}) {}".format(bugid, lpbug.title, s.bug_to_sru_cycle(lpbug)))
+
+                raise AppError('Multiple tracking bugs matching package %s series %s' % (target_package,target_series))
+                exit(retval)
+
+            (bugid, tasks_by_name, lpbug) = found[0]
+
+            print("LP: #{} ({}) {}".format(bugid, lpbug.title, s.bug_to_sru_cycle(lpbug)))
+
+            # -------------------------------------------------------------------------------------
+            # C H A N G E L O G   W O R K
+
+            # Pull the entire changelog file into a list
+            #
+            if s.args.version is None:
+                target_version = Debian.changelog(local=True)[0]['version']
+            else:
+                target_version = s.args.version
+            title = "%s/%s: %s -proposed tracker" % (target_series, target_package, target_version)
+            print(" -> %s" % title)
+
+            # If we were directed to a version then we will just use that version and write it to the bug.
+            if s.args.version is not None:
+                if s.args.dry_run:
+                    print("Dry Run -- no changes made")
+                else:
+                    lpbug.title = title
+                    lpbug.lp_save()
+                return 0
+
+            cmd = "%s/cranky rmadison" % os.path.join(os.path.dirname(__file__), "..")
+            retval, out = sh("%s %s:%s" % (cmd, target_series, target_package), quiet=True)
+            if retval != 0:
+                raise AppError('Error while checking currently released versions')
+                exit(retval)
+
+            for line in out:
+                f = line.split(' | ')
+                if f[0].lstrip().rstrip() != target_package:
+                    continue
+                pocket_name = f[2].lstrip().rstrip()
+                pocket_vers = f[1].lstrip().rstrip()
+                if pocket_vers == target_version:
+                    raise AppError('Target version(%s) already in %s!' % (target_version, pocket_name))
+
+            if s.args.dry_run:
+                print("Dry Run -- no changes made")
+                return 0
+
+            changelog, changelog_path = Debian.raw_changelog(local=True)
+
+            if s.args.compat:
+                with open(changelog_path, 'r') as f:
+                    thelog = f.readlines()
+                with open(changelog_path, 'w') as f:
+                    f.write(thelog[0])
+                    f.write(thelog[1])
+                    f.write("  * %s (LP: #%s)\n" % (title, bugid))
+                    f.write("\n")
+                    for line in thelog[2:]:
+                        f.write(line)
+
+            else:
+                # Run the changelog looking for the CHANGELOG: template.
+                pre_insertchanges = False
+                stanza = 0
+                for line in changelog:
+                    if len(line) > 0 and line[0] != ' ':
+                        stanza += 1
+                    if stanza == 2:
+                        break
+
+                    if line.startswith('  CHANGELOG: '):
+                        pre_insertchanges = True
+
+                if not pre_insertchanges:
+                    raise AppError("link-to-tracker should be run pre-insertchanges")
+
+                # Identify the debian directory.
+                debian = None
+                for debian_dir in Debian.debian_directories():
+                    if os.path.exists(os.path.join(debian_dir, 'changelog')):
+                        debian = debian_dir
+                if not debian:
+                    raise AppError("no debian directory identified")
+
+                # Record the tacking bug number.
+                tracking = os.path.join(debian, 'tracking-bug')
+                with open(tracking, 'w') as f:
+                    print(bugid, s.bug_to_sru_cycle(lpbug), file=f)
+
+                if s.args.cve:
+                    bug_msg = "{} ({} (LP: #{}))".format(bugid, title, bugid)
+                else:
+                    bug_msg = bugid
+
+                msg = """
+UBUNTU: link-to-tracker: update tracking bug
+
+BugLink: https://bugs.launchpad.net/bugs/{}
+Properties: no-test-build
+                """.strip().format(bug_msg)
+
+                retval, out = sh('git add %s' % (tracking), quiet=True)
+                if retval != 0:
+                    raise AppError('Unable to add tracking bug number')
+
+                retval, out = sh('git commit -s -m "%s" %s' % (msg, tracking), quiet=True)
+                if retval != 0:
+                    raise AppError('Unable to commit new tracking bug number')
+
+            retval = 0
+
+            if not s.args.cve:
+                lpbug.title = title
+                lpbug.lp_save()
+
+                for task_name in tasks_by_name:
+                    if 'prepare-package' not in task_name:
+                        continue
+                    task = tasks_by_name[task_name].lp_task
+                    if task.status == 'Invalid':
+                        continue
+                    task.status = "In Progress"
+                    task.assignee = s.launchpad.me
+                    task.lp_save()
+
+        except AppError as e:
+            print("ERROR: " + str(e), file=sys.stderr)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        if retval > 0:
+            print("")
+            print("Due to the above error(s), this script is unable to continue and is terminating.")
+            print("")
+
+        return retval
+
+if __name__ == '__main__':
+    app_description = '''
+    '''
+
+    app_epilog = '''
+    '''
+
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--source', help='supply source handle directly -- will not attempt to write to local tree')
+    parser.add_argument('--version', help='supply version directly')
+    parser.add_argument('--info',  action='store_true', default=False, help='')
+    parser.add_argument('--debug', action='store_true', default=False, help='')
+    parser.add_argument('--dry-run', action='store_true', default=False, help='')
+    parser.add_argument('--re-run', action='store_true', default=False, help='')
+    parser.add_argument('--sru-cycle', action='store', help='')
+    parser.add_argument('--compat', action='store_true', default=False, help='Use compatibility (old process) mode')
+    parser.add_argument('--cve', action='store_true', default=False, help='CVE mode')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    Clog.color = True
+    if args.debug:
+        log_format = "%(levelname)s - %(message)s"
+        basicConfig(level=DEBUG, format=log_format)
+        Clog.dbg = True
+    elif args.info:
+        log_format = "%(message)s"
+        basicConfig(level=INFO, format=log_format)
+    else:
+        log_format = "%(message)s"
+        basicConfig(level=WARNING, format=log_format)
+
+    exit(Tracking(args).main())
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
