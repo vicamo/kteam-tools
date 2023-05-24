@@ -356,22 +356,57 @@ Properties: no-test-build
 
 if __name__ == '__main__':
     app_description = '''
-    '''
+Find and update the Launchpad tracking bug to reflect the proposed kernel
+version being created, and make a local git commit with a link to it.
+'''
 
     app_epilog = '''
-    '''
+Examples:
+  Running without arguments will try to locate the right tracking bug from the
+  most recent SRU cycle:
+    $ cranky link-tb
 
-    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+  Running with --sru-cycle will limit the search for the tracking bug
+  to bugs tagged with the given SRU cycle tag:
+    $ cranky link-tb --sru-cycle 2019.02.04-1
+
+  Running with --dry-run will still locate the TB but will NOT update
+  the Launchpad bug or the local git tree. Useful for testing:
+    $ cranky link-tb --dry-run -s 2019.01.14-3
+
+  Running with --re-run can be used if "link-tb" has already been
+  previously run for this release. This will overwrite any info in the
+  bug that was added from a previous execution of "link-tb":
+    $ cranky link-tb --re-run
+'''
+
+    parser = ArgumentParser(description=app_description, epilog=app_epilog,
+                            prog="cranky link-tb", formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('--source', help='supply source handle directly -- will not attempt to write to local tree')
     parser.add_argument('--version', help='supply version directly')
-    parser.add_argument('--info',  action='store_true', default=False, help='')
-    parser.add_argument('--debug', action='store_true', default=False, help='')
-    parser.add_argument('--dry-run', action='store_true', default=False, help='')
-    parser.add_argument('--re-run', action='store_true', default=False, help='')
-    parser.add_argument('--sru-cycle', action='store', help='')
+    parser.add_argument('--info',  action='store_true', default=False, help='Set logging level to INFO')
+    parser.add_argument('--debug', action='store_true', default=False, help='Set logging level to DEBUG')
+    parser.add_argument('-d', '--dry-run', action='store_true', default=False,
+                        help='Don\'t actually modify the local tree or the launchpad bug')
+    parser.add_argument('-r', '--re-run', action='store_true', default=False,
+                        help='Run even if the tracking bug shows that link-tb has been run before')
+    parser.add_argument('-s', '--sru-cycle', action='store',
+                        help='Specify the SRU cycle tag to look for when looking for a TB')
     parser.add_argument('--compat', action='store_true', default=False, help='Use compatibility (old process) mode')
-    parser.add_argument('--cve', action='store_true', default=False, help='CVE mode')
+    parser.add_argument('-c', '--cve', action='store_true', default=False,
+                        help='For embargoed CVE cranks. Do not update the tracking bug, update only the ' +
+                        ' local file (\'tracking-bug\') committing with the private BugLink format.')
+
     args = parser.parse_args()
+
+    if args.dry_run:
+        print("(This is a dry-run)")
+    if args.re_run:
+        print("(This is a re-run)")
+    if args.cve:
+        print("(Running in CVE mode)")
+    if args.sru_cycle:
+        print("SRU-cycle: {}".format(args.sru_cycle))
 
     # If logging parameters were set on the command line, handle them
     # here.
