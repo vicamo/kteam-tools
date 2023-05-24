@@ -112,6 +112,8 @@ class PromoteToSecurity(Promoter):
         while not retval:
             if s.task.status not in ('Confirmed'):
                 break
+            if s._kernel_manual_release():
+                break
             if not s._kernel_block() and not s._in_blackout() and s._cycle_ready():
                 break
 
