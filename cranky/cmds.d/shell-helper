@@ -8,6 +8,8 @@ from crl.handle import Handle, HandleError
 
 from ktl.kernel_series import KernelSeries
 
+from ktl.sru_cycle import SruCycle
+
 def tree_package_type(tree):
     ptype = tree.package.type
     return "main" if ptype is None else ptype
@@ -71,6 +73,10 @@ def list_handles(args):
                 continue
             print("{}:{}".format(series.codename, source.name))
 
+def list_cycles(args):
+    for cycle in SruCycle(use_local=True).cycles:
+        print(cycle.name)
+
 def list_variants(args):
     try:
         handle = Handle().lookup_set(args.handle)
@@ -133,6 +139,11 @@ Helper program for getting cranky config and handle data from shell scripts.
                                       help="Print the list of supported handles")
     subparser.set_defaults(func=list_handles)
 
+    # list-cycles subparser
+    subparser = subparsers.add_parser("list-cycles",
+                                      help="Print the list of known SRU cycles")
+    subparser.set_defaults(func=list_cycles)
+
     # list variants subparser
     subparser = subparsers.add_parser("list-variants",
                                       help="Print variants for the given handle")
@@ -147,7 +158,7 @@ Helper program for getting cranky config and handle data from shell scripts.
 
     # Add common subparser arguments
     for name, subparser in subparsers.choices.items():
-        if name in ["list-handles"]:
+        if name in ["list-handles", "list-cycles"]:
             # These subcommands don't require a 'handle' argument
             continue
         subparser.add_argument("handle", nargs='?', default=os.getcwd(),
