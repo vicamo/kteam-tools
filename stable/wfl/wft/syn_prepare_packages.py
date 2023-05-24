@@ -107,7 +107,7 @@ class SynPreparePackages(TaskHandler):
                         state = 'Pending'
                     #if failure == 'building':
                     #    building = True
-                if 'failed' in failures:
+                if 'failed' in failures or 'superseded' in failures:
                     state = 'Stalled'
                 # If something is building elide any depwaits.  These are almost cirtainly waiting
                 # for that build to complete.  Only show them when nothing else is showing.

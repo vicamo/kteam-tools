@@ -767,6 +767,8 @@ class PackageBuild:
             elif s.bug.accept_present("superseded-binaries") and binary.status == "Superseded":
                 cdebug("binary arch={} status={} binary_package_name={} binary_package_version={} component_name={} binary superseded accepted".format(arch_tag, binary.status, binary.binary_package_name, binary.binary_package_version, binary.component_name))
                 status.add('FULLYBUILT')
+            elif binary.status == "Superseded":
+                status.add('SUPERSEDED')
             else:
                 # Anything else is broken.
                 #  Superseded
@@ -821,7 +823,7 @@ class PackageBuild:
                                 'lp-api': upload.self_link,
                                 'last-scanned': s.bug.tracker_instantiated})
                 if queued:
-                    status.add('FULLYBUILT_PENDING')
+                    status.add('QUEUED')
                 else:
                     status.add('PENDING')
 
@@ -829,7 +831,7 @@ class PackageBuild:
                 status.add('BUILDING')
 
         # Pick out the stati in a severity order.
-        for state in ('FAILEDTOBUILD', 'DEPWAIT', 'BUILDING', 'FULLYBUILT_PENDING', 'PENDING', 'FULLYBUILT', 'UNKNOWN'):
+        for state in ('FAILEDTOBUILD', 'SUPERSEDED', 'DEPWAIT', 'BUILDING', 'QUEUED', 'PENDING', 'FULLYBUILT', 'UNKNOWN'):
             if state in status:
                 break
 
@@ -1366,7 +1368,7 @@ class Package():
         cleave(s.__class__.__name__ + '__all_arches_built (%s)' % retval)
         return retval
 
-    __states_present = ['DEPWAIT', 'BUILDING', 'FULLYBUILT', 'PENDING', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']
+    __states_present = ['DEPWAIT', 'BUILDING', 'FULLYBUILT', 'PENDING', 'QUEUED', 'SUPERSEDED', 'FAILEDTOBUILD']
     __pockets_uploaded = ('ppa', 'Signing', 'Proposed', 'Security', 'Updates', 'Release')
     __pockets_signed = ('Proposed', 'Security', 'Updates', 'Release')
 
@@ -1982,8 +1984,10 @@ class Package():
                 missing += 1
             elif status == 'PENDING':
                 failures.setdefault('pending', []).append(pkg)
-            elif status == 'FULLYBUILT_PENDING':
+            elif status == 'QUEUED':
                 failures.setdefault('queued', []).append(pkg)
+            elif status == 'SUPERSEDED':
+                failures.setdefault('superseded', []).append(pkg)
 
         if ignore_all_missing and sources == missing:
             failures = None
@@ -2004,6 +2008,7 @@ class Package():
                     'retry-needed': 'R',
                     'failwait': 'D*',
                     'failed': 'F',
+                    'superseded': 'S',
                 }.get(state, state)
             for member in members:
                 type_state[member] = state_text
