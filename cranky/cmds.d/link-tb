@@ -3,14 +3,14 @@
 import sys
 import os
 
-from datetime                           import datetime, timedelta
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, DEBUG, INFO, WARNING
-from ktl.log                            import center, cleave, cdebug, cinfo, Clog
-from ktl.launchpad                      import Launchpad
-from ktl.git                            import Git
-from ktl.debian                         import Debian
-from ktl.shell                          import sh
+from datetime import datetime, timedelta
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from logging import basicConfig, DEBUG, INFO, WARNING
+from ktl.log import center, cleave, cdebug, Clog
+from ktl.launchpad import Launchpad
+from ktl.git import Git
+from ktl.debian import Debian
+from ktl.shell import sh
 
 # AppError
 #
@@ -26,13 +26,13 @@ class AppError(Exception):
 #
 class WorkflowBugTask(object):
     dryrun = False
-    no_assignments    = False
+    no_assignments = False
     no_status_changes = False
 
     # __init__
     #
     def __init__(s, lp_task, task_name):
-        s.__status   = None
+        s.__status = None
         s.__assignee = None
         setattr(s, 'name', task_name)
         setattr(s, 'importance', lp_task.importance)
@@ -93,14 +93,14 @@ class Tracking():
         retval = {}
 
         cdebug('project: %s' % project)
-        search_tags            = []
+        search_tags = []
         search_tags_combinator = "All"
         # A list of the bug statuses that we care about
         #
-        search_status          = ["New", "In Progress", "Incomplete", "Fix Committed"]
+        search_status = ["New", "In Progress", "Incomplete", "Fix Committed"]
         # The tracking bugs that we are interested in should have been created recently (days).
         #
-        search_since           = datetime.utcnow() - timedelta(days=45)
+        search_since = datetime.utcnow() - timedelta(days=45)
         lp_project = s.launchpad.projects[project]
         tasks = lp_project.searchTasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
 
@@ -142,9 +142,9 @@ class Tracking():
 
         lpbug = s.launchpad.bugs[bugid]
         for task in lpbug.bug_tasks:
-            task_name       = task.bug_target_name
-            # task_name       = task.bug_target_name.replace(project, '').replace('/', '').split(' ', 1)[0]
-            task_name       = task.bug_target_name.replace(project, '').replace('/', '')
+            task_name = task.bug_target_name
+            # task_name = task.bug_target_name.replace(project, '').replace('/', '').split(' ', 1)[0]
+            task_name = task.bug_target_name.replace(project, '').replace('/', '')
             tasks_by_name[task_name] = WorkflowBugTask(task, task_name)
 
         cleave(s.__class__.__name__ + '.create_tasks_by_name_mapping')
@@ -174,7 +174,7 @@ class Tracking():
                 target_series, target_package = s.args.source.split(':')
             else:
                 raise AppError('--source and --version required')
-            #print("{} {}".format(target_series, target_package))
+            # print("{} {}".format(target_series, target_package))
 
             found_tasks = []
             for (bugid, title) in s.trackers(s.project_tracked).items():
@@ -208,13 +208,13 @@ class Tracking():
                 found.append((bugid, tasks_by_name, lpbug))
 
             if len(found) == 0:
-                raise AppError('Cannot find tracking bug matching package %s series %s' % (target_package,target_series))
+                raise AppError('Cannot find tracking bug matching package %s series %s' % (target_package, target_series))
                 exit(retval)
             elif len(found) != 1:
                 for (bugid, tasks_by_name, lpbug) in found:
                     print("FOUND: LP: #{} ({}) {}".format(bugid, lpbug.title, s.bug_to_sru_cycle(lpbug)))
 
-                raise AppError('Multiple tracking bugs matching package %s series %s' % (target_package,target_series))
+                raise AppError('Multiple tracking bugs matching package %s series %s' % (target_package, target_series))
                 exit(retval)
 
             (bugid, tasks_by_name, lpbug) = found[0]
@@ -384,7 +384,7 @@ Examples:
                             prog="cranky link-tb", formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('--source', help='supply source handle directly -- will not attempt to write to local tree')
     parser.add_argument('--version', help='supply version directly')
-    parser.add_argument('--info',  action='store_true', default=False, help='Set logging level to INFO')
+    parser.add_argument('--info', action='store_true', default=False, help='Set logging level to INFO')
     parser.add_argument('--debug', action='store_true', default=False, help='Set logging level to DEBUG')
     parser.add_argument('-d', '--dry-run', action='store_true', default=False,
                         help='Don\'t actually modify the local tree or the launchpad bug')
