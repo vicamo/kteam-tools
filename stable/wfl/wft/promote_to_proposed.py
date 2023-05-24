@@ -235,6 +235,11 @@ class PromoteFromTo(Promoter):
                     s.task.reason = 'Stalled -- review FAILED'
                     break
 
+                elif s.task.status == 'In Progress' and s.new_review_active:
+                    s.task.reason = '{} -- promotion in progress'.format(
+                        s.task.reason_state('Ongoing', timedelta(hours=4)))
+                    break
+
                 elif s.task.status == 'In Progress':
                     s.task.reason = '{} -- review in progress'.format(
                         s.task.reason_state('Ongoing', timedelta(hours=4)))
