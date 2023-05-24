@@ -6,7 +6,7 @@
 #
 
 _cranky() {
-	local first cmd opts
+	local first cmd opts prev
 	local cmds=(
 		"build-sources -h --help -c --current --build-opts HANDLE"
 		"checkout -h --help -r --reference -d --dissociate --depth --cycle HANDLE"
@@ -30,7 +30,7 @@ _cranky() {
 		"review -h --help -p --prev-dsc-dir -o --output"
 		"review-master-changes -h --help"
 		"rmadison -h --help -a --show-all -e --show-extended -p --pocket release updates security proposed HANDLE"
-		"shell-helper -h handle-to-series-source series-codename source-packages-path tree-type tree-main-path list-handles list-variants config"
+		"shell-helper -h handle-to-series-source series-codename source-packages-path tree-type tree-main-path list-handles list-cycles list-variants config"
 		"tag -h --help -v --verbose -f --force"
 		"test-build -h --help -a --arch -c --commit -d --dry-run -f --fail -p --purge -t --target"
 		"update-dependent -h --help --ignore-abi-check"
@@ -43,11 +43,16 @@ _cranky() {
 		done
 	else
 		first="${COMP_WORDS[1]}"
-		for cmd in "${cmds[@]}"; do
-			if [ "$first" = "${cmd%% *}" ]; then
-				opts+=$(_cranky_expand_handles "${cmd#* } ")
-			fi
-		done
+		prev="${COMP_WORDS[COMP_CWORD-1]}"
+		if [ "$first" = "checkout" ] && [ "$prev" = "--cycle" ]; then
+			opts+=$(_cranky_get_info "cycles")
+		else
+			for cmd in "${cmds[@]}"; do
+				if [ "$first" = "${cmd%% *}" ]; then
+					opts+=$(_cranky_expand_handles "${cmd#* } ")
+				fi
+			done
+		fi
 	fi
 
 	_cranky_compat_complete "$opts"
@@ -82,7 +87,7 @@ _cranky_expand_handles() {
 			tags=$(_cranky_get_tags)
 			;;
 		*HANDLE*)
-			handles=$(_cranky_get_handles)
+			handles=$(_cranky_get_info "handles")
 			;;
 	esac
 	s=$@
@@ -96,7 +101,7 @@ _cranky_get_tags() {
 }
 
 _cranky_script_file="$0"
-_cranky_get_handles() {
+_cranky_get_info() {
 	# Cache the results here in the script to avoid the annoying
 	# delay caused by invoking the python interpreter and parsing
 	# the YAML file.
@@ -104,9 +109,23 @@ _cranky_get_handles() {
 	local script_file="${BASH_SOURCE[0]:-$_cranky_script_file}"
 	base_dir="$(dirname "$script_file")"
 	local cache_dir=~/.cache/cranky
-	local cache_file="$cache_dir/handles"
 	local cranky="$base_dir/cranky"
-	local yaml_file="$base_dir/../info/kernel-series.yaml"
+	local cache_file yaml_file cranky_cmd
+	case "$1" in
+		handles)
+			cache_file="$cache_dir/handles"
+			yaml_file="$base_dir/../info/kernel-series.yaml"
+			cranky_cmd="list-handles"
+			;;
+		cycles)
+			cache_file="$cache_dir/cycles"
+			yaml_file="$base_dir/../info/sru-cycle.yaml"
+			cranky_cmd="list-cycles"
+			;;
+		*)
+			return
+			;;
+	esac
 
 	if [ ! -e "$yaml_file" ]; then
 		return
@@ -119,7 +138,7 @@ _cranky_get_handles() {
 		if [ ! -e "$cache_dir" ]; then
 			mkdir -p "$cache_dir"
 		fi
-		"$cranky" shell-helper list-handles > "$cache_file"
+		"$cranky" shell-helper "$cranky_cmd" > "$cache_file"
 	fi
 	tr '\n' ' ' < "$cache_file"
 }
