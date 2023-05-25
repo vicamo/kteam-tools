@@ -56,7 +56,8 @@ class SRUBoard:
         :param name: card name
         :param desc: card description
         :param list_name: optional alternative target state
-        :return: Jira issue ressource.
+        :return: A Jira Issue resource.
+        :rtype: Issue
         """
 
         params = {
