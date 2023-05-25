@@ -18,14 +18,11 @@ from ktl.shell import sh
 # A general exception that can be raised when an error is encountered in the app.
 #
 class AppError(Exception):
-    # __init__
-    #
-    def __init__(self, error=''):
-        self.msg = error
+    pass
 
 # WorkflowBugTask
 #
-class WorkflowBugTask(object):
+class WorkflowBugTask():
     dryrun = False
     no_assignments = False
     no_status_changes = False
@@ -76,8 +73,6 @@ class WorkflowBugTask(object):
 # Tracking
 #
 class Tracking():
-    '''
-    '''
     # __init__
     #
     def __init__(self, args):
@@ -153,7 +148,8 @@ class Tracking():
 
     # bug_to_sru_cycle
     #
-    def bug_to_sru_cycle(self, bug):
+    @staticmethod
+    def bug_to_sru_cycle(bug):
         cycle = '--'
         for tag in bug.tags:
             if tag.startswith('kernel-sru-cycle-'):
@@ -204,19 +200,17 @@ class Tracking():
                     continue
                 if self.args.sru_cycle:
                     cycle = self.bug_to_sru_cycle(lpbug)
-                    if cycle != self.args.sru_cycle and cycle.split('-')[0] != self.args.sru_cycle:
+                    if self.args.sru_cycle not in (cycle, cycle.split('-')[0]):
                         continue
                 found.append((bugid, tasks_by_name, lpbug))
 
             if len(found) == 0:
                 raise AppError('Cannot find tracking bug matching package %s series %s' % (target_package, target_series))
-                exit(retval)
-            elif len(found) != 1:
+
+            if len(found) != 1:
                 for (bugid, tasks_by_name, lpbug) in found:
                     print("FOUND: LP: #{} ({}) {}".format(bugid, lpbug.title, self.bug_to_sru_cycle(lpbug)))
-
                 raise AppError('Multiple tracking bugs matching package %s series %s' % (target_package, target_series))
-                exit(retval)
 
             (bugid, tasks_by_name, lpbug) = found[0]
 
@@ -247,7 +241,6 @@ class Tracking():
             retval, out = sh("%s %s:%s" % (cmd, target_series, target_package), quiet=True)
             if retval != 0:
                 raise AppError('Error while checking currently released versions')
-                exit(retval)
 
             for line in out:
                 f = line.split(' | ')
@@ -424,6 +417,6 @@ Examples:
         log_format = "%(message)s"
         basicConfig(level=WARNING, format=log_format)
 
-    exit(Tracking(args).main())
+    sys.exit(Tracking(args).main())
 
 # vi:set ts=4 sw=4 expandtab syntax=python:
