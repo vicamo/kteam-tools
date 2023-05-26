@@ -75,6 +75,21 @@ class SourceReview(TaskHandler):
             s.task.status = 'Triaged'
             retval = True
 
+        # If we are in confirmed and our prerequisites are no longer valid
+        # pull back to new.
+        status = s.task.status
+        if status == "Confirmed":
+            ready = True
+            for which, task_name, ready_stati in s.prerequisites:
+                cinfo("{}: {} ? {}".format(s.review_task, task_name, ready_stati))
+                if which == SourceReview.IN and s.bug.task_status(task_name) not in ready_stati:
+                    ready = False
+                elif which == SourceReview.NOT_IN and s.bug.task_status(task_name) in ready_stati:
+                    ready = False
+            if not ready:
+                s.task.status = "New"
+                retval = True
+
         status = s.task.status
         if status == 'Confirmed':
             state = s.task.reason_state('Pending', timedelta(hours=12))
