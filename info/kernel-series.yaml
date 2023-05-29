@@ -2816,9 +2816,44 @@ defaults:
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-gcp-6.2:
+            routing: ubuntu/4
+            variants: [ '-edge' ]
+            package-relations: signed-generate
+            packages:
+                linux-gcp-6.2:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/jammy', 'gcp-6.2-next']
+                linux-meta-gcp-6.2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/jammy', 'gcp-6.2']
+                linux-generate-gcp-6.2:
+                    type: generate
+                linux-signed-gcp-6.2:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/jammy', 'gcp-6.2']
+                linux-restricted-modules-gcp-6.2:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/jammy', 'gcp-6.2']
+                linux-restricted-generate-gcp-6.2:
+                    type: lrg
+                linux-restricted-signatures-gcp-6.2:
+                    type: lrs
+            supported: true
+            owner: kmously
+            backport: true
+            derived-from: [ '23.04', 'linux-gcp' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-gcp-5.19:
             routing: ubuntu/4
-            variants: ['--', '-edge' ]
+            variants: ['--']
             package-relations: signed-generate
             packages:
                 linux-gcp-5.19:
