@@ -282,6 +282,7 @@ class GitHandle():
             cwd=repo_dir)
 
         self.fetch_security(fetch=False)
+        self.add_cbd()
 
     def fetch_security(self, fetch=False):
         pkg_type = self.package.type
@@ -300,6 +301,15 @@ class GitHandle():
             self.update_remote("security", security_url, fetch)
         except SystemExit:
             cwarn('Could not add remote "security" {}'.format(security_url))
+
+    def add_cbd(self):
+        pkg_type = self.package.type
+        codename = self.package.series.codename
+        if pkg_type is None:
+            result = run(["getent", "hosts", "cbd"], stdout=PIPE)
+            if result.returncode == 0:
+                self.update_remote("cbd",
+                                   f"cbd:{codename}.git", False)
 
 
 class GitHandleSet():
