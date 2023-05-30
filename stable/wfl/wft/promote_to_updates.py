@@ -76,7 +76,7 @@ class PromoteToUpdates(Promoter):
                 s.task.reason = 'Pending -- prerequisites not ready'
                 break
 
-            if s.bug.debs.older_tracker_in_proposed_any:
+            if s.bug.debs.older_tracker_in_proposed_any and not s.bug.manual_unblock("earlier-spin"):
                s.task.reason = 'Stalled -- tracker for earlier spin active in Proposed'
                break
 
@@ -145,7 +145,7 @@ class PromoteToUpdates(Promoter):
                 cinfo("            Prerequisites not reported available pulling back from Confirmed", 'yellow')
                 pull_back = True
 
-            if s.bug.debs.older_tracker_in_proposed_any:
+            if s.bug.debs.older_tracker_in_proposed_any and not s.bug.manual_unblock("earlier-spin"):
                 cinfo("            Earlier spin active in Proposed pulling back from Confirmed", 'yellow')
                 pull_back = True
 
