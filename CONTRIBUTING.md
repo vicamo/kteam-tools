@@ -4,11 +4,11 @@ Contributions are welcome!
 
 Some guidelines:
 
-- Our minimum Python version is pinned to Bionic which means everything must
-run on **Python 3.6.9**.
+- Our minimum Python version is pinned to Focal which means everything must
+run on **Python 3.8**.
 
-- Dependencies must be installable from apt. Again, we're pinned to Bionic so
-use the highest version available on Bionic.
+- Dependencies must be installable from apt. Again, we're pinned to Focal so
+use the highest version available on Focal.
 
 - All new Python code should have basic test coverage using the unittest
 module.
