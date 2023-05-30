@@ -5,3 +5,4 @@ announce/jira
 announce/mattermostdriver
 deps/
 stable/jira
+*.egg-info
