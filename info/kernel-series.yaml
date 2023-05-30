@@ -3508,7 +3508,7 @@ defaults:
                 #linux-restricted-signatures-intel-iot-realtime:
                 #    type: lrs
             supported: true
-            owner: jianhuilee
+            owner: philcox
             development: false
             backport: false
             derived-from: [ '22.04', 'linux-realtime' ]
@@ -3530,7 +3530,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-uc22-intel-iot-realtime/+git/jammy', 'realtime']
             supported: false 
-            owner: jianhuilee
+            owner: philcox
             development: false
             snaps:
                 intel-iot-realtime-kernel:
