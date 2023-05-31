@@ -4987,7 +4987,7 @@ defaults:
             packages:
                 linux-havana:
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/linux-havana', 'master-next']
-            supported: false
+            supported: true
             owner: wenchien
             private: true
             derived-from: ['20.04', 'linux']
@@ -5001,8 +5001,8 @@ defaults:
                 linux-signed-uc20-havana:
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/linux-signed-uc20-havana']
                     type: signed
-            development: true
-            supported: false
+            development: false
+            supported: true
             owner: wenchien
             private: true
             snaps:
