@@ -2645,7 +2645,7 @@ defaults:
 
         linux-azure-fde:
             routing: classic-fde-ubuntu/4
-            variants: ['--']
+            variants: ['--', 'lts-22.04']
             packages:
                 linux-azure-fde:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-fde']
@@ -2687,7 +2687,7 @@ defaults:
                 linux-signed-azure-fde-5.19:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/jammy', 'azure-fde-5.19']
-            supported: true
+            supported: false
             owner: timg-tpi
             derived-from: [ '22.04', 'linux-azure-5.19' ]
             swm:
@@ -2709,7 +2709,7 @@ defaults:
 
         linux-azure-5.19:
             routing: ubuntu/4
-            variants: [ '--' ]
+            variants: [ '-edge' ]
             package-relations: signed-generate
             packages:
                 linux-azure-5.19:
@@ -2729,7 +2729,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure-5.19:
                     type: lrs
-            supported: true
+            supported: false
             owner: timg-tpi
             backport: true
             derived-from: [ '22.10', 'linux-azure' ]
@@ -2779,6 +2779,38 @@ defaults:
                         arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
+        linux-azure-fde-6.2:
+            routing: classic-fde-ubuntu/4
+            variants: ['-edge']
+            packages:
+                linux-azure-fde-6.2:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-fde-6.2']
+                linux-meta-azure-fde-6.2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/jammy', 'azure-fde-6.2']
+                linux-signed-azure-fde-6.2:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/jammy', 'azure-fde-6.2']
+            supported: false
+            owner: timg-tpi
+            derived-from: [ '22.04', 'linux-azure-6.2' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
+                testing-ppas: ['ppa:canonical-kernel-team/ubuntu/ppa']
+            testing:
+                flavours:
+                    azure:
+                        meta-pkg: linux-azure-fde-6.2-edge
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks:
+              - boot-testing
+              - automated-testing
+              - certification-testing
+              - verification-testing
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
