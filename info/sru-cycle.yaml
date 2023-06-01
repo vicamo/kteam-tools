@@ -25,12 +25,21 @@
 '2023.05.15':
     release-date: '2023-06-12'
 
+'d2023.05.01':
+    complete: true
+
+'d2023.04.26':
+    complete: true
+
 'd2023.04.24':
     complete: true
 
 '2023.04.17':
     release-date: '2023-05-15'
     stream: 1
+
+'d2023.04.14':
+    complete: true
 
 'd2023.04.06':
     complete: true
@@ -42,7 +51,13 @@
     release-date: '2023-04-17'
     stream: 2
 
+'d2023.03.06':
+    complete: true
+
 'd2023.03.03':
+    complete: true
+
+'d2023.02.27':
     complete: true
 
 '2023.02.27':
