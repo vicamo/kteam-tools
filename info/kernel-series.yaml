@@ -2588,13 +2588,13 @@ defaults:
                 linux-signed-aws-6.2:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/jammy', 'aws-6.2']
-                linux-restricted-modules-aws-6.2:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/jammy', 'aws-6.2']
-                linux-restricted-generate-aws-6.2:
-                    type: lrg
-                linux-restricted-signatures-aws-6.2:
-                    type: lrs
+#                linux-restricted-modules-aws-6.2:
+#                    type: lrm
+#                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/jammy', 'aws-6.2']
+#                linux-restricted-generate-aws-6.2:
+#                    type: lrg
+#                linux-restricted-signatures-aws-6.2:
+#                    type: lrs
             supported: true
             owner: timg-tpi
             backport: true
