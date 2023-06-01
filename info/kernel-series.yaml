@@ -6587,9 +6587,9 @@ defaults:
                 linux-meta-denver:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-meta-denver']
-            supported: false
+            supported: true
             owner: wenchien
-            development: true
+            development: false
             derived-from: [ '20.04', 'linux-raspi' ]
             swm:
                 kernel-testing: false
@@ -6603,9 +6603,9 @@ defaults:
                 linux-signed-uc20-denver:
                     repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-signed-uc20-denver']
                     type: signed
-            supported: false
+            supported: true
             owner: wenchien
-            development: true
+            development: false
             snaps:
                 avnet-avt-iiotg20-kernel:
                     repo: [ 'git://git.launchpad.net/~canonical-hwe-team/denver/+git/denver-kernel-snaps', 'denver']
