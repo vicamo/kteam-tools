@@ -8,6 +8,7 @@ from ktl.kernel_series import KernelSeries
 parser = ArgumentParser()
 parser.add_argument("--security", action="store_true", help="include security PPAs in list")
 parser.add_argument("--regular", action="store_true", help="include build PPAs in list")
+parser.add_argument("--lrm-spinner", action="store_true", help="include lrm-spinner PPAs in list")
 args = parser.parse_args()
 
 ks = KernelSeries()
@@ -66,3 +67,6 @@ def route_pair_key(pair):
 
 for build_ref, private_ref in sorted(route_pairs, key=route_pair_key):
     print(build_ref, private_ref)
+
+if args.lrm_spinner:
+    print("ppa:canonical-kernel-private/ubuntu/ngd-updates", "ppa:canonical-kernel-private/ubuntu/ngd-updates")

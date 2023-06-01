@@ -9,7 +9,7 @@ if [ "$#" -eq 0 ]; then
 	set - '--regular'
 fi
 if [ "$1" = "all" ]; then
-	set - '--regular' '--security'
+	set - '--regular' '--security' '--lrm-spinner'
 fi
 
 echo "II: $@ ..."
