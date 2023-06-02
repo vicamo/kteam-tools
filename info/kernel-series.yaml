@@ -959,13 +959,13 @@ defaults:
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/mantic']
-                #linux-restricted-modules:
-                #    type: lrm
-                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/mantic']
-                #linux-restricted-generate:
-                #    type: lrg
-                #linux-restricted-signatures:
-                #    type: lrs
+                linux-restricted-modules:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/mantic']
+                linux-restricted-generate:
+                    type: lrg
+                linux-restricted-signatures:
+                    type: lrs
             owner: arighi
             backport: false
             swm:
