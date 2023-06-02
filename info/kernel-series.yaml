@@ -2793,7 +2793,7 @@ defaults:
                 linux-signed-azure-fde-6.2:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/jammy', 'azure-fde-6.2']
-            supported: false
+            supported: true
             owner: timg-tpi
             derived-from: [ '22.04', 'linux-azure-6.2' ]
             swm:
