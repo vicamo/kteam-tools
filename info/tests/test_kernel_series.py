@@ -57,3 +57,18 @@ class TestKernelSeriesB(TestKernelSeriesCore):
             if series_name == "defaults":
                 continue
             self.assertRegex(series_name, r"^[0-9]{1,2}\.[0-9]{2}$", msg=f"malformed series name")
+
+class TestKernelSeriesSource(TestKernelSeriesCore):
+
+    def test_source_variants(self):
+        self.require_data_dict()
+        for series_name, series in self.data.items():
+            if series_name == "defaults":
+                continue
+            if "sources" not in series:
+                continue
+            for source in series["sources"].values():
+                if "variants" not in source:
+                    continue
+                for variant in source["variants"]:
+                    self.assertRegex(variant, r"^-[a-z0-9.\-]+$", msg="malformed variant name")
