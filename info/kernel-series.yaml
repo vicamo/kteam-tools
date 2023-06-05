@@ -1002,10 +1002,9 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-lowlatency:
                     type: lrs
-            owner: p-pisati
-            #derived-from: ["23.10', 'linux']
+            owner: xnox
+            derived-from: ['23.10', 'linux']
             backport: true
-            derived-from: ["23.04", "linux-lowlatency"]
             swm:
                 kernel-testing: true
             testing:
