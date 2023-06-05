@@ -248,10 +248,6 @@ insertion of changelog entries is done by the `cranky close` stage.
 $ cranky open
 ```
 
-**Note** `cranky start` is still available but `cranky open` usage is
-preferable. Use `cranky start --force` if you find any blocking issues with
-`cranky open`.
-
 **Note** regarding private kernels: One of the steps performed by `cranky open`
 is to download and update the ABI files based on the last release. Those files
 are obtained from a list of repositories, which is configured via
