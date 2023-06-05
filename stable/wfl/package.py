@@ -964,7 +964,11 @@ class Package():
         # archives to real archive objects.
         s._routing = {}
         s.routing_mode = 'None'
-        if s.source is not None and s.source.routing:
+        if s.source is not None:
+            try:
+                routing = s.source.routing
+            except ValueError as e:
+                raise PackageError(e.args[0])
             for (key, destination) in (
                 ('ppa', 'build'),
                 ('build', 'build'),
@@ -976,7 +980,7 @@ class Package():
                 ('Security', 'security'),
                 ('Release', 'release'),
                 ):
-                routes = s.source.routing.lookup_destination(destination)
+                routes = routing.lookup_destination(destination)
                 if routes is None:
                     continue
                 route_list = []
