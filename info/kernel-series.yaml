@@ -1175,34 +1175,6 @@ defaults:
                         clouds: ['ibm']
             invalid-tasks: [ 'certification-testing' ]
 
-        linux-kvm:
-            routing: ubuntu/4
-            variants: ['--']
-            package-relations: signed-generate
-            packages:
-                linux-kvm:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/mantic', 'master-next']
-                linux-meta-kvm:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/mantic']
-                linux-generate-kvm:
-                    type: generate
-                linux-signed-kvm:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/mantic']
-            owner: arighi
-            #derived-from: ['23.10', 'linux']
-            backport: true
-            derived-from: ['23.04', 'linux-kvm']
-            swm:
-                kernel-testing: true
-            testing:
-                flavours:
-                    kvm:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['kvm']
-            invalid-tasks: [ 'certification-testing' ]
-
         linux-oracle:
             routing: ubuntu/4
             variants: ['--']
