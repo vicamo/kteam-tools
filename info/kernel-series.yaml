@@ -6019,6 +6019,34 @@ defaults:
                         clouds: ['ibm']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-ibm-5.15:
+            routing: ubuntu/4
+            variants: [ '-edge' ]
+            package-relations: signed-generate
+            packages:
+                linux-ibm-5.15:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/focal', 'ibm-5.15-next']
+                linux-meta-ibm-5.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/focal', 'ibm-5.15']
+                linux-generate-ibm-5.15:
+                    type: generate
+                linux-signed-ibm-5.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/focal', 'ibm-5.15']
+            supported: true
+            owner: john-cabaj
+            backport: true
+            derived-from: [ '22.04', 'linux-ibm' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    ibm:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['ibm']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-kvm:
             routing: ubuntu/4
             variants: ['--']
