@@ -6395,7 +6395,7 @@ defaults:
                 linux-restricted-signatures-aws-fips:
                     type: lrs
             supported: true
-            owner: philcox
+            owner: magalilemes
             private: true
             derived-from: ['20.04', 'linux-aws']
             backport: true # use local-mangle to keep it in sync with linux-aws
@@ -8809,7 +8809,7 @@ defaults:
                 linux-restricted-signatures-fips:
                     type: lrs
             supported: true
-            owner: philcox
+            owner: magalilemes
             private: true
             derived-from: ['18.04', 'linux']
             testing:
