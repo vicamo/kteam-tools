@@ -6,10 +6,11 @@ import argparse
 import logging
 import yaml
 
-from crl.handle import Handle, HandleError
 from ktl.log import Clog, cerror, cinfo
 from ktl.utils import run_command
 from ktl.swm_status import SwmStatus
+
+from crl.handle import Handle, HandleError
 
 class SnapcraftDataError(Exception):
     pass
@@ -215,10 +216,10 @@ Example: cranky promote-snap pi-kernel
         cerror('Nothing to do!')
         sys.exit(2)
 
-    for snapname in todo:
-        for arch in todo[snapname]:
-            for rev in todo[snapname][arch]:
-                chanlist = ','.join(todo[snapname][arch][rev])
+    for snapname, arches in todo.items():
+        for arch, revs in arches.items():
+            for rev, channels in revs.items():
+                chanlist = ','.join(channels)
                 cmd = 'snapcraft release {} {} {}'.format(snapname, rev, chanlist)
                 if args.dry_run:
                     cinfo('DRYRUN: ' + cmd)
