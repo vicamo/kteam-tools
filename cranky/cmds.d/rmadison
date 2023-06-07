@@ -24,11 +24,11 @@ def pocket_order(val):
     """
     Return a sort order number based on the pocket name
     """
-    if "-proposed" in val[2]:
+    if val.endswith("-proposed"):
         return 3
-    if "-updates" in val[2]:
+    if val.endswith("-updates"):
         return 2
-    if "-security" in val[2]:
+    if val.endswith("-security"):
         return 1
     return 0
 
