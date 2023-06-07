@@ -9,77 +9,7 @@ import yaml
 from crl.handle import Handle, HandleError
 from ktl.log import Clog, cerror, cinfo
 from ktl.utils import run_command
-
-class SwmDataError(Exception):
-    pass
-
-class SwmDataElement():
-    def __init__(self):
-        self.__data = {
-            'bugid': None,
-            'master': None,
-            'cycle': None,
-            'series': None,
-            'source': None,
-            'version': None,
-            'task': None,
-            'status': None,
-            'extinfo': None,
-        }
-
-    def __getitem__(self, key):
-        if key not in self.__data:
-            raise SwmDataError('invalid key')
-        return self.__data[key]
-
-    def __setitem__(self, key, value):
-        if key not in self.__data:
-            raise SwmDataError('invalid key')
-        self.__data[key] = value
-
-    def __repr__(self):
-        return str(self.__data)
-
-class SwmData():
-    def __init__(self, stream=None):
-        self.__data = {}
-        if stream is not None:
-            self.load(stream)
-
-    def __repr__(self):
-        return str(self.__data)
-
-    def __iter__(self):
-        for key in self.__data:
-            yield key
-
-    def __getitem__(self, key):
-        if key not in self.__data:
-            raise SwmDataError('invalid key')
-        return self.__data[key]
-
-    def load(self, stream):
-        for line in stream:
-            if not line.startswith('LP:'):
-                continue
-            flds = line.split(None, 11)
-
-            newdata = SwmDataElement()
-            newdata['bugid'] = int(flds[1][1:])
-            if flds[3] != '--':
-                newdata['master'] = int(flds[3][1:])
-            newdata['cycle'] = flds[4]
-            newdata['series'] = flds[5]
-            newdata['source'] = flds[6]
-            newdata['version'] = flds[7]
-            newdata['task'] = flds[8]
-            newdata['status'] = flds[9]
-            if len(flds) > 10:
-                newdata['extinfo'] = flds[11]
-            else:
-                newdata['extinfo'] = ''
-
-            self.__data[len(self.__data)] = newdata
+from ktl.swm_status import SwmStatus
 
 class SnapcraftDataError(Exception):
     pass
@@ -229,49 +159,57 @@ Example: cranky promote-snap pi-kernel
             cerror(e)
             sys.exit(1)
 
-    cmd = os.path.join(os.path.dirname(__file__), '..', '..', 'stable', 'swm-ls')
-    rc, output = run_command(cmd)
-    if rc != 0:
-        cerror('Failed to retrieve workflow data (RC={})'.format(rc))
-        sys.exit(1)
+    # Generate the list of snaps that are not in expected channels from
+    # SWM data
+    snaps = []
+    status = SwmStatus()
+    for bug_data in status.trackers.values():
+        snapname = bug_data.get("snap-name")
+        reason = bug_data.get("reason")
+        if not snapname or not reason:
+            continue
 
-    # Main app run
-    swm = SwmData(output)
+        series = bug_data["series"]
+        source = bug_data["source"]
+
+        for task, phase_status in reason.items():
+            if "snap-release-to-" in task:
+                # snap <name> not in expected channel(s): <dest> ...
+                # <dest>: arch=<arch>:channel=<channel>/<risk>:rev=<revision>
+                parts = phase_status.partition(" not in expected channel(s): ")
+                if parts[2]:
+                    snaps.append([series, source, snapname, parts[2]])
+
+    # Walk through the snap candidates and collect the ones we specified
     todo = {}
-    for idx in swm:
-        if 'snap-release-to-' in swm[idx]['task']:
-            # snap <name> not in expected channel(s): <dest> ...
-            # <dest>: arch=<arch>:channel=<channel>/<risk>:rev=<revision>
-            info = swm[idx]['extinfo']
-            parts = info.partition(' not in expected channel(s): ')
-            series = swm[idx]['series']
-            source, snapname = swm[idx]['source'].split('/')
-            snaphandle = '{}:{}:{}'.format(series, source, snapname)
-            if snaphandle not in snap_handles:
+    for series, source, snapname, destination in snaps:
+        snaphandle = '{}:{}:{}'.format(series, source, snapname)
+        if snaphandle not in snap_handles:
+            continue
+        for dst in destination.split():
+            # arch=<arch>:channel=<channel>/<risk>:rev=<revision>
+            snapvars = {}
+            for subpart in dst.split(':'):
+                name, value = subpart.split('=')
+                snapvars[name] = value
+            arch = snapvars['arch']
+            channel = snapvars['channel']
+            if 'latest/' in channel:
+                channel = channel.split('/')[1]
+            if 'rev' not in snapvars:
+                cerror('# {}/{} needs to be produced'.format(snapname, channel))
                 continue
-            for dst in parts[2].split():
-                snapvars = {}
-                for subpart in dst.split(':'):
-                    name, value = subpart.split('=')
-                    snapvars[name] = value
-                arch = snapvars['arch']
-                channel = snapvars['channel']
-                if 'latest/' in channel:
-                    channel = channel.split('/')[1]
-                if 'rev' not in snapvars:
-                    cerror('# {}/{} needs to be produced'.format(snapname, channel))
-                    continue
-                rev = snapvars['rev']
-                if rev == 'None':
-                    cerror('# {}/{} needs to be produced'.format(snapname, channel))
-                    continue
-                if scd[snapname].data[arch].get(channel, [None, None])[1] == rev:
-                    cinfo('# {}: {}(rev={}) already on {}'.format(arch, snapname, rev, channel))
-                    continue
-                todo.setdefault(snapname, {})
-                todo[snapname].setdefault(arch, {})
-                todo[snapname][arch].setdefault(rev, [])
-                todo[snapname][arch][rev].append(channel)
+            rev = snapvars['rev']
+            if rev == 'None':
+                cerror('# {}/{} needs to be produced'.format(snapname, channel))
+                continue
+            if scd[snapname].data[arch].get(channel, [None, None])[1] == rev:
+                cinfo('# {}: {}(rev={}) already on {}'.format(arch, snapname, rev, channel))
+                continue
+            todo.setdefault(snapname, {})
+            todo[snapname].setdefault(arch, {})
+            todo[snapname][arch].setdefault(rev, [])
+            todo[snapname][arch][rev].append(channel)
 
     if len(todo) == 0:
         cerror('Nothing to do!')
