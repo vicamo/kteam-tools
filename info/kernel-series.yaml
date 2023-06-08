@@ -9747,7 +9747,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-trusty']
             supported: true
-            owner: kleber-souza
+            owner: cascardo
             testing:
                 flavours:
                     generic:
