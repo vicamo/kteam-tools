@@ -468,6 +468,12 @@ for bid in sorted(swm_trackers):
             row_class.append('phase-prepare')
             break
 
+    for task_name in ('signing-signoff', 'kernel-signoff'):
+        status = __task_status(b, task_name)
+        if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            row_class.append('phase-team-signoffs')
+            break
+
     row_class.append('cycle-' + cycle)
 
     for status in status_list:
@@ -552,6 +558,7 @@ for bid in sorted(swm_trackers):
                                         <option value="prepare">prepare</option>
                                         <option value="reviews">reviews</option>
                                         <option value="peer-reviews">peer-reviews</option>
+                                        <option value="team-signoffs">team-signoffs</option>
                                         <option value="deb-promotions">deb-promotions</option>
                                         <option value="snap-promotions">snap-promotions</option>
                                         <option value="testing">testing</option>
