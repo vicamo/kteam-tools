@@ -24,6 +24,10 @@ def pocket_order(val):
     """
     Return a sort order number based on the pocket name
     """
+    if "ppa:" in val:
+        return 5
+    if val.endswith("-proposed#2"):
+        return 4
     if val.endswith("-proposed"):
         return 3
     if val.endswith("-updates"):
@@ -97,7 +101,8 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
                     pocket_name = "%s (ppa:%s)" % (series, dest_n)
 
                 # The basic data that we always display
-                route_data = [(package, pocket_order(pocket_name)), package, package_version, pocket_name, "source"]
+                route_data = [(package, pocket_order(pocket_name), pocket_name),
+                              package, package_version, pocket_name, "source"]
 
                 if show_ext:
                     # Pull additional (non-rmadison) data from launchpad
