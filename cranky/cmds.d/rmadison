@@ -61,12 +61,12 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
             dest_n = destination.name
 
             if show_pocket:
-                if dest != show_pocket and dest_n != show_pocket:
+                if show_pocket not in (dest, dest_n):
                     # Skip it if a pocket was provided but the route doesn't match
                     continue
 
             elif ((dest not in ("release", "security", "updates", "proposed") and
-                 not show_all)):
+                   not show_all)):
                 # This is a non-standard PPA and we didn't ask for it, so
                 # skip it
                 continue
