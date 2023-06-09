@@ -47,7 +47,10 @@ All of these checks can be run as a pre-commit hook using [pre-commit](https://p
 Setting up pre-commit is straight forward:
 
 ```bash
-pip install .[nag,testing]
+# Required for python-apt
+apt install libapt-pkg-dev
+
+pip install .[dev]
 pre-commit install
 ```
 This will install runtime libraries, linters, and test dependencies. Once
@@ -81,6 +84,7 @@ A: PEP8 has changed a bit. Try adding [magic commas](https://black.readthedocs.i
 
 Configuration changes are applied to `pyproject.toml`. This allows us to run
 tools like black directly or from pre-commit and still produce the same result.
+
 ### Manual Checks
 
 Each tool can be run directly from your system or explicitly through pre-commit.
