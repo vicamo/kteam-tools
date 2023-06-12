@@ -1219,7 +1219,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/mantic']
             owner: esmil
-            derived-from: ['23.10', 'linux']
+            derived-from: ['23.04', 'linux-riscv']
             backport: true
             swm:
                 kernel-testing: true
