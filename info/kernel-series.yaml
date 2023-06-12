@@ -3781,6 +3781,37 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
+        linux-nvidia-tegra-igx:
+            routing: nvidia-ubuntu/4
+            variants: ['--']
+            package-relations: signed-generate
+            packages:
+                linux-nvidia-tegra-igx:
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/jammy-linux-nvidia-tegra-igx', 'main-next']
+                linux-meta-nvidia-tegra-igx:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/jammy-linux-meta-nvidia-tegra-igx', 'main']
+                linux-generate-nvidia-tegra-igx:
+                    type: generate
+                linux-signed-nvidia-tegra-igx:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/jammy-linux-signed-nvidia-tegra-igx', 'main']
+            owner: jacobmartin
+            development: true
+            supported: false
+            derived-from: [ '22.04', 'linux-realtime' ]
+            swm:
+                kernel-testing: false
+            testing:
+                flavours:
+                    nvidia-tegra-igx:
+                        arches: ['arm64']
+                        clouds: ['metal']
+                    nvidia-tegra-igx-rt:
+                        arches: ['arm64']
+                        clouds: ['metal']
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+
         linux-iot:
             variants: [ '--' ]
             packages:
@@ -6870,6 +6901,38 @@ defaults:
                         arches: ['arm64']
                         clouds: ['metal']
                     nvidia-tegra-rt:
+                        arches: ['arm64']
+                        clouds: ['metal']
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+
+        linux-nvidia-tegra-igx-5.15:
+            routing: nvidia-ubuntu/4
+            variants: ['--']
+            package-relations: signed-generate
+            packages:
+                linux-nvidia-tegra-igx-5.15:
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/focal-linux-nvidia-tegra-igx-5.15', 'main-next']
+                linux-meta-nvidia-tegra-igx-5.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/focal-linux-meta-nvidia-tegra-igx-5.15', 'main']
+                linux-generate-nvidia-tegra-igx-5.15:
+                    type: generate
+                linux-signed-nvidia-tegra-igx-5.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/focal-linux-signed-nvidia-tegra-igx-5.15', 'main']
+            owner: jacobmartin
+            development: true
+            supported: false
+            backport: true
+            derived-from: [ '22.04', 'linux-nvidia-tegra-igx' ]
+            swm:
+                kernel-testing: false
+            testing:
+                flavours:
+                    nvidia-tegra-igx:
+                        arches: ['arm64']
+                        clouds: ['metal']
+                    nvidia-tegra-igx-rt:
                         arches: ['arm64']
                         clouds: ['metal']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
