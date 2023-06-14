@@ -191,6 +191,7 @@ class VerificationTesting(TaskHandler):
                     spam_needed = state
                 summary.append("{}:{}".format(state, overall[state]))
 
+        cdebug("verification_testing: detail {}".format(' '.join(human_state)))
         cinfo("verification_testing: {}".format(' '.join(summary)))
 
         cleave(self.__class__.__name__ + '._verification_status retval={}'.format(spam_needed))
