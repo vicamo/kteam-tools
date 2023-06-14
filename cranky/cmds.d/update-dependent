@@ -60,7 +60,7 @@ fi
 "$C" fix
 
 # Get main package details (distro, version, ABI, ...)
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC1091 # do not make shellcheck validate this env
 . "${main_path}"/debian/debian.env
 main_changelog="${main_path}/${DEBIAN}"/changelog
 main_distro=$(dpkg-parsechangelog -l "${main_changelog}" -S Distribution)
