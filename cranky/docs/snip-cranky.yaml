@@ -1,7 +1,7 @@
 #
 # Configuration file for the cranky toolchain.
 #
-# Copy to ~/.cranky or ~/.cranky.yaml and modify as you like. Note that a
+# Copy to ~/.config/cranky/cranky.yaml and modify as you like. Note that a
 # configuration file is not necessary since all options can also be specified
 # using commandline arguments. Commandline arguments take precedence over
 # options specified in this file.

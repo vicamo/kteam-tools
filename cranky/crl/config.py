@@ -2,6 +2,7 @@
 
 import os
 import sys
+import warnings
 import yaml
 
 
@@ -15,11 +16,23 @@ class Config:
             raise ValueError("supply only one of filename and data")
 
         if data is None and filename is None:
-            for path in (os.path.join(os.environ['HOME'], '.cranky.yaml'),
-                         os.path.join(os.environ['HOME'], '.cranky')):
+            warn = False
+            for path in (
+                    os.path.join(os.getenv('XDG_CONFIG_HOME',
+                                           os.path.join(os.environ['HOME'],
+                                                        '.config')),
+                                 'cranky', 'cranky.yaml'),
+                    os.path.join(os.environ['HOME'], '.cranky.yaml'),
+                    os.path.join(os.environ['HOME'], '.cranky')
+            ):
                 if os.path.exists(path):
                     filename = path
                     break
+
+                warn = True
+
+            if filename is not None and warn:
+                warnings.warn('cranky config other than $XDG_CONFIG_HOME/cranky/cranky.yaml is deprecated')
 
         if data is None and filename is not None and os.path.exists(filename):
             with open(filename) as yfd:
@@ -37,12 +50,12 @@ class Config:
         if self.lookup("package-path.base-path", None) is not None:
             warn = True
             print("Deprecated 'package-path.base-path' option found in "
-                  ".cranky config file.", file=sys.stderr)
+                  "cranky config file.", file=sys.stderr)
             print("You should rename it to 'base-path'.", file=sys.stderr)
         if self.lookup("test-build.logdir", None) is not None:
             warn = True
             print("Deprecated 'test-build.logdir' option found in "
-                  ".cranky config file.", file=sys.stderr)
+                  "cranky config file.", file=sys.stderr)
             print("You should rename it to 'test-build.log-path' and make it "
                   "relative to 'base-path'.", file=sys.stderr)
         if warn:
