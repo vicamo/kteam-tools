@@ -1,0 +1,27 @@
+[project]
+name = "ckt-cranky"
+version = "0.0.1"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+  "ckt-ktl",
+  "launchpadlib",
+  "pyyaml",
+]
+
+[tool.setuptools.package-data]
+# Yikes
+ckt_cranky = [
+  "cranky",
+  "cmds.d/*",
+  "fixes.d/*", "fixes.d/*/*",
+  "master/*",
+  "master-helpers/*",
+]
+
+[project.scripts]
+cranky = "ckt_cranky.cranky:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

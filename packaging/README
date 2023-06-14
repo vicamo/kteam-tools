@@ -1,0 +1,30 @@
+This directory contains the packaging files for various kteam-tools libraries,
+files and utilities.
+
+
+Build a package
+===============
+
+Install the build frontend (one-time setup)
+$ pip3 install build
+
+Build - for example - the ckt-cranky package
+$ cd ckt-cranky
+$ python3 -m build
+
+
+Install a package (from source)
+===============================
+
+Create a virtual environment (one-time setup)
+$ python3 -m venv venv
+
+Enter the virtual environment
+$ . venv/bin/activate
+
+Install - for example - the ckt-info package into the virtual environment
+$ cd ckt-info
+$ pip3 install .
+
+Leave the virtual environment
+$ deactivate
