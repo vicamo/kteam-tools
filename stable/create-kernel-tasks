@@ -664,6 +664,15 @@ Examples:
             cerror('The provided date is not a Monday when not using --devel!')
             sys.exit(3)
 
+    # Sanity check the cycle qualifier:
+    #  <none> - SRU cycle
+    #       d - development cycle
+    #       s - Security cycle
+    #       c - CRD cycle (private)
+    if not args.cycle[0].isdigit() and args.cycle[0] not in "dsc":
+        cerror('The provided cycle qualifier is not recognised!')
+        sys.exit(2)
+
     # For now the source list only contains primary sources and derivatives
     # which do not cross series boundaries. When selection was not using
     # handles or source names, then do a run now to include everything which
