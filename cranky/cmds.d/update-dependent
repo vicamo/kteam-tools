@@ -1,28 +1,29 @@
-#!/bin/bash -eu
+#!/bin/bash -u
 #
 # Update a dependent package (-meta, -signed, ...)
 #
 
+# Run update-depdent process. Returns 0 on success.
 function update_dependent()
 {
 	local ignore_abi_check="${1}"
 
 	if ! [ -d debian ] || ! [ -f update-version ] ; then
 		echo "This is not a dependent kernel package repo" >&2
-		exit 1
+		return 1
 	fi
 
 	# Sanity check: The repo must be clean
 	if [ -n "$(git status --porcelain)" ] ; then
 		echo "Repo is not clean" >&2
-		exit 1
+		return 1
 	fi
 
 	# Get the path to the main package
 	main_path=$("$C" shell-helper tree-main-path .)
 	if [ -z "${main_path}" ] ; then
 		echo "Main kernel source path not found" >&2
-		exit 1
+		return 1
 	fi
 
 	# Run cranky fix as step 1.
@@ -50,7 +51,7 @@ function update_dependent()
 	# Sanity check: The distros must match
 	if [ "${main_distro}" != "${dep_distro}" ] ; then
 		echo "Incorrect main package distro: ${main_distro} (!= ${dep_distro})" >&2
-		exit 1
+		return 1
 	fi
 
 	# Sanity check: The main package ABI version must not be lower
@@ -59,7 +60,7 @@ function update_dependent()
 		echo "Main package ABI version is lower: ${main_abi} (< ${dep_abi})" >&2
 		if [ -z "$ignore_abi_check" ]; then
 			echo "Use --ignore-abi-check to proceed anyway."
-			exit 1
+			return 1
 		fi
 		upload_bump=1
 	fi
@@ -86,12 +87,12 @@ function update_dependent()
 
 	if [ -z "${commit_cmd}" ] ; then
 		echo "Commit line not found in output of ./update-version" >&2
-		exit 1
+		return 1
 	fi
 
 	# Commit the changelog
 	sh -c "${commit_cmd}"
-
+	return 0
 }
 
 function usage()
