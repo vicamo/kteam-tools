@@ -1,0 +1,38 @@
+#!/bin/bash -eu
+
+function usage()
+{
+  # Note: Arguments must match those in cranky tag
+	cat <<EOF
+Usage: ${P:-$(basename "$0")} [-h] [-f] [-v]
+
+Tag all packages of current Ubuntu kernel git tree set with the correct version
+tag.
+
+Optional arguments:
+  -h, --help     Show this help message and exit.
+  -f, --force    Tag the topmost commit even if its subject is not in the
+                 expected format. Also replace a tag if it already exists.
+  -v, --verbose  Show extra info when running.
+EOF
+	exit 2
+}
+
+for arg in "$@" ; do
+	case "${arg}" in
+		-h|--help)
+			usage
+			;;
+	esac
+done
+
+readarray -t package_paths < <("$C" shell-helper source-packages-path)
+if [ "${#package_paths[@]}" -eq 0 ] ; then
+	echo "error: no packages found" >&2
+	exit 1
+fi
+
+for path in "${package_paths[@]}"; do
+	cd "${path}" || exit 1
+	"$C" tag "$@"
+done

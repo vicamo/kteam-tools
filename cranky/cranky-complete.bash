@@ -32,6 +32,7 @@ _cranky() {
 		"rmadison -h --help -a --show-all -e --show-extended -p --pocket release updates security proposed HANDLE"
 		"shell-helper -h handle-to-series-source series-codename source-packages-path tree-type tree-main-path list-handles list-cycles list-variants config"
 		"tag -h --help -v --verbose -f --force"
+		"tags -h --help -v --verbose -f --force"
 		"test-build -h --help -a --arch -c --commit -d --dry-run -f --fail -o --outdir -p --purge -t --target"
 		"update-dependent -h --help --ignore-abi-check"
 		"update-snap -h --help --dry-run -u --updates -t --no-tags"
