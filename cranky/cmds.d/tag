@@ -15,8 +15,7 @@ Tag the current Ubuntu kernel git tree with the correct version tag.
 
 Optional arguments:
   -h, --help     Show this help message and exit.
-  -f, --force    Tag the topmost commit even if its subject is not in the
-                 expected format. Also replace a tag if it already exists.
+  -f, --force    Replace a tag if it already exists.
   -v, --verbose  Show extra info when running.
 EOF
 	exit 2
@@ -99,12 +98,7 @@ if [ "$(git log --format=%s -1)" != "UBUNTU: $new_tag_unfixed" ] ; then
 	echo "error: Topmost commit subject does not include the right content" >&2
 	echo "Closing commit subject should be:" >&2
 	echo "   UBUNTU: $new_tag_unfixed" >&2
-	if [ $force -eq 0 ] ; then
-		echo "Use -f, --force to tag the commit anyways" >&2
-		exit 1
-	else
-		echo "(--force specified - continuing anyway)"
-	fi
+	exit 1
 else
 	debug_log "commit subject looks OK"
 fi
