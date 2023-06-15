@@ -1,0 +1,58 @@
+#!/bin/bash -eu
+# update annotations scripts in debian/scripts/misc
+
+# shellcheck source=./cranky/fixes.d/lib.sh
+. "$(dirname "$0")/lib.sh"
+
+# Only applies to primary trees.
+case "$FIX_TYPE" in
+main)	;;
+*)	fix_verbose "not a main package"; exit 0 ;;
+esac
+
+if [ ! -d debian/scripts/ ] ; then
+	echo "${PWD} does not look like a kernel directory"
+	exit 1
+fi
+
+if [ ! -e debian/debian.env ] ; then
+	echo "${PWD} does not look like an Ubuntu kernel directory"
+	exit 1
+fi
+
+. debian/debian.env
+
+# Extract release version from the changelog
+if [ ! -e "$(which ubuntu-distro-info)" ]; then
+	echo "package distro-info is not installed, please install it"
+	exit 1
+fi
+
+release_name=$(dpkg-parsechangelog -S Distribution -l "${DEBIAN}/changelog")
+release_ver=$(ubuntu-distro-info --series="${release_name}" -r | awk '{print $1}')
+if [ -z "${release_ver}" ]; then
+	echo "failed to determine release version from ${DEBIAN}/changelog"
+	exit 1
+fi
+
+# Only applies to releases >= 22.04
+if dpkg --compare-versions "${release_ver}" lt '22.04'; then
+	fix_verbose "nothing to do"
+	exit 0
+fi
+
+HERE=$(here)
+declare -a HELPERS
+while IFS= read -r file; do
+	script=${file//$HERE/}
+	script=${script//\/\.\.\/annotations-tools/debian/scripts/misc}
+	dir_script=$(dirname "$script")
+	mkdir -p "$dir_script"
+	cp -p "$file" "$script"
+	HELPERS+=("$script")
+done < <(find "${HERE}/../annotations-tools" -type f -and -not -name ".gitignore" -and -not -name "README.rst")
+
+msg="UBUNTU: [Packaging] update annotations scripts"
+commit "$msg" "${HELPERS[@]}"
+
+exit 0
