@@ -33,7 +33,7 @@ class SruCycleSpinEntry:
             sdate = datetime.strptime(sdate, '%Y-%m-%d').date()
         else:
             sdate = cycle
-            if sdate.startswith('d') or sdate.startswith('s'):
+            if not sdate[0].isdigit():
                 sdate = sdate[1:]
             sdate = datetime.strptime(sdate, '%Y.%m.%d').date()
         self._start_date = sdate
