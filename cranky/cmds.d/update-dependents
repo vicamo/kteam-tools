@@ -1,0 +1,98 @@
+#!/bin/bash -u
+#
+# Update all dependent packages (-meta, -signed, ...)
+#
+
+function usage()
+{
+	cat <<EOF
+Usage: cranky update-dependents [-h]
+
+Update all dependent packages (-meta, -signed, ...).
+
+Runs 'cranky update-dependent' against all packages in this tree set. This
+command may be run from any package in a tree set. All updates are completed as
+part of a transaction so that if any package fails to update, all packages will
+be restored to their original HEAD state.
+
+Note: Arguments must match update-dependent
+
+Optional arguments:
+  -h, --help            Show this help text and exit.
+  --ignore-abi-check    Ignore ABI check (when preparing re-spins).
+
+Examples:
+  $ cranky update-dependents
+	  Iterate over all dependent packages of jammy:linux-oracle and run
+	  cranky update-dependent against them.
+EOF
+	exit 2
+}
+
+for arg in "$@" ; do
+	case "${arg}" in
+		-h|--help)
+			usage
+			;;
+	esac
+done
+
+# Make the update-dependent operation transactional
+# If any one tree fails to update, revert them all to their
+# starting states which is their current HEAD reference.
+declare -A tree_states
+any_failed=
+
+readarray -t package_paths < <("$C" shell-helper source-packages-path)
+if [ "${#package_paths[@]}" -eq 0 ] ; then
+	echo "error: no packages found" >&2
+	exit 1
+fi
+
+for path in "${package_paths[@]}"; do
+	# Skip the main package
+	tree_type=$("$C" shell-helper tree-type "${path}")
+	if [[ "$tree_type" == "main" ]] ; then
+		echo "Skipping main package: $path"
+		continue
+	fi
+
+	# Avoid missing packages, they make error handling much harder
+	if [ ! -d "${path}" ] ; then
+		echo "Package path not found ${path}" >&2
+		any_failed=1
+		continue
+	fi
+
+	# Capture HEAD as our rollback point
+	tree_states["${path}"]=$(git -C "$path" rev-parse HEAD)
+
+	# Run update process from the package's tree path
+	(
+		echo "Updating dependent: ${path}"
+		cd "${path}" || return 1
+		"$C" update-dependent "$@"
+	);
+	rc=$?
+	if [[ $rc -ne 0 ]] ; then
+		echo "ERROR: Failed to update dependent ${path}" >&2
+		any_failed=1
+	fi
+done
+
+if [ -n "$any_failed" ] ; then
+	# Roll back all trees to their starting points
+	echo "Rolling back update..." >&2
+
+	for path in "${!tree_states[@]}" ; do
+		sha="${tree_states[$path]}"
+		echo "Reverting ${path} to $sha" >&2
+		git -C "${path}" reset --hard "$sha"
+	done
+
+	echo "Rollback complete" >&2
+	echo "ERROR: One or more packages could not be updated" >&2
+	exit 1
+fi
+
+echo "SUCCESS: update complete"

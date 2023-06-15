@@ -106,6 +106,8 @@ This script checks that there is an 'update-version' script in the current
 directory and executes it. It parses the output of 'update-version' to extract
 the 'git commit' line and runs that command to commit the changes.
 
+Note: Arguments must match update-dependents
+
 Optional arguments:
   -h, --help            Show this help text and exit.
   --ignore-abi-check    Ignore ABI check (when preparing re-spins).
@@ -117,7 +119,7 @@ while [ $# -gt 0 ] ; do
 	case "${1}" in
 		-h|--help)
 			usage
-			exit
+			exit 2
 			;;
 		--ignore-abi-check)
 			ignore_abi_check=1
