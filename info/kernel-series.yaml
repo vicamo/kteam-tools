@@ -4852,7 +4852,7 @@ defaults:
                 linux-nv-dgx-modules-signed:
                     type: extra2
                     repo: ['git://git.launchpad.net/~canonical-kernel-dgx/+git/focal-linux-nv-dgx-modules-signed']
-            supported: true
+            supported: false
             owner: ian-may
             private: true
             derived-from: [ '20.04', 'linux' ]
