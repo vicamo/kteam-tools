@@ -12,7 +12,7 @@ class SigningConfigStreamLevel:
     def __init__(self, stream, level, variant, reference):
 
         self.stream = stream
-        self.level = level
+        self.level = int(level)
         self.variant = variant
 
         self.reference = reference
@@ -70,7 +70,10 @@ class SigningConfig:
         if "/" not in stream_level:
             raise ValueError("Invalid stream/level format")
         stream, level = stream_level.split("/", 1)
-        if ":" in level:
+        if "+" in level:
+            level, variant = level.split("+")
+
+        elif ":" in level:
             level, variant = level.split(":")
 
         elif "/" in level:
