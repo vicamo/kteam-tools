@@ -136,7 +136,7 @@ def update_cycle_info(args):
         if date.isoweekday() != 1:
             raise SRUBoardError('Date provided is not a Monday')
 
-        release_date = date + timedelta(days=21)
+        release_date = date + timedelta(days=28)
         new_entry = "\'{0}\':\n    release-date: \'{1}\'".format(cycle,
                                                                  release_date.strftime('%Y-%m-%d'))
 
