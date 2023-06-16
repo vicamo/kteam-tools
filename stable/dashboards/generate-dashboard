@@ -18,6 +18,7 @@ from mako.template                      import Template
 from mako.exceptions                    import RichTraceback
 
 from ktl.sru_cycle                      import SruCycle
+from ktl.swm_status                     import SwmStatus
 
 # CmdlineError
 #
@@ -189,6 +190,8 @@ class GenerateDashboard():
                     file_name = self.dash['data'][section]
                     if file_name == "SruCycle":
                         data[section] = SruCycle()
+                    elif file_name == "SwmStatus":
+                        data[section] = SwmStatus()
                     else:
                         data[section] = data_load(file_name)
             except FileDoesntExist as e:
