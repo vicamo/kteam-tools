@@ -77,6 +77,7 @@ Optional arguments:
                               after the first build error rather than continue
                               building the remaining architectures.
   -h, --help                  Show this help message and exit.
+  -o, --outdir DIRECTORY      Pull the artifacts into DIRECTORY/<arch>.
   -p, --purge                 Purge the remote build directory after the build.
   -t, --target TARGET         Build target TARGET instead of 'binary'.
 
@@ -110,6 +111,7 @@ dry_run=0
 fail=0
 purge=0
 target=binary
+outdir=
 
 while [ "${#}" -gt 0 ] ; do
 	case "${1}" in
@@ -129,6 +131,10 @@ while [ "${#}" -gt 0 ] ; do
 			;;
 		-h|--help)
 			usage
+			;;
+		-o|--outdir)
+			shift
+			outdir=${1}
 			;;
 		-p|--purge)
 			purge=1
@@ -310,6 +316,12 @@ for arch in "${arches[@]}" ; do
 		# Get the build result from the logfile
 		if grep -q ' build completed OK\. ' "${logfile}" 2>/dev/null ; then
 			result[${arch}]="PASSED"
+			if [ -n "${outdir}" ] ; then
+				if ! [ -d "${outdir}/${arch}" ] ; then
+					mkdir -p "${outdir}/${arch}"
+				fi
+				scp -q "${host}:${rbuilddir}/*.deb"  "${outdir}/${arch}/"
+			fi
 		else
 			result[${arch}]="FAILED"
 
