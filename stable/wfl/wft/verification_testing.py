@@ -185,7 +185,7 @@ class VerificationTesting(TaskHandler):
         # Find the most concerning state.
         spam_needed = 'none'
         summary = []
-        for state in ('failed', 'needed', 'reverted', 'private', 'verified'):
+        for state in ('missing', 'failed', 'needed', 'reverted', 'private', 'verified'):
             if state in overall:
                 if spam_needed == 'none':
                     spam_needed = state
