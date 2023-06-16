@@ -7570,6 +7570,7 @@ defaults:
                     lowlatency:
                         arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            invalid-tasks: [ 'automated-testing' ]
 
         linux-hwe:
             routing: ubuntu/2
@@ -7665,6 +7666,7 @@ defaults:
                     lowlatency:
                         arches: ['amd64', 'i386', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
+            invalid-tasks: [ 'automated-testing' ]
 
         linux-hwe-edge:
             routing: ubuntu/2
@@ -7733,7 +7735,7 @@ defaults:
                     dell300x:
                         arches: ['amd64']    # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'regression-testing', 'boot-testing' ]
+            invalid-tasks: [ 'automated-testing', 'regression-testing', 'boot-testing' ]
 
         linux-raspi2:
             packages:
@@ -7848,7 +7850,7 @@ defaults:
             supported: true
             owner: smb
             derived-from: [ '18.04', 'linux' ]
-            invalid-tasks: [ 'boot-testing', 'certification-testing', 'regression-testing' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'certification-testing', 'regression-testing' ]
             testing:
                 flavours:
                    snapdragon:
@@ -7932,7 +7934,7 @@ defaults:
                     aws:
                         arches: ['amd64']        # test system arch names
                         clouds: ['aws']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws-5.0:
             routing: ubuntu/2
@@ -8012,7 +8014,7 @@ defaults:
                     aws:
                         arches: ['amd64']        # test system arch names
                         clouds: ['aws']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws-edge:
             packages:
@@ -8092,7 +8094,7 @@ defaults:
                     azure:
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-fips:
@@ -8193,7 +8195,7 @@ defaults:
                     azure:
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-edge:
@@ -8275,7 +8277,7 @@ defaults:
                     gcp:
                         arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-gcp-fips:
             routing: fips-pro/3
@@ -8362,7 +8364,7 @@ defaults:
                     gcp:
                         arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['gcp']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-ibm-5.4:
             routing: ubuntu/4
@@ -8390,7 +8392,7 @@ defaults:
                     ibm:
                         arches: ['amd64']        # test system arch names
                         clouds: ['ibm']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-gke-4.15:
             routing: ubuntu/2
@@ -8551,7 +8553,7 @@ defaults:
                     gke:
                         arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['gke']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-gkeop-5.4:
             routing: ubuntu/2
@@ -8617,7 +8619,7 @@ defaults:
                     kvm:
                         arches: ['amd64']        # test system arch names
                         clouds: ['kvm']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-bluefield:
             routing: prerelease
@@ -8738,7 +8740,7 @@ defaults:
                     oracle:
                         arches: ['amd64']        # test system arch names
                         clouds: ['oracle']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-oracle-5.0:
             routing: ubuntu/2
@@ -8822,7 +8824,7 @@ defaults:
                     oracle:
                         arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['oracle']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-fips:
             routing: fips-pro/3
