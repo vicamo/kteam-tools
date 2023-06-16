@@ -355,7 +355,7 @@ def cycle_key(cycle):
 cycles = {}
 cadence = {}
 owners = {}
-swm_trackers = data['swm'].get('trackers', data['swm'])
+swm_trackers = data['swm'].trackers
 for bid in sorted(swm_trackers):
     b = swm_trackers[bid]
 
