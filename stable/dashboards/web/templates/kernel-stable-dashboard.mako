@@ -590,12 +590,17 @@ for bid in sorted(swm_trackers):
                                                 <td colspan="7">&nbsp;</td>
                                             </tr>
                                         % endif
-                                        <tr class="entry-any owner-any phase-any cycle-${cycle}">
-                                            <td colspan="7" style="background: #ffffc0; font-size: 140%; ">${cycle}</td>
-                                        </tr>
                                         <%
                                             cycle_first = False
+                                            sru_cycle = data['sru-cycle'].lookup_cycle(cycle)
+                                            if sru_cycle is not None:
+                                                cycle_notes = "{} to {}".format(sru_cycle.start_date, sru_cycle.release_date)
+                                            else:
+                                                cycle_notes = ""
                                         %>
+                                        <tr class="entry-any owner-any phase-any cycle-${cycle}">
+                                            <td colspan="5" style="background: #ffffc0; font-size: 140%;">${cycle}</td><td colspan="2" style="background: #ffffc0; font-size: 140%; text-align: right;">${cycle_notes}</td>
+                                        </tr>
                                         % for rls in sorted(releases, reverse=True):
                                             <%
                                                 codename = releases[rls].capitalize()
