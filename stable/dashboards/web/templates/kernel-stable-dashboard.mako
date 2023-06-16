@@ -606,10 +606,7 @@ for bid in sorted(swm_trackers):
                                                 codename = releases[rls].capitalize()
                                                 row_number = 0
                                             %>
-                                            % if releases[rls] in cadence[cycle]:
-                                            <tr class="entry-any owner-any phase-any cycle-${cycle}">
-                                                <td colspan="7" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
-                                            </tr>
+                                            % if releases[rls] in cadence[cycle] and len(cadence[cycle][releases[rls]]) > 0:
                                                 % for pkg in sorted(cadence[cycle][releases[rls]]):
                                                     % for bug in cadence[cycle][releases[rls]][pkg]:
                                                         <%
@@ -628,6 +625,11 @@ for bid in sorted(swm_trackers):
                                                                 row_number += 1
                                                             row_style = ' background: #f6f6f6;' if row_number % 2 == 0 else ''
                                                         %>
+                                                        % if row_number == 1 and bug['bug'] is not None:
+                                                            <tr class="entry-any owner-any phase-any cycle-${cycle}">
+                                                                <td colspan="7" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
+                                                            </tr>
+                                                        % endif
                                                         <tr class="${bug['row-class']}" style="line-height: 100%;${row_style}">
                                                             <td>&nbsp;</td>
                                                             <td width="120" align="right" class="${bug['master-class']}">${cell_version}</td>
