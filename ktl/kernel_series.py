@@ -6,10 +6,22 @@ try:
 except ImportError:
     from urllib2 import urlopen
 
+import json
+import io
 import os
 import yaml
+from gzip import GzipFile
 
 from .signing_config import SigningConfig
+
+
+# XXX: python2/3 compatibility.
+def gzip_decompress(data):
+    """Decompress a gzip compressed string in one shot.
+    Return the decompressed string.
+    """
+    with GzipFile(fileobj=io.BytesIO(data)) as f:
+        return f.read()
 
 
 class KernelRoutingEntryDestination:
@@ -713,11 +725,18 @@ class KernelSeriesUrl:
         if data is None:
             response = urlopen(url)
             data = response.read()
+            if data[0:2] == b'\x1f\x8b':
+                data = gzip_decompress(data)
             if isinstance(data, bytes):
                 data = data.decode('utf-8')
 
         if isinstance(data, dict):
             self._data = data
+        # RFC8259: Implementations that generate only objects or arrays where a
+        # JSON text is called for will be interoperable in the sense that all
+        # implementations will accept these as conforming JSON texts.
+        elif data[0] in "{[":
+            self._data = json.loads(data)
         else:
             self._data = yaml.safe_load(data)
 
@@ -801,7 +820,7 @@ class KernelSeriesCycles:
                 if cycle is not None:
                     url = 'https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h=' + cycle
                 else:
-                    url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
+                    url = 'https://kernel.ubuntu.com/info/kernel-series.json.gz'
         if url not in self.by_url:
             #print("URL", kwargs["url"])
             #print("KWARGS", kwargs)
