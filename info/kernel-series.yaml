@@ -7581,17 +7581,15 @@ defaults:
     esm: true
     routing-table: *routing-table
     routing-map:
-        esm: stable-unsigned
+        esm: stable-unsigned # XXX
         default: stable-unsigned
-        ubuntu/2: stable-ubuntu/2
-        wip-ubuntu/2: stable-wip-ubuntu/2
-        prerelease-ubuntu/2: stable-prerelease-ubuntu/2
-        ubuntu/4: stable-ubuntu/4
-        wip-ubuntu/4: stable-wip-ubuntu/4
-        prerelease-ubuntu/4: stable-prerelease-ubuntu/4
+        unsigned: stable-unsigned
+        signed/2: stable-ubuntu/2
+        signed/4: stable-ubuntu/4
+        fips-signed/4: fips-pro/3
     sources:
         linux:
-            routing: ubuntu/4
+            routing: signed/4
             versions: ['4.15.0']
             package-relations: signed-generate
             packages:
@@ -7636,7 +7634,7 @@ defaults:
             invalid-tasks: [ 'automated-testing' ]
 
         linux-hwe:
-            routing: ubuntu/2
+            routing: signed/2
             versions: ['5.3.0']
             variants: []
             packages:
@@ -7664,7 +7662,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.0:
-            routing: ubuntu/2
+            routing: signed/2
             versions: [ '5.0.0' ]
             # variants: [ '-gkeop-5.0' ]
             variants: []
@@ -7693,7 +7691,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.4:
-            routing: ubuntu/4
+            routing: signed/4
             variants: [ '-hwe-18.04', '-hwe-18.04-edge' ]
             # transitionals: [ '-oem-osp1', '-oem' ]
             package-relations: signed-generate
@@ -7732,7 +7730,7 @@ defaults:
             invalid-tasks: [ 'automated-testing' ]
 
         linux-hwe-edge:
-            routing: ubuntu/2
+            routing: signed/2
             packages:
                 linux-hwe-edge:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-edge']
@@ -7774,7 +7772,7 @@ defaults:
             supported: false
 
         linux-dell300x:
-            routing: ubuntu/4
+            routing: signed/4
             variants: ['--']
             package-relations: signed-generate
             packages:
@@ -7921,7 +7919,7 @@ defaults:
                         clouds: ['metal']
 
         linux-oem:
-            routing: ubuntu/2
+            routing: signed/2
             packages:
                 linux-oem:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/bionic', 'oem-next']
@@ -7943,7 +7941,7 @@ defaults:
                         clouds: ['metal']
 
         linux-oem-osp1:
-            routing: ubuntu/2
+            routing: signed/2
             packages:
                 linux-oem-osp1:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem-osp1/+git/bionic', 'oem-next']
@@ -7966,7 +7964,7 @@ defaults:
                         clouds: ['metal']
 
         linux-aws:
-            routing: ubuntu/4
+            routing: signed/4
             variants: ['-lts-18.04']
             package-relations: signed-generate
             packages:
@@ -8000,7 +7998,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws-5.0:
-            routing: ubuntu/2
+            routing: signed/2
             packages:
                 linux-aws-5.0:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-5.0-next']
@@ -8021,7 +8019,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.3:
-            routing: ubuntu/2
+            routing: signed/2
             variants: []
             packages:
                 linux-aws-5.3:
@@ -8045,7 +8043,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.4:
-            routing: ubuntu/4
+            routing: signed/4
             variants: ['--', '-edge']
             package-relations: signed-generate
             packages:
@@ -8097,7 +8095,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
-            routing: ubuntu/2
+            routing: signed/2
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'master-next']
@@ -8124,7 +8122,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-4.15:
-            routing: ubuntu/4
+            routing: signed/4
             variants: [ '-lts-18.04' ]
             package-relations: signed-generate
             packages:
@@ -8161,7 +8159,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-fips:
-            routing: fips-pro/3
+            routing: fips-signed/4
             package-relations: signed-generate
             packages:
                 linux-azure-fips:
@@ -8197,7 +8195,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.3:
-            routing: ubuntu/2
+            routing: signed/2
             variants: []
             packages:
                 linux-azure-5.3:
@@ -8225,7 +8223,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.4:
-            routing: ubuntu/4
+            routing: signed/4
             variants: [ '--', '-edge' ]
             package-relations: signed-generate
             packages:
@@ -8262,7 +8260,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-edge:
-            routing: ubuntu/2
+            routing: signed/2
             packages:
                 #linux-azure-edge:
                 #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-edge-next']
@@ -8288,7 +8286,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp:
-            routing: ubuntu/2
+            routing: signed/2
             packages:
                 linux-gcp:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'master-next']
@@ -8312,7 +8310,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-4.15:
-            routing: ubuntu/4
+            routing: signed/4
             variants: ['-lts-18.04']
             package-relations: signed-generate
             packages:
@@ -8343,7 +8341,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-gcp-fips:
-            routing: fips-pro/3
+            routing: fips-signed/4
             package-relations: signed-generate
             packages:
                 linux-gcp-fips:
@@ -8370,7 +8368,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-gcp-5.3:
-            routing: ubuntu/2
+            routing: signed/2
             variants: []
             packages:
                 linux-gcp-5.3:
@@ -8395,7 +8393,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.4:
-            routing: ubuntu/4
+            routing: signed/4
             variants: ['--', '-edge']
             package-relations: signed-generate
             packages:
@@ -8430,7 +8428,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-ibm-5.4:
-            routing: ubuntu/4
+            routing: signed/4
             variants: ['--', '-edge']
             package-relations: signed-generate
             packages:
@@ -8458,7 +8456,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-gke-4.15:
-            routing: ubuntu/2
+            routing: signed/2
             variants: ['--','-4.15']
             packages:
                 linux-gke-4.15:
@@ -8498,7 +8496,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.0:
-            routing: ubuntu/2
+            routing: signed/2
             variants: ['-5.0']
             packages:
                 linux-gke-5.0:
@@ -8539,7 +8537,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.3:
-            routing: ubuntu/2
+            routing: signed/2
             variants: ['-5.3']
             packages:
                 linux-gke-5.3:
@@ -8580,7 +8578,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.4:
-            routing: ubuntu/2
+            routing: signed/2
             variants: ['-5.4']
             packages:
                 linux-gke-5.4:
@@ -8619,7 +8617,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-gkeop-5.4:
-            routing: ubuntu/2
+            routing: signed/2
             variants: ['-5.4']
             packages:
                 linux-gkeop-5.4:
@@ -8772,7 +8770,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-oracle:
-            routing: ubuntu/4
+            routing: signed/4
             variants: [ '-lts-18.04' ]
             package-relations: signed-generate
             packages:
@@ -8806,7 +8804,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-oracle-5.0:
-            routing: ubuntu/2
+            routing: signed/2
             packages:
                 linux-oracle-5.0:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.0-next']
@@ -8830,7 +8828,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.3:
-            routing: ubuntu/2
+            routing: signed/2
             variants: []
             packages:
                 linux-oracle-5.3:
@@ -8855,7 +8853,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.4:
-            routing: ubuntu/4
+            routing: signed/4
             variants: [ '--', '-edge' ]
             package-relations: signed-generate
             packages:
@@ -8890,7 +8888,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-fips:
-            routing: fips-pro/3
+            routing: fips-signed/4
             package-relations: signed-generate
             packages:
                 linux-fips:
@@ -8949,7 +8947,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-aws-fips:
-            routing: fips-pro/3
+            routing: fips-signed/4
             package-relations: signed-generate
             packages:
                 linux-aws-fips:
