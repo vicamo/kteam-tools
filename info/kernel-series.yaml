@@ -1634,8 +1634,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/lunar', 'starfive']
             owner: esmil
-            #derived-from: ['23.04', 'linux']
-            derived-from: ['22.10', 'linux-starfive']
+            derived-from: ['23.04', 'linux']
             swm:
                 kernel-testing: true
             testing:
