@@ -55,3 +55,22 @@ class TestSruCycleB(TestSruCycleCore):
         self.require_data_dict()
         for cycle_name in self.data:
             self.assertRegex(cycle_name, r"^[dsc]?[0-9]{4}\.[0-9]{2}\.[0-9]{2}$", "malformed cycle name")
+
+    def test_data_entry_dict(self):
+        self.require_data_dict()
+        for cycle_name, cycle_data in self.data.items():
+            self.assertIsInstance(cycle_data, dict, "cycle {} not a dictionary")
+
+    def test_data_entry_content(self):
+        self.require_data_dict()
+        for cycle_name, cycle_data in self.data.items():
+            with self.subTest(msg="cycle " + cycle_name):
+                for cycle_key, cycle_val in cycle_data.items():
+                    if cycle_key in ("start-date", "release-date", "cutoff-date"):
+                        self.assertRegex(cycle_val, r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "{} malformed, expecting YYYY-MM-DD".format(cycle_key))
+                    elif cycle_key == "complete":
+                        self.assertIsInstance(cycle_val, bool, "{} is not boolean".format(cycle_key))
+                    elif cycle_key == "stream":
+                        self.assertIsInstance(cycle_val, int, "{} is not an integer".format(cycle_key))
+                    else:
+                        raise AssertionError("key {} invalid".format(cycle_key))
