@@ -187,8 +187,11 @@ if __name__ == '__main__':
 
         if cycle not in jira_cycles:
             print("{}: new sprint ...".format(cycle))
-            start_date = datetime.strptime(cycle, '%Y.%m.%d').replace(tzinfo=timezone.utc, microsecond=0)
-            end_date = start_date + timedelta(days=21)
+            sru_cycle = sc.lookup_cycle(cycle)
+            if sru_cycle is None:
+                continue
+            start_date = sru_cycle.start_date
+            end_date = sru_cycle.release_date
             new_sprint = jira.create_sprint(name=cycle, board_id=board.id, startDate=start_date.isoformat(), endDate=end_date.isoformat())
             jira_cycles[cycle] = new_sprint
 
