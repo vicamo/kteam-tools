@@ -5,6 +5,8 @@ from datetime                           import datetime, timedelta, timezone
 from textwrap                           import fill
 import yaml
 import re
+from urllib.error                       import HTTPError
+from ktl.kernel_series                  import KernelSeries
 from ktl.utils                          import date_to_string, string_to_date
 from .log                               import cdebug, center, cleave, cinfo, cerror
 from .package                           import Package, PackageError
@@ -177,6 +179,8 @@ class WorkflowBug():
         cinfo('                     series: "{}"'.format(s.series), 'blue')
         cinfo('      is development series: {}'.format(s.is_development_series), 'blue')
 
+        cinfo("           KernelSeries url: {}".format(s.kernel_series.url))
+
         if s.debs is not None:
             for p in s.debs.pkgs:
                 cinfo('                        package: "{}"'.format(p), 'blue')
@@ -214,7 +218,13 @@ class WorkflowBug():
 
     @property
     def kernel_series(self):
-        return ctx.ks
+        cycle = self.sru_spin.cycle
+        if cycle[0] == "d":
+            cycle = None
+        ks = KernelSeries.for_cycle(cycle)
+        if ks is None:
+            ks = KernelSeries.tip()
+        return ks
 
     @property
     def sc(self):

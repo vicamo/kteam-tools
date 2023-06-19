@@ -1020,7 +1020,7 @@ class Package():
 
     @property
     def kernel_series(self):
-        return ctx.ks
+        return self.bug.kernel_series
 
     @property
     def monitor_debs(s):
