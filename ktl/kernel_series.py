@@ -701,41 +701,25 @@ class KernelSeriesEntry:
         return KernelSourceEntry(self._ks, self, source_key, sources[source_key])
 
 
-# KernelSeries
+# KernelSeriesUrl
 #
-class KernelSeries:
-    _data_txt = {}
+class KernelSeriesUrl:
 
-    @classmethod
-    def __load_once(cls, url):
-        if url not in cls._data_txt:
+    def __init__(self, url=None, data=None, use_local=False, xc=None):
+        if data is None and url is None:
+            raise ValueError("expecting url or data")
+
+        self.url = url
+        if data is None:
             response = urlopen(url)
             data = response.read()
-            if not isinstance(data, str):
+            if isinstance(data, bytes):
                 data = data.decode('utf-8')
-            cls._data_txt[url] = data
-        return cls._data_txt[url]
 
-    def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False), xc=None):
-        self._url = 'https://git.launchpad.net/~canonical-kernel/' \
-            '+git/kteam-tools/plain/info/kernel-series.yaml'
-        try:
-            import ckt_info
-            _local = ckt_info.abspath("info/kernel-series.yaml")
-        except ImportError:
-            _local = os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                   '..', 'info', 'kernel-series.yaml'))
-        self._url_local = 'file://' + _local
-
-        if data or url:
-            if url:
-                response = urlopen(url)
-                data = response.read()
-            if not isinstance(data, str):
-                data = data.decode('utf-8')
+        if isinstance(data, dict):
+            self._data = data
         else:
-            data = self.__load_once(self._url_local if use_local else self._url)
-        self._data = yaml.safe_load(data)
+            self._data = yaml.safe_load(data)
 
         self._xc = None
         self._xc_local = use_local
@@ -788,6 +772,31 @@ class KernelSeries:
         if series and series not in self._data:
             return None
         return KernelSeriesEntry(self, series, self._data[series])
+
+
+class KernelSeries(KernelSeriesUrl):
+
+    def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False), xc=None):
+        self._url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
+        self._url_local = self.url_local()
+
+        if data is None and url is None:
+            if use_local:
+                url = self._url_local
+            else:
+                url = self._url
+
+        super().__init__(url, data, use_local, xc)
+
+    @staticmethod
+    def url_local():
+        try:
+            import ckt_info
+            url = ckt_info.abspath("info/kernel-series.yaml")
+        except ImportError:
+            url = os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                                   '..', 'info', 'kernel-series.yaml'))
+        return 'file://' + url
 
 
 if __name__ == '__main__':
