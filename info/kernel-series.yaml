@@ -7581,11 +7581,11 @@ defaults:
     esm: true
     routing-table: *routing-table
     routing-map:
-        esm: stable-unsigned # XXX
-        default: stable-unsigned
-        unsigned: stable-unsigned
-        signed/2: stable-ubuntu/2
-        signed/4: stable-ubuntu/4
+        esm: esm2 # XXX
+        default: esm2
+        unsigned: esm2
+        signed/2: esm2-pro/2
+        signed/4: esm2-pro/3
         fips-signed/4: fips-pro/3
     sources:
         linux:
