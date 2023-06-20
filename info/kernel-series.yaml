@@ -3794,7 +3794,7 @@ defaults:
                 linux-signed-nvidia-tegra:
                     type: signed
                     repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-signed-jammy', 'main']
-            owner: ian-may
+            owner: jacobmartin
             development: true
             supported: false
             derived-from: [ '22.04', 'linux-realtime' ]
@@ -6917,7 +6917,7 @@ defaults:
                 linux-signed-nvidia-tegra-5.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-signed-focal-5.15', 'main']
-            owner: ian-may
+            owner: jacobmartin
             development: true
             supported: false
             backport: true
