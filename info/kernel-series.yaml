@@ -1274,10 +1274,10 @@ defaults:
             variants: ['--']
             packages:
                 linux-laptop:
-                    repo: ['git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux/+git/mantic', 'linux-laptop']
+                    repo: ['git://git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux/+git/mantic', 'linux-laptop']
                 linux-meta-laptop:
                     type: meta
-                    repo: ['git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux-meta/+git/mantic', 'linux-laptop']
+                    repo: ['git://git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux-meta/+git/mantic', 'linux-laptop']
             derived-from: ['23.04', 'linux']
             backported: false
             supported: false
@@ -1669,10 +1669,10 @@ defaults:
             variants: ['--']
             packages:
                 linux-laptop:
-                    repo: ['git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux/+git/lunar', 'linux-laptop']
+                    repo: ['git://git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux/+git/lunar', 'linux-laptop']
                 linux-meta-laptop:
                     type: meta
-                    repo: ['git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux-meta/+git/lunar', 'linux-laptop']
+                    repo: ['git://git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux-meta/+git/lunar', 'linux-laptop']
             derived-from: ['23.04', 'linux']
             backported: false
             supported: false
