@@ -3,8 +3,10 @@
 
 try:
     from urllib.request import urlopen
+    from urllib.error import HTTPError
 except ImportError:
     from urllib2 import urlopen
+    from urllib2 import HTTPError
 
 import json
 import io
@@ -840,7 +842,12 @@ class KernelSeriesCycles:
         if url is None:
             url, use_local = self.form_url(use_local, cycle)
         if url not in self.by_url:
-            self.by_url[url] = KernelSeriesUrl(url=url, data=data, use_local=bool(use_local), **kwargs)
+            try:
+                self.by_url[url] = KernelSeriesUrl(url=url, data=data, use_local=bool(use_local), **kwargs)
+            except HTTPError as e:
+                if e.code == 404:
+                    return None
+                raise
         return self.by_url[url]
 
     def for_spin(self, spin, **kwargs):
