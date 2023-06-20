@@ -774,19 +774,10 @@ class KernelSeriesUrl:
         return KernelSeriesEntry(self, series, self._data[series])
 
 
-class KernelSeries(KernelSeriesUrl):
+class KernelSeriesCycles:
 
-    def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False), xc=None):
-        self._url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
-        self._url_local = self.url_local()
-
-        if data is None and url is None:
-            if use_local:
-                url = self._url_local
-            else:
-                url = self._url
-
-        super().__init__(url, data, use_local, xc)
+    def __init__(self):
+        self.by_url = {}
 
     @staticmethod
     def url_local():
@@ -797,6 +788,51 @@ class KernelSeries(KernelSeriesUrl):
             url = os.path.realpath(os.path.join(os.path.dirname(__file__),
                                                    '..', 'info', 'kernel-series.yaml'))
         return 'file://' + url
+
+    def for_cycle(self, cycle, url=None, data=None, use_local=os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False), **kwargs):
+        if data is not None:
+            return KernelSeriesUrl(url=url, data=data, use_local=bool(use_local), **kwargs)
+        if url is None:
+            if use_local:
+                url = self.url_local()
+                if cycle is not None:
+                    url += "@" + cycle
+            else:
+                if cycle is not None:
+                    url = 'https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h=' + cycle
+                else:
+                    url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
+        if url not in self.by_url:
+            #print("URL", kwargs["url"])
+            #print("KWARGS", kwargs)
+            self.by_url[url] = KernelSeriesUrl(url=url, data=data, use_local=bool(use_local), **kwargs)
+        return self.by_url[url]
+
+    def for_spin(self, spin, **kwargs):
+        return self.for_cycle(spin.rsplit("-", 1)[0], **kwargs)
+
+    def tip(self, **kwargs):
+        return self.for_cycle(None, **kwargs)
+
+
+class KernelSeries:
+
+    _cycles = KernelSeriesCycles()
+
+    def __new__(cls, *args, **kwargs):
+        return cls._cycles.tip(*args, **kwargs)
+
+    @classmethod
+    def for_cycle(cls, *args, **kwargs):
+        return cls._cycles.for_cycle(*args, **kwargs)
+
+    @classmethod
+    def for_spin(cls, *args, **kwargs):
+        return cls._cycles.for_spin(*args, **kwargs)
+
+    @classmethod
+    def tip(cls, *args, **kwargs):
+        return cls._cycles.tip(*args, **kwargs)
 
 
 if __name__ == '__main__':
