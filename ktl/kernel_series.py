@@ -808,22 +808,38 @@ class KernelSeriesCycles:
                                                    '..', 'info', 'kernel-series.yaml'))
         return 'file://' + url
 
-    def for_cycle(self, cycle, url=None, data=None, use_local=os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False), **kwargs):
+    def form_url(self, use_local, cycle):
+        if use_local is None:
+            if os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False):
+                use_local = True
+
+        which = os.getenv("KERNEL_SERIES_USE", "default")
+        if use_local:
+            which = "local"
+        if which == "local":
+            use_local = True
+
+        if which == "launchpad":
+            if cycle is None:
+                url = "https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml"
+            else:
+                url = "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h=" + cycle
+        else:
+            if which == "local":
+                url = self.url_local()
+            else: # default|json
+                url = "https://kernel.ubuntu.com/info/kernel-series.json.gz"
+            if cycle is not None:
+                url += "@" + cycle
+
+        return url, bool(use_local)
+
+    def for_cycle(self, cycle, url=None, data=None, use_local=None, **kwargs):
         if data is not None:
             return KernelSeriesUrl(url=url, data=data, use_local=bool(use_local), **kwargs)
         if url is None:
-            if use_local:
-                url = self.url_local()
-                if cycle is not None:
-                    url += "@" + cycle
-            else:
-                if cycle is not None:
-                    url = 'https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h=' + cycle
-                else:
-                    url = 'https://kernel.ubuntu.com/info/kernel-series.json.gz'
+            url, use_local = self.form_url(use_local, cycle)
         if url not in self.by_url:
-            #print("URL", kwargs["url"])
-            #print("KWARGS", kwargs)
             self.by_url[url] = KernelSeriesUrl(url=url, data=data, use_local=bool(use_local), **kwargs)
         return self.by_url[url]
 
