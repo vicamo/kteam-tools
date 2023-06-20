@@ -2,32 +2,78 @@
 
 here=$(dirname $(readlink -f "$0"))
 
-if [ "$#" -ne 1 ]; then
-	echo "Usage: $0 <published-info-directory>" 1>&2
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $0 <data-directory> <published-info-directory>" 1>&2
 	exit 1
 fi
-out="$1"
+data="$(readlink -e "$1")"
+out="$(readlink -e "$2")"
 
 echo "$(date): starting"
 
 cd "$out" || exit "$?"
 
 # Update the data and tooling.
-(
-	cd "$here" || exit "$?"
-
-	git fetch origin
-	git reset --hard origin/master
-) || exit "$?"
-
-esum=$(cat ".kernel-series.csum" 2>/dev/null)
-nsum=$(cat "$0" "$here/ks-convert" "kernel-series.yaml" | md5sum | awk '{print($1);}')
-if [ "$esum" != "$nsum" ]; then
-	echo "II: upstream kernel-series.yaml changed ..."
-	"$here/ks-convert" "kernel-series.yaml" "kernel-series.json.new"
-	gzip -9 "kernel-series.json.new"
-	mv "kernel-series.json.new.gz" "kernel-series.json.gz"
-	echo "$nsum" >".kernel-series.csum"
+if [ ! -d "$data/kteam-tools" ]; then
+	git clone git://git.launchpad.net/~canonical-kernel/+git/kteam-tools "$data/kteam-tools" || exit "$?"
+else
+	(
+		cd "$data/kteam-tools" || exit 1
+		git fetch origin
+		git reset --hard origin/master
+	) || exit "$?"
 fi
+if [ ! -d "$data/kernel-versions" ]; then
+	git clone git://git.launchpad.net/~canonical-kernel/+git/kernel-versions "$data/kernel-versions" || exit "$?"
+else
+	(
+		cd "$data/kernel-versions" || exit 1
+		git fetch origin
+		git reset --hard origin/master
+	) || exit "$?"
+fi
+
+# Update and convert branches...
+{
+	(
+		cd "$data/kteam-tools" || exit 1
+		git for-each-ref --format "$data/kteam-tools %(objectname) %(refname)" refs/remotes/origin/master
+	)
+	(
+		cd "$data/kernel-versions" || exit 1
+		git for-each-ref --format "$data/kernel-versions %(objectname) %(refname)" refs/remotes/origin
+	)
+} | \
+while read repo objectname refname x
+do
+	case "$repo:$refname" in
+	*/kernel-versions:*/HEAD)		continue ;;
+	*/kernel-versions:*/master)		continue ;;
+	esac
+
+	cycle="$(basename $refname)"
+	objectname_file="$out/.$cycle.on"
+	case "$repo" in
+	*/kteam-tools)		variant="" ;;
+	*/kernel-versions)	variant="@$cycle" ;;
+	*)			variant="@$(basename "$repo")@$cycle" ;;
+	esac
+	#echo "REPO<$repo> ON<$objectname> RN<$refname>  cycle<$cycle> objectname_file<$objectname_file>"
+	objectname_existing="$(cat "$objectname_file" 2>/dev/null)"
+	if [ "$objectname_existing" = "$objectname" ]; then
+		continue
+	fi
+	echo "II: upstream $(basename "$repo") $cycle kernel-series.yaml changed ..."
+	(
+		cd "$repo" || exit 1
+		git show "$refname:info/kernel-series.yaml" >"$out/kernel-series.yaml.new" || exit 0
+		"$here/ks-convert" "$out/kernel-series.yaml.new" "$out/kernel-series.json.new" || exit 0
+		gzip -9 <"$out/kernel-series.json.new" >"$out/kernel-series.json.gz.new"
+		mv -f "$out/kernel-series.yaml.new" "$out/kernel-series.yaml$variant"
+		mv -f "$out/kernel-series.json.new" "$out/kernel-series.json$variant"
+		mv -f "$out/kernel-series.json.gz.new" "$out/kernel-series.json.gz$variant"
+	) || exit "$?"
+	echo "$objectname" >"$objectname_file"
+done
 
 echo "$(date): complete"
