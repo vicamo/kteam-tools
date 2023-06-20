@@ -3556,9 +3556,9 @@ defaults:
         linux-uc22-intel-iot-realtime:
             routing: realtime-uc22
             packages:
-                linux-uc22-intel-iotg:
+                linux-uc22-intel-iot-realtime:
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-uc22-intel-iot-realtime/+git/jammy', 'realtime']
-                linux-signed-uc22-intel-iotg:
+                linux-signed-uc22-intel-iot-realtime:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-uc22-intel-iot-realtime/+git/jammy', 'realtime']
             supported: false 
