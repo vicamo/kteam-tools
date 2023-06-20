@@ -45,7 +45,7 @@ fi
 		cd "$data/kernel-versions" || exit 1
 		git for-each-ref --format "$data/kernel-versions kernel-series %(objectname) %(refname)" refs/remotes/origin
 	)
-} | tee O | \
+} | \
 while read repo filename objectname refname x
 do
 	case "$repo:$refname" in
