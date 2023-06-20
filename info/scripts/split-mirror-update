@@ -37,14 +37,16 @@ fi
 {
 	(
 		cd "$data/kteam-tools" || exit 1
-		git for-each-ref --format "$data/kteam-tools %(objectname) %(refname)" refs/remotes/origin/master
+		git for-each-ref --format "$data/kteam-tools kernel-series %(objectname) %(refname)" refs/remotes/origin/master
+		git for-each-ref --format "$data/kteam-tools sru-cycle %(objectname) %(refname)" refs/remotes/origin/master
+		git for-each-ref --format "$data/kteam-tools signing-config %(objectname) %(refname)" refs/remotes/origin/master
 	)
 	(
 		cd "$data/kernel-versions" || exit 1
-		git for-each-ref --format "$data/kernel-versions %(objectname) %(refname)" refs/remotes/origin
+		git for-each-ref --format "$data/kernel-versions kernel-series %(objectname) %(refname)" refs/remotes/origin
 	)
-} | \
-while read repo objectname refname x
+} | tee O | \
+while read repo filename objectname refname x
 do
 	case "$repo:$refname" in
 	*/kernel-versions:*/HEAD)		continue ;;
@@ -52,7 +54,7 @@ do
 	esac
 
 	cycle="$(basename $refname)"
-	objectname_file="$out/.$cycle.on"
+	objectname_file="$out/.$filename.$cycle.on"
 	case "$repo" in
 	*/kteam-tools)		variant="" ;;
 	*/kernel-versions)	variant="@$cycle" ;;
@@ -63,15 +65,15 @@ do
 	if [ "$objectname_existing" = "$objectname" ]; then
 		continue
 	fi
-	echo "II: upstream $(basename "$repo") $cycle kernel-series.yaml changed ..."
+	echo "II: upstream $(basename "$repo") $cycle $filename.yaml changed ..."
 	(
 		cd "$repo" || exit 1
-		git show "$refname:info/kernel-series.yaml" >"$out/kernel-series.yaml.new" || exit 0
-		"$here/ks-convert" "$out/kernel-series.yaml.new" "$out/kernel-series.json.new" || exit 0
-		gzip -9 <"$out/kernel-series.json.new" >"$out/kernel-series.json.gz.new"
-		mv -f "$out/kernel-series.yaml.new" "$out/kernel-series.yaml$variant"
-		mv -f "$out/kernel-series.json.new" "$out/kernel-series.json$variant"
-		mv -f "$out/kernel-series.json.gz.new" "$out/kernel-series.json.gz$variant"
+		git show "$refname:info/$filename.yaml" >"$out/$filename.yaml.new" || exit 0
+		"$here/ks-convert" "$out/$filename.yaml.new" "$out/$filename.json.new" || exit 0
+		gzip -9 <"$out/$filename.json.new" >"$out/$filename.json.gz.new"
+		mv -f "$out/$filename.yaml.new" "$out/$filename.yaml$variant"
+		mv -f "$out/$filename.json.new" "$out/$filename.json$variant"
+		mv -f "$out/$filename.json.gz.new" "$out/$filename.json.gz$variant"
 	) || exit "$?"
 	echo "$objectname" >"$objectname_file"
 done
