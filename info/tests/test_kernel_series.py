@@ -72,3 +72,13 @@ class TestKernelSeriesSource(TestKernelSeriesCore):
                     continue
                 for variant in source["variants"]:
                     self.assertRegex(variant, r"^-[a-z0-9.\-]+$", msg="malformed variant name")
+
+    def test_source_packages_repo(self):
+        self.require_data_dict()
+        for series in self.data.values():
+            for source in series.get("sources", {}).values():
+                for package in source.get("packages", {}).values():
+                    if not package or "repo" not in package:
+                        continue
+                    repo_url = package["repo"][0]
+                    self.assertRegex(repo_url, r"^git://git.launchpad.net/", msg="malformed repo URL")
