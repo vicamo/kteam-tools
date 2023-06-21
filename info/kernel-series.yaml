@@ -1837,7 +1837,7 @@ defaults:
                 linux-meta-raspi:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/kinetic']
-            owner: juergh
+            owner: diewald
             derived-from: ['22.10', 'linux']
             swm:
                 kernel-testing: true
