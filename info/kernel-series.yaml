@@ -1062,9 +1062,8 @@ defaults:
                 linux-restricted-signatures-aws:
                     type: lrs
             owner: timg-tpi
-            #derived-from: ['23.10', 'linux']
-            backport: true
-            derived-from: ['23.04', 'linux-aws']
+            derived-from: ['23.10', 'linux']
+            backport: false
             swm:
                 kernel-testing: true
             testing:
@@ -1097,9 +1096,8 @@ defaults:
                 linux-restricted-signatures-azure:
                     type: lrs
             owner: timg-tpi
-            #derived-from: ['23.10', 'linux']
-            backport: true
-            derived-from: ['23.04', 'linux-azure']
+            derived-from: ['23.10', 'linux']
+            backport: false
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
@@ -1134,9 +1132,8 @@ defaults:
                 linux-restricted-signatures-gcp:
                     type: lrs
             owner: kmously
-            #derived-from: ['23.10', 'linux']
-            backport: true
-            derived-from: ['23.04', 'linux-gcp']
+            derived-from: ['23.10', 'linux']
+            backport: false
             swm:
                 kernel-testing: true
             testing:
@@ -1162,9 +1159,8 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/mantic']
             owner: kmously
-            #derived-from: ['23.10, 'linux']
-            backport: true
-            derived-from: ['23.04', 'linux-ibm']
+            derived-from: ['23.10', 'linux']
+            backport: false
             swm:
                 kernel-testing: true
             testing:
@@ -1198,9 +1194,8 @@ defaults:
                 linux-restricted-signatures-oracle:
                     type: lrs
             owner: kmously
-            #derived-from: ['23.10', 'linux']
-            backport: true
-            derived-from: ['23.04', 'linux-oracle']
+            derived-from: ['23.10', 'linux']
+            backport: false
             swm:
                 kernel-testing: true
             testing:
