@@ -2338,9 +2338,9 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-6.2:
                     type: lrs
-            owner: arighi
-            supported: false
-            development: true
+            owner: smb
+            supported: true
+            development: false
             backport: true
             derived-from: [ '23.04', 'linux' ]
             swm:
@@ -2376,9 +2376,9 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-lowlatency-hwe-6.2:
                     type: lrs
-            owner: arighi
-            supported: false
-            development: true
+            owner: smb
+            supported: true
+            development: false
             backport: true
             derived-from: [ '23.04', 'linux-lowlatency' ]
             swm:
