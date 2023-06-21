@@ -80,9 +80,10 @@ class Tracking():
         self.launchpad = Launchpad('start-sru-cycle').service
         self.project_tracked = 'kernel-sru-workflow'
 
-    def trackers(self, project):
+    def trackers(self, project, search_text=""):
         '''
         Return a list of all the tracking bugs that need to be processed.
+        Prefiltered with `search_text` as a search text.
         '''
         center(self.__class__.__name__ + '.trackers')
 
@@ -98,7 +99,11 @@ class Tracking():
         #
         search_since = datetime.utcnow() - timedelta(days=45)
         lp_project = self.launchpad.projects[project]
-        tasks = lp_project.searchTasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
+        tasks = lp_project.searchTasks(status=search_status,
+                                       tags=search_tags,
+                                       search_text=search_text,
+                                       tags_combinator=search_tags_combinator,
+                                       modified_since=search_since)
 
         for task in tasks:
             bug = task.bug
@@ -174,7 +179,7 @@ class Tracking():
             # print("{} {}".format(target_series, target_package))
 
             found_tasks = []
-            for (bugid, title) in self.trackers(self.project_tracked).items():
+            for (bugid, title) in self.trackers(self.project_tracked, target_package).items():
                 # The title has an optional series/ prefix (will become manditory).
                 if (not title.startswith(target_package + ':') and
                         not title.startswith(target_series + '/' + target_package + ':')):
