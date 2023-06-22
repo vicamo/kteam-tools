@@ -347,7 +347,7 @@ class TaskSet():
 
         return output
 
-    def __init__(self, ks_source_list, cycledate, devel=False, ks=None):
+    def __init__(self, ks_source_list, cycle, devel=False, ks=None):
         '''
         Initialize a TaskSet which consists
         ks_source_list = [ ks.KernelSourceEntry ...]
@@ -360,15 +360,11 @@ class TaskSet():
         self.ks = ks
         self.tbs = None
         self.board = None
-        self.cycledate = cycledate
         self.tasks = dict()
-        self.cycletag = cycledate.strftime('%Y.%m.%d')
+        self.cycletag = cycle
         self.spin_nr = None
         self.fake_id = 5550000
         self.development = devel
-
-        if devel:
-            self.cycletag = 'd' + self.cycletag
 
         for ks_series in sorted(ks.series, key=KernelSeries.key_series_name, reverse=True):
             for ks_source in ks_source_list:
@@ -518,9 +514,16 @@ Examples:
                         help='mark the tracking bugs as independent (avoid dupping through to previous trackers)')
     parser.add_argument('--stream', action='store', default=None, type=int,
                         help='override the default stream for the tracking bugs')
-    parser.add_argument('cycledate', metavar='<cycle date>',
-                        help='date of this cycle (YYYY.MM.DD). When not in development mode, this has to be a Monday')
+    parser.add_argument('cycle',
+                        help='cycle name for this cycle ([q]YYYY.MM.DD).  When not in development mode (d), this has to be aligned to a Monday')
     args = parser.parse_args()
+
+    if len(args.cycle) < 0:
+        cerror('The provided cycle name is too short!')
+        sys.exit(2)
+
+    if args.cycle[0] == "d":
+        args.devel = True
 
     Clog.color = True
     if args.debug:
@@ -642,10 +645,17 @@ Examples:
                     continue
                 ks_source_list.append(ks_source)
 
+    # Backwards compatibility -- add a 'd' prefix for development cycles.
+    if args.devel and args.cycle[0].isdigit():
+        args.cycle = "d" + args.cycle
+
     # Sanity check the cycle date (is done that late because handle might have
     # changed devel mode.
     try:
-        cycledate = datetime.strptime(args.cycledate, '%Y.%m.%d')
+        cycledate = datetime.strptime(
+            args.cycle if args.cycle[0].isdigit() else args.cycle[1:],
+            '%Y.%m.%d'
+        )
     except:
         cerror('The provided cycle date could not be parsed!')
         sys.exit(2)
@@ -653,6 +663,15 @@ Examples:
         if cycledate.isoweekday() != 1:
             cerror('The provided date is not a Monday when not using --devel!')
             sys.exit(3)
+
+    # Sanity check the cycle qualifier:
+    #  <none> - SRU cycle
+    #       d - development cycle
+    #       s - Security cycle
+    #       c - CRD cycle (private)
+    if not args.cycle[0].isdigit() and args.cycle[0] not in "dsc":
+        cerror('The provided cycle qualifier is not recognised!')
+        sys.exit(2)
 
     # For now the source list only contains primary sources and derivatives
     # which do not cross series boundaries. When selection was not using
@@ -674,7 +693,7 @@ Examples:
     cdebug([(x.series.codename, x.name) for x in ks_source_list])
 
     # Now collect all sources (deb or snap) that need tasks
-    ts = TaskSet(ks_source_list, cycledate, args.devel, ks)
+    ts = TaskSet(ks_source_list, args.cycle, args.devel, ks)
 
     # If the taskset is empty, then your choice was poor...
     if len(ts.tasks) == 0:
