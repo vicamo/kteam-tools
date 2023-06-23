@@ -798,7 +798,7 @@ class KernelSeriesUrl:
         return KernelSeriesEntry(self, series, self._data[series])
 
 
-class KernelSeriesCycles:
+class KernelSeriesCache:
 
     def __init__(self):
         self.by_url = {}
@@ -862,22 +862,22 @@ class KernelSeriesCycles:
 
 class KernelSeries:
 
-    _cycles = KernelSeriesCycles()
+    _cache = KernelSeriesCache()
 
     def __new__(cls, *args, **kwargs):
-        return cls._cycles.tip(*args, **kwargs)
+        return cls._cache.tip(*args, **kwargs)
 
     @classmethod
     def for_cycle(cls, *args, **kwargs):
-        return cls._cycles.for_cycle(*args, **kwargs)
+        return cls._cache.for_cycle(*args, **kwargs)
 
     @classmethod
     def for_spin(cls, *args, **kwargs):
-        return cls._cycles.for_spin(*args, **kwargs)
+        return cls._cache.for_spin(*args, **kwargs)
 
     @classmethod
     def tip(cls, *args, **kwargs):
-        return cls._cycles.tip(*args, **kwargs)
+        return cls._cache.tip(*args, **kwargs)
 
 
 if __name__ == '__main__':
