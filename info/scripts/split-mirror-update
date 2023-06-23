@@ -65,10 +65,14 @@ do
 	if [ "$objectname_existing" = "$objectname" ]; then
 		continue
 	fi
-	echo "II: upstream $(basename "$repo") $cycle $filename.yaml changed ..."
+	echo "II: upstream $(basename "$repo") $cycle $filename.yaml tip changed ..."
 	(
 		cd "$repo" || exit 1
 		git show "$refname:info/$filename.yaml" >"$out/$filename.yaml.new" || exit 0
+		if [ -e "$out/$filename.yaml$variant" ]; then
+			cmp -s "$out/$filename.yaml$variant" "$out/$filename.yaml.new" && exit 0
+		fi
+		echo "II: upstream $(basename "$repo") $cycle $filename.yaml data changed ..."
 		"$here/ks-convert" "$out/$filename.yaml.new" "$out/$filename.json.new" || exit 0
 		gzip -9 <"$out/$filename.json.new" >"$out/$filename.json.gz.new"
 		mv -f "$out/$filename.yaml.new" "$out/$filename.yaml$variant"
