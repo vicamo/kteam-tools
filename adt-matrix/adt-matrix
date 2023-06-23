@@ -919,7 +919,7 @@ class AutoPackageTest(object):
         archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
         retry_url_cell = "{5}?release={0}&trigger={1}&arch={2}&package={3}{4}".format(self.series, '&trigger='.join(triggers), arch, pkg, archive, retry_url)
         if status != 'GOOD' and show_retry:
-            cell += '&nbsp;<a href="{}" style="text-decoration: none;">{}</a>'.format(retry_url_cell, retry_symbol)
+            cell += '&nbsp;<a href="{}" style="text-decoration: none;" title="{}">{}</a>'.format(retry_url_cell, annot, retry_symbol)
         cell += '</span>'
 
         return cell, retry_url_cell, annot
