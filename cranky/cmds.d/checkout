@@ -30,6 +30,7 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
     cnotice("Codename: {}".format(ghs.codename))
     cnotice("Source:   {}".format(ghs.source.name))
 
+    gh_main = None
     summary = []
     for gh in ghs:
         repo_dir = gh.directory
@@ -50,6 +51,17 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
 
         if crd:
             gh.fetch_security(fetch=True)
+
+        ptype = gh.package.type or "main"
+        if ptype == "main":
+            gh_main = gh
+
+    for gh in ghs:
+        if gh != gh_main:
+            link = gh.directory + "/.git/cranky-main"
+            link_destination = os.path.relpath(gh_main.directory, os.path.dirname(link))
+            os.symlink(link_destination, link + ".new", target_is_directory=True)
+            os.rename(link + ".new", link)
 
     is_rebuilt = False
     for gh in ghs:
