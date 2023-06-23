@@ -2909,6 +2909,7 @@ defaults:
                     - '1.24'
                     - '1.25'
                     - '1.26'
+                    - '1.27'
                 nvidia-releases:
                     - 470
             testing:
@@ -6018,10 +6019,8 @@ defaults:
             swm:
                 kernel-testing: true
                 gke-releases:
-                    - '1.22'
                     - '1.23'
                 nvidia-releases:
-                    - 450
                     - 470
             testing:
                 flavours:
