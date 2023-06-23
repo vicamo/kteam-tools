@@ -889,7 +889,6 @@ class AutoPackageTest(object):
     def format_cell(self, result_data, arch, pkg, width, show_retry):
         (status, status_link, version, lversion) = result_data
 
-        new_retry_trigger = ''
         bits = version.split('\n', 1) + [ '' ]
         (version, annot) = bits[0:2]
         if annot != '':
@@ -899,29 +898,28 @@ class AutoPackageTest(object):
             fmt = '<td colspan={5} class="{0}"><a href="{2}" title="{3}">{1}</a>{4}'
         else:
             fmt = '<td colspan={5} class="{0}">{1}'
-        if version != lversion and lversion is not None and apt_pkg.version_compare(version, lversion) < 0:
-            annot += '\npackage updated to ' + str(lversion)
-            new_retry_trigger = 'trigger={0}/{1}'.format(pkg, str(lversion))
-            new_retry_trigger = new_retry_trigger.replace('/', '%2F').replace('+', '%2B')
 
-        status_class = status
-        cell = fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '', width)
+        # Unicode for ↻
+        retry_symbol = "&#x21bb;"
 
         triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
         if must_disable_acpi(self.meta, arch):
             # Add the magic trigger that disables QEMU ACPI
             triggers.append('qemu-efi-noacpi%2F0')
-        # XXX: if we specify a test package trigger this is assumed as -proposed.
-        #if lversion and version != lversion:
-        #    pver = pkg + '/' + lversion
-        #    triggers.append(pver.replace('/', '%2F').replace('+', '%2B'))
+
+        if version != lversion and lversion is not None and apt_pkg.version_compare(version, lversion) < 0:
+            # Detect package update and append trigger for expected version
+            annot += '\npackage updated to ' + str(lversion)
+            new_trigger = '{}/{}'.format(pkg, str(lversion))
+            new_trigger = new_trigger.replace('/', '%2F').replace('+', '%2B')
+            triggers.append(new_trigger)
+            retry_symbol = "+{}".format(retry_symbol)
+
+        cell = fmt.format(status, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '', width)
         archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
         retry_url_cell = "{5}?release={0}&trigger={1}&arch={2}&package={3}{4}".format(self.series, '&trigger='.join(triggers), arch, pkg, archive, retry_url)
         if status != 'GOOD' and show_retry:
-            cell += '&nbsp;<a href="{}" style="text-decoration: none;">&#x21bb;</a>'.format(retry_url_cell)
-        if new_retry_trigger:
-            new_retry_url_cell = '{0}&{1}'.format(retry_url_cell, new_retry_trigger)
-            cell += '&nbsp;<a href="{}" style="text-decoration: none;">+&#x21bb;</a>'.format(new_retry_url_cell)
+            cell += '&nbsp;<a href="{}" style="text-decoration: none;">{}</a>'.format(retry_url_cell, retry_symbol)
         cell += '</span>'
 
         return cell, retry_url_cell, annot
