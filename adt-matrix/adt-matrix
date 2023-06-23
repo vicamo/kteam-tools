@@ -27,11 +27,8 @@ import json
 import tarfile
 import io
 import copy
-import itertools
 import re
 import apt_pkg
-#from urllib import urlencode
-#from urllib2 import urlopen
 from urllib.parse import urlencode
 from urllib.request import urlopen
 from functools import cmp_to_key
@@ -257,7 +254,7 @@ class AutoPackageTest(object):
                 if version != '0' or kernel_pkg != self.source:
                     continue
                 pkg = self.packages.setdefault(test_pkg, [])
-                if not test_arch in pkg:
+                if test_arch not in pkg:
                     pkg.append(test_arch)
 
     def log_error(self, msg):
@@ -429,7 +426,7 @@ class AutoPackageTest(object):
                 # If we have testinfo then we may have a real kernel version.
                 try:
                     testinfo = json.load(tar.extractfile('testinfo.json'))
-                except (KeyError, ValueError, tarfile.TarError) as e:
+                except (KeyError, ValueError, tarfile.TarError):
                     pass
 
                 # Work out the trigger package so we put this in a reasonable bucket.
@@ -665,7 +662,7 @@ class AutoPackageTest(object):
             #    archs = sorted(set(archs + self.packages_latest[pkg]))
 
             # Find the nominal latest version (latest any arch reports) taking
-            # into account only the latest from each arch to allow versions to 
+            # into account only the latest from each arch to allow versions to
             # be deleted.
             latest = None
             latest_proposed = None
@@ -696,7 +693,7 @@ class AutoPackageTest(object):
                     # for the latest version on this architecture, check if we
                     # have a -proposed result at the expected version.  If we
                     # do upgrade it to a full result.
-                    if (ver == verlist[-1] and latest != None and
+                    if (ver == verlist[-1] and latest is not None and
                             self.results.get(ver, {}).get(pkg, {}).get(arch, (None, None))[1] != latest and
                             self.results.get(ver, {}).get(pkg, {}).get(arch + '+', (None, None))[1] == latest):
                         self.log_verbose("Upgrading {} -proposed result for version {} to a full result".format(pkg, latest))
@@ -950,7 +947,7 @@ table.matrix {{
 }}
 table.matrix, table.matrix th, table.matrix td {{
    border: 1px solid black;
-}} 
+}}
 wide {{
     display: block;
     width: 100%;
@@ -962,7 +959,7 @@ wide {{
 <table class="matrix">
 """.format(title, self.stamp)
 
-        verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
+        verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))
 
         race_text = '~'
         if limit and len(verlist) > limit:
@@ -1222,7 +1219,7 @@ table.matrix {{
 }}
 #table.matrix, table.matrix th, table.matrix td {{
 #   border: 1px solid black;
-#}} 
+#}}
 table.matrix th {{
     text-align: left;
 }}
@@ -1242,7 +1239,7 @@ table.matrix td {{
 <table class="matrix">
 <tr class="row"><th>Series<th>Package<th>Latest Kernel<th>Counts&nbsp;<th>Summary<th><th>Migration Status&nbsp;<th>Status</tr>
 """.format(stamp), file=indexf)
-    
+
     updated = {}
     rdata = []
 
