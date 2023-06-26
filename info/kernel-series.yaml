@@ -523,10 +523,12 @@ defaults:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - [ 'ppa:havana-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
+                - [ 'ppa:havana-team/ubuntu/uc20-kernel-build-ppa2', 'Release' ]
             signing:
                 - [ 'ppa:canonical-signing/ubuntu/ke-ambarella-honeywell', 'Release' ]
             proposed:
                 - [ 'ppa:havana-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
+                - [ 'ppa:havana-team/ubuntu/uc20-kernel-proposed-ppa2', 'Release' ]
             updates:
                 - [ 'ppa:havana-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
         wendover:
