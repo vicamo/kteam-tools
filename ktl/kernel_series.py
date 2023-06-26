@@ -837,16 +837,16 @@ class KernelSeriesCache:
             if cycle is not None:
                 url += "@" + cycle
 
-        return url, bool(use_local)
+        return url, use_local
 
     def for_cycle(self, cycle, url=None, data=None, use_local=None, **kwargs):
         if data is not None:
-            return KernelSeriesUrl(url=url, data=data, use_local=bool(use_local), **kwargs)
+            return KernelSeriesUrl(url=url, data=data, use_local=use_local, **kwargs)
         if url is None:
             url, use_local = self.form_url(use_local, cycle)
         if url not in self.by_url:
             try:
-                self.by_url[url] = KernelSeriesUrl(url=url, data=data, use_local=bool(use_local), **kwargs)
+                self.by_url[url] = KernelSeriesUrl(url=url, data=data, use_local=use_local, **kwargs)
             except HTTPError as e:
                 if e.code == 404:
                     return None
