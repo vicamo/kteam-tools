@@ -522,10 +522,12 @@ defaults:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
+                - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-build-ppa2', 'Release' ]
             signing:
                 - [ 'ppa:canonical-signing/ubuntu/ke-ambarella-bosch', 'Release' ]
             proposed:
                 - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
+                - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-proposed-ppa2', 'Release' ]
             updates:
                 - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
         havana-uc20:
