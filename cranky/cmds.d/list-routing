@@ -69,6 +69,8 @@ Examples:
                         "the current working directory is used.")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Increase verbosity.")
+    parser.add_argument("--cycle",
+                        help="sru cycle to use when looking up the source.")
     args = parser.parse_args()
 
     # Setup the logger
@@ -77,7 +79,7 @@ Examples:
 
     try:
         handle = Handle().lookup_set(args.handle if args.handle else
-                                     os.getcwd(), validate=False)
+                                     os.getcwd(), cycle=args.cycle, validate=False)
     except HandleError as e:
         cerror(e)
         sys.exit(1)
