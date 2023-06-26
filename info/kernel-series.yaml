@@ -486,10 +486,12 @@ defaults:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - ['ppa:canonical-hwe-imx/ubuntu/honeywell-build', 'Release']
+                - ['ppa:canonical-hwe-imx/ubuntu/honeywell-build2', 'Release']
             signing:
                 - ['ppa:canonical-signing/ubuntu/ke-imx', 'Release']
             proposed:
                 - ['ppa:canonical-hwe-imx/ubuntu/honeywell-proposed', 'Release']
+                - ['ppa:canonical-hwe-imx/ubuntu/honeywell-proposed2', 'Release']
             updates:
                 - ['ppa:canonical-hwe-imx/ubuntu/honeywell-release', 'Release']
         kariya:
