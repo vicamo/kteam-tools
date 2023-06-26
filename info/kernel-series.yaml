@@ -508,10 +508,12 @@ defaults:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - [ 'ppa:jollyville-team/ubuntu/jollyville-build', 'Release' ]
+                - [ 'ppa:jollyville-team/ubuntu/jollyville-build2', 'Release' ]
             signing:
                 - [ 'ppa:canonical-signing/ubuntu/ke-jollyville', 'Release' ]
             proposed:
                 - [ 'ppa:jollyville-team/ubuntu/jollyville-proposed', 'Release' ]
+                - [ 'ppa:jollyville-team/ubuntu/jollyville-proposed2', 'Release' ]
             updates:
                 - [ 'ppa:jollyville-team/ubuntu/jollyville-updates', 'Release' ]
         nuremberg-uc20:
