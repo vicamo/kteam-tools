@@ -9,12 +9,14 @@ import os
 import sys
 import datetime
 
+from ktl.kernel_series import KernelSeries
+from ktl.log import cdebug, cerror, cnotice, Clog
+
 from crl.git import GitHandleSet, GitError
 from crl.config import Config
 from crl.cycle_ref import CycleRef, Git
 from crl.exceptions import CrankyException
 from crl.handle import Handle, HandleError
-from ktl.log import cdebug, cerror, cnotice, Clog
 
 
 def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=None, nc=False, cycle=None):
@@ -25,7 +27,7 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
 
     # Cycle through the trees and clone/update the package specific
     # repositories.
-    ghs = GitHandleSet(handle)
+    ghs = GitHandleSet(handle, cycle=cycle)
 
     cnotice("Codename: {}".format(ghs.codename))
     cnotice("Source:   {}".format(ghs.source.name))
