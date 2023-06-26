@@ -498,10 +498,12 @@ defaults:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - ['ppa:kariya-team/ubuntu/kariya-build', 'Release']
+                - ['ppa:kariya-team/ubuntu/kariya-build2', 'Release']
             signing:
                 - ['signing:kariya/2', 'Release']
             proposed:
                 - ['ppa:kariya-team/ubuntu/kariya-proposed', 'Release']
+                - ['ppa:kariya-team/ubuntu/kariya-proposed2', 'Release']
             updates:
                 - ['ppa:kariya-team/ubuntu/kariya-release', 'Release']
         jollyville-uc20:
