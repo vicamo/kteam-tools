@@ -462,10 +462,12 @@ defaults:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - ['ppa:denver-team/ubuntu/denver-build', 'Release']
+                - ['ppa:denver-team/ubuntu/denver-build2', 'Release']
             signing:
                 - ['ppa:canonical-signing/ubuntu/ke-denver', 'Release']
             proposed:
                 - ['ppa:denver-team/ubuntu/denver-proposed', 'Release']
+                - ['ppa:denver-team/ubuntu/denver-proposed2', 'Release']
             updates:
                 - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
         ein-uc20:
