@@ -479,6 +479,7 @@ defaults:
                 - ['ppa:canonical-signing/ubuntu/ke-imx', 'Release']
             proposed:
                 - ['ppa:canonical-hwe-imx/ubuntu/imx-proposed', 'Release']
+                - ['ppa:canonical-hwe-imx/ubuntu/imx-proposed2', 'Release']
             updates:
                 - ['ppa:canonical-hwe-imx/ubuntu/imx-release', 'Release']
         shiner-uc20:
