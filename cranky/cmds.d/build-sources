@@ -37,7 +37,7 @@ function build_src()
 function usage()
 {
 	cat <<EOF
-Usage: cranky build-sources [-c] [-h] [--no-orig] [--build-opts OPTS ...] [handle]
+Usage: cranky build-sources [-c] [-h] [--no-orig] [--build-opts OPTS ...] [--cycle CYCLE] [handle]
 
 Build all source packages for the specified series and source as specified in
 kernel-series.yaml.
@@ -58,6 +58,9 @@ Optional arguments:
                  the specified source package type. OPTS is a string of the
                  format "type:opts". This option can be supplied multiple times
                  to supply options for multiple package types.
+
+  --cycle        Work against a specific cycle, defaults to the tree cycle
+                 when handle is a directory and the tip otherwise.
 
 Examples:
   $ cranky build-sources
@@ -81,6 +84,7 @@ EOF
 
 require_orig="--source-option=-sp"
 current=0
+cycle=
 handle=${PWD}
 declare -A build_opts=()
 
@@ -105,6 +109,10 @@ while [ ${#} -gt 0 ] ; do
 			fi
 			build_opts[$type]="$opts"
 			;;
+		--cycle)
+			shift
+			cycle="$1"
+			;;
 		-*)
 			usage
 			exit 2
@@ -123,7 +131,7 @@ done
 
 trap out EXIT INT TERM HUP
 
-sources=$("$C" shell-helper source-packages-path -t "$handle")
+sources=$("$C" shell-helper source-packages-path -t ${cycle:+--cycle }${cycle} "$handle")
 if [ -z "$sources" ] ; then
 	exit 1
 fi
