@@ -13,6 +13,7 @@ import io
 import os
 import yaml
 from gzip import GzipFile
+from warnings import warn
 
 from .signing_config import SigningConfig
 
@@ -813,9 +814,16 @@ class KernelSeriesCache:
                                                    '..', 'info', 'kernel-series.yaml'))
         return 'file://' + url
 
+    # Enviromental overrides allowing selection of data:
+    #  USE_LOCAL_KERNEL_SERIES_YAML=true -- switch to using a local .yaml form (deprecated)
+    #  KERNEL_SERIES_USE={json,local,launchpad} -- switch to a specific data source
+    #    json -- remote native json form
+    #    local -- local yaml files in tree
+    #    launchpad -- raw primary sources in yaml form from git.launchpad.net
     def form_url(self, use_local, cycle):
         if use_local is None:
             if os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False):
+                warn('Use of USE_LOCAL_KERNEL_SERIES_YAML environment variable is deprecated, use KERNEL_SERIES_USE=local')
                 use_local = True
 
         which = os.getenv("KERNEL_SERIES_USE", "default")
