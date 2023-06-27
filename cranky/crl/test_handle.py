@@ -357,9 +357,9 @@ class TestHandleDirectory(TestHandle):
         data_changelog = "{} ({}) {}; urgency=medium\n  * foo\n -- ME\n".format(package, '4.15.0-1.2', series)
         d.makedir(name + '/debian')
         d.write(name + '/debian/changelog', data_changelog.encode('utf-8'))
-        self.setUpRunCmd(git_path, 'git add debian/changelog'.format(debian))
+        self.setUpRunCmd(git_path, 'git add debian/changelog')
 
-        self.setUpRunCmd(git_path, 'git commit -a -m "Initial"'.format(debian))
+        self.setUpRunCmd(git_path, 'git commit -a -m "Initial"')
 
     def test_directory_source_noconfig(self):
         ks = KernelSeries(data=self.data_yaml)
