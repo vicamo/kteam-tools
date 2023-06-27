@@ -9,6 +9,9 @@ on:
       - reopened
       - synchronize
 
+env:
+  KERNEL_SERIES_USE: local
+
 jobs:
   multi-series-tests:
     strategy:
@@ -31,7 +34,10 @@ jobs:
       - step:
         name: Run Tests
         run: |
+          git config --global user.email "noreply+ckctreview-bot@canonical.co"
+          git config --global user.name "Bot"
           (cd ktl/tests && python3 -m unittest -v)
+          (cd cranky/crl/tests && python3 -m unittest -v)
 
   # Tests that are not affected by the host's environment
   series-agnostic-tests:
