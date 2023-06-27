@@ -555,24 +555,29 @@ class PackageBuild:
         matches = s.__find_matches(ps, abi, release, sloppy)
         if len(matches) > 0 and matches[0].status in ('Pending', 'Published'):
             cdebug('    match: %s (%s)' % (release, abi), 'green')
-            fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
-            version = matches[0].source_package_version
-            changes = matches[0].changesFileUrl()
+            data = s.__sources_built(matches, archive, package, release, pocket)
             source = matches[0]
+            data["version"] = source.source_package_version
+            data["changes"] = source.changesFileUrl()
+            data["source"] = source
         else:
-            fullybuilt = False
-            status  = ''
-            creator = None
-            signer  = None
-            published = None
-            most_recent_build = None
-            version = None
-            changes = None
+            data = {
+                "built": False,
+                "creator": None,
+                "signer": None,
+                "published": None,
+                "most_recent_build": None,
+                "status": "",
+                "changes": None,
+            }
             source = None
+            version = None
             if len(ps) > 0:
                 source = ps[0]
                 if source.status in ('Pending', 'Published'):
                     version = source.source_package_version
+            data["source"] = source
+            data["version"] = version
 
             monitor = {
                 'type': 'launchpad-source',
@@ -587,7 +592,7 @@ class PackageBuild:
             s.bug.debs.monitor_debs_add(monitor)
 
         cleave(s.__class__.__name__ + '.__is_fully_built')
-        return fullybuilt, creator, signer, published, most_recent_build, status, version, changes, source
+        return data
 
     # __find_matches
     #
@@ -841,7 +846,14 @@ class PackageBuild:
             latest_build = latest_build.replace(tzinfo=None)
 
         cleave('Sources::__sources_built' )
-        return state == 'FULLYBUILT', package_creator, package_signer, published, latest_build, state
+        return {
+            "built": state == 'FULLYBUILT',
+            "creator": package_creator,
+            "signer": package_signer,
+            "published": published,
+            "most_recent_build": latest_build,
+            "status": state,
+        }
 
     def instantiate(self):
         cdebug("INSTANTIATING {} {} {} {} {} {}".format(self.dependent, self.pocket, self.package, self.srch_version, self.srch_abi, self.srch_sloppy))
@@ -862,30 +874,33 @@ class PackageBuild:
             publications.append(info)
             # If this archive pocket contains the version we are looking for then scan
             # no further.
-            if info[5] != '':
+            if info["status"] != '':
                 break
 
         # If we have a match use that, else use the first one.
         if len(publications) == 0:
-            publications = [(False, None, None, None, None, '', None, None, None)]
-        if publications[-1][5] != '':
+            publications = [{
+                "built": False,
+                "creator": None,
+                "signer": None,
+                "published": None,
+                "most_recent_build": None,
+                "status": "",
+                "changes": None,
+                "source": None,
+                "version": None,
+            }]
+        if publications[-1]["status"] != '':
             info = publications[-1]
         else:
             info = publications[0]
 
-        self._data = {}
-        self._data['built']   = info[0]
-        self._data['creator'] = info[1]
-        self._data['signer']  = info[2]
-        self._data['published'] = info[3]
-        self._data['most_recent_build'] = info[4]
-        self._data['status'] = info[5]
-        self._data['version'] = info[6]
-        self._data['route'] = (src_archive, src_pocket)
-        self._data['changes'] = info[7]
-        self._data['source'] = info[8]
+        # XXX: __is_fully_built has this ... ?
+        info["route"] = (src_archive, src_pocket)
 
-        cinfo('DELAYED %-8s %-8s : %-20s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (self.dependent, self.pocket, self.package, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
+        self._data = info
+
+        cinfo('DELAYED %-8s %-8s : %-20s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (self.dependent, self.pocket, self.package, info["built"], info["status"], info["published"], info["most_recent_build"], info["version"], src_archive.reference, src_pocket), 'cyan')
 
         # If we find a build is now complete, record _where_ it was built.
         if build_route and self._data['status'] != '':
