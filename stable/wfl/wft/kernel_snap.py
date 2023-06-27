@@ -69,15 +69,16 @@ class KernelSnapBase(TaskHandler):
         cleave(s.__class__.__name__ + '.do_verify_release')
         return retval
 
-    @property
     def oldest_tracker(s):
         # The target trackers are returned in cycle order.
         target_trackers = s.bug.target_trackers
         cinfo(s.bug.target_trackers)
         for tracker_nr, tracker_data in target_trackers:
+            cinfo("APW: {} {}".format(tracker_nr, tracker_data.get("cycle", "??")))
             if tracker_nr == str(s.bug.lpbug.id):
-                return None
-            return tracker_nr
+                break
+            return tracker_nr, "LP: #{} {}".format(tracker_nr, tracker_data.get("cycle", "unknown"))
+        return None, None
 
     @property
     def is_v2(self):
@@ -132,10 +133,10 @@ class SnapPrepareV1(KernelSnapBase):
             s.bug.dup_replaces()
 
             # Check if this is the oldest tracker for this target.
-            older = s.oldest_tracker
+            older, reason = s.oldest_tracker()
             if older is not None:
                 cinfo('    snap has an older active tracker', 'yellow')
-                s.task.reason = 'Stalled -- tracker for earlier spin still active'
+                s.task.reason = 'Stalled -- tracker for earlier spin still active, ' + reason
                 s.bug.monitor_add({
                     "type": "tracker-modified",
                     "watch": str(older)})
@@ -168,7 +169,8 @@ class SnapPrepareV1(KernelSnapBase):
                 break
 
             pull_back = False
-            if s.oldest_tracker is not None:
+            older, reason = s.oldest_tracker()
+            if older is not None:
                 cinfo('            A previous cycle tracker is active pulling back from Confirmed', 'yellow')
                 pull_back = True
             block = s.bug.source_block_present()
@@ -470,10 +472,10 @@ class SnapReleaseToEdge(KernelSnapBase):
                 s.bug.dup_replaces()
 
                 # Check if this is the oldest tracker for this target.
-                older = s.oldest_tracker
+                older, reason = s.oldest_tracker()
                 if older is not None:
                     cinfo('    snap has an older active tracker', 'yellow')
-                    s.task.reason = 'Stalled -- tracker for earlier spin still active'
+                    s.task.reason = 'Stalled -- tracker for earlier spin still active, ' + reason
                     s.bug.monitor_add({
                         "type": "tracker-modified",
                         "watch": str(older)})
@@ -555,10 +557,10 @@ class SnapReleaseToBeta(KernelSnapBase):
                     break
 
             # Check if this is the oldest tracker for this target.
-            older = s.oldest_tracker
+            older, reason = s.oldest_tracker()
             if older is not None:
                 cinfo('    snap has an older active tracker', 'yellow')
-                s.task.reason = 'Stalled -- tracker for previous spin still active'
+                s.task.reason = 'Stalled -- tracker for previous spin still active, ' + reason
                 s.bug.monitor_add({
                     "type": "tracker-modified",
                     "watch": str(older)})
