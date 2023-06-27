@@ -30,7 +30,7 @@ class SigningConfig:
         try:
             import ckt_info
             _local = ckt_info.abspath("info/signing-config.yaml")
-        except ModuleNotFoundError:
+        except ImportError:
             _local = os.path.realpath(os.path.join(os.path.dirname(__file__),
                                                    '..', 'info', 'signing-config.yaml'))
         self._url_local = 'file://' + _local
