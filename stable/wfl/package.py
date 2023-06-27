@@ -654,6 +654,8 @@ class PackageBuild:
         status = set()
         status.add('UNKNOWN')
 
+        status_detail = []
+
         cdebug("source status={}".format(source.status))
         if source.status == "Pending":
             status.add('PENDING')
@@ -774,6 +776,7 @@ class PackageBuild:
                 status.add('FULLYBUILT')
             elif binary.status == "Superseded":
                 status.add('SUPERSEDED')
+                status_detail.append("{} {} superceded".format(arch_tag, binary.binary_package_name))
             else:
                 # Anything else is broken.
                 #  Superseded
@@ -853,6 +856,7 @@ class PackageBuild:
             "published": published,
             "most_recent_build": latest_build,
             "status": state,
+            "status_detail": status_detail,
         }
 
     def instantiate(self):
@@ -1774,6 +1778,23 @@ class Package():
 
         cleave(s.__class__.__name__ + '.all_built_in_src_dst ({})'.format(retval))
         return retval
+
+    # all_built_and_in_pocket_or_pocket
+    #
+    @centerleave
+    def all_built_in_src_dst_detail(s, src, dst):
+        '''
+        Why dependent packages are not fully built and in src or dst.
+        '''
+        detail = []
+        for pkg in s.dependent_packages_for_pocket(dst):
+            pkg_data = s.srcs[pkg][src]
+            if pkg_data["status"] == "":
+                pkg_data = s.srcs[pkg][dst]
+            if pkg_data["status"] == "":
+                detail.append("{} is missing".format(pkg))
+            detail += pkg_data.get("status_detail", [])
+        return detail
 
     # built_in_src_dst_delta
     #

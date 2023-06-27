@@ -54,7 +54,11 @@ class PromoteToUpdates(Promoter):
             # at least in proposed.
             if not s.bug.debs.all_built_in_src_dst('Proposed', 'Updates'):
                 cdebug("promote-to-updates not all built")
-                s.task.reason = 'Stalled -- promote-to-proposed complete but not all packages are reporting built'
+                reason = 'Stalled -- promote-to-proposed complete but not all packages are reporting built'
+                detail = s.bug.debs.all_built_in_src_dst_detail("Proposed", "Updates")
+                if len(detail):
+                    reason += ": " + ", ".join(detail)
+                s.task.reason = reason
                 break
 
             # Note this will set appropriate reasons.
