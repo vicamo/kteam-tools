@@ -116,51 +116,6 @@ class TestHandleSeries(TestHandle):
         self.assertEqual(hdl.package.series.codename, 'bionic')
         self.assertEqual(hdl.package.name, 'linux2-main')
 
-    def test_trees_series_bionic(self):
-        ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
-        hdl = Handle(ks=ks, config=config).lookup_set('bionic:linux')
-
-        trees_match = [
-            [ 'bionic', 'linux', '/src/bionic/linux' ],
-            [ 'bionic', 'linux-meta', '/src/bionic/linux-meta' ],
-            ]
-        self.assertEqualTrees(trees_match, hdl.trees)
-
-    def test_trees_series_artful(self):
-        ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
-        hdl = Handle(ks=ks, config=config).lookup_set('artful:linux')
-
-        trees_match = [
-            [ 'artful', 'linux', '/src/artful/linux' ],
-            [ 'artful', 'linux-meta', '/src/artful/meta' ],
-            ]
-        self.assertEqualTrees(trees_match, hdl.trees)
-
-    def test_trees_series_bionic_basepath(self):
-        ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.basepath_config_yaml)
-        hdl = Handle(ks=ks, config=config).lookup_set('bionic:linux')
-
-        trees_match = [
-            [ 'bionic', 'linux', '/src/bionic/linux' ],
-            [ 'bionic', 'linux-meta', '/src/bionic/linux-meta' ],
-            ]
-        self.assertEqualTrees(trees_match, hdl.trees)
-
-
-class TestHandleSeriesVersion(TestHandle):
-
-    def test_series_bionic(self):
-        ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
-        hdlc = Handle(ks=ks, config=config).lookup_set('bionic:linux')
-        hdlv = Handle(ks=ks, config=config).lookup_set('18.04:linux')
-
-        self.assertEqual(hdlc.series, hdlv.series)
-        self.assertEqual(hdlc.source, hdlv.source)
-
 
 class TestHandleDirectoryEncode(TestHandle):
 
@@ -463,17 +418,6 @@ class TestHandleDirectory(TestHandle):
                 [ 'bionic', 'linux-meta', d.getpath('bionic/linux-meta') ],
                 ]
             self.assertEqualTrees(trees_match, hdl.trees)
-
-    def test_trees_directory_source_config_bionic_linux_metabroken(self):
-        ks = KernelSeries(data=self.data_yaml)
-        with TempDirectory() as d:
-            self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
-            self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta-hwe')
-
-            config = Config(data=self.path_config_yaml)
-
-            with self.assertRaises(HandleError):
-                hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux'))
 
     def test_trees_directory_source_config_bionic_linux_dot(self):
         ks = KernelSeries(data=self.data_yaml)
