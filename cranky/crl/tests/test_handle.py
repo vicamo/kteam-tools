@@ -9,9 +9,9 @@ from subprocess                 import getstatusoutput
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
 sys.path.append(os.pardir)
 
-from handle                     import Handle, change_directory, HandleError
+from crl.config                 import Config
+from crl.handle                 import Handle, change_directory, HandleError
 from ktl.kernel_series          import KernelSeries
-from config                     import Config
 
 class TestHandle(unittest.TestCase):
 
