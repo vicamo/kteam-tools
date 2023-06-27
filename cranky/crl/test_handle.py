@@ -377,6 +377,7 @@ class TestHandleDirectory(TestHandle):
         ks = KernelSeries(data=self.data_yaml)
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
+            self.setUpSourceMeta(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
 
             config = self.config_in_temp_dir(d)
 
@@ -391,7 +392,7 @@ class TestHandleDirectory(TestHandle):
     def test_trees_directory_source_config_bionic_meta(self):
         ks = KernelSeries(data=self.data_yaml)
         with TempDirectory() as d:
-            self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
+            self.setUpSourceMeta(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
 
             config = self.config_in_temp_dir(d)
 
@@ -407,9 +408,9 @@ class TestHandleDirectory(TestHandle):
         ks = KernelSeries(data=self.data_yaml)
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
-            self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
+            self.setUpSourceMeta(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux'))
 
@@ -424,7 +425,7 @@ class TestHandleDirectory(TestHandle):
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             with change_directory(d.getpath('bionic/linux')):
                 hdl = Handle(ks=ks, config=config).lookup_set('.')
