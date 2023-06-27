@@ -22,12 +22,17 @@ class TestHandle(unittest.TestCase):
             linux:
                 packages:
                     linux:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-bionic', 'master-next']
                     linux-meta:
                         type: meta
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-bionic']
+
             linux2:
                 packages:
                     linux2-main:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-linux2', 'master-next']
                     linux2-meta:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-linux2', 'master-next']
                         type: meta
     '17.10':
         codename: artful
@@ -35,7 +40,9 @@ class TestHandle(unittest.TestCase):
             linux:
                 packages:
                     linux:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-artful', 'master-next']
                     linux-meta:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-artful', 'master-next']
                         type: meta
     '16.04':
         codename: xenial
@@ -43,7 +50,9 @@ class TestHandle(unittest.TestCase):
             linux:
                 packages:
                     linux:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-xenial', 'master-next']
                     linux-meta:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-xenial', 'master-next']
                         type: meta
     """
 
