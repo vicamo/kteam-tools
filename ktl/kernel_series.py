@@ -722,7 +722,7 @@ class KernelSeries:
         try:
             import ckt_info
             _local = ckt_info.abspath("info/kernel-series.yaml")
-        except ModuleNotFoundError:
+        except ImportError:
             _local = os.path.realpath(os.path.join(os.path.dirname(__file__),
                                                    '..', 'info', 'kernel-series.yaml'))
         self._url_local = 'file://' + _local
