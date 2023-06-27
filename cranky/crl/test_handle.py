@@ -67,6 +67,11 @@ class TestHandle(unittest.TestCase):
 
         self.assertEqual(sorted(expected), sorted(trees))
 
+    def config_in_temp_dir(self, temp_dir, data=path_config_yaml):
+        """Load config YAML and set base-path to dynamic temp_dir"""
+        config = Config(data=data)
+        config.config["base-path"] = temp_dir.path
+        return config
 
 class TestHandleSeries(TestHandle):
 
@@ -359,7 +364,7 @@ class TestHandleDirectory(TestHandle):
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux'))
 
@@ -371,7 +376,7 @@ class TestHandleDirectory(TestHandle):
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux-meta'))
 
@@ -383,7 +388,7 @@ class TestHandleDirectory(TestHandle):
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_tree(d.getpath('bionic/linux'))
 
@@ -396,7 +401,7 @@ class TestHandleDirectory(TestHandle):
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_tree(d.getpath('bionic/linux-meta'))
 
@@ -409,7 +414,7 @@ class TestHandleDirectory(TestHandle):
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux'))
 
@@ -424,7 +429,7 @@ class TestHandleDirectory(TestHandle):
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux-meta'))
 
