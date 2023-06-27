@@ -26,7 +26,7 @@ class SigningConfigStreamLevel:
 
 class SigningConfig:
     def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_SIGNING_CONFIG", False)):
-        self._url = 'https://staging.kernel.ubuntu.com/info/signing-config.yaml'
+        self._url = 'https://kernel.ubuntu.com/info/signing-config.yaml'
         try:
             import ckt_info
             _local = ckt_info.abspath("info/signing-config.yaml")
