@@ -3,13 +3,28 @@
 
 try:
     from urllib.request import urlopen
+    from urllib.error import HTTPError
 except ImportError:
     from urllib2 import urlopen
+    from urllib2 import HTTPError
 
+import json
+import io
 import os
 import yaml
+from gzip import GzipFile
+from warnings import warn
 
 from .signing_config import SigningConfig
+
+
+# XXX: python2/3 compatibility.
+def gzip_decompress(data):
+    """Decompress a gzip compressed string in one shot.
+    Return the decompressed string.
+    """
+    with GzipFile(fileobj=io.BytesIO(data)) as f:
+        return f.read()
 
 
 class KernelRoutingEntryDestination:
@@ -58,6 +73,9 @@ class KernelRoutingEntryRoute:
         if self._entries is None:
             self._entries = [KernelRoutingEntryDestination(self._ks, self, count + 1, entry) for count, entry in enumerate(self._data)]
         return self._entries
+
+    def __len__(self):
+        return len(self.entries)
 
     def __iter__(self):
         return iter(self.entries)
@@ -701,41 +719,32 @@ class KernelSeriesEntry:
         return KernelSourceEntry(self._ks, self, source_key, sources[source_key])
 
 
-# KernelSeries
+# KernelSeriesUrl
 #
-class KernelSeries:
-    _data_txt = {}
+class KernelSeriesUrl:
 
-    @classmethod
-    def __load_once(cls, url):
-        if url not in cls._data_txt:
+    def __init__(self, url=None, data=None, use_local=False, xc=None):
+        if data is None and url is None:
+            raise ValueError("expecting url or data")
+
+        self.url = url
+        if data is None:
             response = urlopen(url)
             data = response.read()
-            if not isinstance(data, str):
+            if data[0:2] == b'\x1f\x8b':
+                data = gzip_decompress(data)
+            if isinstance(data, bytes):
                 data = data.decode('utf-8')
-            cls._data_txt[url] = data
-        return cls._data_txt[url]
 
-    def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False), xc=None):
-        self._url = 'https://git.launchpad.net/~canonical-kernel/' \
-            '+git/kteam-tools/plain/info/kernel-series.yaml'
-        try:
-            import ckt_info
-            _local = ckt_info.abspath("info/kernel-series.yaml")
-        except ImportError:
-            _local = os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                   '..', 'info', 'kernel-series.yaml'))
-        self._url_local = 'file://' + _local
-
-        if data or url:
-            if url:
-                response = urlopen(url)
-                data = response.read()
-            if not isinstance(data, str):
-                data = data.decode('utf-8')
+        if isinstance(data, dict):
+            self._data = data
+        # RFC8259: Implementations that generate only objects or arrays where a
+        # JSON text is called for will be interoperable in the sense that all
+        # implementations will accept these as conforming JSON texts.
+        elif data[0] in "{[":
+            self._data = json.loads(data)
         else:
-            data = self.__load_once(self._url_local if use_local else self._url)
-        self._data = yaml.safe_load(data)
+            self._data = yaml.safe_load(data)
 
         self._xc = None
         self._xc_local = use_local
@@ -788,6 +797,95 @@ class KernelSeries:
         if series and series not in self._data:
             return None
         return KernelSeriesEntry(self, series, self._data[series])
+
+
+class KernelSeriesCache:
+
+    def __init__(self):
+        self.by_url = {}
+
+    @staticmethod
+    def url_local():
+        try:
+            import ckt_info
+            url = ckt_info.abspath("info/kernel-series.yaml")
+        except ImportError:
+            url = os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                                   '..', 'info', 'kernel-series.yaml'))
+        return 'file://' + url
+
+    # Enviromental overrides allowing selection of data:
+    #  USE_LOCAL_KERNEL_SERIES_YAML=true -- switch to using a local .yaml form (deprecated)
+    #  KERNEL_SERIES_USE={json,local,launchpad} -- switch to a specific data source
+    #    json -- remote native json form
+    #    local -- local yaml files in tree
+    #    launchpad -- raw primary sources in yaml form from git.launchpad.net
+    def form_url(self, use_local, cycle):
+        if use_local is None:
+            if os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False):
+                warn('Use of USE_LOCAL_KERNEL_SERIES_YAML environment variable is deprecated, use KERNEL_SERIES_USE=local')
+                use_local = True
+
+        which = os.getenv("KERNEL_SERIES_USE", "default")
+        if use_local:
+            which = "local"
+        if which == "local":
+            use_local = True
+
+        if which == "launchpad":
+            if cycle is None:
+                url = "https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml"
+            else:
+                url = "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h=" + cycle
+        else:
+            if which == "local":
+                url = self.url_local()
+            else: # default|json
+                url = "https://kernel.ubuntu.com/info/kernel-series.json.gz"
+            if cycle is not None:
+                url += "@" + cycle
+
+        return url, use_local
+
+    def for_cycle(self, cycle, url=None, data=None, use_local=None, **kwargs):
+        if data is not None:
+            return KernelSeriesUrl(url=url, data=data, use_local=use_local, **kwargs)
+        if url is None:
+            url, use_local = self.form_url(use_local, cycle)
+        if url not in self.by_url:
+            try:
+                self.by_url[url] = KernelSeriesUrl(url=url, data=data, use_local=use_local, **kwargs)
+            except HTTPError as e:
+                if e.code == 404:
+                    return None
+                raise
+        return self.by_url[url]
+
+    def for_spin(self, spin, **kwargs):
+        return self.for_cycle(spin.rsplit("-", 1)[0], **kwargs)
+
+    def tip(self, **kwargs):
+        return self.for_cycle(None, **kwargs)
+
+
+class KernelSeries:
+
+    _cache = KernelSeriesCache()
+
+    def __new__(cls, *args, **kwargs):
+        return cls._cache.tip(*args, **kwargs)
+
+    @classmethod
+    def for_cycle(cls, *args, **kwargs):
+        return cls._cache.for_cycle(*args, **kwargs)
+
+    @classmethod
+    def for_spin(cls, *args, **kwargs):
+        return cls._cache.for_spin(*args, **kwargs)
+
+    @classmethod
+    def tip(cls, *args, **kwargs):
+        return cls._cache.tip(*args, **kwargs)
 
 
 if __name__ == '__main__':
