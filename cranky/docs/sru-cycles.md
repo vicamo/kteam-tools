@@ -24,7 +24,7 @@ $HOME/kteam-tool/stable/README about this particular script.
 If for some reason, a locally modified version of kernel-series.yaml is needed,
 this can be done by setting (and exporting):
 ```
-USE_LOCAL_KERNEL_SERIES_YAML=1
+KERNEL_SERIES_USE=local
 ```
 
 Instructions for creating the "~/.cranky.yaml" file are included in the
@@ -133,13 +133,13 @@ Edit kernel-series.yaml to specify that linux-azure is derived from
 the devel series linux kernel, instead of deriving from current stable
 series.
 
-Export `USE_LOCAL_KERNEL_SEREIS_YAML=1` from now on.
+Export `KERNEL_SERIES_USE=local` from now on.
 
 Run create-kernel-tasks, whilst limiting it to the current series and
 handle:
 
 ```
-USE_LOCAL_KERNEL_SERIES_YAML=1 ~/canonical/kteam-tools/stable/create-kernel-tasks --handle jammy:linux-azure --allow-nomaster --spin 1 2021.10.26
+KERNEL_SERIES_USE=local ~/canonical/kteam-tools/stable/create-kernel-tasks --handle jammy:linux-azure --allow-nomaster --spin 1 2021.10.26
 ```
 
 Where the 2021.10.26 is the last devel cycle.
@@ -155,7 +155,7 @@ lrm, lrs, lrg packages only.
 At this point one can checkout the handle jammy:linux-azure
 
 ```
-USE_LOCAL_KERNEL_SERIES_YAML=1 cranky checkout jammy:linux-azure
+KERNEL_SERIES_USE=local cranky checkout jammy:linux-azure
 ```
 
 If you need to change the series, create new changelog entry, with the
@@ -165,8 +165,8 @@ stable (impish in our case) to current devel series (jammy).
 Do cranky open and link tb:
 
 ```
-USE_LOCAL_KERNEL_SERIES_YAML=1 cranky open -r
-USE_LOCAL_KERNEL_SERIES_YAML=1 cranky link-tb
+KERNEL_SERIES_USE=local cranky open -r
+KERNEL_SERIES_USE=local cranky link-tb
 ```
 
 Make sure `link-tb` is successful, such that swm is in a happy state.
@@ -177,7 +177,7 @@ lrm from stable to devel (impish to jammy) across all the packages
 lrm package.
 
 ```
-USE_LOCAL_KERNEL_SERIES_YAML=1 cranky update-dependent
+KERNEL_SERIES_USE=local cranky update-dependent
 ```
 
 Check that new entry is for devel series (jammy), and potentially
@@ -186,13 +186,13 @@ is no spurious diff of the old changelog. Ideally the version number
 will be the same as before, but with `+1` number after it.
 
 ```
-USE_LOCAL_KERNEL_SERIES_YAML=1 cranky tag
+KERNEL_SERIES_USE=local cranky tag
 ```
 
 If all looks good, one can build lrm source only and upload it alone:
 
 ```
-USE_LOCAL_KERNEL_SERIES_YAML=1 cranky build-sources --current
+KERNEL_SERIES_USE=local cranky build-sources --current
 ```
 
 and upload to the build routing, and push lrm repository only.
