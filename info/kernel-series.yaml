@@ -7886,7 +7886,6 @@ defaults:
                     qa: false
                     hw-cert: true
                     publish-to:
-                        armhf: [ '18-pi' ]
                         arm64: [ '18-pi' ]
             supported: true
             owner: diewald
