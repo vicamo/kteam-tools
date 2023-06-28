@@ -462,10 +462,12 @@ defaults:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - ['ppa:denver-team/ubuntu/denver-build', 'Release']
+                - ['ppa:denver-team/ubuntu/denver-build2', 'Release']
             signing:
                 - ['ppa:canonical-signing/ubuntu/ke-denver', 'Release']
             proposed:
                 - ['ppa:denver-team/ubuntu/denver-proposed', 'Release']
+                - ['ppa:denver-team/ubuntu/denver-proposed2', 'Release']
             updates:
                 - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
         ein-uc20:
@@ -477,56 +479,67 @@ defaults:
                 - ['ppa:canonical-signing/ubuntu/ke-imx', 'Release']
             proposed:
                 - ['ppa:canonical-hwe-imx/ubuntu/imx-proposed', 'Release']
+                - ['ppa:canonical-hwe-imx/ubuntu/imx-proposed2', 'Release']
             updates:
                 - ['ppa:canonical-hwe-imx/ubuntu/imx-release', 'Release']
         shiner-uc20:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - ['ppa:canonical-hwe-imx/ubuntu/honeywell-build', 'Release']
+                - ['ppa:canonical-hwe-imx/ubuntu/honeywell-build2', 'Release']
             signing:
                 - ['ppa:canonical-signing/ubuntu/ke-imx', 'Release']
             proposed:
                 - ['ppa:canonical-hwe-imx/ubuntu/honeywell-proposed', 'Release']
+                - ['ppa:canonical-hwe-imx/ubuntu/honeywell-proposed2', 'Release']
             updates:
                 - ['ppa:canonical-hwe-imx/ubuntu/honeywell-release', 'Release']
         kariya:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - ['ppa:kariya-team/ubuntu/kariya-build', 'Release']
+                - ['ppa:kariya-team/ubuntu/kariya-build2', 'Release']
             signing:
                 - ['signing:kariya/2', 'Release']
             proposed:
                 - ['ppa:kariya-team/ubuntu/kariya-proposed', 'Release']
+                - ['ppa:kariya-team/ubuntu/kariya-proposed2', 'Release']
             updates:
                 - ['ppa:kariya-team/ubuntu/kariya-release', 'Release']
         jollyville-uc20:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - [ 'ppa:jollyville-team/ubuntu/jollyville-build', 'Release' ]
+                - [ 'ppa:jollyville-team/ubuntu/jollyville-build2', 'Release' ]
             signing:
                 - [ 'ppa:canonical-signing/ubuntu/ke-jollyville', 'Release' ]
             proposed:
                 - [ 'ppa:jollyville-team/ubuntu/jollyville-proposed', 'Release' ]
+                - [ 'ppa:jollyville-team/ubuntu/jollyville-proposed2', 'Release' ]
             updates:
                 - [ 'ppa:jollyville-team/ubuntu/jollyville-updates', 'Release' ]
         nuremberg-uc20:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
+                - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-build-ppa2', 'Release' ]
             signing:
                 - [ 'ppa:canonical-signing/ubuntu/ke-ambarella-bosch', 'Release' ]
             proposed:
                 - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
+                - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-proposed-ppa2', 'Release' ]
             updates:
                 - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
         havana-uc20:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - [ 'ppa:havana-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
+                - [ 'ppa:havana-team/ubuntu/uc20-kernel-build-ppa2', 'Release' ]
             signing:
                 - [ 'ppa:canonical-signing/ubuntu/ke-ambarella-honeywell', 'Release' ]
             proposed:
                 - [ 'ppa:havana-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
+                - [ 'ppa:havana-team/ubuntu/uc20-kernel-proposed-ppa2', 'Release' ]
             updates:
                 - [ 'ppa:havana-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
         wendover:
