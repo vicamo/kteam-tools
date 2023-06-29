@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# git-buglink bugnumber commit..range
+#
+# Script that addes a buglink given a bug number to a
+# range of commits. Used when adding buglinks to
+# upstream-stable commits.
+#
+# Author: Kamal Mostafa <kamal@canonical.com>
+
+[ $# -eq 2 ] || {
+    echo 'usage: git-buglink bugnumber commit..range'
+    exit 1
+}
+
+set -e
+
+bugnum="$1"
+range="$2"
+
+bline="BugLink: https://bugs.launchpad.net/bugs/${bugnum}"
+
+sanity_check=1
+
+if [ "$sanity_check" == 1 ]
+then
+    [ "$bugnum" -gt 1950000 -a "$bugnum" -lt 2500000 ] || {
+        echo "git-buglink: ** ERROR! invalid bugnum ($bugnum)! **" 1>&2
+        exit 1
+    }
+fi
+
+msgfilter="sed -e '1a\\\\' -e '1a\\${bline}\\'"
+
+oldhead=$(git log --oneline -1 HEAD)
+
+git filter-branch -f --msg-filter "$msgfilter" "$range"
+
+echo "# Note: before git-buglink, HEAD was"
+echo "#    $oldhead"
+
