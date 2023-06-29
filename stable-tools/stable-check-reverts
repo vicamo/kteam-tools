@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# stable-check-reverts {patchdir} [ {search..range} ]
+#
+# Script run from a upstream stable repository that checks patches in
+# a given directory if they have been reverted in future upstream stable
+# versions.
+#
+# Author: Kamal Mostafa <kamal@canonical.com>
+
+
+[ $# -lt 1 ] && {
+	echo "usage: stable-check-reverts {patchdir} [ {search..range} ]" 1>&2
+	exit 1
+}
+patchdir="$1"
+range="$2"
+
+if [ ! -z "$range" ]
+then
+    rstart=${range%\.\.*}
+    rend=${range##*\.\.}
+    [ "$range" = "$rstart..$rend" ] || {
+	    echo "E: {search..range} is malformed; not a range spec" 1>&2
+	    exit 1
+    }
+else
+    rstart="${patchdir##*/}"	# extract the tag from the patchdir name (meh)
+    rend="${rstart##v}"
+    rend="${rend%.*}"
+    rend="linux-${rend}.y"
+    range="$rstart..$rend"
+fi
+
+git merge-base --is-ancestor $rstart $rend || {
+	echo "E: {search..range} is malformed; search is not an ancestor" 1>&2
+	exit 1
+}
+
+git log --oneline "${range}" | grep Revert | while read sha descr
+do
+	echo "$sha $descr"
+	continue
+
+	## this works, but is unnecessary:
+	revsha=$(
+	    git log -1 $sha | sed -n '/^.*reverts commit \([abcdefABCDEF0123456789]*\).*$/{s//\1/;p;q}'
+	)
+	revdescr=${descr#Revert \"}
+	revdescr=${revdescr%\"}
+	[ -z "$revdescr" ] && {
+		echo "I: skipping: $sha $descr"
+	}
+	# git log --oneline -1 $revsha
+	# git find $revsha --in $curbranch master
+	echo "$revsha $revdescr"
+
+done > /tmp/reverts
+
+{
+rcount=$(cat /tmp/reverts | wc -l)
+pcount=$(ls $patchdir/*.patch | wc -l)
+echo "*** Patches in $patchdir (checking $pcount patches)"
+echo "*** later reverted in $range (checking $rcount reverts):"
+} 1>&2
+
+for p in $patchdir/*.patch
+do
+	pdescr=$(sed -n '/^Subject: \(.*\)$/{s//\1/;p;q}' $p)
+	revert=$(fgrep -- "$pdescr" /tmp/reverts)
+	[ -z "$revert" ] || {
+		echo "$p"
+		#echo "    revert: $revert"
+	}
+done
+
