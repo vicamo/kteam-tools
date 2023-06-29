@@ -143,7 +143,7 @@ do
 			*)			upload_to="$ppa_ps"; upload_name="private" ;;
 			esac
 			echo "$id: uploading $upload (to $upload_name $upload_to) ..."
-			dput ${ANCILLARY_DPUTCF:+-c $ANCILLARY_DPUTCF} "$upload_to" "$upload"
+			timeout 5m dput ${ANCILLARY_DPUTCF:+-c $ANCILLARY_DPUTCF} "$upload_to" "$upload"
 		done
 	)
 	rc="$?"
