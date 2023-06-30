@@ -52,6 +52,8 @@ jobs:
         uses: actions/tnt-diff-bot@v1
         with:
           syntax: symmetric
+          token: ${{ secrets.BOT_TOKEN_ISSUE_EDIT }}
+
       - step:
         name: Sign-off Check
         uses: actions/tnt-sign-off-check@v1
