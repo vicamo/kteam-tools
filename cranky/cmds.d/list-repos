@@ -74,12 +74,15 @@ class SimplePackage:
 class RepoSource:
     """Extracts repo information for handles from kernel series database"""
 
-    def __init__(self, handle_names, include_types):
+    def __init__(self, handle_names, include_types, ks=None):
         """Create a new repo source
         :param handle_names: list(str) list of cranky handles, e.g. linux:bionic-kvm
         :param include_types: list(str) package types to include, e.g. meta, lrm, signed
         """
-        self._ks = KernelSeries()
+        if ks is None:
+            ks = KernelSeries()
+
+        self._ks = ks
         self._handle_names = handle_names
         self._include_types = include_types
 
@@ -110,7 +113,7 @@ class RepoSource:
             # of the local git tree for this handle. We are pulling data
             # from the kernel series db so skipping validation is safe.
             try:
-                handle = Handle(ks=self._ks).lookup_set(h, validate=False)
+                handle = Handle().lookup_set(h, validate=False, ks=self._ks)
             except HandleError as e:
                 cerror(e)
                 sys.exit(1)
@@ -208,6 +211,10 @@ Examples:
         action="store_true",
         help="Show repositories part of derivative sources"
     )
+    parser.add_argument(
+        "--cycle",
+        help="sru cycle to use when looking up the source",
+    )
     args = parser.parse_args()
 
     # If no explicit base/derivative selection, show all.
@@ -217,8 +224,9 @@ Examples:
     level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(level=level, format="%(message)s")
 
+    ks = KernelSeries.for_cycle(args.cycle)
     try:
-        repo_source = RepoSource(args.handle, args.include)
+        repo_source = RepoSource(args.handle, args.include, ks=ks)
     except HandleError as e:
         cerror(e)
         sys.exit(1)

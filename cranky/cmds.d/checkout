@@ -9,12 +9,14 @@ import os
 import sys
 import datetime
 
+from ktl.kernel_series import KernelSeries
+from ktl.log import cdebug, cerror, cnotice, Clog
+
 from crl.git import GitHandleSet, GitError
 from crl.config import Config
 from crl.cycle_ref import CycleRef, Git
 from crl.exceptions import CrankyException
 from crl.handle import Handle, HandleError
-from ktl.log import cdebug, cerror, cnotice, Clog
 
 
 def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=None, nc=False, cycle=None):
@@ -25,11 +27,12 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
 
     # Cycle through the trees and clone/update the package specific
     # repositories.
-    ghs = GitHandleSet(handle)
+    ghs = GitHandleSet(handle, cycle=cycle)
 
     cnotice("Codename: {}".format(ghs.codename))
     cnotice("Source:   {}".format(ghs.source.name))
 
+    gh_main = None
     summary = []
     for gh in ghs:
         repo_dir = gh.directory
@@ -50,6 +53,17 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
 
         if crd:
             gh.fetch_security(fetch=True)
+
+        ptype = gh.package.type or "main"
+        if ptype == "main":
+            gh_main = gh
+
+    for gh in ghs:
+        if gh != gh_main:
+            link = gh.directory + "/.git/cranky-main"
+            link_destination = os.path.relpath(gh_main.directory, os.path.dirname(link))
+            os.symlink(link_destination, link + ".new", target_is_directory=True)
+            os.rename(link + ".new", link)
 
     is_rebuilt = False
     for gh in ghs:
@@ -85,13 +99,12 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
 
         # Add info for the summary
         summary.append({"name": pkg.name, "dir": gh.directory, "remote": remote,
-                        "branch": branch})
+                        "branch": branch, "remote-branch": rmt_branch})
 
     # Print the summary
     cnotice("Summary:")
     for s in summary:
-        cnotice("  Repo '{}' in directory '{}' (branch '{}')".format(
-                s["name"], s["dir"], s["branch"]))
+        cnotice("  Repo '{name}' in directory '{dir}' (branch '{branch}' remote '{remote}' remote-branch '{remote-branch}')".format(**s))
 
 
 def expanduser(path):

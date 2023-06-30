@@ -241,21 +241,21 @@ class GitHandle():
         if result.returncode == 0:
             current_url = result.stdout.decode('utf-8').strip()
             if current_url != repo_url:
-                cnotice("Updating remote {} in {}".format(remote, repo_dir))
+                cnotice("Updating remote {} in {} to {}".format(remote, os.path.basename(repo_dir), repo_url))
                 result = run(["git", "config", "remote.{}.url".format(remote),
                               repo_url], cwd=repo_dir, stdout=PIPE)
                 if result.returncode != 0:
                     raise GitError("failed to update remote {} url to {} "
                                    "rc={}".format(remote, repo_url, result.returncode))
         else:
-            cnotice("Adding remote {} in {}".format(remote, repo_dir))
+            cnotice("Adding remote {} in {}".format(remote, os.path.basename(repo_dir)))
             result = run(["git", "remote", "add", remote, repo_url], cwd=repo_dir)
             if result.returncode != 0:
                 raise GitError("failed to add remote {} "
                                "rc={}".format(remote, result.returncode))
 
         if fetch:
-            cnotice("Fetching remote {} in {}".format(remote, repo_dir))
+            cnotice("Fetching remote {} in {}".format(remote, os.path.basename(repo_dir)))
             result = run(["git", "fetch", remote], cwd=repo_dir)
             if result.returncode != 0:
                 raise GitError("failed to fetch remote {} "
@@ -317,14 +317,14 @@ class GitHandleSet():
     A git based view onto a HandleSet. To be used as an accessor to git functionality
     for HandleSet()s and HandleTree()s.
     '''
-    def __init__(self, handle):
+    def __init__(self, handle, cycle=None):
         '''
         handle := <series>:<source>
         '''
         # Might raise a HandleError:
         hdl = Handle()
         try:
-            self.__hdlset = hdl.lookup_set(handle, validate=False)
+            self.__hdlset = hdl.lookup_set(handle, cycle=cycle, validate=False)
         except HandleError as e:
             raise GitError(e)
 

@@ -12,13 +12,12 @@ from ktl.log import cdebug, cerror, cexception
 
 from crl.cycle_ref import CycleRef, Git
 from crl.exceptions import CrankyException
-from crl.handle import Handle, HandleError, KernelSeries
+from crl.handle import Handle, HandleError
 
 
-def rebuild_cycles(handle, dry_run=False, quiet=False, **kwargs):
+def rebuild_cycles(handle, dry_run=False, quiet=False, cycle=None, **kwargs):
     """Rebuild all cycle references for the specified handle"""
-    ks = KernelSeries()
-    tree = Handle(ks=ks).lookup_set(handle, validate=False)
+    tree = Handle().lookup_set(handle, cycle=cycle, validate=False)
     main_tree = tree.get_tree_by_package_type("main")
 
     CycleRef.generate(tree, remote=main_tree.remote, dry_run=dry_run)
@@ -32,10 +31,11 @@ def list_cycles(
     descending: bool = False,
     after: str = None,
     before: str = None,
+    cycle=None,
     **kwargs,
 ):
     """List cycle references for the specified handle and package"""
-    tree = Handle().lookup_set(handle, validate=False).get_tree_by_package_type(package)
+    tree = Handle().lookup_set(handle, cycle=cycle, validate=False).get_tree_by_package_type(package)
     if not tree:
         raise CrankyException(
             "No package type '{}' found in {}".format(package, handle)
@@ -47,9 +47,9 @@ def list_cycles(
         print("{} {}".format(tree.name, str(cycle_ref)))
 
 
-def destroy_cycles(handle, dry_run=False, **kwargs):
+def destroy_cycles(handle, dry_run=False, cycle=None, **kwargs):
     """Delete all local cycle references under refs/swm"""
-    handle_set = Handle().lookup_set(handle, validate=False)
+    handle_set = Handle().lookup_set(handle, cycle=cycle, validate=False)
     for tree in handle_set.trees:
         git = Git(tree.directory)
         for cycle_ref in CycleRef.get_list(tree):
@@ -163,6 +163,10 @@ Delete all local cycle references in your local git tree for this handle
 
     # Handle must be added after subcommands
     for subparser in subparsers.choices.values():
+        subparser.add_argument(
+            "--cycle",
+            help="sru cycle to use when looking up the source.",
+        )
         subparser.add_argument(
             "handle",
             nargs="?",

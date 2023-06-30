@@ -112,6 +112,8 @@ Example: cranky promote-snap pi-kernel
                         help='specification of the snap to be promoted. If ' +
                         '<series>:<source name> is not provided, deduces it ' +
                         'from the current working directory.')
+    parser.add_argument("--cycle",
+                        help="sru cycle to use when looking up the source")
     args = parser.parse_args()
 
     Clog.color = True
@@ -136,7 +138,7 @@ Example: cranky promote-snap pi-kernel
                     series_source = '{}:{}'.format(ki['series'], ki['source'])
                 else:
                     try:
-                        handle_set = Handle().lookup_set(os.getcwd(), validate=False)
+                        handle_set = Handle().lookup_set(os.getcwd(), cycle=args.cycle, validate=False)
                     except HandleError as e:
                         cerror(e)
                         sys.exit(1)

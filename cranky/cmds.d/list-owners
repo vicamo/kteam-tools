@@ -15,6 +15,7 @@ import logging
 import sys
 
 from crl.handle import Handle, HandleError
+from ktl.kernel_series import KernelSeries
 from ktl.log import cdebug, cerror
 from ktl.kernel_series import KernelSeries
 
@@ -150,6 +151,8 @@ Examples:
                         help="Also include kernel sources which are under development.")
     parser.add_argument("--by-owner", action="store_true",
                         help="Change the output to list owners and their kernel sources.")
+    parser.add_argument("--cycle",
+                        help="sru cycle to use when looking up the source.")
     args = parser.parse_args()
 
     # Setup the logger
@@ -164,12 +167,13 @@ Examples:
     if len(args.handle) > 0:
         for h in args.handle:
             try:
-                handle = Handle(ks=ks).lookup_tree(h, validate=False)
+                handle = Handle().lookup_tree(h, cycle=args.cycle, validate=False)
             except HandleError as e:
                 cerror(e)
                 sys.exit(1)
             sources.add(handle.package.source, filters=args.filters)
     else:
+        ks = KernelSeries()
         for ks_series in sorted(ks.series, key=lambda x: x.name, reverse=True):
             for ks_source in sorted(ks_series.sources, key=lambda x: x.name):
                 sources.add(ks_source, filters=args.filters)

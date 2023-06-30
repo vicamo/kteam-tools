@@ -90,7 +90,7 @@ function dput_src()
 function usage()
 {
 	cat <<EOF
-Usage: cranky dput-sources [-h] [-f|--force] [-c|--current] [-e EMAIL] DESTINATION [HANDLE]
+Usage: cranky dput-sources [-h] [-f|--force] [-c|--current] [-e EMAIL] [--cycle CYCLE] DESTINATION [HANDLE]
 
 Sign and upload the kernel source packages specified by HANDLE to the
 DESTINATION PPA. The script will show the details of the destination PPA
@@ -114,6 +114,8 @@ Optional arguments:
   -e, --email    Email address of the key to be used for the package signing.
                  Useful when (re-)signing a package built using another
                  email address.
+  --cycle        Work against a specific cycle, defaults to the tree cycle
+                 when handle is a directory and the tip otherwise.
 
 Example:
   $ cranky dput-sources build
@@ -139,6 +141,7 @@ force=0
 dest=
 handle=
 maint_email=
+cycle=
 
 while [ ${#} -gt 0 ] ; do
 	case "${1}" in
@@ -159,6 +162,10 @@ while [ ${#} -gt 0 ] ; do
 		-h|--help)
 			usage
 			exit
+			;;
+		--cycle)
+			shift
+			cycle="$1"
 			;;
 		-*)
 			usage
@@ -190,7 +197,7 @@ fi
 trap out EXIT INT TERM HUP
 
 # Get the PPA for the given upload destination
-ppa=$("$C" list-routing "${handle}" | awk '$1 == "'"${dest}"'" { print $3 }')
+ppa=$("$C" list-routing ${cycle:+--cycle }${cycle} "${handle}" | awk '$1 == "'"${dest}"'" { print $3 }')
 if [ -z "${ppa}" ] ; then
 	echo "No PPA found for destination ${dest}" >&2
 	exit 1
@@ -199,7 +206,7 @@ fi
 echo "PPA: ${ppa}"
 
 # Get the source directories for the package set
-readarray -t srcs < <("$C" shell-helper source-packages-path "${handle}")
+readarray -t srcs < <("$C" shell-helper source-packages-path ${cycle:+--cycle }${cycle} "${handle}")
 if [ "${#srcs[@]}" -eq 0 ] ; then
 	exit 1
 fi

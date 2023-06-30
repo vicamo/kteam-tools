@@ -25,8 +25,8 @@ class CrankyContext:
         self.tracking_bug_path = tracking_bug_path
         self.handle_config = handle_config
         ks = KernelSeries()
-        self.handle = Handle(config=handle_config, ks=ks).lookup_set(
-            handle_name, validate=False
+        self.handle = Handle(config=handle_config).lookup_set(
+            handle_name, ks=ks, validate=False
         )
         self.repo = next(
             iter([t for t in self.handle.trees if t.package.name == package_name]), None

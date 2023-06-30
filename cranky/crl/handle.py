@@ -258,33 +258,77 @@ class HandleSet(HandleCore):
                 break
         return result
 
-class Handle(HandleCore):
-    def __init__(self, config=None, ks=None):
-        super().__init__(config=config, ks=ks)
+class Handle:
+    def __init__(self, config=None):
+        if config is None:
+            config = Config()
+        self.config = config
+
+    def directory_identity(self, directory):
+        spin = None
+        try:
+            with change_directory(directory):
+                changelog = Debian.changelog()
+            for base in (directory, os.path.join(directory, ".git", "cranky-main")):
+                if not os.path.exists(base):
+                    continue
+                with change_directory(base):
+                    debian_env = Debian.debian_env() or "debian"
+                    tracking_file = os.path.join(debian_env, "tracking-bug")
+                    if os.path.exists(tracking_file):
+                        with open(tracking_file) as tfd:
+                            tracking_bug, spin = tfd.readline().strip().split()[0:2]
+                        break
+
+        except (DebianError, GitError) as e:
+            raise HandleError("{}: bad directory handle -- {}".format(directory, e))
+
+        # Always use topmost entry for package name, even if unreleased
+        package = changelog[0]['package']
+
+        if len(changelog) > 0 and changelog[0]['series'] == 'UNRELEASED':
+            changelog.pop(0)
+
+        if len(changelog) == 0:
+            raise HandleError("{}: Unable to identify directory handle".format(directory))
+
+        if spin is not None:
+            spin = spin.rsplit("-", 1)[0]
+
+        return spin, changelog[0]['series'], package
 
     def lookup_package(self, package, validate=True):
-        return HandleTree(package.series, package, validate=validate, ks=self.ks, config=self.config)
+        return HandleTree(package.series, package, validate=validate, ks=package._ks, config=self.config)
 
-    def lookup_tree(self, handle, validate=True):
-        package = None
-        directory = None
-        source = None
-
+    def decode_handle(self, handle):
         # A directory passed as a handle.
         if os.path.exists(handle):
-            (series_name, package_name) = self.identify_directory(handle)
-            directory = handle
+            cycle_name, series_name, package_name = self.directory_identity(handle)
 
         else:
             bits = handle.split(':')
             if len(bits) != 2:
                 raise HandleError("{}: handle format unknown".format(handle))
+            series_name, package_name = bits
+            cycle_name = None
 
-            (series_name, package_name) = bits
+        return cycle_name, series_name, package_name
 
-        series = self.ks.lookup_series(codename=series_name)
+    def lookup_tree(self, handle, cycle=None, validate=True, ks=None):
+        package = None
+        source = None
+
+        cycle_name, series_name, package_name = self.decode_handle(handle)
+        if cycle is None:
+            cycle = cycle_name
+
+        if ks is None:
+            ks = KernelSeries.for_cycle(cycle)
+            if ks is None:
+                raise HandleError("{}: cycle {} configuration not found".format(handle, cycle))
+        series = ks.lookup_series(codename=series_name)
         if series is None:
-            series = self.ks.lookup_series(series=series_name)
+            series = ks.lookup_series(series=series_name)
         if series is None:
             raise HandleError("{}: handle directory contains unknown series {}".format(handle, series_name))
 
@@ -300,24 +344,25 @@ class Handle(HandleCore):
         if package is None:
             raise HandleError("{}: handle directory contains unknown package {}".format(handle, package_name))
 
-        return HandleTree(series, package, source=source, directory=directory, validate=validate, ks=self.ks, config=self.config)
+        return HandleTree(series, package, source=source, validate=validate, ks=ks, config=self.config)
 
-    def lookup_set(self, handle, validate=True):
+    def lookup_set(self, handle, cycle=None, validate=True, ks=None):
         # A directory passed as a handle.
         if os.path.exists(handle):
-            tree = self.lookup_tree(handle, validate=validate)
-            return HandleSet(handle, tree.series, tree.package.source, validate=validate, sample=tree, ks=self.ks, config=self.config)
+            tree = self.lookup_tree(handle, cycle=cycle, validate=validate, ks=ks)
+            return HandleSet(handle, tree.series, tree.package.source, validate=validate, sample=tree, ks=ks, config=self.config)
 
-        # Validate this as a series/package handle.
-        bits = handle.split(':')
-        if len(bits) != 2:
-            raise HandleError("{}: handle format unknown".format(handle))
+        cycle_name, series_name, source_name = self.decode_handle(handle)
+        if cycle is None:
+            cycle = cycle_name
 
-        (series_name, source_name) = bits
-
-        series = self.ks.lookup_series(codename=series_name)
+        if ks is None:
+            ks = KernelSeries.for_cycle(cycle)
+            if ks is None:
+                raise HandleError("{}: cycle {} configuration not found".format(handle, cycle))
+        series = ks.lookup_series(codename=series_name)
         if series is None:
-            series = self.ks.lookup_series(series=series_name)
+            series = ks.lookup_series(series=series_name)
         if series is None:
             raise HandleError("{}: handle contains unknown series".format(series_name))
 
@@ -325,4 +370,4 @@ class Handle(HandleCore):
         if source is None:
             raise HandleError("{}: handle contains unknown source".format(source_name))
 
-        return HandleSet(handle, series, source, validate=validate, ks=self.ks, config=self.config)
+        return HandleSet(handle, series, source, validate=validate, ks=ks, config=self.config)
