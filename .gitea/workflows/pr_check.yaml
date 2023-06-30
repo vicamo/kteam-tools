@@ -49,6 +49,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Diff Bot
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: actions/tnt-diff-bot@v1
         with:
           syntax: symmetric
