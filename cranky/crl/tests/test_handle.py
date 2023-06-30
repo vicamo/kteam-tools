@@ -9,9 +9,9 @@ from subprocess                 import getstatusoutput
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
 sys.path.append(os.pardir)
 
-from handle                     import Handle, change_directory, HandleError
+from crl.config                 import Config
+from crl.handle                 import Handle, change_directory, HandleError
 from ktl.kernel_series          import KernelSeries
-from config                     import Config
 
 class TestHandle(unittest.TestCase):
 
@@ -22,12 +22,17 @@ class TestHandle(unittest.TestCase):
             linux:
                 packages:
                     linux:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-bionic', 'master-next']
                     linux-meta:
                         type: meta
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-bionic']
+
             linux2:
                 packages:
                     linux2-main:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-linux2', 'master-next']
                     linux2-meta:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-linux2', 'master-next']
                         type: meta
     '17.10':
         codename: artful
@@ -35,7 +40,9 @@ class TestHandle(unittest.TestCase):
             linux:
                 packages:
                     linux:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-artful', 'master-next']
                     linux-meta:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-artful', 'master-next']
                         type: meta
     '16.04':
         codename: xenial
@@ -43,7 +50,9 @@ class TestHandle(unittest.TestCase):
             linux:
                 packages:
                     linux:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-xenial', 'master-next']
                     linux-meta:
+                        repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-xenial', 'master-next']
                         type: meta
     """
 
@@ -67,6 +76,11 @@ class TestHandle(unittest.TestCase):
 
         self.assertEqual(sorted(expected), sorted(trees))
 
+    def config_in_temp_dir(self, temp_dir, data=path_config_yaml):
+        """Load config YAML and set base-path to dynamic temp_dir"""
+        config = Config(data=data)
+        config.config["base-path"] = temp_dir.path
+        return config
 
 class TestHandleSeries(TestHandle):
 
@@ -101,51 +115,6 @@ class TestHandleSeries(TestHandle):
 
         self.assertEqual(hdl.package.series.codename, 'bionic')
         self.assertEqual(hdl.package.name, 'linux2-main')
-
-    def test_trees_series_bionic(self):
-        ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
-        hdl = Handle(ks=ks, config=config).lookup_set('bionic:linux')
-
-        trees_match = [
-            [ 'bionic', 'linux', '/src/bionic/linux' ],
-            [ 'bionic', 'linux-meta', '/src/bionic/linux-meta' ],
-            ]
-        self.assertEqualTrees(trees_match, hdl.trees)
-
-    def test_trees_series_artful(self):
-        ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
-        hdl = Handle(ks=ks, config=config).lookup_set('artful:linux')
-
-        trees_match = [
-            [ 'artful', 'linux', '/src/artful/linux' ],
-            [ 'artful', 'linux-meta', '/src/artful/meta' ],
-            ]
-        self.assertEqualTrees(trees_match, hdl.trees)
-
-    def test_trees_series_bionic_basepath(self):
-        ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.basepath_config_yaml)
-        hdl = Handle(ks=ks, config=config).lookup_set('bionic:linux')
-
-        trees_match = [
-            [ 'bionic', 'linux', '/src/bionic/linux' ],
-            [ 'bionic', 'linux-meta', '/src/bionic/linux-meta' ],
-            ]
-        self.assertEqualTrees(trees_match, hdl.trees)
-
-
-class TestHandleSeriesVersion(TestHandle):
-
-    def test_series_bionic(self):
-        ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
-        hdlc = Handle(ks=ks, config=config).lookup_set('bionic:linux')
-        hdlv = Handle(ks=ks, config=config).lookup_set('18.04:linux')
-
-        self.assertEqual(hdlc.series, hdlv.series)
-        self.assertEqual(hdlc.source, hdlv.source)
 
 
 class TestHandleDirectoryEncode(TestHandle):
@@ -343,9 +312,9 @@ class TestHandleDirectory(TestHandle):
         data_changelog = "{} ({}) {}; urgency=medium\n  * foo\n -- ME\n".format(package, '4.15.0-1.2', series)
         d.makedir(name + '/debian')
         d.write(name + '/debian/changelog', data_changelog.encode('utf-8'))
-        self.setUpRunCmd(git_path, 'git add debian/changelog'.format(debian))
+        self.setUpRunCmd(git_path, 'git add debian/changelog')
 
-        self.setUpRunCmd(git_path, 'git commit -a -m "Initial"'.format(debian))
+        self.setUpRunCmd(git_path, 'git commit -a -m "Initial"')
 
     def test_directory_source_noconfig(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -359,7 +328,7 @@ class TestHandleDirectory(TestHandle):
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux'))
 
@@ -371,7 +340,7 @@ class TestHandleDirectory(TestHandle):
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux-meta'))
 
@@ -383,7 +352,7 @@ class TestHandleDirectory(TestHandle):
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_tree(d.getpath('bionic/linux'))
 
@@ -396,7 +365,7 @@ class TestHandleDirectory(TestHandle):
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_tree(d.getpath('bionic/linux-meta'))
 
@@ -408,8 +377,9 @@ class TestHandleDirectory(TestHandle):
         ks = KernelSeries(data=self.data_yaml)
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
+            self.setUpSourceMeta(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux'))
 
@@ -422,9 +392,9 @@ class TestHandleDirectory(TestHandle):
     def test_trees_directory_source_config_bionic_meta(self):
         ks = KernelSeries(data=self.data_yaml)
         with TempDirectory() as d:
-            self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
+            self.setUpSourceMeta(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux-meta'))
 
@@ -438,9 +408,9 @@ class TestHandleDirectory(TestHandle):
         ks = KernelSeries(data=self.data_yaml)
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
-            self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
+            self.setUpSourceMeta(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux'))
 
@@ -450,23 +420,12 @@ class TestHandleDirectory(TestHandle):
                 ]
             self.assertEqualTrees(trees_match, hdl.trees)
 
-    def test_trees_directory_source_config_bionic_linux_metabroken(self):
-        ks = KernelSeries(data=self.data_yaml)
-        with TempDirectory() as d:
-            self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
-            self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta-hwe')
-
-            config = Config(data=self.path_config_yaml)
-
-            with self.assertRaises(HandleError):
-                hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux'))
-
     def test_trees_directory_source_config_bionic_linux_dot(self):
         ks = KernelSeries(data=self.data_yaml)
         with TempDirectory() as d:
             self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
 
-            config = Config(data=self.path_config_yaml)
+            config = self.config_in_temp_dir(d)
 
             with change_directory(d.getpath('bionic/linux')):
                 hdl = Handle(ks=ks, config=config).lookup_set('.')

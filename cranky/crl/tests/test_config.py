@@ -7,8 +7,7 @@ import unittest
 
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
 
-from config                     import Config
-from ktl.kernel_series          import KernelSeries
+from crl.config                 import Config
 
 
 class TestConfig(unittest.TestCase):
