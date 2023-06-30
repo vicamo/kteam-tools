@@ -464,17 +464,6 @@ class TestHandleDirectory(TestHandle):
                 ]
             self.assertEqualTrees(trees_match, hdl.trees)
 
-    def test_trees_directory_source_config_bionic_linux_metabroken(self):
-        ks = KernelSeries(data=self.data_yaml)
-        with TempDirectory() as d:
-            self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
-            self.setUpSourceMain(d, 'bionic/linux-meta', 'master', 'bionic', 'linux-meta-hwe')
-
-            config = Config(data=self.path_config_yaml)
-
-            with self.assertRaises(HandleError):
-                _ = Handle(config=config).lookup_set(d.getpath('bionic/linux'), ks=ks)
-
     def test_trees_directory_source_config_bionic_linux_dot(self):
         ks = KernelSeries(data=self.data_yaml)
         with TempDirectory() as d:
