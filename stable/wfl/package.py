@@ -3093,6 +3093,7 @@ class Package():
             if pocket_data.version is None:
                 continue
             if pocket_data.version == meta_version:
+                previously_published = True
                 continue
 
             # See if we have different names in this pocket.
@@ -3136,7 +3137,7 @@ class Package():
             if some:
                 break
 
-        signing_signoff = signing_present and not previously_published
+        signing_signoff = signing_present and (not previously_published or version_change)
         kernel_signoff = version_change or variant_change
 
         if kernel_signoff and "kernel-signoff" not in self.bug.tasks_by_name:
@@ -3147,8 +3148,10 @@ class Package():
             self.bug.add_task("signing-signoff")
 
         messages = []
-        if signing_signoff:
+        if signing_signoff and not previously_published:
             messages.append("New kernel with signed kernels; signing-review required.")
+        elif signing_signoff:
+            messages.append("Major kernel version bump with signed kernels; signing-review required.")
         if variant_change:
             messages.append("linux-image name changes detected, review variant/flavour changes; kernel-signoff required.")
         if version_change:
