@@ -20,6 +20,7 @@ if [ ! -e debian/debian.env ] ; then
 	exit 1
 fi
 
+# shellcheck disable=SC1091
 . debian/debian.env
 
 if [ -e "$DEBIAN/etc/update.conf" ]; then
@@ -48,14 +49,18 @@ fi
 
 HERE=$(here)
 declare -a HELPERS
-while IFS= read -r file; do
-	script=${file//$HERE/}
-	script=${script//\/\.\.\/annotations-tools/debian/scripts/misc}
-	dir_script=$(dirname "$script")
-	mkdir -p "$dir_script"
-	cp -p "$file" "$script"
+files=(
+	annotations
+	kernelconfig
+	kconfig/__init__.py
+	kconfig/annotations.py
+)
+for f in "${files[@]}" ; do
+	script=debian/scripts/misc/${f}
+	mkdir -p "${script%/*}"
+	cp -p "${HERE}"/../annotations-tools/"${f}" "${script}"
 	HELPERS+=("$script")
-done < <(find "${HERE}/../annotations-tools" -type f -and -not -name ".gitignore" -and -not -name "README.rst")
+done
 
 msg="UBUNTU: [Packaging] update annotations scripts"
 commit "$msg" "${HELPERS[@]}"
