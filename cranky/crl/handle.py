@@ -304,6 +304,8 @@ class Handle:
         # A directory passed as a handle.
         if os.path.exists(handle):
             cycle_name, series_name, package_name = self.directory_identity(handle)
+            if cycle_name[0] == "d":
+                cycle_name = None
 
         else:
             bits = handle.split(':')
