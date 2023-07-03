@@ -265,7 +265,12 @@ class Handle:
         self.config = config
 
     def directory_identity(self, directory):
-        spin = None
+        """Return tuple of names for (cycle, series, package)
+        The directory must contain or link to a tracking-bug file for this
+        tree set. The cycle name may be None in the returned tuple.
+        :raises: HandleError if directory cannot be identified
+        """
+        cycle_name = None
         try:
             with change_directory(directory):
                 changelog = Debian.changelog()
@@ -277,7 +282,7 @@ class Handle:
                     tracking_file = os.path.join(debian_env, "tracking-bug")
                     if os.path.exists(tracking_file):
                         with open(tracking_file) as tfd:
-                            tracking_bug, spin = tfd.readline().strip().split()[0:2]
+                            _, cycle_name = tfd.readline().strip().split()[0:2]
                         break
 
         except (DebianError, GitError) as e:
@@ -292,10 +297,10 @@ class Handle:
         if len(changelog) == 0:
             raise HandleError("{}: Unable to identify directory handle".format(directory))
 
-        if spin is not None:
-            spin = spin.rsplit("-", 1)[0]
+        if cycle_name is not None:
+            cycle_name = cycle_name.rsplit("-", 1)[0]
 
-        return spin, changelog[0]['series'], package
+        return cycle_name, changelog[0]['series'], package
 
     def lookup_package(self, package, validate=True):
         return HandleTree(package.series, package, validate=validate, ks=package._ks, config=self.config)
@@ -304,7 +309,7 @@ class Handle:
         # A directory passed as a handle.
         if os.path.exists(handle):
             cycle_name, series_name, package_name = self.directory_identity(handle)
-            if cycle_name[0] == "d":
+            if cycle_name and cycle_name[0] in ("d",):
                 cycle_name = None
 
         else:
