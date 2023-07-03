@@ -22,6 +22,11 @@ fi
 
 . debian/debian.env
 
+if [ -e "$DEBIAN/etc/update.conf" ]; then
+	fix_verbose "skip derivative kernel"
+	exit 0
+fi
+
 # Extract release version from the changelog
 if [ ! -e "$(which ubuntu-distro-info)" ]; then
 	echo "package distro-info is not installed, please install it"
