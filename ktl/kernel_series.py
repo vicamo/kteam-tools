@@ -858,7 +858,8 @@ class KernelSeriesCache:
         return self.by_url[url]
 
     def for_spin(self, spin, **kwargs):
-        return self.for_cycle(spin.rsplit("-", 1)[0], **kwargs)
+        cycle = spin.rsplit("-", 1)[0] if spin is not None else None
+        return self.for_cycle(cycle, **kwargs)
 
     def tip(self, **kwargs):
         return self.for_cycle(None, **kwargs)
