@@ -774,10 +774,6 @@ class KernelSeriesUrl:
             self._xc = SigningConfig(use_local=self._xc_local)
         return self._xc
 
-    @staticmethod
-    def key_series_name(series):
-        return [int(x) for x in series.name.split('.')]
-
     @property
     def series(self):
         return [KernelSeriesEntry(self, series_key, series)
@@ -886,6 +882,10 @@ class KernelSeries:
     @classmethod
     def tip(cls, *args, **kwargs):
         return cls._cache.tip(*args, **kwargs)
+
+    @staticmethod
+    def key_series_name(series):
+        return [int(x) for x in series.name.split('.')]
 
 
 if __name__ == '__main__':
