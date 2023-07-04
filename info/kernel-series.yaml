@@ -6792,7 +6792,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-xilinx-zynqmp/+git/focal', 'master']
             supported: true
-            owner: wenchien
+            owner: portias
             development: false
             derived-from: [ '20.04', 'linux' ]
             swm:
