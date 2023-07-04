@@ -1719,7 +1719,7 @@ defaults:
 '22.10':
     codename: kinetic
     development: false
-    supported: true
+    supported: false
     routing-table: *routing-table
     routing-map:
         default: stable-unsigned
@@ -2249,6 +2249,7 @@ defaults:
 
         linux-hwe-5.19:
             routing: ubuntu/4
+            versions: ['5.19.0']
             variants: [ '-hwe-22.04' ]
             package-relations: signed-generate
             packages:
@@ -2272,8 +2273,7 @@ defaults:
             owner: kleber-souza
             supported: true
             development: false
-            backport: true
-            derived-from: [ '22.10', 'linux' ]
+            backport: false
             swm:
                 kernel-testing: true
             testing:
@@ -2310,8 +2310,8 @@ defaults:
             owner: smb
             supported: true
             development: false
-            backport: true
-            derived-from: [ '22.10', 'linux-lowlatency' ]
+            backport: false
+            derived-from: [ '22.04', 'linux-hwe-5.19' ]
             swm:
                 kernel-testing: true
             testing:
@@ -2540,8 +2540,8 @@ defaults:
                     type: lrs
             supported: true
             owner: timg-tpi
-            backport: true
-            derived-from: [ '22.10', 'linux-aws' ]
+            backport: false
+            derived-from: [ '22.04', 'linux-hwe-5.19' ]
             swm:
                 kernel-testing: true
             testing:
@@ -2709,8 +2709,8 @@ defaults:
                     type: lrs
             supported: false
             owner: timg-tpi
-            backport: true
-            derived-from: [ '22.10', 'linux-azure' ]
+            backport: false
+            derived-from: [ '22.04', 'linux-hwe-5.19' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
@@ -2883,8 +2883,8 @@ defaults:
                     type: lrs
             supported: true
             owner: kmously
-            backport: true
-            derived-from: [ '22.10', 'linux-gcp' ]
+            backport: false
+            derived-from: [ '22.04', 'linux-hwe-5.19' ]
             swm:
                 kernel-testing: true
             testing:
@@ -3287,8 +3287,8 @@ defaults:
                     type: lrs
             supported: true
             owner: kmously
-            backport: true
-            derived-from: [ '22.10', 'linux-oracle' ]
+            backport: false
+            derived-from: [ '22.04', 'linux-hwe-5.19' ]
             swm:
                 kernel-testing: true
             testing:
@@ -3328,8 +3328,8 @@ defaults:
             supported: true
             owner: esmil
             development: false
-            backport: true
-            derived-from: ['22.10', 'linux-riscv']
+            backport: false
+            derived-from: ['22.04', 'linux-hwe-5.19']
             swm:
                 kernel-testing: true
             testing:
@@ -3369,8 +3369,8 @@ defaults:
             supported: true
             owner: esmil
             development: false
-            backport: true
-            derived-from: ['22.10', 'linux-allwinner']
+            backport: false
+            derived-from: ['22.04', 'linux-hwe-5.19']
             swm:
                 kernel-testing: true
             testing:
@@ -3410,8 +3410,8 @@ defaults:
             supported: true
             owner: esmil
             development: false
-            backport: true
-            derived-from: ['22.10', 'linux-starfive']
+            backport: false
+            derived-from: ['22.04', 'linux-hwe-5.19']
             swm:
                 kernel-testing: true
             testing:
