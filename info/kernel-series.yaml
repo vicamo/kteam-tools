@@ -6987,7 +6987,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-meta-shiner']
             supported: false
-            owner: wenchien
+            owner: nathan-sweetman
             development: true
             private: true
             derived-from: [ '20.04', 'linux-ein']
@@ -7002,7 +7002,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-signed-uc20-shiner']
             supported: false
-            owner: wenchien
+            owner: nathan-sweetman
             development: true
             private: true
             snaps:
