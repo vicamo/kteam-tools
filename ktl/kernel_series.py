@@ -774,10 +774,6 @@ class KernelSeriesUrl:
             self._xc = SigningConfig(use_local=self._xc_local)
         return self._xc
 
-    @staticmethod
-    def key_series_name(series):
-        return [int(x) for x in series.name.split('.')]
-
     @property
     def series(self):
         return [KernelSeriesEntry(self, series_key, series)
@@ -862,7 +858,8 @@ class KernelSeriesCache:
         return self.by_url[url]
 
     def for_spin(self, spin, **kwargs):
-        return self.for_cycle(spin.rsplit("-", 1)[0], **kwargs)
+        cycle = spin.rsplit("-", 1)[0] if spin is not None else None
+        return self.for_cycle(cycle, **kwargs)
 
     def tip(self, **kwargs):
         return self.for_cycle(None, **kwargs)
@@ -886,6 +883,10 @@ class KernelSeries:
     @classmethod
     def tip(cls, *args, **kwargs):
         return cls._cache.tip(*args, **kwargs)
+
+    @staticmethod
+    def key_series_name(series):
+        return [int(x) for x in series.name.split('.')]
 
 
 if __name__ == '__main__':
