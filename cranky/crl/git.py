@@ -161,7 +161,7 @@ class GitHandle():
         rmt_ref = 'refs/remotes/{}/{}'.format(remote, branch)
         return rmt_ref
 
-    def checkout(self, rmt_ref, branch):
+    def checkout(self, rmt_ref, branch, cycle=None):
         lcl_ref = 'refs/heads/{}'.format(branch)
 
         # Get us onto the branch in question -- if it does not exists
@@ -195,7 +195,7 @@ class GitHandle():
                 raise GitError("unable to reset to new tip tip rc={}".format(result.returncode))
 
         # Validate whether the right branch is checked out.
-        validate_hdl = Handle().lookup_tree(self.directory)
+        validate_hdl = Handle().lookup_tree(self.directory, cycle=cycle)
         if self.package != validate_hdl.package:
             cwarn("Repository '{}' has the wrong package checked out {}:{}".format(
                   self.directory, validate_hdl.package.series.codename,
