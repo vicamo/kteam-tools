@@ -795,12 +795,13 @@ the signed packages to the same directory that `cranky build-sources` uses, this
 replaces the previously signed files. Then upload them using `cranky
 dput-sources`:
 ```
-$ cranky dput-sources build xenial:linux-oracle
+$ cranky dput-sources auto xenial:linux-oracle
 ```
 
 Unless stated otherwise, the default upload destination should always be
-"build". You can find the other possible upload destinations and archive/ppa
-information by executing the following cranky command:
+"auto". This will ask SWM which stream the packages should be uploaded to.
+You can find the other possible upload destinations and archive/ppa information
+by executing the following cranky command:
 ```
 $ cranky list-routing xenial:linux-oracle
 ```
