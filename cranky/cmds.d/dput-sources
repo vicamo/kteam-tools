@@ -68,7 +68,7 @@ function sign_src()
 			sign_opts+=("-e${maint_email}")
 		fi
 
-		# shellcheck disable=SC2086
+		# shellcheck disable=SC2048,SC2086 # sign_opts array used as arg list
 		debsign ${sign_opts[*]} "${changes}"
 	)
 }
