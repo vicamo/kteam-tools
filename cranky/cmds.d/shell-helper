@@ -9,6 +9,7 @@ from crl.handle import Handle, HandleError
 from ktl.kernel_series import KernelSeries
 
 from ktl.sru_cycle import SruCycle
+from ktl.tracking_bug2 import TrackingBugs, TrackingBugError
 
 def tree_package_type(tree):
     ptype = tree.package.type
@@ -98,6 +99,21 @@ def config(args):
         sys.exit(1)
     print(handle.lookup_config(args.key, ''))
 
+def read_swm_property(args):
+    tbs = TrackingBugs()
+    try:
+        bug = tbs.add(args.bug_id)
+    except (KeyError, TrackingBugError):
+        print("Invalid tracking bug: {}".format(args.bug_id), file=sys.stderr)
+        sys.exit(1)
+
+    for key in args.key:
+        value = bug.wf_get_property(key)
+        if not value:
+            value = ""
+        print(value)
+
+
 if __name__ == "__main__":
     desc = """
 Helper program for getting cranky config and handle data from shell scripts.
@@ -157,10 +173,19 @@ Helper program for getting cranky config and handle data from shell scripts.
                            help="The key name of the config option, in the form of <key>[.<key>].")
     subparser.set_defaults(func=config)
 
+    # read-swm-property subparser
+    subparser = subparsers.add_parser("read-swm-property",
+                                      help="Read one or more SWM properties from a tracking bug")
+    subparser.add_argument("bug_id",
+                           help="The bug if for a kernel crank tracking bug")
+    subparser.add_argument("-k", "--key", nargs="+", action="extend", required=True,
+                           help="The SWM property key to read in the form of <key>[.<key>]. May be repeated.")
+    subparser.set_defaults(func=read_swm_property)
+
     # Add common subparser arguments
     for name, subparser in subparsers.choices.items():
         # These subcommands don't take a cycle argument
-        if name not in ["list-cycles"]:
+        if name not in ["list-cycles", "read-swm-property"]:
             subparser.add_argument("--cycle",
                                    help="sru cycle to use when looking up the source")
         # These subcommands don't require a 'handle' argument
