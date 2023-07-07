@@ -1448,6 +1448,14 @@ class Package():
             s.__determine_build_status()
         return s._cache
 
+    # legacy_info
+    #
+    @property
+    def legacy_info(s):
+        if s._cache is None:
+            s.__determine_build_status()
+        return s._cache
+
     # dependent_packages
     #
     @property
