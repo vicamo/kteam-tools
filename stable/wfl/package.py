@@ -2005,8 +2005,21 @@ class Package():
 
     # __pkg_state
     #
+    def __pkg_state_old(self, pkg, pocket):
+        return self.legacy_info.get(pkg,{}).get(pocket, {}).get('status')
+    def __pkg_state_new(self, pkg, pocket):
+        package_version = self.package_version_exact(pkg)
+        if package_version is None:
+            return None
+        pocket_route_entry = self.builds[pkg][pocket].version_match(exact=package_version, limit_stream=self.built_in)
+        if pocket_route_entry is None:
+            return None
+        return pocket_route_entry.status
     def __pkg_state(self, pkg, pocket):
-        return self.srcs.get(pkg,{}).get(pocket, {}).get('status')
+        old = self.__pkg_state_old(pkg, pocket)
+        new = self.__pkg_state_new(pkg, pocket)
+        cinfo("PRv2: __pkg_state({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        return old
 
     # delta_failures_in_pocket
     #
