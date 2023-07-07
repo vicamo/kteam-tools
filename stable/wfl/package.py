@@ -1962,9 +1962,9 @@ class Package():
         packages = s.dependent_packages_for_pocket(pocket)
         return s.delta_failures_in_pocket(packages, pocket, ignore_all_missing)
 
-    def __prereq_completed(s, prereq, pocket):
-        published = s.srcs[prereq].get(pocket, {}).get('published')
-        built = s.srcs[prereq].get(pocket, {}).get('most_recent_build')
+    def __prereq_completed_old(s, prereq, pocket):
+        published = s.legacy_info[prereq].get(pocket, {}).get('published')
+        built = s.legacy_info[prereq].get(pocket, {}).get('most_recent_build')
         if published is None:
             return built
         if built is None:
@@ -1972,6 +1972,24 @@ class Package():
         if built > published:
             return built
         return published
+    def __prereq_completed_new(self, prereq, pocket):
+        pocket_route = self.__pkg_pocket_route_entry(prereq, pocket)
+        if pocket_route is None:
+            return None
+        published = pocket_route.published
+        built = pocket_route.latest_build
+        if published is None:
+            return built
+        if built is None:
+            return published
+        if built > published:
+            return built
+        return published
+    def __prereq_completed(self, pkg, pocket):
+        old = self.__prereq_completed_old(pkg, pocket)
+        new = self.__prereq_completed_new(pkg, pocket)
+        cinfo("PRv1: __prereq_completed({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        return old
 
     # delta_failures_in_pocket
     #
