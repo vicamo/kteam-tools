@@ -1671,6 +1671,18 @@ class Package():
         cinfo("PRv2: __pkg_built({}, {}) {} -> {}".format(pkg, pocket, old, new))
         return old
 
+    # __pkg_pocket_route_entry
+    #
+    def __pkg_pocket_route_entry(self, pkg, pocket):
+        package_version = self.package_version_exact(pkg)
+        if package_version is None:
+            return None
+        build_route = self.builds.get(pkg, {}).get(pocket)
+        if not build_route:
+            return None
+        build_route_entry = build_route.version_match(exact=package_version, limit_stream=self.built_in)
+        return build_route_entry
+
     # __pkg_task
     #
     def __pkg_task(s, pkg):
