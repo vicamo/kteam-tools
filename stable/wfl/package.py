@@ -405,6 +405,10 @@ class PackageBuildRouteEntry:
         return self.binary_analysis.get("status")
 
     @property
+    def built(self):
+        return self.status == "FULLYBUILT"
+
+    @property
     def status_detail(self):
         """the overall status details of this build"""
         return self.binary_analysis.get("status_detail")
@@ -1617,12 +1621,28 @@ class Package():
 
     # __pkg_in
     #
-    def __pkg_in(s, pkg, pocket):
+    def __pkg_in_old(s, pkg, pocket):
         try:
-            pkg_in = s.srcs[pkg][pocket]['status'] in s.__states_present
+            pkg_in = s.legacy_info[pkg][pocket]['status'] in s.__states_present
         except KeyError:
             pkg_in = False
         return pkg_in
+    def __pkg_in_new(self, pkg, pocket):
+        package_version = self.package_version_exact(pkg)
+        if package_version is None:
+            return False
+        build_route = self.builds.get(pkg, {}).get(pocket)
+        if not build_route:
+            return False
+        package_published = build_route.version_match(exact=package_version, limit_stream=self.built_in)
+        if package_published is None:
+            return False
+        return True
+    def __pkg_in(self, pkg, pocket):
+        old = self.__pkg_in_old(pkg, pocket)
+        new = self.__pkg_in_new(pkg, pocket)
+        cinfo("PRv1: __pkg_in({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        return old
 
     # __pkg_built
     #
