@@ -1095,6 +1095,12 @@ class Package():
         id_hash.update(str(signature).encode())
         return id_hash.hexdigest()[:16]
 
+    def package_version_exact(self, pkg):
+        ancillary_for = self.ancillary_package_for(pkg)
+        if ancillary_for is not None:
+            pkg = ancillary_for
+        return self.bug.bprops.get('versions', {}).get(pkg)
+
     def package_version(s, pkg):
         # Look up the specific version of a package for this tracker.
         version = s.bug.bprops.get('versions', {}).get(pkg)
@@ -1554,7 +1560,7 @@ class Package():
 
     # all_in_pocket
     #
-    def all_in_pocket(s, pocket):
+    def all_in_pocket_old(s, pocket):
         '''
         All dependent packages are in the pocket 'pocket'.
         '''
@@ -1572,6 +1578,22 @@ class Package():
 
         cleave(s.__class__.__name__ + '.all_in_pocket (%s)' % (retval))
         return retval
+    def all_in_pocket_new(self, pocket):
+        found = True
+        for pkg in s.pkgs:
+            package_published = None
+            package_version = self.package_version_exact(pkg)
+            if package_version is not None:
+                package_published = s.builds[pkg][pocket].version_match(exact=package_version, limit_stream=s.built_in)
+            if package_published is None:
+                found = False
+            cdebug("APW all_in_pocket_new({}) {} {}".format(pocket, pkg, "Missing" if package_published is None else "Present"))
+        return found
+    def all_in_pocket(self, pocket):
+        old = self.all_in_pocket_old(pocket)
+        new = self.all_in_pocket_new(pocket)
+        cinfo("PRv1: all_in_pocket {} {} -> {}".format(pocket, old, new))
+        return old
 
     # __pockets_from
     #
