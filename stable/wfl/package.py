@@ -1513,11 +1513,7 @@ class Package():
         Dependent package is fully built and in the pocket 'pocket'.
         '''
         center(s.__class__.__name__ + '.built_and_in_pocket')
-        try:
-            pkg_built = s.srcs[pkg][pocket]['built']
-        except KeyError:
-            pkg_built = False
-
+        pkg_built = s.__pkg_built(pkg, pocket)
         if not pkg_built:
             cinfo('        {} is either not fully built yet or not in {}.'.format(pkg, pocket), 'red')
 
@@ -1538,11 +1534,7 @@ class Package():
             if not found_start:
                 continue
 
-            try:
-                pkg_built = s.srcs[pkg][find_pocket]['built']
-            except KeyError:
-                pkg_built = False
-
+            pkg_built = s.__pkg_built(pkg, find_pocket)
             if pkg_built:
                 break
 
@@ -1562,11 +1554,7 @@ class Package():
         retval = True
 
         for pkg in s.dependent_packages_for_pocket(pocket):
-            try:
-                pkg_seen = s.srcs[pkg][pocket]['status'] in s.__states_present
-            except KeyError:
-                pkg_seen = False
-
+            pkg_seen = s.__pkg_in(pkg, pocket)
             if pkg_seen:
                 cinfo('        %s is present in %s.' % (pkg, pocket), 'yellow')
             else:
@@ -1720,11 +1708,7 @@ class Package():
         retval = True
 
         for pkg in s.dependent_packages_for_pocket(pocket):
-            try:
-                pkg_built = s.srcs[pkg][pocket]['built']
-            except KeyError:
-                pkg_built = False
-
+            pkg_built = s.__pkg_built(pkg, pocket)
             if not pkg_built:
                 cinfo('        {} is either not fully built yet or not in {}.'.format(pkg, pocket), 'red')
                 retval = False
@@ -1761,16 +1745,8 @@ class Package():
         retval = True
 
         for pkg in s.dependent_packages_for_pocket(dst):
-            try:
-                pkg_built_src = s.srcs[pkg][src]['built']
-            except KeyError:
-                pkg_built_src = False
-
-            try:
-                pkg_built_dst = s.srcs[pkg][dst]['built']
-            except KeyError:
-                pkg_built_dst = False
-
+            pkg_built_src = s.__pkg_built(pkg, src)
+            pkg_built_dst = s.__pkg_built(pkg, dst)
             if not pkg_built_src and not pkg_built_dst:
                 cinfo('        {} is either not fully built yet or not in {} or {}.'.format(pkg, src, dst), 'red')
                 retval = False
@@ -1806,12 +1782,8 @@ class Package():
         retval = []
 
         for pkg in s.dependent_packages_for_pocket(dst):
-            try:
-                pkg_built_src = s.srcs[pkg][src]['built']
-            except KeyError:
-                pkg_built_src = False
+            pkg_built_src = s.__pkg_built(pkg, src)
             pkg_built_dst = s.built_and_in_pocket_or_after(pkg, dst)
-
             if pkg_built_src and not pkg_built_dst:
                 cinfo('        {} is in {} and not yet in {} or later.'.format(pkg, src, dst), 'red')
                 retval.append(pkg)
@@ -2074,7 +2046,7 @@ class Package():
             for pocket in s.__pockets_uploaded:
                 if pocket not in bi[pkg]:
                     continue
-                if bi[pkg][pocket]['status'] in s.__states_present:
+                if s.__pkg_in(pkg, pocket):
                     retval = bi[pkg][pocket]['creator']
                     break
         else:
@@ -2095,7 +2067,7 @@ class Package():
             for pocket in s.__pockets_uploaded:
                 if pocket not in bi[pkg]:
                     continue
-                if bi[pkg][pocket]['built']:
+                if s.__pkg_built(pkg, pocket): # XXX: __pkg_in ???
                     retval = bi[pkg][pocket]['signer']
                     break
         else:
@@ -2258,9 +2230,8 @@ class Package():
         else:
             pocket = 'Updates'
 
-        bi = s.build_info
         for pkg in s.dependent_packages_for_pocket(pocket):
-            if bi[pkg][pocket]['built'] is not True:
+            if not s.__pkg_built(pkg, pocket):
                 cinfo('            %s has not been released.' % (pkg), 'yellow')
                 retval = False
                 break
@@ -2277,9 +2248,8 @@ class Package():
 
         pocket = 'Security'
 
-        bi = s.build_info
         for pkg in s.dependent_packages_for_pocket(pocket):
-            if bi[pkg][pocket]['built'] is not True:
+            if not s.__pkg_built(pkg, pocket):
                 cinfo('            %s has not been released.' % (pkg), 'yellow')
                 retval = False
                 break
@@ -2433,7 +2403,7 @@ class Package():
             if pocket not in bi[pkg]:
                 continue
             cdebug("checking for {} in {} is '{}'".format(pkg, pocket, bi[pkg][pocket]['status']))
-            if bi[pkg][pocket]['status'] in s.__states_present:
+            if s.__pkg_in(pkg, pocket):
                 retval = True
                 break
 
@@ -2453,7 +2423,7 @@ class Package():
             if pocket not in bi[pkg]:
                 continue
             cdebug("checking for {} in {} is '{}'".format(pkg, pocket, bi[pkg][pocket]['status']))
-            if bi[pkg][pocket]['status'] in s.__states_present:
+            if s.__pkg_in(pkg, pocket):
                 retval = True
                 break
 
@@ -2468,7 +2438,7 @@ class Package():
 
         bi = s.build_info
         for pocket in bi[pkg]:
-            if bi[pkg][pocket]['status'] in s.__states_present:
+            if s.__pkg_in(pkg, pocket):
                 retval = bi[pkg][pocket]['version']
                 break
 
