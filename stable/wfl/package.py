@@ -1646,12 +1646,30 @@ class Package():
 
     # __pkg_built
     #
-    def __pkg_built(s, pkg, pocket):
+    def __pkg_built_old(s, pkg, pocket):
         try:
-            pkg_built = s.srcs[pkg][pocket]['built']
+            pkg_built = s.legacy_info[pkg][pocket]['built']
         except KeyError:
             pkg_built = False
         return pkg_built
+    def __pkg_built_new(self, pkg, pocket):
+        package_version = self.package_version_exact(pkg)
+        if package_version is None:
+            return False
+        build_route = self.builds.get(pkg, {}).get(pocket)
+        if not build_route:
+            return False
+        package_published = build_route.version_match(exact=package_version, limit_stream=self.built_in)
+        if package_published is None:
+            return False
+        if not package_published.built:
+            return False
+        return True
+    def __pkg_built(self, pkg, pocket):
+        old = self.__pkg_built_old(pkg, pocket)
+        new = self.__pkg_built_new(pkg, pocket)
+        cinfo("PRv1: __pkg_built({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        return old
 
     # __pkg_task
     #
