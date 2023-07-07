@@ -1991,6 +1991,11 @@ class Package():
         cinfo("PRv2: __prereq_completed({}, {}) {} -> {}".format(pkg, pocket, old, new))
         return old
 
+    # __pkg_state
+    #
+    def __pkg_state(self, pkg, pocket):
+        return self.srcs.get(pkg,{}).get(pocket, {}).get('status')
+
     # delta_failures_in_pocket
     #
     def delta_failures_in_pocket(s, delta, pocket, ignore_all_missing=False):
@@ -1999,12 +2004,11 @@ class Package():
         sources = 0
         for pkg in delta:
             sources += 1
-            if pkg not in s.srcs:
+            status = s.__pkg_state(pkg, pocket)
+            if status in (None, ''):
                 failures.setdefault('missing', []).append(pkg)
                 missing += 1
-                continue
-            status = s.srcs[pkg].get(pocket, {}).get('status')
-            if status == 'BUILDING':
+            elif status == 'BUILDING':
                 failures.setdefault('building', []).append(pkg)
             elif status in ('DEPWAIT', 'FAILEDTOBUILD'):
                 real_status = 'depwait' if status == 'DEPWAIT' else 'failed'
@@ -2027,7 +2031,7 @@ class Package():
                     active_prereq = s.prereq_package_for(active_prereq)
                     if active_prereq is None:
                         break
-                    active_prereq_state = s.srcs.get(active_prereq, {}).get(pocket, {}).get('status')
+                    active_prereq_state = s.__pkg_state(active_prereq, pocket)
                     if active_prereq_state not in ('DEPWAIT', 'FAILEDTOBUILD'):
                        break
 
@@ -2077,9 +2081,6 @@ class Package():
                 else:
                     failures.setdefault(real_status, []).append(pkg)
 
-            elif status == '':
-                failures.setdefault('missing', []).append(pkg)
-                missing += 1
             elif status == 'PENDING':
                 failures.setdefault('pending', []).append(pkg)
             elif status == 'QUEUED':
