@@ -32,4 +32,7 @@ do
 done
 
 # Tidy up standard build mess.
-rm -f "$master_main/"*.{deb,ddeb,udeb,buildinfo,changes,tar.gz}
+for f in deb ddeb udeb buildinfo changes tar.gz ; do
+	# Use find instead of rm to prevent 'Argument list too long' errors
+	find "$master_main" -maxdepth 1 -name '*.'"$f" -delete
+done
