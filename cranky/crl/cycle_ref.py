@@ -116,13 +116,14 @@ def find_tag_matching(target_tag, tags):
 
 
 class CycleRef:
-    def __init__(self, cycle, tag, object_id):
+    def __init__(self, cycle, tag, object_id, refname):
         self.cycle = cycle
         self.tag = tag
         self.object_id = object_id
+        self.refname = refname
 
     def __str__(self) -> str:
-        return f"{self.cycle} {self.tag} {self.object_id}"
+        return f"{self.cycle} {self.tag} {self.object_id} {self.rename}"
 
     @staticmethod
     def make_ref(handle, cycle):
@@ -230,7 +231,7 @@ class CycleRef:
         for line in raw:
             ref, tag, object_id = line.split("|")
             _, _, cycle = ref.rpartition("/")
-            result.append(CycleRef(cycle, tag, object_id))
+            result.append(CycleRef(cycle, tag, object_id, ref))
 
         #
         # Filter out before and after which may be provided
