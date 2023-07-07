@@ -2124,13 +2124,13 @@ class Package():
 
     # signer
     #
-    def signer(s, pkg, pocket=None):
+    def signer_old(s, pkg, pocket=None):
         center('Packages::signer')
         cdebug('   pkg: %s' % pkg)
         cdebug('pocket: %s' % pocket)
         retval = None
 
-        bi = s.build_info
+        bi = s.legacy_info
         if pocket is None:
             for pocket in s.__pockets_uploaded:
                 if pocket not in bi[pkg]:
@@ -2142,6 +2142,21 @@ class Package():
             retval = bi[pkg][pocket]['signer']
         cleave('Packages::signer')
         return retval
+    def signer_new(self, pkg, pocket=None):
+        if pocket is None:
+            pockets = self.__pockets_uploaded
+        else:
+            pockets = [pocket]
+        for pocket in pockets:
+            pocket_route = self.__pkg_pocket_route_entry(pkg, pocket)
+            if pocket_route is not None:
+                return pocket_route.signer
+        return None
+    def signer(self, pkg, pocket=None):
+        old = self.signer_old(pkg, pocket)
+        new = self.signer_new(pkg, pocket)
+        cinfo("PRv1: signer({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        return old
 
     def changes_data(self, url):
         """
