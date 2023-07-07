@@ -1596,7 +1596,7 @@ class Package():
     def all_in_pocket(self, pocket):
         old = self.all_in_pocket_old(pocket)
         new = self.all_in_pocket_new(pocket)
-        cinfo("PRv1: all_in_pocket {} {} -> {}".format(pocket, old, new))
+        cinfo("PRv2: all_in_pocket {} {} -> {}".format(pocket, old, new))
         return old
 
     # __pockets_from
@@ -1641,7 +1641,7 @@ class Package():
     def __pkg_in(self, pkg, pocket):
         old = self.__pkg_in_old(pkg, pocket)
         new = self.__pkg_in_new(pkg, pocket)
-        cinfo("PRv1: __pkg_in({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        cinfo("PRv2: __pkg_in({}, {}) {} -> {}".format(pkg, pocket, old, new))
         return old
 
     # __pkg_built
@@ -1668,7 +1668,7 @@ class Package():
     def __pkg_built(self, pkg, pocket):
         old = self.__pkg_built_old(pkg, pocket)
         new = self.__pkg_built_new(pkg, pocket)
-        cinfo("PRv1: __pkg_built({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        cinfo("PRv2: __pkg_built({}, {}) {} -> {}".format(pkg, pocket, old, new))
         return old
 
     # __pkg_task
@@ -1988,7 +1988,7 @@ class Package():
     def __prereq_completed(self, pkg, pocket):
         old = self.__prereq_completed_old(pkg, pocket)
         new = self.__prereq_completed_new(pkg, pocket)
-        cinfo("PRv1: __prereq_completed({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        cinfo("PRv2: __prereq_completed({}, {}) {} -> {}".format(pkg, pocket, old, new))
         return old
 
     # delta_failures_in_pocket
@@ -2152,7 +2152,7 @@ class Package():
     def creator(self, pkg, pocket=None):
         old = self.creator_old(pkg, pocket)
         new = self.creator_new(pkg, pocket)
-        cinfo("PRv1: creator({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        cinfo("PRv2: creator({}, {}) {} -> {}".format(pkg, pocket, old, new))
         return old
 
     # signer
@@ -2188,7 +2188,7 @@ class Package():
     def signer(self, pkg, pocket=None):
         old = self.signer_old(pkg, pocket)
         new = self.signer_new(pkg, pocket)
-        cinfo("PRv1: signer({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        cinfo("PRv2: signer({}, {}) {} -> {}".format(pkg, pocket, old, new))
         return old
 
     def changes_data(self, url):
