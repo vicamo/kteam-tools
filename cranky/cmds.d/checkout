@@ -81,18 +81,19 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
                 is_rebuilt = True
 
             cycle_ref = CycleRef.get_cycle_ref(gh, cycle)
-            if not cycle_ref:
-                raise CrankyException("Aborting: no cycle '{}' found for {}.".format(cycle, pkg.name))
-            rmt_ref = "refs/tags/{}".format(cycle_ref.tag)
+            if cycle_ref:
+                rmt_ref = "refs/tags/{}".format(cycle_ref.tag)
+            else:
+                cnotice("{} does not have a release for {}, falling back to tip.".format(pkg.name, cycle))
 
         if crd:
             try:
                 security_ref = gh.remote_ref('security', branch)
-                gh.checkout(security_ref, branch)
+                gh.checkout(security_ref, branch, cycle)
             except:
-                gh.checkout(rmt_ref, branch)
+                gh.checkout(rmt_ref, branch, cycle)
         else:
-            gh.checkout(rmt_ref, branch)
+            gh.checkout(rmt_ref, branch, cycle)
 
         if crd:
             gh.set_upstream(branch, 'security')

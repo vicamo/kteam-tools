@@ -274,7 +274,7 @@ class Handle:
         try:
             with change_directory(directory):
                 changelog = Debian.changelog()
-            for base in (directory, os.path.join(directory, ".git", "cranky-main")):
+            for base in (os.path.join(directory, ".git", "cranky-main"), directory):
                 if not os.path.exists(base):
                     continue
                 with change_directory(base):
