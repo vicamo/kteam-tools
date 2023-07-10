@@ -246,23 +246,36 @@ class NewReview(SourceReview):
         pocket_next_routing = s.bug.debs.pocket_routing(pocket_next)
         pocket_next_route = pocket_next_routing[0] if pocket_next_routing is not None else None
 
-        bi = s.bug.debs.build_info
+        # v PRv5
+        bi = s.bug.debs.legacy_info
+        # ^ PRv5
         happy_overall = True
         binaries_old = []
         binaries_new = []
         for pkg in s.bug.debs.dependent_packages_for_pocket(pocket_next):
-            cinfo('considering {} in {} -> {} '.format(pkg, 'ppa', bi[pkg]['ppa']['source']))
-            happy, binaries = s.fetch_binary_list(bi[pkg]['ppa']['source'])
+            # v PRv5
+            src_ppa = bi[pkg]['ppa']['source']
+            src_next = bi[pkg][pocket_next]['source']
+            # | PRv5
+            build_route_entry_ppa = s.bug.debs.build_route_entry(pkg, "ppa")
+            src_ppa2 = build_route_entry_ppa.source
+            build_route_entry_next = s.bug.debs.build_route_entry(pkg, pocket_next, exact_match=False)
+            src_next2 = build_route_entry_next.source if build_route_entry_next is not None else None
+            # = PRv5
+            cinfo("PRv5: new_binaries({}, {}) = {} -> {}".format(pkg, pocket_next, (src_ppa, src_next), (src_ppa2, src_next2)))
+            # ^ PRv5
+            cinfo('considering {} in {} -> {} '.format(pkg, 'ppa', src_ppa))
+            happy, binaries = s.fetch_binary_list(src_ppa)
             happy_overall &= happy
             binaries_new += binaries
             cinfo('  happy={} binaries={}'.format(happy, len(binaries)))
             if happy:
-                happy, compatibility = s.fetch_usc(bi[pkg]['ppa']['source'])
+                happy, compatibility = s.fetch_usc(src_ppa)
                 happy_overall &= happy
                 cinfo('  happy={} compatibility={}'.format(happy, compatibility))
 
-            cinfo('considering {} in {} -> {} '.format(pkg, pocket_next, bi[pkg][pocket_next]['source']))
-            happy, binaries = s.fetch_binary_list(bi[pkg][pocket_next]['source'])
+            cinfo('considering {} in {} -> {} '.format(pkg, pocket_next, src_next))
+            happy, binaries = s.fetch_binary_list(src_next)
             binaries_old += binaries
             cinfo('  happy={} binaries={}'.format(happy, len(binaries)))
 
