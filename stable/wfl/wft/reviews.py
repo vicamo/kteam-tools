@@ -90,6 +90,13 @@ class SourceReview(TaskHandler):
                 s.task.status = "New"
                 retval = True
 
+        # If our packages are already in -proposed and ready for testing then we can assume this has
+        # been signed off previously.
+        if s.bug.debs.ready_for_testing:
+            cinfo("Packages already in -proposed, signoff must have already been performed")
+            s.task.status = "Fix Released"
+            retval = True
+
         status = s.task.status
         if status == 'Confirmed':
             state = s.task.reason_state('Pending', timedelta(hours=12))
