@@ -86,13 +86,25 @@ class SynPromoteToAsProposed(TaskHandler):
                 (dst_archive, dst_pocket) = s.bug.debs.routing('as-proposed')[0]
                 for dep in s.bug.debs.dependent_packages_for_pocket('Proposed'):
                     package = s.bug.debs.pkgs[dep]
-                    (src_archive, src_pocket) = s.bug.debs.build_info[dep]['Proposed']['route']
+                    # v PRv5
+                    (src_archive, src_pocket) = s.bug.debs.legacy_info[dep]['Proposed']['route']
+                    version = s.bug.debs.legacy_info[dep]['Proposed']['version']
+                    # | PRv5
+                    build_route_entry = s.bug.debs.build_route_entry(dep, "Proposed")
+                    if build_route_entry:
+                        src_archive2, src_pocket2 = build_route_entry.archive, build_route_entry.pocket
+                        version2 = build_route_entry.version
+                    else:
+                        src_archive2, src_pocket2, version2 = None, None, None
+                    # = PRv5
+                    cinfo("PRv5: promote_to_as_proposed({}, {}) = {} -> {}".format(dep, "Proposed", (src_archive, src_pocket, version), (src_archive2, src_pocket2, version2)))
+                    # ^ PRv5
                     cinfo("copying from {}:{}:{} to {}:{}:{} package {}:{}".format(src_archive, src_pocket, s.bug.series, dst_archive, dst_pocket, s.bug.series, dep, package))
                     try:
                         dst_archive.copyPackage(
                             from_archive=src_archive, from_series=s.bug.series, from_pocket=src_pocket,
                             to_series=s.bug.series, to_pocket=dst_pocket,
-                            source_name=package, version=s.bug.debs.build_info[dep]['Proposed']['version'],
+                            source_name=package, version=version,
                             include_binaries=True)
                     except BadRequest:
                         raise WorkflowBugTaskError("copy failed")
