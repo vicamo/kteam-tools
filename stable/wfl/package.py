@@ -1676,6 +1676,8 @@ class Package():
         build_route_entry = build_route.version_match(exact=package_version, limit_stream=self.built_in)
         return build_route_entry
 
+    build_route_entry = __pkg_pocket_route_entry
+
     # __pkg_task
     #
     def __pkg_task(s, pkg):
