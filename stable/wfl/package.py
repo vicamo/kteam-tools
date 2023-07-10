@@ -1056,7 +1056,7 @@ class Package():
     @property
     def pkgs(self):
         if self._pkgs is False:
-            self._pkgs = self.dependent_packages
+            self._pkgs = self.pkgs_qualified
         return self._pkgs
 
     def routing(self, pocket):
@@ -1466,10 +1466,10 @@ class Package():
             s.__determine_build_status()
         return s._cache
 
-    # dependent_packages
+    # pkgs_qualified
     #
     @property
-    def dependent_packages(s):
+    def pkgs_qualified(s):
         '''
         Put together a list of all the packages that depend on this package.
         '''
