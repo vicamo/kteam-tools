@@ -1156,8 +1156,7 @@ class WorkflowBug():
         '''
         retval = True
 
-        bi = s.debs.build_info
-        for pkg in bi:
+        for pkg in s.debs.dependent_packages():
             if not s.published_tag(pkg):
                 cinfo('        %s missing tag.' % (pkg), 'yellow')
                 retval = False
