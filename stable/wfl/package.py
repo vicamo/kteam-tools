@@ -1490,11 +1490,16 @@ class Package():
 
         return retval
 
+    # dependent_packages
+    #
+    def dependent_packages(self):
+        return sorted(self.builds.keys())
+
     # dependent_packages_for_pocket
     #
     def dependent_packages_for_pocket(self, pocket):
         pkgs = []
-        for pkg in self.build_info:
+        for pkg in self.dependent_packages():
             if self.generate_package_for(pkg) is not None and pocket not in ('ppa', 'build-private', 'Signing'):
                 continue
             pkgs.append(pkg)
