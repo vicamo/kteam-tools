@@ -70,3 +70,5 @@ for build_ref, private_ref in sorted(route_pairs, key=route_pair_key):
 
 if args.lrm_spinner:
     print("ppa:canonical-kernel-private/ubuntu/ngd-updates", "ppa:canonical-kernel-private/ubuntu/ngd-updates")
+    print("ppa:canonical-kernel-private/ubuntu/ngd-proposed", "ppa:canonical-kernel-private/ubuntu/ngd-proposed")
+    print("ppa:canonical-kernel-private/ubuntu/ngd-proposed2", "ppa:canonical-kernel-private/ubuntu/ngd-proposed2")
