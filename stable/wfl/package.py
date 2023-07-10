@@ -1596,7 +1596,7 @@ class Package():
     def all_in_pocket(self, pocket):
         old = self.all_in_pocket_old(pocket)
         new = self.all_in_pocket_new(pocket)
-        cinfo("PRv4: all_in_pocket {} {} -> {}".format(pocket, old, new))
+        cinfo("PRv5: all_in_pocket {} = {} -> {}".format(pocket, old, new))
         return old
 
     # __pockets_from
@@ -1641,7 +1641,7 @@ class Package():
     def __pkg_in(self, pkg, pocket):
         old = self.__pkg_in_old(pkg, pocket)
         new = self.__pkg_in_new(pkg, pocket)
-        cinfo("PRv4: __pkg_in({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        cinfo("PRv5: __pkg_in({}, {}) = {} -> {}".format(pkg, pocket, old, new))
         return old
 
     # __pkg_built
@@ -1668,7 +1668,7 @@ class Package():
     def __pkg_built(self, pkg, pocket):
         old = self.__pkg_built_old(pkg, pocket)
         new = self.__pkg_built_new(pkg, pocket)
-        cinfo("PRv4: __pkg_built({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        cinfo("PRv5: __pkg_built({}, {}) = {} -> {}".format(pkg, pocket, old, new))
         return old
 
     # __pkg_pocket_route_entry
@@ -1873,7 +1873,7 @@ class Package():
     def all_built_in_src_dst_detail(self, src, dst):
         old = self.all_built_in_src_dst_detail_old(src, dst)
         new = self.all_built_in_src_dst_detail_new(src, dst)
-        cinfo("PRv4: all_built_in_src_dst_detail({}, {}) = {} -> {}".format(src, dst, old, new))
+        cinfo("PRv5: all_built_in_src_dst_detail({}, {}) = {} -> {}".format(src, dst, old, new))
         return old
 
     # built_in_src_dst_delta
@@ -2024,7 +2024,7 @@ class Package():
     def __prereq_completed(self, pkg, pocket):
         old = self.__prereq_completed_old(pkg, pocket)
         new = self.__prereq_completed_new(pkg, pocket)
-        cinfo("PRv4: __prereq_completed({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        cinfo("PRv5: __prereq_completed({}, {}) = {} -> {}".format(pkg, pocket, old, new))
         return old
 
     # __pkg_state
@@ -2042,7 +2042,7 @@ class Package():
     def __pkg_state(self, pkg, pocket):
         old = self.__pkg_state_old(pkg, pocket)
         new = self.__pkg_state_new(pkg, pocket)
-        cinfo("PRv4: __pkg_state({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        cinfo("PRv5: __pkg_state({}, {}) = {} -> {}".format(pkg, pocket, old, new))
         return old
 
     # delta_failures_in_pocket
@@ -2202,7 +2202,7 @@ class Package():
     def creator(self, pkg, pocket=None):
         old = self.creator_old(pkg, pocket)
         new = self.creator_new(pkg, pocket)
-        cinfo("PRv4: creator({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        cinfo("PRv5: creator({}, {}) = {} -> {}".format(pkg, pocket, old, new))
         return old
 
     # signer
@@ -2238,7 +2238,7 @@ class Package():
     def signer(self, pkg, pocket=None):
         old = self.signer_old(pkg, pocket)
         new = self.signer_new(pkg, pocket)
-        cinfo("PRv4: signer({}, {}) {} -> {}".format(pkg, pocket, old, new))
+        cinfo("PRv5: signer({}, {}) = {} -> {}".format(pkg, pocket, old, new))
         return old
 
     def changes_data(self, url):
