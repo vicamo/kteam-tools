@@ -1835,22 +1835,46 @@ class Package():
         cleave(s.__class__.__name__ + '.all_built_in_src_dst ({})'.format(retval))
         return retval
 
+
     # all_built_and_in_pocket_or_pocket
     #
     @centerleave
-    def all_built_in_src_dst_detail(s, src, dst):
+    def all_built_in_src_dst_detail_old(s, src, dst):
         '''
         Why dependent packages are not fully built and in src or dst.
         '''
         detail = []
         for pkg in s.dependent_packages_for_pocket(dst):
-            pkg_data = s.srcs[pkg][src]
+            pkg_data = s.legacy_info[pkg][src]
             if pkg_data["status"] == "":
-                pkg_data = s.srcs[pkg][dst]
+                pkg_data = s.legacy_info[pkg][dst]
             if pkg_data["status"] == "":
                 detail.append("{} is missing".format(pkg))
             detail += pkg_data.get("status_detail", [])
         return detail
+    @centerleave
+    def all_built_in_src_dst_detail_new(self, src, dst):
+        '''
+        Why dependent packages are not fully built and in src or dst.
+        '''
+        detail = []
+        for pkg in self.dependent_packages_for_pocket(dst):
+            package_version = self.package_version_exact(pkg)
+            if package_version is None:
+                return None
+            pocket_route_entry = self.builds[pkg][src].version_match(exact=package_version, limit_stream=self.built_in)
+            if pocket_route_entry is None:
+                pocket_route_entry = self.builds[pkg][dst].version_match(exact=package_version, limit_stream=self.built_in)
+            if pocket_route_entry is None:
+                detail.append("{} is missing".format(pkg))
+            else:
+                detail += pocket_route_entry.status_detail
+        return detail
+    def all_built_in_src_dst_detail(self, src, dst):
+        old = self.all_built_in_src_dst_detail_old(src, dst)
+        new = self.all_built_in_src_dst_detail_new(src, dst)
+        cinfo("PRv4: all_built_in_src_dst_detail({}, {}) = {} -> {}".format(src, dst, old, new))
+        return old
 
     # built_in_src_dst_delta
     #
