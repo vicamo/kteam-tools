@@ -1628,14 +1628,8 @@ class Package():
             pkg_in = False
         return pkg_in
     def __pkg_in_new(self, pkg, pocket):
-        package_version = self.package_version_exact(pkg)
-        if package_version is None:
-            return False
-        build_route = self.builds.get(pkg, {}).get(pocket)
-        if not build_route:
-            return False
-        package_published = build_route.version_match(exact=package_version, limit_stream=self.built_in)
-        if package_published is None:
+        build_route_entry = self.__pkg_pocket_route_entry(pkg, pocket)
+        if build_route_entry is None:
             return False
         return True
     def __pkg_in(self, pkg, pocket):
@@ -1653,16 +1647,10 @@ class Package():
             pkg_built = False
         return pkg_built
     def __pkg_built_new(self, pkg, pocket):
-        package_version = self.package_version_exact(pkg)
-        if package_version is None:
+        build_route_entry = self.__pkg_pocket_route_entry(pkg, pocket)
+        if build_route_entry is None:
             return False
-        build_route = self.builds.get(pkg, {}).get(pocket)
-        if not build_route:
-            return False
-        package_published = build_route.version_match(exact=package_version, limit_stream=self.built_in)
-        if package_published is None:
-            return False
-        if not package_published.built:
+        if not build_route_entry.built:
             return False
         return True
     def __pkg_built(self, pkg, pocket):
