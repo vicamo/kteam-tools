@@ -518,6 +518,8 @@ class PackageBuildRoute:
                 return pub
             if prefix is not None and pub.version is not None and pub.version.startswith(prefix):
                 return pub
+            if exact is None and prefix is None:
+                return pub
         return None
 
 
@@ -1666,10 +1668,12 @@ class Package():
 
     # __pkg_pocket_route_entry
     #
-    def __pkg_pocket_route_entry(self, pkg, pocket):
-        package_version = self.package_version_exact(pkg)
-        if package_version is None:
-            return None
+    def __pkg_pocket_route_entry(self, pkg, pocket, exact_match=True):
+        package_version = None
+        if exact_match:
+            package_version = self.package_version_exact(pkg)
+            if package_version is None:
+                return None
         build_route = self.builds.get(pkg, {}).get(pocket)
         if not build_route:
             return None
