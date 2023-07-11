@@ -222,7 +222,7 @@ xenial|bionic|disco|eoan|focal|groovy|hirsute)
 esac
 case "$SUITE" in
 xenial|bionic|focal|groovy|hirsute|impish|jammy)
-	ADDPKG="$ADDPKG pkg-config libfuse-dev"
+	ADDPKG="$ADDPKG pkg-config"
 	;;
 esac
 case "$SUITE" in
@@ -233,7 +233,7 @@ esac
 
 # Always needed for selftests, available in all suites, not declared
 # as a default build-dep
-ADDPKG="$ADDPKG clang libelf-dev llvm"
+ADDPKG="$ADDPKG clang libelf-dev llvm libfuse-dev"
 
 case $SUITE in
 *)	_SUITE=$SUITE ;;
