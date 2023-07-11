@@ -202,6 +202,7 @@ class NewReview(SourceReview):
 
         # If we managed to find a changes file then we can extract the list.
         changes_url = changes_url.replace('https://launchpad.net/', 'https://api.launchpad.net/devel/')
+        cinfo("fetch_usc: url={}".format(changes_url))
         changes = self.lp._browser.get(changes_url)
         compatibility = None
         for line in changes.decode('utf-8').rstrip().split('\n'):
