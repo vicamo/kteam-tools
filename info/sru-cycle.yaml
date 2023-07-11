@@ -24,6 +24,12 @@
 
 '2023.07.10':
     release-date: '2023-08-07'
+    stream: 1
+
+'s2023.06.12':
+    start-date: '2023-07-10'
+    release-date: '2023-07-24'
+    stream: 2
 
 '2023.06.12':
     release-date: '2023-07-10'
