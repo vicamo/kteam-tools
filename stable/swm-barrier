@@ -46,7 +46,7 @@ class SwmBarrierGroup:
         if self.nascent:
             return "GROUP<nascent>"
         else:
-            return "GROUP<awaits={} wants={} sees={} complete={}>".format(self.want - self.seen, len(self.want), len(self.seen), self.complete)
+            return "GROUP<wants={} sees={} complete={}>".format(len(self.want), len(self.seen), self.complete)
 
     def __repr__(self):
         if self.nascent:
