@@ -77,7 +77,7 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
             # Generate operates on the entire set so we only
             # need to run it once.
             if not is_rebuilt:
-                CycleRef.generate(ghs.handle, remote=gh.remote)
+                CycleRef.generate(ghs.handle)
                 is_rebuilt = True
 
             cycle_ref = CycleRef.get_cycle_ref(gh, cycle)
