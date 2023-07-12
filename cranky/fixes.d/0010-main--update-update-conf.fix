@@ -19,7 +19,7 @@ source debian/debian.env
 CONF="$DEBIAN/etc/update.conf"
 
 TMP=$(mktemp "$CONF".XXX)
-$(here)/generate-update-conf > "$TMP"
+$(here)/generate-update-conf $FIX_CYCLE > "$TMP"
 if [ -s "$TMP" ] ; then
 	mv "$TMP" "$CONF"
 else
