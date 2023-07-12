@@ -14,8 +14,15 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pard
 from ktl.debian import Debian
 from ktl.shell import sh
 
+cycle = None
+
+if len(sys.argv) == 2:
+    cycle = sys.argv[1]
+elif len(sys.argv) != 1:
+    sys.exit(1)
+
 # Identify parental package if we are derived.
-source = Debian.get_source_from_kernel_series()
+source = Debian.get_source_from_kernel_series(cycle=cycle)
 parent_source = source.derived_from
 if parent_source is None:
     print("  not a derived package", file=sys.stderr)
