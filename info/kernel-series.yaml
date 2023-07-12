@@ -3094,6 +3094,41 @@ defaults:
                         clouds: ['kvm']
             invalid-tasks: ['certification-testing']
 
+        linux-oracle-6.2:
+            routing: ubuntu/4
+            variants: [ '-edge' ]
+            package-relations: signed-generate
+            packages:
+                linux-oracle-6.2:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/jammy', 'oracle-6.2-next']
+                linux-meta-oracle-6.2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/jammy', 'oracle-6.2']
+                linux-generate-oracle-6.2:
+                    type: generate
+                linux-signed-oracle-6.2:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/jammy', 'oracle-6.2']
+                linux-restricted-modules-oracle-6.2:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/jammy', 'oracle-6.2']
+                linux-restricted-generate-oracle-6.2:
+                    type: lrg
+                linux-restricted-signatures-oracle-6.2:
+                    type: lrs
+            supported: true
+            owner: kmously
+            backport: true
+            derived-from: [ '23.04', 'linux-oracle' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    oracle:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-bluefield:
             routing: bluefield-ppas-pro/3
             variants: ['--']
@@ -3285,7 +3320,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oracle-5.19:
                     type: lrs
-            supported: true
+            supported: false
             owner: kmously
             backport: false
             derived-from: [ '22.04', 'linux-hwe-5.19' ]
