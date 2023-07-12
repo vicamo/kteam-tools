@@ -95,6 +95,10 @@ class BaseCrankyTest(unittest.TestCase):
         self.setup_run_cmd(git_path, 'git commit -a -m "Initial"')
 
         #
+        # Setup remotes to look like a real kernel repo
+        self.setup_run_cmd(git_path, f"git remote add origin {git_path}")
+
+        #
         # Generate a context using our temporary directory
         config_yaml = f"base-path:                      '{d.path}'"
         handle_config = Config(data=config_yaml)
