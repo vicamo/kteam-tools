@@ -20,9 +20,15 @@ class SRUBoardError(Exception):
 
 
 class SRUBoard:
-    def __init__(self, cycle, create_sprint=False, dryrun=False, cve=False):
+    def __init__(self, cycle, create_range=None, dryrun=False, cve=False):
         '''
-        :param cycle: The SRU cycle date of the board
+        :param cycle: The cycle name for the sprint ([s]<YYYY.MM.DD>)
+        :param create_range: Optionally pass in a tuple of (<start date>,<end date>) to
+                             let a new sprint be created if not found. Both dates are
+                             datetime objects.
+        :param dryrun: If true, only simulate anything which would be done
+        :param cve: If true, put the sprint into the security project, otherwise
+                    use the SRU project.
         '''
         self.jira = JIRA('https://warthogs.atlassian.net/',
             options={'agile_rest_path': AgileResource.AGILE_BASE_REST_PATH})
@@ -42,12 +48,20 @@ class SRUBoard:
                 self.sprint = sprint
                 break
         else:
-            if not create_sprint:
+            if create_range is None:
                 raise SRUBoardError("{}: cycle sprint not found".format(cycle))
 
-            start_date = datetime.strptime(self.cycle, '%Y.%m.%d').replace(tzinfo=timezone.utc, microsecond=0)
-            end_date = start_date + timedelta(days=21)
-            self.sprint = self.jira.create_sprint(name=self.cycle, board_id=self.board.id, startDate=start_date.isoformat(), endDate=end_date.isoformat())
+            start_date, end_date = create_range
+            try:
+                start_date.replace(tzinfo=timezone.utc, microsecond=0)
+                end_date.replace(tzinfo=timezone.utc, microsecond=0)
+            except BaseException as ex:
+                raise SRUBoardError("Failed to normalize start/end range ({})".format(ex))
+
+            if not dryrun:
+                self.sprint = self.jira.create_sprint(name=self.cycle, board_id=self.board.id, startDate=start_date.isoformat(), endDate=end_date.isoformat())
+            else:
+                self.sprint = 'DRY:{}'.format(self.cycle)
 
     def add_issue(self, name, desc=None, state=None):
         """
