@@ -15,11 +15,15 @@ cranky fix -- fix various common files from kteam-tools for main packages, and
 options:
   -h, --help      show this help message and exit
   -v, --verbose   show extra info when running.
+  --cycle         Work against a specific cycle, defaults to the tree cycle
+                  when handle is a directory and the tip otherwise.
+
 EOM
 	exit 1
 }
 
 verbose=0
+cycle=
 
 while [ "$#" -gt 0 ] ; do
 	case "${1}" in
@@ -28,6 +32,10 @@ while [ "$#" -gt 0 ] ; do
 			;;
 		-v|--verbose)
 			verbose=1
+			;;
+		--cycle)
+			shift
+			cycle="$1"
 			;;
 		*)
 			echo "error: Unrecognized argument ${1}" >&2
@@ -81,4 +89,5 @@ FIX_TYPE="$type" \
 FIX_SERIES="$series" \
 FIX_SOURCE="$source" \
 FIX_VARIANTS="$variants" \
+FIX_CYCLE="$cycle" \
 	run-parts --regex '\.fix$' --exit-on-error --verbose "$cranky_root/fixes.d"
