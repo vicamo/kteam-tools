@@ -340,7 +340,7 @@ class Debian:
     # get_source_from_kernel_series
     #
     @classmethod
-    def get_source_from_kernel_series(cls):
+    def get_source_from_kernel_series(cls, cycle=None):
         """
         Return a ktl.kernel_series.KernelSourceEntry object representing
         the kernel on the current directory.  The changelog
@@ -363,7 +363,11 @@ class Debian:
         if not package:
             raise DebianError("Can't find a valid package name in the changelog.")
         # Get the kernel series info
-        info_series = KernelSeries().lookup_series(codename=series)
+        if cycle:
+            ks = KernelSeries.for_cycle(cycle)
+        else:
+            ks = KernelSeries()
+        info_series = ks.lookup_series(codename=series)
         if not info_series:
             raise DebianError("Unknown series: %s. Please check the " +
                               "info/kernel-series.yaml file." %
