@@ -51,7 +51,6 @@ HERE=$(here)
 declare -a HELPERS
 files=(
 	annotations
-	kernelconfig
 	kconfig/__init__.py
 	kconfig/annotations.py
 )
