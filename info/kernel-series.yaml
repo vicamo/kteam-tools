@@ -1300,7 +1300,7 @@ defaults:
             backported: true
             derived-from: [ '23.04', 'linux-nvidia' ]
             swm:
-                kernel-testing: false
+                kernel-testing: true
             invalid-tasks: ['boot-testing', 'automated-testing', 'certification-testing', 'regression-testing']
 
 # 23.04 (Lunar Lobster)
@@ -1694,7 +1694,7 @@ defaults:
             supported: false
             derived-from: [ '23.04', 'linux' ]
             swm:
-                kernel-testing: false
+                kernel-testing: true
             invalid-tasks: ['boot-testing', 'automated-testing', 'certification-testing', 'regression-testing']
 
 # 22.10 (Kinetic Kudu)
@@ -3626,7 +3626,7 @@ defaults:
             backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
-                kernel-testing: false
+                kernel-testing: true
             testing:
                 flavours:
                     xilinx-zynqmp:
@@ -3720,7 +3720,7 @@ defaults:
             derived-from: ['22.04', 'linux-aws']
             backport: true # use local-mangle to keep it in sync with linux-aws
             swm:
-                kernel-testing: false
+                kernel-testing: true
             testing:
                 flavours:
                     aws-fips:
@@ -3866,7 +3866,7 @@ defaults:
             supported: false
             derived-from: [ '22.04', 'linux-realtime' ]
             swm:
-                kernel-testing: false
+                kernel-testing: true
             testing:
                 flavours:
                     nvidia-tegra:
@@ -3897,7 +3897,7 @@ defaults:
             supported: false
             derived-from: [ '22.04', 'linux-realtime' ]
             swm:
-                kernel-testing: false
+                kernel-testing: true
             testing:
                 flavours:
                     nvidia-tegra-igx:
@@ -5612,7 +5612,7 @@ defaults:
             derived-from: [ '20.04', 'linux-azure' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
-                kernel-testing: false
+                kernel-testing: true
             testing:
                 flavours:
                     azure-cvm:
@@ -6725,7 +6725,7 @@ defaults:
             development: false
             derived-from: [ '20.04', 'linux-raspi' ]
             swm:
-                kernel-testing: false
+                kernel-testing: true
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
 
         linux-uc20-denver:
@@ -6988,7 +6988,7 @@ defaults:
             backport: true
             derived-from: [ '22.04', 'linux-nvidia-tegra' ]
             swm:
-                kernel-testing: false
+                kernel-testing: true
             testing:
                 flavours:
                     nvidia-tegra:
@@ -7020,7 +7020,7 @@ defaults:
             backport: true
             derived-from: [ '22.04', 'linux-nvidia-tegra-igx' ]
             swm:
-                kernel-testing: false
+                kernel-testing: true
             testing:
                 flavours:
                     nvidia-tegra-igx:
@@ -9102,7 +9102,7 @@ defaults:
             private: true
             derived-from: ['18.04', 'linux']
             swm:
-                kernel-testing: false
+                kernel-testing: true
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
             snaps:
                 # EOL: 2022-12-19
