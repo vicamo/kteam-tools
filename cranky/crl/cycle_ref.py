@@ -1,8 +1,9 @@
+import os
 import re
 import shlex
 import subprocess
 
-from ktl.log import cdebug, cerror
+from ktl.log import cdebug, cerror, cnotice
 from ktl.ubuntu_tag import UbuntuTag
 
 from crl.exceptions import CrankyException
@@ -135,7 +136,7 @@ class CycleRef:
         return ref
 
     @staticmethod
-    def generate(handle, remote=None, dry_run=False):
+    def generate(handle, dry_run=False):
         """Generate cycle refs for all trees in the specified Handle
         :param handle: Handle cranky handle
         :param dry_run: bool True for a dry run
@@ -144,7 +145,8 @@ class CycleRef:
         # Collect git handle and all tags for each tree
         tree_git_tags = {}
         for tree in handle.trees:
-            #
+            remote = tree.remote
+
             # For tree that contain multiple kernels we need to be
             # use a tag prefix to filter out unrelated kernels. All
             # packages in a HandleSet *should* have the same prefix
@@ -156,7 +158,7 @@ class CycleRef:
             # Ensure we have all the latest tags if a remote is specified
             this_git = Git(tree.directory)
             if remote:
-                cdebug(f"Fetching tags from {remote}")
+                cnotice(f"Fetching tags from {remote} in {os.path.basename(tree.directory)}")
                 this_git(
                     f"fetch {remote} 'refs/tags/{tag_prefix}:refs/tags/{tag_prefix}'"
                 )
