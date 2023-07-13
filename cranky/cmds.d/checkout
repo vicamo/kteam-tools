@@ -82,7 +82,7 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
 
             cycle_ref = CycleRef.get_cycle_ref(gh, cycle)
             if cycle_ref:
-                rmt_ref = "refs/tags/{}".format(cycle_ref.tag)
+                rmt_ref = cycle_ref.refname
             else:
                 cnotice("{} does not have a release for {}, falling back to tip.".format(pkg.name, cycle))
 
