@@ -1256,25 +1256,6 @@ defaults:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
-        linux-allwinner:
-            variants: ['--']
-            packages:
-                linux-allwinner:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/mantic', 'allwinner-next']
-                linux-meta-allwinner:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/mantic', 'allwinner']
-            owner: esmil
-            #derived-from: ['23.04', 'linux']
-            derived-from: ['22.10', 'linux-allwinner']
-            swm:
-                kernel-testing: true
-            testing:
-                flavours:
-                    allwinner:
-                        arches: ['riscv64']        # test system arch names
-            invalid-tasks: [ 'automated-testing', 'certification-testing']
-
         linux-laptop:
             # Concept kernel for the Lenovo x13s ARM laptop
             owner: juergh
@@ -1662,6 +1643,7 @@ defaults:
             owner: esmil
             #derived-from: ['23.04', 'linux']
             derived-from: ['22.10', 'linux-allwinner']
+            supported: false
             swm:
                 kernel-testing: true
             testing:
@@ -2114,6 +2096,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic', 'allwinner']
             owner: esmil
             derived-from: [ '22.10', 'linux' ]
+            supported: false
             swm:
                 kernel-testing: true
             testing:
@@ -3360,7 +3343,7 @@ defaults:
                 linux-meta-riscv-5.19:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'riscv-5.19']
-            supported: true
+            supported: false
             owner: esmil
             development: false
             backport: false
@@ -3442,7 +3425,7 @@ defaults:
                 linux-meta-starfive-5.19:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'starfive-5.19']
-            supported: true
+            supported: false
             owner: esmil
             development: false
             backport: false
