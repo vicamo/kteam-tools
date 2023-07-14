@@ -258,36 +258,47 @@
 '2021.11.29':
     cutoff-date: '2021-11-24'
     release-date: '2022-01-04'
+    complete: true
 
 '2021.11.08':
     release-date: '2021-11-29'
+    complete: true
 
 '2021.10.18':
     release-date: '2021-11-08'
+    complete: true
 
 '2021.09.27':
     release-date: '2021-10-18'
+    complete: true
 
 '2021.09.06':
     release-date: '2021-09-27'
+    complete: true
 
 '2021.08.16':
     release-date: '2021-09-06'
+    complete: true
 
 '2021.07.19':
     release-date: '2021-08-16'
+    complete: true
 
 '2021.06.21':
     release-date: '2021-07-19'
+    complete: true
 
 '2021.05.31':
     release-date: '2021-06-21'
+    complete: true
 
 '2021.05.10':
     release-date: '2021-05-31'
+    complete: true
 
 '2021.04.12':
     release-date: '2021-05-10'
+    complete: true
 
 '2021.03.15':
     release-date: '2021-04-12'
