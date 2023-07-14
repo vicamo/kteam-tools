@@ -18,9 +18,7 @@ from crl.handle import Handle, HandleError
 def rebuild_cycles(handle, dry_run=False, quiet=False, cycle=None, **kwargs):
     """Rebuild all cycle references for the specified handle"""
     tree = Handle().lookup_set(handle, cycle=cycle, validate=False)
-    main_tree = tree.get_tree_by_package_type("main")
-
-    CycleRef.generate(tree, remote=main_tree.remote, dry_run=dry_run)
+    CycleRef.generate(tree, dry_run=dry_run)
     if not quiet:
         list_cycles(handle, **kwargs)
 

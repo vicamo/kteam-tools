@@ -123,7 +123,7 @@ class CycleRef:
         self.refname = refname
 
     def __str__(self) -> str:
-        return f"{self.cycle} {self.tag} {self.object_id} {self.rename}"
+        return f"{self.cycle} {self.tag} {self.object_id} {self.refname}"
 
     @staticmethod
     def make_ref(handle, cycle):
