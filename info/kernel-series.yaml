@@ -2571,7 +2571,7 @@ defaults:
 
         linux-azure:
             routing: ubuntu/4
-            variants: ['--', '-lts-22.04']
+            variants: ['-lts-22.04']
             package-relations: signed-generate
             packages:
                 linux-azure:
@@ -2606,7 +2606,7 @@ defaults:
 
         linux-azure-fde:
             routing: classic-fde-ubuntu/4
-            variants: ['--', '-lts-22.04']
+            variants: ['-lts-22.04']
             packages:
                 linux-azure-fde:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-fde']
@@ -2638,7 +2638,7 @@ defaults:
 
         linux-azure-fde-5.19:
             routing: classic-fde-ubuntu/4
-            variants: ['-edge']
+            variants: []
             packages:
                 linux-azure-fde-5.19:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-fde-5.19']
@@ -2670,7 +2670,7 @@ defaults:
 
         linux-azure-5.19:
             routing: ubuntu/4
-            variants: [ '-edge' ]
+            variants: []
             package-relations: signed-generate
             packages:
                 linux-azure-5.19:
@@ -2707,7 +2707,7 @@ defaults:
 
         linux-azure-6.2:
             routing: ubuntu/4
-            variants: [ '-edge' ]
+            variants: [ '--', '-edge' ]
             package-relations: signed-generate
             packages:
                 linux-azure-6.2:
@@ -2744,7 +2744,7 @@ defaults:
 
         linux-azure-fde-6.2:
             routing: classic-fde-ubuntu/4
-            variants: ['-edge']
+            variants: ['--', '-edge']
             packages:
                 linux-azure-fde-6.2:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-fde-6.2']
