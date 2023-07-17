@@ -3647,6 +3647,7 @@ defaults:
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
+            invalid-tasks: [ 'automated-testing' ]
             testing:
                 flavours:
                     xilinx-zynqmp:
@@ -6870,6 +6871,7 @@ defaults:
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
+            invalid-tasks: [ 'automated-testing' ]
             testing:
                 flavours:
                     xilinx-zynqmp:
