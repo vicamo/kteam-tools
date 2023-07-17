@@ -3388,6 +3388,20 @@ class TestKernelRoutingEntry(TestKernelSeriesCore):
 
 class TestKernelSeriesCache(TestKernelSeriesCore):
 
+    def test_url_local_cycles(self):
+        ksc = KernelSeriesCache(data_location="/DATA/")
+        for what, cycle, paths in (
+            ("tip", None, ["file:///DATA/kernel-series.yaml"]),
+            ("cycle c1", "c1", [
+                "file:///DATA/kernel-versions/c1/info/kernel-series.yaml",
+                "file:///DATA/kernel-versions/complete/c1/info/kernel-series.yaml",
+                "file:///DATA/kernel-series.yaml@c1",
+            ]),
+        ):
+            with self.subTest(msg=what):
+                urls = ksc.url_local(cycle)
+                self.assertEqual(urls, paths)
+
     def test_form_url_cycles(self):
         ksc = KernelSeriesCache(data_location="/DATA")
         for which, cycle, paths, local in (
