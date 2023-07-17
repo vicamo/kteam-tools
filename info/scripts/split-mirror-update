@@ -37,42 +37,53 @@ fi
 {
 	(
 		cd "$data/kteam-tools" || exit 1
-		git for-each-ref --format "$data/kteam-tools kernel-series %(objectname) %(refname)" refs/remotes/origin/master
-		git for-each-ref --format "$data/kteam-tools sru-cycle %(objectname) %(refname)" refs/remotes/origin/master
-		git for-each-ref --format "$data/kteam-tools signing-config %(objectname) %(refname)" refs/remotes/origin/master
+		git for-each-ref --format "kernel-series - $data/kteam-tools %(refname) %(objectname) info/kernel-series.yaml" refs/remotes/origin/master
+		git for-each-ref --format "sru-cycle - $data/kteam-tools %(refname) %(objectname) info/sru-cycle.yaml" refs/remotes/origin/master
+		git for-each-ref --format "signing-config - $data/kteam-tools %(refname) %(objectname) info/signing-config.yaml" refs/remotes/origin/master
 	)
 	(
 		cd "$data/kernel-versions" || exit 1
-		git for-each-ref --format "$data/kernel-versions kernel-series %(objectname) %(refname)" refs/remotes/origin | grep -v -- "-next$"
+		main=$(git for-each-ref --format "$data/kernel-versions kernel-series %(objectname) %(refname)" refs/remotes/origin/main)
+		if [ "$main" ]; then
+			objectname=$(git for-each-ref --format "%(objectname)" refs/remotes/origin/main)
+			git ls-tree --name-only -r refs/remotes/origin/main | grep info/kernel-series.yaml | \
+			while read ks
+			do
+				case "$ks" in
+				tip/*)	continue ;;
+				esac
+				variant="$(echo "$ks" | sed -e "s@^complete/@@" -e "s@/.*@@")"
+				echo "kernel-series @$variant $data/kernel-versions refs/remotes/origin/main $objectname $ks"
+			done
+		else
+			git for-each-ref --format "kernel-series @%(refname:lstrip=-1) $data/kernel-versions %(refname) %(objectname) info/kernel-series.yaml" refs/remotes/origin | grep -v -- "-next$"
+		fi
 	)
 } | \
-while read repo filename objectname refname x
+while read filename variant repo refname objectname objectpath x
 do
 	case "$repo:$refname" in
 	*/kernel-versions:*/HEAD)		continue ;;
 	*/kernel-versions:*/master)		continue ;;
 	esac
 
-	cycle="$(basename $refname)"
-	objectname_file="$out/.$filename.$cycle.on"
-	case "$repo" in
-	*/kteam-tools)		variant="" ;;
-	*/kernel-versions)	variant="@$cycle" ;;
-	*)			variant="@$(basename "$repo")@$cycle" ;;
-	esac
-	#echo "REPO<$repo> ON<$objectname> RN<$refname>  cycle<$cycle> objectname_file<$objectname_file>"
+	if [ "$variant" = "-" ]; then
+		variant=""
+	fi
+	objectname_file="$out/.$filename$variant.on"
+	#echo "REPO<$repo> ON<$objectname> RN<$refname> objectname_file<$objectname_file>"
 	objectname_existing="$(cat "$objectname_file" 2>/dev/null)"
 	if [ "$objectname_existing" = "$objectname" ]; then
 		continue
 	fi
-	echo "II: upstream $(basename "$repo") $cycle $filename.yaml tip changed ..."
+	echo "II: upstream $(basename "$repo"):$(basename "$refname") $filename.yaml$variant tip changed ..."
 	(
 		cd "$repo" || exit 1
-		git show "$refname:info/$filename.yaml" >"$out/$filename.yaml.new" || exit 0
+		git show "$refname:$objectpath" >"$out/$filename.yaml.new" || exit 0
 		if [ -e "$out/$filename.yaml$variant" ]; then
 			cmp -s "$out/$filename.yaml$variant" "$out/$filename.yaml.new" && exit 0
 		fi
-		echo "II: upstream $(basename "$repo") $cycle $filename.yaml data changed ..."
+		echo "II: upstream $(basename "$repo"):$(basename "$refname") $filename.yaml$variant data changed ..."
 		"$here/ks-convert" "$out/$filename.yaml.new" "$out/$filename.json.new" || exit 0
 		gzip -9 <"$out/$filename.json.new" >"$out/$filename.json.gz.new"
 		mv -f "$out/$filename.yaml.new" "$out/$filename.yaml$variant"
