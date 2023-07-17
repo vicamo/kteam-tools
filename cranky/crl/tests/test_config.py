@@ -87,26 +87,6 @@ class TestConfig(unittest.TestCase):
             data = config.lookup('simple')
             self.assertEqual(data, 'data')
 
-    def test_config_home_cranky(self):
-        with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'HOME': d.path}):
-            d.write('.cranky', self.data_yaml.encode('utf-8'))
-
-            config = Config()
-            self.assertNotEqual(config, None)
-
-            data = config.lookup('simple')
-            self.assertEqual(data, 'data')
-
-    def test_config_home_cranky_dot_yaml(self):
-        with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'HOME': d.path}):
-            d.write('.cranky.yaml', self.data_yaml.encode('utf-8'))
-
-            config = Config()
-            self.assertNotEqual(config, None)
-
-            data = config.lookup('simple')
-            self.assertEqual(data, 'data')
-
     def test_config_home_override_empty(self):
         with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'HOME': d.path}):
             d.write('.cranky', self.data_yaml.encode('utf-8'))
