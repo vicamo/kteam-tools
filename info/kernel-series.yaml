@@ -2501,7 +2501,7 @@ defaults:
 
         linux-aws-5.19:
             routing: ubuntu/4
-            variants: ['--' ]
+            variants: [ ]
             package-relations: signed-generate
             packages:
                 linux-aws-5.19:
@@ -2521,7 +2521,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-aws-5.19:
                     type: lrs
-            supported: true
+            supported: false
             owner: timg-tpi
             backport: false
             derived-from: [ '22.04', 'linux-hwe-5.19' ]
@@ -2536,7 +2536,7 @@ defaults:
 
         linux-aws-6.2:
             routing: ubuntu/4
-            variants: [ '-edge' ]
+            variants: [ '--', '-edge' ]
             package-relations: signed-generate
             packages:
                 linux-aws-6.2:
