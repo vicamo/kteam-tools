@@ -3,11 +3,12 @@
 
 try:
     from urllib.request import urlopen
-    from urllib.error import HTTPError
+    from urllib.error import HTTPError, URLError
 except ImportError:
     from urllib2 import urlopen
-    from urllib2 import HTTPError
+    from urllib2 import HTTPError, URLError
 
+import errno
 import json
 import io
 import os
@@ -801,18 +802,31 @@ class KernelSeriesUrl:
 
 class KernelSeriesCache:
 
-    def __init__(self):
+    def __init__(self, data_location=None):
+        if data_location is None:
+            data_location = os.path.realpath(
+                os.path.join(os.path.dirname(__file__),"..","info")
+            )
+
+        self._data_location = data_location
         self.by_url = {}
 
-    @staticmethod
-    def url_local():
+    def url_local(self, cycle):
         try:
             import ckt_info
-            url = ckt_info.abspath("info/kernel-series.yaml")
+            path = ckt_info.abspath("info/kernel-series.yaml")
         except ImportError:
-            url = os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                   '..', 'info', 'kernel-series.yaml'))
-        return 'file://' + url
+            path = os.path.join(self._data_location, "kernel-series.yaml")
+        if cycle is not None:
+            path_base = os.path.dirname(path)
+            paths = [
+                os.path.join(path_base, "kernel-versions", cycle, "info", "kernel-series.yaml"),
+                os.path.join(path_base, "kernel-versions", "complete", cycle, "info", "kernel-series.yaml"),
+                os.path.join(path_base, "kernel-series.yaml@" + cycle),
+            ]
+        else:
+            paths = [path]
+        return ["file://" + path for path in paths]
 
     # Enviromental overrides allowing selection of data:
     #  USE_LOCAL_KERNEL_SERIES_YAML=true -- switch to using a local .yaml form (deprecated)
@@ -834,32 +848,47 @@ class KernelSeriesCache:
 
         if which == "launchpad":
             if cycle is None:
-                url = "https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml"
+                urls = ["https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml"]
             else:
-                url = "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h=" + cycle
+                urls = [
+                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/" + cycle + "/info/kernel-series.yaml?h=main",
+                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/complete/" + cycle + "/info/kernel-series.yaml?h=main",
+                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h=" + cycle,
+                ]
         else:
             if which == "local":
-                url = self.url_local()
+                urls = self.url_local(cycle)
             else: # default|json
                 url = "https://kernel.ubuntu.com/info/kernel-series.json.gz"
-            if cycle is not None:
-                url += "@" + cycle
+                if cycle is not None:
+                    url += "@" + cycle
+                urls = [url]
 
-        return url, use_local
+        return urls, use_local
 
     def for_cycle(self, cycle, url=None, data=None, use_local=None, **kwargs):
         if data is not None:
             return KernelSeriesUrl(url=url, data=data, use_local=use_local, **kwargs)
         if url is None:
-            url, use_local = self.form_url(use_local, cycle)
-        if url not in self.by_url:
-            try:
-                self.by_url[url] = KernelSeriesUrl(url=url, data=data, use_local=use_local, **kwargs)
-            except HTTPError as e:
-                if e.code == 404:
-                    return None
-                raise
-        return self.by_url[url]
+            urls, use_local = self.form_url(use_local, cycle)
+        else:
+            urls = [url]
+        if urls is None:
+            return None
+        for url in urls:
+            if url not in self.by_url:
+                try:
+                    self.by_url[url] = KernelSeriesUrl(url=url, data=data, use_local=use_local, **kwargs)
+                except HTTPError as e:
+                    if e.code == 404:
+                        continue
+                    raise
+                except URLError as e:
+                    if e.reason.errno == errno.ENOENT:
+                        continue
+                    raise
+            return self.by_url[url]
+        return None
 
     def for_spin(self, spin, **kwargs):
         cycle = spin.rsplit("-", 1)[0] if spin is not None else None
