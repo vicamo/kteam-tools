@@ -794,6 +794,10 @@ class KernelSeriesUrl:
             return None
         return KernelSeriesEntry(self, series, self._data[series])
 
+    @classmethod
+    def key_series_name(cls, series):
+        return [int(x) for x in series.name.split('.')]
+
 
 class KernelSeriesCache:
 
@@ -884,9 +888,7 @@ class KernelSeries:
     def tip(cls, *args, **kwargs):
         return cls._cache.tip(*args, **kwargs)
 
-    @staticmethod
-    def key_series_name(series):
-        return [int(x) for x in series.name.split('.')]
+    key_series_name = KernelSeriesUrl.key_series_name
 
 
 if __name__ == '__main__':
