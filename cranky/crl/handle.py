@@ -311,6 +311,7 @@ class Handle:
             cycle_name, series_name, package_name = self.directory_identity(handle)
             if cycle_name and cycle_name[0] in ("d",):
                 cycle_name = None
+            directory = handle
 
         else:
             bits = handle.split(':')
@@ -318,14 +319,15 @@ class Handle:
                 raise HandleError("{}: handle format unknown".format(handle))
             series_name, package_name = bits
             cycle_name = None
+            directory = None
 
-        return cycle_name, series_name, package_name
+        return cycle_name, series_name, package_name, directory
 
     def lookup_tree(self, handle, cycle=None, validate=True, ks=None):
         package = None
         source = None
 
-        cycle_name, series_name, package_name = self.decode_handle(handle)
+        cycle_name, series_name, package_name, directory = self.decode_handle(handle)
         if cycle is None:
             cycle = cycle_name
 
@@ -351,7 +353,7 @@ class Handle:
         if package is None:
             raise HandleError("{}: handle directory contains unknown package {}".format(handle, package_name))
 
-        return HandleTree(series, package, source=source, validate=validate, ks=ks, config=self.config)
+        return HandleTree(series, package, source=source, directory=directory, validate=validate, ks=ks, config=self.config)
 
     def lookup_set(self, handle, cycle=None, validate=True, ks=None):
         # A directory passed as a handle.
@@ -359,7 +361,7 @@ class Handle:
             tree = self.lookup_tree(handle, cycle=cycle, validate=validate, ks=ks)
             return HandleSet(handle, tree.series, tree.package.source, validate=validate, sample=tree, ks=ks, config=self.config)
 
-        cycle_name, series_name, source_name = self.decode_handle(handle)
+        cycle_name, series_name, source_name, directory = self.decode_handle(handle)
         if cycle is None:
             cycle = cycle_name
 
