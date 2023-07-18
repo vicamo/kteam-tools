@@ -1,8 +1,10 @@
+import os
 import sys
 import unittest
 from testfixtures       import TempDirectory
 
 from ktl.kernel_series  import (KernelSeries,
+                                KernelSeriesCache,
                                 KernelSeriesEntry,
                                 KernelSourceEntry,
                                 KernelSourceTestingFlavourEntry,
@@ -3382,6 +3384,52 @@ class TestKernelRoutingEntry(TestKernelSeriesCore):
         source = series.lookup_source('linux')
 
         self.assertFalse(source.private)
+
+
+class TestKernelSeriesCache(TestKernelSeriesCore):
+
+    def test_url_local_cycles(self):
+        ksc = KernelSeriesCache(data_location="/DATA/")
+        for what, cycle, paths in (
+            ("tip", None, ["file:///DATA/kernel-series.yaml"]),
+            ("cycle c1", "c1", [
+                "file:///DATA/kernel-versions/c1/info/kernel-series.yaml",
+                "file:///DATA/kernel-versions/complete/c1/info/kernel-series.yaml",
+                "file:///DATA/kernel-series.yaml@c1",
+            ]),
+        ):
+            with self.subTest(msg=what):
+                urls = ksc.url_local(cycle)
+                self.assertEqual(urls, paths)
+
+    def test_form_url_cycles(self):
+        ksc = KernelSeriesCache(data_location="/DATA")
+        for which, cycle, paths, local in (
+            (None, None, ["https://kernel.ubuntu.com/info/kernel-series.json.gz"], False),
+            (None, "c1", ["https://kernel.ubuntu.com/info/kernel-series.json.gz@c1"], False),
+            ("local", None, ["file:///DATA/kernel-series.yaml"], True),
+            ("local", "c1", [
+                    "file:///DATA/kernel-versions/c1/info/kernel-series.yaml",
+                    "file:///DATA/kernel-versions/complete/c1/info/kernel-series.yaml",
+                    "file:///DATA/kernel-series.yaml@c1"
+                ], True
+            ),
+            ("launchpad", None, ["https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml"], False),
+            ("launchpad", "c1", [
+                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/c1/info/kernel-series.yaml?h=main",
+                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/complete/c1/info/kernel-series.yaml?h=main",
+                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h=c1",
+                ], False
+            ),
+        ):
+            with self.subTest(msg=str(which) + " " + str(cycle)):
+                with unittest.mock.patch.dict(os.environ):
+                    os.environ.pop("KERNEL_SERIES_USE", None)
+                    if which is not None:
+                        os.environ["KERNEL_SERIES_USE"] = which
+                    urls, use_local = ksc.form_url(False, cycle)
+                    self.assertEqual(urls, paths)
+                    self.assertEqual(use_local, local)
 
 
 if __name__ == '__main__':
