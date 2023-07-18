@@ -22,7 +22,7 @@ class SwmStatus:
             #return datetime.fromisoformat(isoformat)
             # XXX: before python 3.6 fromisoformat is not available -- detect and remove
             # the non-standard : in a timezone offset.
-            if isoformat[-5] in ("+", "-") and isoformat[-3] == ':':
+            if isoformat[-6] in ("+", "-") and isoformat[-3] == ':':
                 isoformat = isoformat[0:-3] + isoformat[-2:]
             for fmt in (
                     '%Y-%m-%dT%H:%M:%S.%f%z',
