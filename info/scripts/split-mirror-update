@@ -19,7 +19,7 @@ if [ ! -d "$data/kteam-tools" ]; then
 else
 	(
 		cd "$data/kteam-tools" || exit 1
-		git fetch origin
+		git fetch --prune origin
 		git reset --hard origin/master
 	) || exit "$?"
 fi
@@ -28,7 +28,7 @@ if [ ! -d "$data/kernel-versions" ]; then
 else
 	(
 		cd "$data/kernel-versions" || exit 1
-		git fetch origin
+		git fetch --prune origin
 		git reset --hard origin/master
 	) || exit "$?"
 fi
