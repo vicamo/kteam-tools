@@ -859,6 +859,9 @@ defaults:
         concept-x13s:
             build:
                 - ['ppa:ubuntu-concept/ubuntu/x13s', 'Release']
+        s32:
+            build:
+                - ['ppa:erlangen-team/ubuntu/nxp-s32g-bsp', 'Release']
   package-relations:
       default:
           meta:
@@ -3056,13 +3059,14 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-s32:
+            routing: s32
             variants: ['--']
             packages:
                 linux-s32:
-                    repo: ['git://git.launchpad.net/~erlangen-team/erlangen/+git/linux', 'master-next']
+                    repo: ['git://git.launchpad.net/~erlangen-team/erlangen/+git/linux-s32', 'master-next']
                 linux-meta-s32:
                     type: meta
-                    repo: ['git://git.launchpad.net/~erlangen-team/erlangen/+git/linux-meta']
+                    repo: ['git://git.launchpad.net/~erlangen-team/erlangen/+git/linux-meta-s32']
             development: true
             supported: false
             owner: kuba-t-pawlak
@@ -3076,6 +3080,22 @@ defaults:
                         arches: ['amd64']        # test system arch names
                         clouds: ['kvm']
             invalid-tasks: ['certification-testing']
+
+        linux-s32-eb:
+            routing: s32
+            variants: ['--']
+            packages:
+                linux-s32-eb:
+                    repo: ['git://git.launchpad.net/~erlangen-team/erlangen/+git/linux-s32-eb', 'master-next']
+                linux-meta-s32-eb:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~erlangen-team/erlangen/+git/linux-meta-s32-eb']
+            development: true
+            supported: false
+            owner: kuba-t-pawlak
+            private: true
+            derived-from: [ '22.04', 'linux-s32']
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
 
         linux-oracle-6.2:
             routing: ubuntu/4
