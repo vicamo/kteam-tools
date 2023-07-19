@@ -393,12 +393,18 @@ def is_hwe(source):
 def is_nvidia(source):
     return source.name.startswith('linux-nvidia')
 
+def is_gitea(source):
+    return source.name == "linux-oem-6.1"
+
 def add_primary(repo_set):
     people_owner = [
         'owner',
     ]
     people_admins = [
         '/~canonical-kernel-repo-admins-active'
+    ]
+    people_gitea = [
+        "/~ubuntu-kernel-gitea",
     ]
 
     repo_things = {}
@@ -528,6 +534,14 @@ def add_primary(repo_set):
                 ref = "refs/heads/{}".format(branch_name)
                 repo_rules.add_grants(
                     grants(ref, people=people, create=True, push=True, rewind=rewind)
+                )
+                if is_gitea(thing.source):
+                    repo_rules.add_grants(
+                        grants(ref, people=people_gitea, create=True, push=True, rewind=rewind)
+                    )
+            if is_gitea(thing.source):
+                repo_rules.add_grants(
+                    grants("refs/heads/*/*", people=people_gitea, force=True)
                 )
 
             # TAGS: allow Ubuntu-<branch>- prefixed tags.
