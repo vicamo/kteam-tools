@@ -39,6 +39,19 @@ def generate_grant(create=False, push=False, rewind=False, person=None):
 
     return grant
 
+def grants(ref, people=[], create=False, push=False, rewind=False, force=False):
+    if force:
+        create = True
+        push = True
+        rewind = True
+    return [(ref, generate_grant(create=create, push=push, rewind=rewind, person=person)) for person in people]
+
+def grant_sets(grant_sets):
+    grants = []
+    for grant_set in grant_sets:
+        grants += grant_set
+    return grants
+
 def sort_grants(grants):
     return sorted(deepcopy(grants), key=lambda x: (x['grantee_type'], x['grantee_link']))
 
@@ -234,11 +247,14 @@ def sync_tagged(repo_set, tag):
     for repo in sorted(repo_set.repos):
         repo_rules = repo_set.lookup(repo)
         if tag in repo_rules.tags:
-            print(repo, repo_rules.tags)
+            #print(repo, repo_rules.tags)
             repo_rules.update()
 
 def add_misc(repo_set):
 
+    team_owner = [
+        'owner',
+    ]
     admins_core = [
         '/~canonical-kernel-repo-admins-active',
     ]
@@ -252,58 +268,75 @@ def add_misc(repo_set):
     people_tools = [
         "/~canonical-kernel-tools-committers",
     ]
+    people_gitea = [
+        "/~ubuntu-kernel-gitea",
+    ]
+    people_kernel_bot = [
+        "/~ubuntu-kernel-bot",
+    ]
 
     series = [x for x in kernel_series.series if x.supported or x.development]
-    fw_branches = [(x.codename, x.development) for x in series]
+    fw_branches = [("refs/heads/" + x.codename, x.development) for x in series]
 
-    # Repo branches is a list of (<branch>, <rewind>) pairs.  Each branch
-    # will have an acl created and if rewind is true that will allow force
-    # push.
-    for repo_path, admins, people, repo_branches, tags_wild in [
+    for repo_path, rules in [
         [
             "~canonical-kernel/+git/kteam-tools",
-            admins_core,
-            people_core + people_tools,
-            [("master", False)],
-            None,
+            grants("refs/heads/master", team_owner)
+            + grants("refs/heads/master", admins_core, force=True)
+            + grants("refs/heads/master", people_core, push=True)
+            + grants("refs/heads/master", people_tools, push=True)
+            + grants("refs/heads/master", people_gitea, push=True)
+            + grants("refs/heads/*/*", people_gitea, force=True)
+            + grants("refs/heads/master", people_kernel_bot, force=True)
         ],
         [
             "~canonical-kernel/+git/adt-matrix-hints",
-            admins_core,
-            people_core + people_tools,
-            [("master", False)],
-            None,
+            grants("refs/heads/master", team_owner)
+            + grants("refs/heads/master", admins_core, force=True)
+            + grants("refs/heads/master", people_core, push=True)
+            + grants("refs/heads/master", people_tools, push=True)
         ],
         [
             "~canonical-kernel/+git/kernel-versions",
-            admins_core,
-            people_core + people_tools,
-            [("*", True)],
-            None,
+            grants("refs/heads/*", team_owner)
+            + grants("refs/heads/*", admins_core, force=True)
+            + grants("refs/heads/*", people_core, force=True)
+            + grants("refs/heads/*", people_tools, force=True)
+            + grants("refs/heads/*", people_gitea, force=True)
+            + grants("refs/heads/*/*", people_gitea, force=True)
+            + grants("refs/heads/*", people_kernel_bot, force=True)
         ],
         [
             "~canonical-kernel/+git/cbd",
-            admins_core,
-            people_core + people_tools,
-            [("*", True)],
-            None,
+            grants("refs/heads/*", team_owner)
+            + grants("refs/heads/*", admins_core, force=True)
+            + grants("refs/heads/*", people_core, force=True)
+            + grants("refs/heads/*", people_tools, force=True)
         ],
         [
             "~ubuntu-kernel/ubuntu/+source/linux-firmware",
-            admins_core,
-            people_core + people_tools,
-            [("master", True)] + fw_branches,
-            "Ubuntu-*",
+            grants("refs/heads/master", team_owner)
+            + grants("refs/heads/master", admins_core, force=True)
+            + grants("refs/heads/master", people_core, force=True)
+            + grants("refs/heads/master", people_tools, force=True)
+            + grants("refs/heads/master", people_kernel_bot, force=True)
+            + grant_sets([grants(branch, team_owner) for branch, force in fw_branches])
+            + grant_sets([grants(branch, admins_core, force=True) for branch, force in fw_branches])
+            + grant_sets([grants(branch, people_core + people_tools, force=force, push=True) for branch, force in fw_branches])
+            + grant_sets([grants(branch, people_kernel_bot, force=True) for branch, force in fw_branches])
+            + grants("refs/tags/Ubuntu-*", team_owner)
+            + grants("refs/tags/Ubuntu-*", admins_core, force=True)
+            + grants("refs/tags/Ubuntu-*", people_core + people_tools, create=True)
         ],
         [
             "~canonical-kernel/+git/ksc-test-results",
-            admins_core + admins_test,
-            people_core + people_tools,
-            [("main", False)],
-            None,
+            grants("refs/heads/main", team_owner)
+            + grants("refs/heads/main", admins_core, force=True)
+            + grants("refs/heads/main", admins_test, force=True)
+            + grants("refs/heads/main", people_core, push=True)
+            + grants("refs/heads/main", people_tools, push=True)
         ],
     ]:
-
         print("misc: {}".format(os.path.basename(repo_path)))
 
         repo_rules = repo_set.lookup(repo_path)
@@ -312,26 +345,8 @@ def add_misc(repo_set):
         repo_rules.add_tag(os.path.basename(repo_path))
         repo_rules.add_tag('misc')
 
-        # Note: if we are allowing a user to rewind branches we will also grant create.
-        for branch, allow_rewind in repo_branches:
-            ref = "refs/heads/{}".format(branch)
-            for person in people:
-                repo_rules.add_grant(ref, generate_grant(person=person, create=allow_rewind, push=True, rewind=allow_rewind))
-            for admin in admins:
-                repo_rules.add_grant(ref, generate_grant(person=admin, create=True, push=True, rewind=True))
-            repo_rules.add_grant(ref, generate_grant(person="/~ubuntu-kernel-bot", create=True, push=True, rewind=True))
-            if admins != 'owner':
-                repo_rules.add_grant(ref, generate_grant(person='owner'))
-
-        if tags_wild is not None:
-            ref = "refs/tags/{}".format(tags_wild)
-
-            for person in people:
-                repo_rules.add_grant(ref, generate_grant(person=person, create=True))
-            for admin in admins:
-                repo_rules.add_grant(ref, generate_grant(person=admin, create=True, push=True, rewind=True))
-            if 'owner' not in admins:
-                repo_rules.add_grant(ref, generate_grant(person='owner'))
+        for ref, grant in rules:
+            repo_rules.add_grant(ref, grant)
 
 def sync_misc(args):
     sync_tagged(args.repo_set, 'misc')
