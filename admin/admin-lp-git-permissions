@@ -251,7 +251,7 @@ def sync_tagged(repo_set, tag):
     for repo in sorted(repo_set.repos):
         repo_rules = repo_set.lookup(repo)
         if tag in repo_rules.tags:
-            #print(repo, repo_rules.tags)
+            print(repo, repo_rules.tags)
             repo_rules.update()
 
 def add_misc(repo_set):
