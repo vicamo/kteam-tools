@@ -29,7 +29,7 @@ else
 	(
 		cd "$data/kernel-versions" || exit 1
 		git fetch --prune origin
-		git reset --hard origin/master
+		git reset --hard origin/main
 	) || exit "$?"
 fi
 
