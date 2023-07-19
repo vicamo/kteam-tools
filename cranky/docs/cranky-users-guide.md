@@ -19,6 +19,15 @@ this database expresses the kernel tree sets as a main package and its
 dependent packages. All of these tree sets have specific attributes that cranky
 will query during command invocation.
 
+By default, cranky will read the latest per-cycle information published on
+[kernel.ubuntu.com][4]. More information on this process can be found in the
+[specification][5]. Cranky also supports reading from a local copy of this
+information by setting the env ``KERNEL_SERIES_USE=local``. This requires that
+you have cloned [kernel-versions][3] to `info/kernel-versions`. Once cloned, 
+you may modified the target cycle with the changes needed for your task. For
+example, to test a change on 2023.07.10, you would modify 
+`info/kernel-versions/2023.07.10/info/kernel-series.yaml`.
+
 ### Handle
 
 The basic unit of input that cranky requires is called a HANDLE. A HANDLE is a
@@ -69,4 +78,6 @@ is as far back as we have created snapshots for kernel-series in the
 
 [1]: ../docs/cranking-the-kernel.md
 [2]: ../../info/kernel-series.yaml
-[3]: https://launchpad.net/~canonical-kernel/+git/kernel-versions/
+[3]: http://10.131.201.69/kernel/kernel-versions
+[4]: https://kernel.ubuntu.com/info/
+[5]: https://docs.google.com/document/d/1a7ZBCm1l2TmZSyGWQ30Q6mY0BBLauqXkQamxqwANZ_Y/edit
