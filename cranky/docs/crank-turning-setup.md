@@ -17,6 +17,26 @@ You will need to install/update the following packages:
 sudo apt-get install -y git git-email debhelper gawk ubuntu-dev-tools build-essential devscripts fakeroot libncurses5-dev ccache kernel-wedge makedumpfile xmlto docbook-utils transfig sharutils python3-launchpadlib wget schroot snapcraft bash-completion
 ```
 
+If you are using a newer Ubuntu release, then the installation of the `snapcraft` package may fail:
+
+```
+=> Installing the Snapcraft snap
+==> Checking connectivity with the snap store
+==> Installing the Snapcraft snap for ubuntu-23.04
+error: requested a non-existing branch on latest/stable for snap "snapcraft": ubuntu-23.04
+dpkg: error processing archive /var/cache/apt/archives/snapcraft_3.0ubuntu2_all.deb (--unpack):
+ new snapcraft package pre-installation script subprocess returned error exit status 1
+Errors were encountered while processing:
+ /var/cache/apt/archives/snapcraft_3.0ubuntu2_all.deb
+E: Sub-process /usr/bin/dpkg returned an error code (1)
+```
+
+In this case, you should install `snapcraft` using Snap directly:
+
+```
+snap install snapcraft --classic
+```
+
 Read and follow the directions in [README.deploy](../../README.deploy).
 
 ## Environment setup
