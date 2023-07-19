@@ -49,7 +49,7 @@ pushing cranks for review.
 There is no DNS to resolve the names of our builders, so add them to the hosts file.
 
 ```
-printf "10.246.72.16 gloin\n10.246.75.167 sita\n10.246.72.52 kathleen\n" | sudo tee -a hosts
+printf "10.246.72.16 gloin\n10.246.75.167 sita\n10.246.72.52 kathleen\n" | sudo tee -a /etc/hosts
 ```
 
 ## Get cranky tools
