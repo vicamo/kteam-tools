@@ -150,6 +150,14 @@ in your `~/.gitconfig` file:
 	insteadof = "git+ssh://git.launchpad.net/"
 ```
 
+**Note** If you see an error message "cycle YYY.MM.DD configuration not found" 
+that means your kernel hasn't been cranked since cranky became cycle aware. A
+new kernel-series.yaml file must be defined in kernel-versions in order to make
+checkout work as expected. Ask for help on the SRU Review Mattermost channel
+to get an appropriate file generated and published.
+
+Once the kernel receives a new cycle number in `$DEBIAN/tracking-bug` this issue will go away.
+
 ### Tool sync stage - `cranky fix`
 <!--cheatsheet-->
 ```
