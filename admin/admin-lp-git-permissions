@@ -82,6 +82,10 @@ class RuleSet:
         if pattern not in self.patterns:
             self.patterns.append(pattern)
 
+    def add_grants(self, grants):
+        for pattern, grant in grants:
+            self.add_grant(pattern, grant)
+
     def add_subscriptions(self, subscriptions):
         for subscription in subscriptions:
             self.subs.add(subscription)
@@ -345,8 +349,7 @@ def add_misc(repo_set):
         repo_rules.add_tag(os.path.basename(repo_path))
         repo_rules.add_tag('misc')
 
-        for ref, grant in rules:
-            repo_rules.add_grant(ref, grant)
+        repo_rules.add_grants(rules)
 
 def sync_misc(args):
     sync_tagged(args.repo_set, 'misc')
@@ -391,7 +394,12 @@ def is_nvidia(source):
     return source.name.startswith('linux-nvidia')
 
 def add_primary(repo_set):
-    admins = '/~canonical-kernel-repo-admins-active'
+    people_owner = [
+        'owner',
+    ]
+    people_admins = [
+        '/~canonical-kernel-repo-admins-active'
+    ]
 
     repo_things = {}
 
@@ -518,8 +526,9 @@ def add_primary(repo_set):
                 else:
                     rewind = False
                 ref = "refs/heads/{}".format(branch_name)
-                for person in people:
-                    repo_rules.add_grant(ref, generate_grant(person=person, create=True, push=True, rewind=rewind))
+                repo_rules.add_grants(
+                    grants(ref, people=people, create=True, push=True, rewind=rewind)
+                )
 
             # TAGS: allow Ubuntu-<branch>- prefixed tags.
             if thing_type == 'snap':
@@ -545,8 +554,9 @@ def add_primary(repo_set):
                 if branch_prefix in snap_prefix_added:
                     continue
                 snap_prefix_added[branch_prefix] = True
-                for person in people:
-                    repo_rules.add_grant(ref, generate_grant(person=person, create=True, rewind=rewind_tags))
+                repo_rules.add_grants(
+                    grants(ref, people=people, create=True, rewind=rewind_tags)
+                )
 
             # TAGS: for main packages allow version tags to be pushed too.
             if thing_type in (None, 'main'):
@@ -561,20 +571,21 @@ def add_primary(repo_set):
 
         # Add the administrator rules.
         series = path_things[0].series
-        repo_rules.add_grant('*', generate_grant(person=admins, create=True, push=True, rewind=True))
-        if admins != 'owner':
-            repo_rules.add_grant('*', generate_grant(person='owner'))
+        repo_rules.add_grants(
+            grants("*", people=people_admins, create=True, push=True, rewind=True)
+            + grants("*", people=people_owner) if "owner" not in people_admins else []
+        )
 
         # Add versioned tag rules.
         for version, people in version_people.items():
             if version.endswith('.0'):
                 version = version[:-2]
             ref = "refs/tags/v{}*".format(version)
-            for person in people:
-                repo_rules.add_grant(ref, generate_grant(person=person, create=True, push=True, rewind=rewind_tags))
-                repo_rules.add_grant(ref, generate_grant(person=admins, create=True, push=True, rewind=True))
-                if admins != 'owner':
-                    repo_rules.add_grant(ref, generate_grant(person='owner'))
+            repo_rules.add_grants(
+                grants(ref, people=people, create=True, push=True, rewind=rewind_tags)
+                + grants(ref, people=people_admins, create=True, push=True, rewind=True)
+                + grants(ref, people=people_owner) if "owner" not in people_admins else []
+            )
 
 def sync_primary(args):
     sync_tagged(args.repo_set, 'primary')
