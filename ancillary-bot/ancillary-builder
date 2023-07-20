@@ -60,16 +60,23 @@ do
 	(
 		cd "$id" || exit 1
 
+		arc=0
+
 		echo "$id: downloading source ..."
 		for url in $urls
 		do
 			out=$(basename "$url" | sed -e 's/?.*$//')
-			wget -O "$out" $url
+			wget -O "$out" $url || arc="$?"
 		done
-		echo "$id: extracting source ..."
-		dpkg-source -x $source*.dsc
-
-		arc=0
+		if [ "$arc" = 0 ]; then
+			echo "$id: extracting source ..."
+			dpkg-source -x $source*.dsc || arc="$?"
+		fi
+		if [ "$arc" != 0 ]; then
+			echo "$id: source download/extract failed, marking retry"
+			touch "retry"
+			exit 1
+		fi
 
 		# Confirm this is the appropriate form.
 		if [ -d $source-*/debian/ancillary ]; then
@@ -152,6 +159,10 @@ do
 	# If this id's download was marked ignore record that and zap it.
 	if [ -f "$id/ignore" ]; then
 		echo "$id" >>"$ignore"
+		rm -rf "./$id/"
+	fi
+	# If this id's download was marked for retry, zap it for next run.
+	if [ -f "$id/retry" ]; then
 		rm -rf "./$id/"
 	fi
 done
