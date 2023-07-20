@@ -7971,7 +7971,7 @@ defaults:
             testing:
                 flavours:
                    raspi:
-                        arches: ['armhf', 'arm64']        # test system arch names
+                        arches: ['arm64']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'regression-testing']
 
