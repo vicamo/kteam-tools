@@ -15,7 +15,7 @@ class Launchpad():
     def __init__(s, client_name):
         """
         """
-        s.service = _Launchpad.login_anonymously(client_name, 'production', '.shadow-cache', timeout=30)
+        s.service = _Launchpad.login_anonymously(client_name, 'production', '.shadow-cache')
         return
 
 
