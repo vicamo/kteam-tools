@@ -2780,7 +2780,7 @@ class Package():
     def older_tracker_in_ppa(s):
         retval = s._older_tracker_in_ppa
         newval = s.older_tracker_in_pocket("build")
-        cinfo("APW: older_tracker_in_proposed old={} new={}".format(retval, newval))
+        cinfo("OTv1: older_tracker_in_proposed = {} -> {}".format(retval, newval))
         return retval
 
     def _older_tracker_in_proposed(s, limit_stream):
@@ -2814,7 +2814,7 @@ class Package():
     def older_tracker_in_proposed(s):
         retval = s._older_tracker_in_proposed(s.built_in)
         newval = s.older_tracker_in_pocket("Proposed")
-        cinfo("APW: older_tracker_in_proposed old={} new={}".format(retval, newval))
+        cinfo("OTv1: older_tracker_in_proposed = {} -> {}".format(retval, newval))
         return retval
 
     # older_tracker_in_proposed_any
@@ -2823,7 +2823,7 @@ class Package():
     def older_tracker_in_proposed_any(s):
         retval = s._older_tracker_in_proposed(None)
         newval = s.older_tracker_in_pocket("Updates")
-        cinfo("APW: older_tracker_in_proposed_any old={} new={}".format(retval, newval))
+        cinfo("OTv1: older_tracker_in_proposed_any = {} -> {}".format(retval, newval))
         return retval
 
     # older_tracker_in_pocket
