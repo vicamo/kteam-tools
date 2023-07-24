@@ -3268,6 +3268,41 @@ defaults:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
+        linux-oem-6.5:
+            routing: ubuntu/4
+            versions: ['6.5.0']
+            variants: ['-22.04d']
+            package-relations: signed-generate
+            packages:
+                linux-oem-6.5:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/jammy', 'oem-6.5-next']
+                linux-meta-oem-6.5:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/jammy', 'oem-6.5']
+                linux-generate-oem-6.5:
+                    type: generate
+                linux-signed-oem-6.5:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/jammy', 'oem-6.5']
+                linux-restricted-modules-oem-6.5:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/jammy', 'oem-6.5']
+                linux-restricted-generate-oem-6.5:
+                    type: lrg
+                linux-restricted-signatures-oem-6.5:
+                    type: lrs
+            supported: false
+            owner: tjaalton
+            derived-from: [ '23.10', 'linux-unstable' ]
+            development: true
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    oem:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+
         linux-oracle:
             routing: ubuntu/4
             variants: ['--']
