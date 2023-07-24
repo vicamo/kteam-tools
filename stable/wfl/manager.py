@@ -308,13 +308,15 @@ class WorkflowManager():
             t_series = tracker_data.get('series', 'unknown')
             t_source = tracker_data.get('source', 'unknown')
             t_target = tracker_data.get('target', 'unknown')
-            t_phase = tracker_data.get('phase', 'unknown')
+            t_status = tracker_data.get('task', {}).get('kernel-sru-workflow', {}).get('status', 'Invalid')
 
-            if (series == t_series and
-                source == t_source and
-                target == t_target and
-                t_phase != 'Complete'):
-                    result.append((tracker_nr, tracker_data))
+            if (
+                series == t_series
+                and source == t_source
+                and target == t_target
+                and t_status not in ("Fix Committed", "Fix Released")
+            ):
+                result.append((tracker_nr, tracker_data))
 
         return sorted(result, key=s.cycle_key)
 
