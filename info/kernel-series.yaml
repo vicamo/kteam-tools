@@ -7736,7 +7736,6 @@ defaults:
                     hw-cert: true
                     publish-to:
                         amd64: ['18']
-                        i386: ['18']
             supported: true
             owner: lukenow
             testing:
