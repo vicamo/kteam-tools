@@ -60,7 +60,7 @@ fi
 source=$(dpkg-parsechangelog -l"$debian/changelog" -SSource)
 series=$(dpkg-parsechangelog -l"$debian/changelog" -SDistribution)
 if [ "$series" = "UNRELEASED" ]; then
-	series=$(dpkg-parsechangelog -l"$debian/changelog" -c1 -SDistribution)
+	series=$(dpkg-parsechangelog -l"$debian/changelog" -o1 -c1 -SDistribution)
 fi
 
 main_path=""
