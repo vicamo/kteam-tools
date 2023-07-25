@@ -104,6 +104,7 @@ class PackageBuildRouteEntry:
         self.monitors = []
 
     def monitor_add(self, monitor):
+        cinfo("monitor_add({})".format(monitor))
         self.monitors.append(monitor)
 
     @property
