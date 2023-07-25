@@ -55,13 +55,13 @@ class SynPromoteToAsProposed(TaskHandler):
                 status_ptp = s.bug.task_status('promote-to-proposed')
             if (status_ptp == 'Invalid' or
                     s.bug.debs.routing('as-proposed') is None or
-                    (s.bug.debs.built_in is not None and len(s.bug.debs.routing('as-proposed')) < s.bug.debs.built_in) or
+                    (s.bug.built_in is not None and len(s.bug.debs.routing('as-proposed')) < s.bug.built_in) or
                     s.bug.source.private):
                 if status_ptp == 'Invalid':
                     cinfo("promote-to-proposed: invalid, marking invalid")
                 elif s.bug.debs.routing('as-proposed') is None:
                     cinfo("no as-proposed route, marking invalid")
-                elif s.bug.debs.built_in is not None and len(s.bug.debs.routing('as-proposed')) < s.bug.debs.built_in:
+                elif s.bug.built_in is not None and len(s.bug.debs.routing('as-proposed')) < s.bug.built_in:
                     cinfo("no as-proposed route-entry, marking invalid")
                 elif s.bug.source.private:
                     cinfo("source marked private, marking invalid")

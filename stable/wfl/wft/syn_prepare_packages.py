@@ -130,7 +130,7 @@ class SynPreparePackages(TaskHandler):
         # Record what we are currently built from (based on recorded versions).  This
         # is used by external processes to detect updates to packages which may invalidate
         # their processing.
-        s.bug.debs.built_set('from', s.bug.debs.prepare_id)
+        s.bug.built_set('from', s.bug.debs.prepare_id)
 
         cleave(s.__class__.__name__ + '._common')
         return retval

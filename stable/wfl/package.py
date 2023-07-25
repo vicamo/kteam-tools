@@ -873,7 +873,7 @@ class PackageBuild:
 
         publications = []
         archive_num = 0
-        archive_only = self.bug.debs.built_in if stream_route else None
+        archive_only = self.bug.built_in if stream_route else None
         for (src_archive, src_pocket) in self.routing:
             archive_num += 1
             if archive_only is not None and archive_num != archive_only:
@@ -915,7 +915,7 @@ class PackageBuild:
         # If we find a build is now complete, record _where_ it was built.
         if build_route and self._data['status'] != '':
             # NOTE: copy-proposed-kernel et al treat auto select build-private so just call this build.
-            self.bug.debs.built_in = archive_num
+            self.bug.built_in = archive_num
 
     def __getattr__(self, name):
         if self._data is None:
@@ -963,13 +963,13 @@ class Package():
 
         # XXX: TRANSITION -- use the cycle information to work out which stream
         # we are going to default to.
-        stream = s.built_in
+        stream = s.bug.built_in
         if stream is None:
             sru_cycle = s.bug.sc.lookup_cycle(s.bug.sru_cycle)
             if sru_cycle is not None and sru_cycle.stream is not None:
                 stream = sru_cycle.stream
                 cinfo("APW: STREAM2 -- no stream set, set to {}".format(int(stream)))
-                s.built_in = stream
+                s.bug.built_in = stream
                 s.bug.flag_assign('stream-from-cycle', True)
             else:
                 cinfo("APW: STREAM2 -- no stream set, cannot set for {}".format(s.bug.sru_cycle))
@@ -1338,7 +1338,7 @@ class Package():
         # Scan across the build locations and dertermine if we see an upload in an appropriate
         # version.  Use this to set the built_in if we don't have one.
         for pkg in s.pkgs:
-            package_published = s.builds[pkg]["ppa"].version_match(exact=s.bug.version, limit_stream=s.built_in)
+            package_published = s.builds[pkg]["ppa"].version_match(exact=s.bug.version, limit_stream=s.bug.built_in)
             if package_published is None:
                 if pkg == "lbm":
                     version_sloppy = s.bug.kernel + "-" + s.bug.abi + "."
@@ -1346,7 +1346,7 @@ class Package():
                     version_sloppy = s.bug.kernel + "." + s.bug.abi + "."
                 else:
                     version_sloppy = s.bug.version + "+"
-                package_published = s.builds[pkg]["ppa"].version_match(prefix=version_sloppy, limit_stream=s.built_in)
+                package_published = s.builds[pkg]["ppa"].version_match(prefix=version_sloppy, limit_stream=s.bug.built_in)
             if package_published is not None:
                 cinfo("APW: NEW package_version found {} in {} ({}#{})".format(package_published.version, package_published.reference, package_published.route_name, package_published.route_entry))
                 cinfo("APW: NEW package_version monitors={}".format(package_published.monitors))
@@ -1422,35 +1422,6 @@ class Package():
         if self._builds is None:
             self.__determine_build_status()
         return self._builds
-
-    # built_set
-    #
-    def built_set(s, field, value):
-        hold = s.bug.bprops.setdefault('built', {})
-        if value is not None:
-            hold[field] = value
-
-        elif field in hold:
-            del hold[field]
-
-        if len(hold) == 0:
-            del s.bug.bprops['built']
-
-    # built_get
-    #
-    def built_get(s, field):
-        return s.bug.bprops.get('built', {}).get(field)
-
-    # built_in
-    #
-    @property
-    def built_in(self):
-        return self.built_get('route-entry')
-
-    @built_in.setter
-    def built_in(self, route):
-        if self.built_get('route-entry') is None:
-            self.built_set('route-entry', route)
 
     # srcs
     #
@@ -1595,7 +1566,7 @@ class Package():
             package_published = None
             package_version = self.package_version_exact(pkg)
             if package_version is not None:
-                package_published = s.builds[pkg][pocket].version_match(exact=package_version, limit_stream=s.built_in)
+                package_published = s.builds[pkg][pocket].version_match(exact=package_version, limit_stream=s.bug.built_in)
             if package_published is None:
                 found = False
             cdebug("APW all_in_pocket_new({}) {} {}".format(pocket, pkg, "Missing" if package_published is None else "Present"))
@@ -1677,7 +1648,7 @@ class Package():
         build_route = self.builds.get(pkg, {}).get(pocket)
         if not build_route:
             return None
-        build_route_entry = build_route.version_match(exact=package_version, limit_stream=self.built_in)
+        build_route_entry = build_route.version_match(exact=package_version, limit_stream=self.bug.built_in)
         return build_route_entry
 
     build_route_entry = __pkg_pocket_route_entry
@@ -1861,9 +1832,9 @@ class Package():
             package_version = self.package_version_exact(pkg)
             if package_version is None:
                 return None
-            pocket_route_entry = self.builds[pkg][src].version_match(exact=package_version, limit_stream=self.built_in)
+            pocket_route_entry = self.builds[pkg][src].version_match(exact=package_version, limit_stream=self.bug.built_in)
             if pocket_route_entry is None:
-                pocket_route_entry = self.builds[pkg][dst].version_match(exact=package_version, limit_stream=self.built_in)
+                pocket_route_entry = self.builds[pkg][dst].version_match(exact=package_version, limit_stream=self.bug.built_in)
             if pocket_route_entry is None:
                 detail.append("{} is missing".format(pkg))
             else:
@@ -2034,7 +2005,7 @@ class Package():
         package_version = self.package_version_exact(pkg)
         if package_version is None:
             return None
-        pocket_route_entry = self.builds[pkg][pocket].version_match(exact=package_version, limit_stream=self.built_in)
+        pocket_route_entry = self.builds[pkg][pocket].version_match(exact=package_version, limit_stream=self.bug.built_in)
         if pocket_route_entry is None:
             return None
         return pocket_route_entry.status
@@ -2673,8 +2644,8 @@ class Package():
         # delay.
         routing = s.routing('Proposed')
         archive = None
-        if s.built_in is not None and s.built_in <= len(routing):
-            (archive, pocket) = routing[s.built_in - 1]
+        if s.bug.built_in is not None and s.bug.built_in <= len(routing):
+            (archive, pocket) = routing[s.bug.built_in - 1]
         if archive is not None and archive.reference == 'ubuntu':
             delay = timedelta(hours=1)
         else:
@@ -2765,7 +2736,7 @@ class Package():
             cinfo("    considering {}".format(tracker_nr))
             ptp_status = tracker_data.get('task', {}).get('promote-to-proposed', {}).get('status', 'Invalid')
             stream = tracker_data.get('built', {}).get('route-entry')
-            if stream is not None and stream != s.built_in:
+            if stream is not None and stream != s.bug.built_in:
                 cinfo("    not in stream {}".format(tracker_nr))
 
             elif ptp_status not in ('Invalid', 'Fix Released'):
@@ -2812,7 +2783,7 @@ class Package():
     #
     @property
     def older_tracker_in_proposed(s):
-        retval = s._older_tracker_in_proposed(s.built_in)
+        retval = s._older_tracker_in_proposed(s.bug.built_in)
         newval = s.older_tracker_in_pocket("Proposed")
         cinfo("OTv1: older_tracker_in_proposed = {} -> {}".format(retval, newval))
         return retval
@@ -2899,7 +2870,7 @@ class Package():
             return "error:NO-ROUTE " + pocket
         # XXX: we directly understand streaming here...
         if pocket in ("build", "proposed"):
-            which = s.built_in
+            which = s.bug.built_in
             if which is None:
                 which = 1
             else:
@@ -3043,7 +3014,7 @@ class Package():
         who = {
             2: "s2",
             3: "s3",
-        }.get(s.built_in, "kernel")
+        }.get(s.bug.built_in, "kernel")
 
         # Send a message to the message queue. This will kick off testing of
         # the kernel packages in the -proposed pocket.

@@ -486,13 +486,13 @@ class WorkflowBug():
         keep = False
         if (s.debs is not None
             and dup_wb.debs is not None
-            and s.debs.built_in != dup_wb.debs.built_in
+            and s.built_in != dup_wb.built_in
         ):
             keep = True
-            if s.debs.built_in is None:
-                cinfo("replaces={} stream disparity detected {} != {} -- no local stream, holding".format(dup_pointer, s.debs.built_in, dup_wb.debs.built_in))
+            if s.built_in is None:
+                cinfo("replaces={} stream disparity detected {} != {} -- no local stream, holding".format(dup_pointer, s.built_in, dup_wb.built_in))
             else:
-                cinfo("replaces={} stream disparity detected {} != {} -- dropping replaces directive".format(dup_pointer, s.debs.built_in, dup_wb.debs.built_in))
+                cinfo("replaces={} stream disparity detected {} != {} -- dropping replaces directive".format(dup_pointer, s.built_in, dup_wb.built_in))
                 del s.bprops['replaces']
 
         # If we have no testing tasks active then there is is no value in
@@ -797,6 +797,35 @@ class WorkflowBug():
 
     def clamp(s, clamp):
         return s.private_props.get('clamps', {}).get(clamp)
+
+    # built_set
+    #
+    def built_set(s, field, value):
+        hold = s.bprops.setdefault('built', {})
+        if value is not None:
+            hold[field] = value
+
+        elif field in hold:
+            del hold[field]
+
+        if len(hold) == 0:
+            del s.bprops['built']
+
+    # built_get
+    #
+    def built_get(s, field):
+        return s.bprops.get('built', {}).get(field)
+
+    # built_in
+    #
+    @property
+    def built_in(self):
+        return self.built_get('route-entry')
+
+    @built_in.setter
+    def built_in(self, route):
+        if self.built_get('route-entry') is None:
+            self.built_set('route-entry', route)
 
     def _source_block_present(s):
         if 'kernel-block-source' in s.tags:
