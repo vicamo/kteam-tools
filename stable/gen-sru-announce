@@ -66,31 +66,30 @@ class TheApp(object):
         length = release_end - cycle_start
         length = int(length.days / 7)
 
-        return (cycle_start,
-                cycle_end,
-                cycle_start.strftime('%d-%b'),
-                cycle_end.strftime('%d-%b'),
-                length,
-                patch_end.strftime('%d-%b'),
-                prep_start.strftime('%d-%b'),
-                prep_end.strftime('%d-%b'),
-                test_start.strftime('%d-%b'),
-                test_end.strftime('%d-%b'),
-                release_end.strftime('%d-%b'),
+        return ({'cycle_date': cycle_start,
+                 'cycle_end_date': cycle_end,
+                 'cycle_start': cycle_start.strftime('%d-%b'),
+                 'cycle_end': cycle_end.strftime('%d-%b'),
+                 'length': length,
+                 'patch_end': patch_end.strftime('%d-%b'),
+                 'prep_start': prep_start.strftime('%d-%b'),
+                 'prep_end': prep_end.strftime('%d-%b'),
+                 'test_start': test_start.strftime('%d-%b'),
+                 'test_end': test_end.strftime('%d-%b'),
+                 'release_end': release_end.strftime('%d-%b')}
             )
 
     # print_cycle
     #
     def print_cycle(s, layout):
-        (_, _, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
 
         print('')
-        print('cycle: %s through %s (%s weeks)' % (cycle_start, cycle_end, length))
+        print('cycle: %s through %s (%s weeks)' % (layout['cycle_start'], layout['cycle_end'], layout['length']))
         print('====================================================================')
-        print('         %s   Last day for kernel commits for this cycle.' % (patch_end))
-        print('%s - %s   Kernel prep week.' % (prep_start, prep_end))
-        print('%s - %s   Bug verification & Regression testing.' % (test_start, test_end))
-        print(' Week of %s   Release to -updates.' % (release_end))
+        print('         %s   Last day for kernel commits for this cycle.' % (layout['patch_end']))
+        print('%s - %s   Kernel prep week.' % (layout['prep_start'], layout['prep_end']))
+        print('%s - %s   Bug verification & Regression testing.' % (layout['test_start'], layout['test_end']))
+        print(' Week of %s   Release to -updates.' % (layout['release_end']))
         print('')
 
 
@@ -101,8 +100,7 @@ class TheApp(object):
         Arguments:
           cycles: list of tuples with (layout, current)
             Where:
-              layout: tuple consisting of
-                (cycle_date, cycle_end, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end)
+              layout: dictionary as returned by layout_cycle()
               current: whether this is the current cycle (Bool)
         '''
 
@@ -119,11 +117,11 @@ class TheApp(object):
         print('                   <td width="25%%">&nbsp;</td>')
         for cycle in cycles:
             layout = cycle['layout']
-            cycle_title = layout[0].strftime('%Y.%m.%d')
+            cycle_title = layout['cycle_date'].strftime('%Y.%m.%d')
             cycle_class = "sru-current" if cycle['current'] else "sru-other"
 
             print('                   <td class="sru-pad">&nbsp;</td>')
-            print('                   <td colspan="2" class="sru-title %s">%s<br>(%s weeks)</td>' % (cycle_class, cycle_title, layout[4]))
+            print('                   <td colspan="2" class="sru-title %s">%s<br>(%s weeks)</td>' % (cycle_class, cycle_title, layout['length']))
         print('                </tr>')
 
         # Last day for commits line
@@ -134,7 +132,7 @@ class TheApp(object):
             cycle_class = "sru-current" if cycle['current'] else "sru-other"
             print('                <td class="sru-pad">&nbsp;</td>')
             print('                <td class="sru-date">&nbsp;</td>')
-            print('                <td class="sru-date %s">%s</td>' % (cycle_class, layout[5]))
+            print('                <td class="sru-date %s">%s</td>' % (cycle_class, layout['patch_end']))
 
         # Kernel prep week line
         print('                <tr>')
@@ -143,8 +141,8 @@ class TheApp(object):
             layout = cycle['layout']
             cycle_class = "sru-current" if cycle['current'] else "sru-other"
             print('                <td class="sru-pad">&nbsp;</td>')
-            print('                <td class="sru-date %s">%s</td>' % (cycle_class, layout[6]))
-            print('                <td class="sru-date %s">%s</td>' % (cycle_class, layout[7]))
+            print('                <td class="sru-date %s">%s</td>' % (cycle_class, layout['prep_start']))
+            print('                <td class="sru-date %s">%s</td>' % (cycle_class, layout['prep_end']))
 
         # Verification and test weeks line
         print('                <tr>')
@@ -153,8 +151,8 @@ class TheApp(object):
             layout = cycle['layout']
             cycle_class = "sru-current" if cycle['current'] else "sru-other"
             print('                <td class="sru-pad">&nbsp;</td>')
-            print('                <td class="sru-date %s">%s</td>' % (cycle_class, layout[8]))
-            print('                <td class="sru-date %s">%s</td>' % (cycle_class, layout[9]))
+            print('                <td class="sru-date %s">%s</td>' % (cycle_class, layout['test_start']))
+            print('                <td class="sru-date %s">%s</td>' % (cycle_class, layout['test_end']))
 
         # Release to -updates line
         print('                <tr>')
@@ -164,7 +162,7 @@ class TheApp(object):
             cycle_class = "sru-current" if cycle['current'] else "sru-other"
             print('                <td class="sru-pad">&nbsp;</td>')
             print('                <td class="sru-date">&nbsp;</td>')
-            print('                <td class="sru-date %s">Week of %s</td>' % (cycle_class, layout[10]))
+            print('                <td class="sru-date %s">Week of %s</td>' % (cycle_class, layout['release_end']))
 
         print('</table>')
 
@@ -190,7 +188,7 @@ class TheApp(object):
         days_prev = 0
         while days_prev < 70:
             days_prev += 7
-            date_prev = (layout_curr[0] - timedelta(days=days_prev)).strftime('%Y.%m.%d')
+            date_prev = (layout_curr['cycle_date'] - timedelta(days=days_prev)).strftime('%Y.%m.%d')
             sru_cycle = sc.lookup_cycle(date_prev)
             if sru_cycle:
                 break
@@ -199,7 +197,7 @@ class TheApp(object):
         else:
             layout_prev = None
             print("WARNING: no previous cycle\n", file=sys.stderr)
-        date_next = (layout_curr[1] + timedelta(days=1)).strftime('%Y.%m.%d')
+        date_next = (layout_curr['cycle_end_date'] + timedelta(days=1)).strftime('%Y.%m.%d')
         layout_next = s.layout_cycle(date_next)
 
         if args.html:
