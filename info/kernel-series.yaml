@@ -6960,6 +6960,15 @@ defaults:
             supported: false
             owner: wenchien
             development: true
+            snaps:
+                ibmcloud-elba-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/jollyville/+git/ibmcloud-elba-kernel-snap']
+                    gated: false
+                    promote-to: 'stable'
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        arm64: ['latest']
             derived-from: [ '20.04', 'linux-iot' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
             swm:
