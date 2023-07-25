@@ -6957,9 +6957,9 @@ defaults:
                 linux-signed-uc20-jollyville:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/jollyville/+git/linux-signed-uc20-jollyville']
-            supported: false
+            supported: true
             owner: wenchien
-            development: true
+            development: false
             snaps:
                 ibmcloud-elba-kernel:
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/jollyville/+git/ibmcloud-elba-kernel-snap']
@@ -6972,7 +6972,7 @@ defaults:
             derived-from: [ '20.04', 'linux-iot' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
             swm:
-                block-parent-release: false
+                block-parent-release: true
 
         linux-xilinx-zynqmp:
             variants: [ '--' ]
