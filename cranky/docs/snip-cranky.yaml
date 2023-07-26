@@ -47,6 +47,7 @@ base-path: '~/canonical/kernel/ubuntu'
 #   {type}:        The type of the package (main, meta, signed, ...)
 #   {type_suffix}: The suffix of dependent packages (-meta, -signed, ...)
 #   {package}:     The package name (linux, linux-aws, linux-meta-gcp, ...)
+#   {source}:      The source name (linux-oracle, linux-restricted-modules-oracle, ...)
 #
 # The following configuration assumes you are going to use the following
 # layout:
@@ -54,4 +55,4 @@ base-path: '~/canonical/kernel/ubuntu'
 #  $HOME/canonical/kernel/ubuntu/<ubuntu_release>/<kernel_version>
 #
 package-path:
-  default: '{series}/linux{type_suffix}'
+  default: '{series}/{source}/linux-{type}'

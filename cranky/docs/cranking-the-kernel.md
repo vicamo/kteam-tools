@@ -161,6 +161,12 @@ This updates the local (in-tree) helper scripts which cranky uses to the latest
 version and also can update/create the "debian.<variant>/etc/update.conf" file
 and commits those changes. In case of a rebase tree, the changes to the helpers
 may vanish on rebase if those were already done there.
+
+
+**Note** The repo paths created by `cranky checkout` are controlled by the
+package-path key in your `cranky.yaml` configuration file. See the [sample
+configuration file](snip-cranky.yaml) for more information.
+
 ```
 $ cd xenial/linux
 $ cranky fix
