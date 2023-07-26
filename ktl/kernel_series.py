@@ -898,7 +898,10 @@ class KernelSeriesCache:
         return self.for_cycle(None, **kwargs)
 
 
-class KernelSeries:
+# Important: We still need to support Python2 (shudder) and we want to
+# override __new__() so the class needs to be defined new-style so that it
+# inherits from object!
+class KernelSeries(object):
 
     _cache = KernelSeriesCache()
 
