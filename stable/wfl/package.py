@@ -598,67 +598,31 @@ class Package():
 
     # ancillary_package_for
     #
-    def ancillary_package_for_old(self, pkg):
-        if pkg in ('lrg', 'lrs'):
-            return 'lrm'
-        return None
-    def ancillary_package_for_new(self, pkg):
+    def ancillary_package_for(self, pkg):
         pkg = self.source.lookup_package(type=pkg)
         pkg = pkg and pkg.ancillary_for
         return pkg and self._ptype_map(pkg.type)
-    def ancillary_package_for(self, pkg):
-        old = self.ancillary_package_for_old(pkg)
-        new = self.ancillary_package_for_new(pkg)
-        cinfo("KSPSv4: ancillary_package_for {} -> {} {}".format(pkg, old, new))
-        return new
 
     # signing_package_for
     #
-    def signing_package_for_old(self, pkg):
-        return {
-                'lrs': 'lrm',
-                'signed': 'main',
-            }.get(pkg)
-    def signing_package_for_new(self, pkg):
+    def signing_package_for(self, pkg):
         pkg = self.source.lookup_package(type=pkg)
         pkg = pkg and pkg.signing_from
         return pkg and self._ptype_map(pkg.type)
-    def signing_package_for(self, pkg):
-        old = self.signing_package_for_old(pkg)
-        new = self.signing_package_for_new(pkg)
-        cinfo("KSPSv4: signing_package_for {} -> {} {}".format(pkg, old, new))
-        return new
 
     # generate_package_for
     #
-    def generate_package_for_new(self, pkg):
+    def generate_package_for(self, pkg):
         pkg = self.source.lookup_package(type=pkg)
         pkg = pkg and pkg.signing_to
         return pkg and self._ptype_map(pkg.type)
-    def generate_package_for(self, pkg):
-        new = self.generate_package_for_new(pkg)
-        cinfo("KSPSv4: generate_package_for {} -> -na- {}".format(pkg, new))
-        return new
 
     # feeder_package_for
     #
-    def feeder_package_for_old(self, pkg):
-        return {
-                'signed': 'main',
-                'lrm': 'main',
-                'lrg': 'lrm',
-                'lrs': 'lrg',
-                'meta': 'main',
-            }.get(pkg)
-    def feeder_package_for_new(self, pkg):
+    def feeder_package_for(self, pkg):
         pkg = self.source.lookup_package(type=pkg)
         pkg = pkg and pkg.depends
         return pkg and self._ptype_map(pkg.type)
-    def feeder_package_for(self, pkg):
-        old = self.feeder_package_for_old(pkg)
-        new = self.feeder_package_for_new(pkg)
-        cinfo("KSPSv4: feeder_package_for {} -> {} {}".format(pkg, old, new))
-        return new
 
     # feeder_key
     #
@@ -671,16 +635,9 @@ class Package():
 
     # adjunct_package
     #
-    def adjunct_package_old(self, pkg):
-        return self.ancillary_package_for(pkg) == 'lrm'
-    def adjunct_package_new(self, pkg):
+    def adjunct_package(self, pkg):
         pkg = self.source.lookup_package(type=pkg)
         return pkg and pkg.adjunct
-    def adjunct_package(self, pkg):
-        old = self.adjunct_package_old(pkg)
-        new = self.adjunct_package_new(pkg)
-        cinfo("KSPSv4: adjunct_package {} -> {} {}".format(pkg, old, new))
-        return new
 
     # __determine_build_status
     #
