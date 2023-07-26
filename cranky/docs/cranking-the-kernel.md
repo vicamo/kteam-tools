@@ -162,7 +162,7 @@ version and also can update/create the "debian.<variant>/etc/update.conf" file
 and commits those changes. In case of a rebase tree, the changes to the helpers
 may vanish on rebase if those were already done there.
 ```
-$ cd xenial/linux-oracle
+$ cd xenial/linux
 $ cranky fix
 ```
 
@@ -507,44 +507,44 @@ $ cranky tag
 ### Prepare meta/signed/resticted-modules repositories - `cranky update-dependent`
 <!--cheatsheet-->
 ```
-$ cd ../linux-meta-DERIVATIVE
+$ cd ../linux-meta
 $ cranky update-dependent
 $ cranky tag
 
-$ cd ../linux-signed-DERIVATIVE
+$ cd ../linux-signed
 $ cranky update-dependent
 $ cranky tag
 
-$ cd ../linux-restricted-modules-DERIVATIVE
+$ cd ../linux-lrm
 $ cranky update-dependent
 $ cranky tag
 ```
 <!--/cheatsheet-->
 
 Currently this step must be done manually, calling the scripts from
-"linux-meta", "linux-signed" and "linux-restricted-modules" (the additional
+"linux-meta", "linux-signed" and "linux-lrm" (the additional
 repositories cloned via `cranky checkout`).
 
 Example:
 ```
-$ cd ../linux-meta-oracle
+$ cd ../linux-meta
 $ cranky update-dependent
 $ cranky tag
 
-$ cd ../linux-signed-oracle
+$ cd ../linux-signed
 $ cranky update-dependent
 $ cranky tag
 
-$ cd ../linux-restricted-modules-oracle
+$ cd ../linux-lrm
 $ cranky update-dependent
 $ cranky tag
 ```
 
 It is mandatory to run "cranky update-dependent" and "cranky tag" from the
-"linux-meta", "linux-signed" and "linux-restricted-modules" directories, not
+"linux-meta", "linux-signed" and "linux-lrm" directories, not
 from the kernel source directory.
 
-**Note** In certain releases "linux-signed" and "linux-restricted-modules" are
+**Note** In certain releases "linux-signed" and "linux-lrm" are
 missing, for example "linux-kvm". To show the list of packages that are part of
 a certain kernel set, you can use the command `cranky rmadison`, example:
 ```
@@ -554,10 +554,10 @@ $ cranky rmadison xenial:linux-oracle
 ### Verify preparation
 <!--cheatsheet-->
 ```
-$ cd linux-DERIVATIVE && verify-release-ready
-$ cd linux-meta-DERIVATIVE && verify-release-ready
-$ cd linux-signed-DERIVATIVE && verify-release-ready
-$ cd linux-restricted-modules-DERIVATIVE && verify-release-ready
+$ (cd linux && verify-release-ready)
+$ (cd linux-meta && verify-release-ready)
+$ (cd linux-signed && verify-release-ready)
+$ (cd linux-lrm && verify-release-ready)
 ```
 <!--/cheatsheet-->
 
