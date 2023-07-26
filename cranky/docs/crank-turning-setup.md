@@ -14,7 +14,28 @@ the cranky tools required to produce all the Canonical kernels.
 
 You will need to install/update the following packages:
 ```
-sudo apt-get install -y git git-email debhelper gawk ubuntu-dev-tools build-essential devscripts fakeroot libncurses5-dev ccache kernel-wedge makedumpfile xmlto docbook-utils transfig sharutils python3-launchpadlib wget schroot snapcraft bash-completion
+sudo apt-get install -y \
+    bash-completion \
+    build-essential \
+    ccache \
+    debhelper \
+    devscripts \
+    docbook-utils \
+    fakeroot \
+    gawk \
+    git \
+    git-email \
+    kernel-wedge \
+    libncurses5-dev \
+    makedumpfile \
+    python3-launchpadlib \
+    schroot \
+    sharutils \
+    snapcraft \
+    transfig \
+    ubuntu-dev-tools \
+    wget \
+    xmlto
 ```
 
 If you are using a newer Ubuntu release, then the installation of the `snapcraft` package may fail:
