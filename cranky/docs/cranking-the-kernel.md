@@ -168,7 +168,7 @@ package-path key in your `cranky.yaml` configuration file. See the [sample
 configuration file](snip-cranky.yaml) for more information.
 
 ```
-$ cd xenial/linux
+$ cd xenial/linux-main
 $ cranky fix
 ```
 
@@ -560,7 +560,7 @@ $ cranky rmadison xenial:linux-oracle
 ### Verify preparation
 <!--cheatsheet-->
 ```
-$ (cd linux && verify-release-ready)
+$ (cd linux-main && verify-release-ready)
 $ (cd linux-meta && verify-release-ready)
 $ (cd linux-signed && verify-release-ready)
 $ (cd linux-lrm && verify-release-ready)
@@ -648,7 +648,7 @@ the source packages.
 Example:
 
 ```
-$ cd linux-oracle
+$ cd linux-main
 $ cranky build-sources
 ```
 
@@ -664,7 +664,7 @@ Example:
 ```
 $ cranky rmadison xenial:linux-oracle
 $ # output of cranky rmadison omitted for brevity
-$ cd linux-oracle
+$ cd linux-main
 $ cranky build-sources --build-opts "main:-v4.15.0-1021.23~16.04.1" --build-opts "meta:-v4.15.0.1021.15" --build-opts "signed:-v4.15.0-1021.23~16.04.1"
 ```
 
@@ -728,19 +728,19 @@ Tips:
 
 You only need to push master or master-next and the last tag applied:
 ```
-$ cd linux-oracle
+$ cd linux-main
 $ git remote add for-review ssh://<builder>/~/xenial-linux-oracle
 $ git push for-review cranky/master-next
 $ git push for-review TAG
 $ cd ..
 
-$ cd linux-meta-oracle
+$ cd linux-meta
 $ git remote add for-review ssh://<builder>/~/xenial-linux-meta-oracle
 $ git push for-review cranky/master
 $ git push for-review TAG
 $ cd ..
 
-$ cd linux-signed-oracle
+$ cd linux-signed
 $ git remote add for-review ssh://<builder>/~/xenial-linux-signed-oracle
 $ git push for-review cranky/master
 $ git push for-review TAG
