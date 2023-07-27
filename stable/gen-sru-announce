@@ -127,8 +127,7 @@ class TheApp(object):
 
         cycle_phases = {}
         cycle_phases['patch_end'] = 'Last day for kernel commits for this cycle'
-        cycle_phases['prep_start'] = 'Kernel prep week'
-        cycle_phases['test_start'] = 'Bug verification &amp; Regression testing'
+        cycle_phases['prep_start'] = 'Kernel prep and testing weeks'
         cycle_phases['release_end'] = 'Release to -updates'
 
         if cycle_type:
@@ -159,7 +158,7 @@ class TheApp(object):
             print('        <td class="sru-date %s">%s</td>' % (cycle_class, layout['patch_end']))
         print('    </tr>')
 
-        # Kernel prep week line
+        # Kernel prep and testing weeks line
         print('    <tr>')
         print('        <td class="sru-caption">%s</td>' % (cycle_phases['prep_start']))
         for cycle in cycles:
@@ -167,17 +166,6 @@ class TheApp(object):
             cycle_class = "sru-current" if cycle['current'] else "sru-other"
             print('        <td class="sru-pad">&nbsp;</td>')
             print('        <td class="sru-date %s">%s</td>' % (cycle_class, layout['prep_start']))
-            print('        <td class="sru-date %s">%s</td>' % (cycle_class, layout['prep_end']))
-        print('    </tr>')
-
-        # Verification and test weeks line
-        print('    <tr>')
-        print('        <td class="sru-caption">%s</td>' % (cycle_phases['test_start']))
-        for cycle in cycles:
-            layout = cycle['layout']
-            cycle_class = "sru-current" if cycle['current'] else "sru-other"
-            print('        <td class="sru-pad">&nbsp;</td>')
-            print('        <td class="sru-date %s">%s</td>' % (cycle_class, layout['test_start']))
             print('        <td class="sru-date %s">%s</td>' % (cycle_class, layout['test_end']))
         print('    </tr>')
 
