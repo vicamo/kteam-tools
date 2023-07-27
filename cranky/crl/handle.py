@@ -339,7 +339,7 @@ class Handle:
         if series is None:
             series = ks.lookup_series(series=series_name)
         if series is None:
-            raise HandleError("{}: handle directory contains unknown series {}".format(handle, series_name))
+            raise HandleError("{}: handle directory contains series {} which is not known in cycle {}".format(handle, series_name, cycle))
 
         for source_entry in series.sources:
             for package_entry in source_entry.packages:
@@ -351,7 +351,7 @@ class Handle:
                 break
 
         if package is None:
-            raise HandleError("{}: handle directory contains unknown package {}".format(handle, package_name))
+            raise HandleError("{}: handle directory contains package {} which is not known in cycle {}".format(handle, package_name, cycle))
 
         return HandleTree(series, package, source=source, directory=directory, validate=validate, ks=ks, config=self.config)
 
@@ -373,10 +373,10 @@ class Handle:
         if series is None:
             series = ks.lookup_series(series=series_name)
         if series is None:
-            raise HandleError("{}: handle contains unknown series".format(series_name))
+            raise HandleError("{}: handle contains series not known in cycle {}".format(series_name, cycle))
 
         source = series.lookup_source(source_name)
         if source is None:
-            raise HandleError("{}: handle contains unknown source".format(source_name))
+            raise HandleError("{}: handle contains source not known in cycle {}".format(source_name, cycle))
 
         return HandleSet(handle, series, source, validate=validate, ks=ks, config=self.config)
