@@ -39,7 +39,7 @@
 
 '2023.06.12':
     release-date: '2023-07-10'
-    stream: 1
+    complete: true
 
 'd2023.05.29':
     complete: true
@@ -50,7 +50,7 @@
 's2023.05.15':
     start-date: '2023-06-12'
     release-date: '2023-06-26'
-    stream: 2
+    complete: true
 
 '2023.05.15':
     release-date: '2023-06-12'
