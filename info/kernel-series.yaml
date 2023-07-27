@@ -3989,13 +3989,13 @@ defaults:
             variants: [ '--' ]
             packages:
                 linux-iot:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-iot/+git/jammy', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/ubuntu/+source/linux-iot/+git/jammy', 'master-next']
                 linux-meta-iot:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-iot/+git/jammy']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/ubuntu/+source/linux-meta-iot/+git/jammy']
                 linux-signed-iot:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-iot/+git/jammy']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/ubuntu/+source/linux-signed-iot/+git/jammy']
             supported: false
             owner: wenchien
             development: true
@@ -4014,10 +4014,10 @@ defaults:
             routing: uc22
             packages:
                 linux-uc22-iot:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22-iot/+git/jammy']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/ubuntu/+source/linux-uc22-iot/+git/jammy']
                 linux-signed-uc22-iot:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22-iot/+git/jammy']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/ubuntu/+source/linux-signed-uc22-iot/+git/jammy']
             supported: false
             owner: wenchien
             development: true
@@ -4036,6 +4036,54 @@ defaults:
             swm:
                 block-parent-release: true
 
+        linux-capilano:
+            variants: [ '--' ]
+            routing: wendover
+            packages:
+                linux-capilano:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/ubuntu/+source/linux-capilano/+git/jammy', 'master-next']
+                linux-meta-capilano:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/ubuntu/+source/linux-meta-capilano/+git/jammy']
+            supported: false
+            development: true
+            owner: kuba-t-pawlak
+            derived-from: [ '22.04', 'linux' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    capilano:
+                        meta-pkg: linux-capilano
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['metal']
+
+        linux-uc22-capilano:
+            routing: capilano
+            packages:
+                linux-uc22-capilano:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/ubuntu/+source/linux-uc22-capilano/+git/jammy']
+                linux-signed-uc22-capilano:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/ubuntu/+source/linux-signed-uc22-capilano/+git/jammy']
+            supported: false
+            development: true
+            owner: kuba-t-pawlak
+            snaps:
+                capilano-kernel:
+                    repo: ['git://git.launchpad.net/~capilano-team/capilano/+git/gsp-qcs8155-kernel', 'uc22']
+                    gated: false
+                    promote-to: 'beta'
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: ['22']
+                        arm64: ['22']
+            derived-from: [ '22.04', 'linux-capilano' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
 
 # 21.10 (Impish Indri)
 '21.10':
