@@ -34,6 +34,7 @@ function get_params()
 		series=$(dpkg-parsechangelog -l "${DEBIAN}"/changelog -S Distribution)
 		version=$(dpkg-parsechangelog -c 1 -o 1 -l "${DEBIAN}"/changelog -S Version)
 
+		# shellcheck disable=SC2086
 		echo ${src} ${version} ${series}
 	
 	)
@@ -42,8 +43,10 @@ function get_params()
 function dget_src()
 {
 	local dir=$1
+	local params=
 	params=$(get_params "$dir")
-	${C} pull-source ${params}
+	# shellcheck disable=SC2086
+	"${C}" pull-source ${params}
 }
 
 function usage()
@@ -103,7 +106,7 @@ fi
 trap out EXIT INT TERM HUP
 
 readarray -t srcs < <("$C" shell-helper source-packages-path "${handle}")
-if [ "${#srcs[@]}" -eq 0 ] ; then
+if [ ${#srcs[@]} -eq 0 ] ; then
 	exit 1
 fi
 
