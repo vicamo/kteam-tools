@@ -6,6 +6,7 @@ from argparse                           import ArgumentParser, RawDescriptionHel
 from os                                 import path
 from subprocess                         import Popen, PIPE
 import re
+import sys
 
 from ktl.sru_cycle                      import SruCycle
 
@@ -43,13 +44,31 @@ class TheApp(object):
 
     # layout_cycle
     #
-    def layout_cycle(s, date):
-        sru_cycle = SruCycle().lookup_cycle(date)
-        # If the cycle is not yet defined, assume a 4 week cadance.
-        if sru_cycle is None:
-            cycle_start = s.sd(date)
-            cycle_end = cycle_start + timedelta(days=27)
+    def layout_cycle(s, date, security=False):
+        if security:
+            sru_cycle = SruCycle().lookup_cycle('s%s' % (date))
         else:
+            sru_cycle = SruCycle().lookup_cycle(date)
+
+        if sru_cycle is None:
+            # If the cycle is not yet defined, assume a 4 week cadance
+            # for regular cycles and 2 weeks for security cycles
+            if security:
+                # If the security cycle is not found, try to guess the
+                # dates based on the regular cycle date
+                cycle_name = 's%s' % (date)
+                sru_cycle = SruCycle().lookup_cycle(date)
+                if sru_cycle:
+                    cycle_start = sru_cycle.release_date
+                else:
+                    cycle_start = s.sd(date) + timedelta(days=28)
+                cycle_end = cycle_start + timedelta(days=13)
+            else:
+                cycle_name = date
+                cycle_start = s.sd(date)
+                cycle_end = cycle_start + timedelta(days=27)
+        else:
+            cycle_name = sru_cycle.name
             cycle_start = sru_cycle.start_date
             cycle_end = sru_cycle.release_date - timedelta(days=1)
 
@@ -66,64 +85,103 @@ class TheApp(object):
         length = release_end - cycle_start
         length = int(length.days / 7)
 
-        return (cycle_start,
-                cycle_end,
-                cycle_start.strftime('%d-%b'),
-                cycle_end.strftime('%d-%b'),
-                length,
-                patch_end.strftime('%d-%b'),
-                prep_start.strftime('%d-%b'),
-                prep_end.strftime('%d-%b'),
-                test_start.strftime('%d-%b'),
-                test_end.strftime('%d-%b'),
-                release_end.strftime('%d-%b'),
+        return ({'cycle_name': cycle_name,
+                 'cycle_start_date': cycle_start,
+                 'cycle_end_date': cycle_end,
+                 'cycle_start': cycle_start.strftime('%d-%b'),
+                 'cycle_end': cycle_end.strftime('%d-%b'),
+                 'length': length,
+                 'patch_end': patch_end.strftime('%d-%b'),
+                 'prep_start': prep_start.strftime('%d-%b'),
+                 'prep_end': prep_end.strftime('%d-%b'),
+                 'test_start': test_start.strftime('%d-%b'),
+                 'test_end': test_end.strftime('%d-%b'),
+                 'release_end': release_end.strftime('%d-%b')}
             )
 
     # print_cycle
     #
     def print_cycle(s, layout):
-        (_, _, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
 
         print('')
-        print('cycle: %s through %s (%s weeks)' % (cycle_start, cycle_end, length))
+        print('cycle: %s through %s (%s weeks)' % (layout['cycle_start'], layout['cycle_end'], layout['length']))
         print('====================================================================')
-        print('         %s   Last day for kernel commits for this cycle.' % (patch_end))
-        print('%s - %s   Kernel prep week.' % (prep_start, prep_end))
-        print('%s - %s   Bug verification & Regression testing.' % (test_start, test_end))
-        print(' Week of %s   Release to -updates.' % (release_end))
+        print('         %s   Last day for kernel commits for this cycle.' % (layout['patch_end']))
+        print('%s - %s   Kernel prep week.' % (layout['prep_start'], layout['prep_end']))
+        print('%s - %s   Bug verification & Regression testing.' % (layout['test_start'], layout['test_end']))
+        print(' Week of %s   Release to -updates.' % (layout['release_end']))
         print('')
 
-
-    # print_cycle_phases_html
-    #
-    def print_cycle_phases_html(s):
-        print('        <td width="15%">')
-        print('            <table width="100%" class="sru-caption"> <!-- -->')
-        print('                <tr> <td colspan="4" class="sru-title">&nbsp;</td>       </tr>')
-        print('                <tr> <td>Last day for kernel commits for this cycle</td> </tr>')
-        print('                <tr> <td>Kernel prep week</td>                           </tr>')
-        print('                <tr> <td>Bug verification &amp; Regression testing</td>  </tr>')
-        print('                <tr> <td>Release to -updates</td>                        </tr>')
-        print('            </table>')
-        print('        </td>')
 
     # Print the cycle dates as HTML table
     #
-    def print_cycle_html(s, layout, current=False):
-        (cycle_date, _, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
+    def print_cycle_html(s, cycles, cycle_type=None):
+        '''
+        Arguments:
+          cycles: list of tuples with (layout, current)
+            Where:
+              layout: dictionary as returned by layout_cycle()
+              current: whether this is the current cycle (Bool)
+          cycle_type: cycle type header (String)
+        '''
 
-        cycle_title = cycle_date.strftime('%Y.%m.%d')
-        cycle_class = "sru-current" if current else "sru-other"
+        cycle_phases = {}
+        cycle_phases['patch_end'] = 'Last day for kernel commits for this cycle'
+        cycle_phases['prep_start'] = 'Kernel prep and testing weeks'
+        cycle_phases['release_end'] = 'Release to -updates'
 
-        print('        <td width="12%">')
-        print('            <table width="100%%" class="%s"> <!-- -->' % cycle_class)
-        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td colspan="2" class="sru-title">%s<br>(%s weeks)</td>         </tr>' % (cycle_title, length))
-        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">%s</td> </tr>' % (patch_end))
-        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">%s</td>   <td class="sru-date">%s</td>     </tr>' % (prep_start, prep_end))
-        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">%s</td>   <td class="sru-date">%s</td>     </tr>' % (test_start, test_end))
-        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">Week of %s</td> </tr>' % (release_end))
-        print('            </table>')
-        print('        </td>')
+        if cycle_type:
+            print('<h2>%s</h2>' % (cycle_type))
+
+        print('<table width="100%%" border="0" class="sru" style="text-align: center;"> <!-- -->')
+
+        # SRU Title line
+        print('    <tr>')
+        print('        <td width="25%%">&nbsp;</td>')
+        for cycle in cycles:
+            layout = cycle['layout']
+            cycle_title = layout['cycle_name']
+            cycle_class = "sru-current" if cycle['current'] else "sru-other"
+
+            print('        <td class="sru-pad">&nbsp;</td>')
+            print('        <td colspan="2" class="sru-title %s">%s<br>(%s weeks)</td>' % (cycle_class, cycle_title, layout['length']))
+        print('    </tr>')
+
+        # Last day for commits line
+        print('    <tr>')
+        print('        <td class="sru-caption">%s</td>' % (cycle_phases['patch_end']))
+        for cycle in cycles:
+            layout = cycle['layout']
+            cycle_class = "sru-current" if cycle['current'] else "sru-other"
+            print('        <td class="sru-pad">&nbsp;</td>')
+            print('        <td class="sru-date">&nbsp;</td>')
+            print('        <td class="sru-date %s">%s</td>' % (cycle_class, layout['patch_end']))
+        print('    </tr>')
+
+        # Kernel prep and testing weeks line
+        print('    <tr>')
+        print('        <td class="sru-caption">%s</td>' % (cycle_phases['prep_start']))
+        for cycle in cycles:
+            layout = cycle['layout']
+            cycle_class = "sru-current" if cycle['current'] else "sru-other"
+            print('        <td class="sru-pad">&nbsp;</td>')
+            print('        <td class="sru-date %s">%s</td>' % (cycle_class, layout['prep_start']))
+            print('        <td class="sru-date %s">%s</td>' % (cycle_class, layout['test_end']))
+        print('    </tr>')
+
+        # Release to -updates line
+        print('    <tr>')
+        print('        <td class="sru-caption">%s</td>' % (cycle_phases['release_end']))
+        for cycle in cycles:
+            layout = cycle['layout']
+            cycle_class = "sru-current" if cycle['current'] else "sru-other"
+            print('        <td class="sru-pad">&nbsp;</td>')
+            print('        <td class="sru-date">&nbsp;</td>')
+            print('        <td class="sru-date %s">Week of %s</td>' % (cycle_class, layout['release_end']))
+        print('    </tr>')
+
+        print('</table>')
+
 
     # Print kernel versions
     #
@@ -142,11 +200,13 @@ class TheApp(object):
 
         sc = SruCycle()
 
+        # Regular stable cycles
         layout_curr = s.layout_cycle(args.date)
+
         days_prev = 0
         while days_prev < 70:
             days_prev += 7
-            date_prev = (layout_curr[0] - timedelta(days=days_prev)).strftime('%Y.%m.%d')
+            date_prev = (layout_curr['cycle_start_date'] - timedelta(days=days_prev)).strftime('%Y.%m.%d')
             sru_cycle = sc.lookup_cycle(date_prev)
             if sru_cycle:
                 break
@@ -155,19 +215,58 @@ class TheApp(object):
         else:
             layout_prev = None
             print("WARNING: no previous cycle\n", file=sys.stderr)
-        date_next = (layout_curr[1] + timedelta(days=1)).strftime('%Y.%m.%d')
+
+        date_next = (layout_curr['cycle_end_date'] + timedelta(days=1)).strftime('%Y.%m.%d')
         layout_next = s.layout_cycle(date_next)
 
+        # Security updates cycles
+        # The current and previous security cycles depend on having a previous
+        # regular cycle
+        if layout_prev:
+            layout_sec_curr = s.layout_cycle(layout_prev['cycle_name'], security=True)
+
+            days_prev = 0
+            while days_prev < 70:
+                days_prev += 7
+                date_prev = (layout_prev['cycle_start_date'] - timedelta(days=days_prev)).strftime('%Y.%m.%d')
+                sru_cycle = sc.lookup_cycle('s%s' % (date_prev))
+                if sru_cycle:
+                    break
+            if sru_cycle:
+                layout_sec_prev = s.layout_cycle(date_prev, security=True)
+            else:
+                layout_sec_prev = None
+        else:
+            layout_sec_curr = None
+            layout_sec_prev = None
+
+        if layout_sec_prev is None:
+            print("WARNING: no previous security cycle\n", file=sys.stderr)
+        if layout_sec_curr is None:
+            print("WARNING: no current security cycle\n", file=sys.stderr)
+
+        # The start of the next security cycle is based on the end of the
+        # date of the current regular cycle, not on the current security
+        # cycle
+        layout_sec_next = s.layout_cycle(layout_curr['cycle_name'], security=True)
+
         if args.html:
-            print('<table border="0" class="sru"> <!-- -->')
-            print('    <tr style="text-align: center;">')
-            s.print_cycle_phases_html()
+            # Stable updates cycles
+            cycles = []
             if layout_prev is not None:
-                s.print_cycle_html(layout_prev)
-            s.print_cycle_html(layout_curr, current=True)
-            s.print_cycle_html(layout_next)
-            print('    </tr>')
-            print('</table>')
+                cycles.append({'layout': layout_prev, 'current': False})
+            cycles.append({'layout': layout_curr, 'current': True})
+            cycles.append({'layout': layout_next, 'current': False})
+            s.print_cycle_html(cycles, 'Stable Updates Cycles')
+
+            # Security updates cycles
+            cycles = []
+            if layout_sec_prev is not None:
+                cycles.append({'layout': layout_sec_prev, 'current': False})
+            if layout_sec_curr is not None:
+                cycles.append({'layout': layout_sec_curr, 'current': True})
+            cycles.append({'layout': layout_sec_next, 'current': False})
+            s.print_cycle_html(cycles, 'Security Updates Cycles')
         else:
             print('To: Kernel SRU Announcements <kernel-sru-announce@lists.ubuntu.com>, '
                   'Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>')
