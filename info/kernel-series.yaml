@@ -7936,7 +7936,7 @@ defaults:
                linux-signed-dell300x:
                    type: signed
                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-dell300x-bionic' ]
-            supported: true
+            supported: false
             owner: corytodd
             derived-from: [ '18.04', 'linux' ]
             swm:
@@ -7966,7 +7966,7 @@ defaults:
                     publish-to:
                         armhf: [ '18-pi3', '18-cm3', '18-pi2' ]
                         arm64: [ '18-pi3' ]
-            supported: true
+            supported: false
             owner: diewald
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: ['automated-testing', 'regression-testing']
@@ -8057,7 +8057,7 @@ defaults:
                     hw-cert: true
                     publish-to:
                         arm64: [ '18' ]
-            supported: true
+            supported: false
             owner: smb
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'certification-testing', 'regression-testing' ]
@@ -8907,7 +8907,7 @@ defaults:
                 linux-signed-ibm-gt-5.4:
                     type: signed
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-bionic', 'ibm-gt-5.4']
-            supported: true
+            supported: false
             owner: bzolnier
             private: true
             derived-from: ['18.04', 'linux-hwe-5.4']
@@ -9161,7 +9161,7 @@ defaults:
                 kernel-testing: true
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
             snaps:
-                # EOL: 2022-12-19
+                # EOL: 2023-12-18
                 abb-dfa-apc2200-kernel:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'vasteras']
                     gated: false
@@ -9180,7 +9180,7 @@ defaults:
                 #     qa: false
                 #     hw-cert: true
                 #
-                # EOL: 2022-07-01 (renewable)
+                # EOL: 2024-11-07 (renewable)
                 interactive-strength-fs0001-kernel:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'presidio']
                     gated: false
