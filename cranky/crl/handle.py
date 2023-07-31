@@ -282,7 +282,10 @@ class Handle:
                     tracking_file = os.path.join(debian_env, "tracking-bug")
                     if os.path.exists(tracking_file):
                         with open(tracking_file) as tfd:
-                            _, cycle_name = tfd.readline().strip().split()[0:2]
+                            try:
+                                _, cycle_name = tfd.readline().strip().split()[0:2]
+                            except (ValueError) as e:
+                                raise HandleError("{}: expecting tracking id and cycle name -- {}".format(tracking_file,e))
                         break
 
         except (DebianError, GitError) as e:
