@@ -984,6 +984,16 @@ defaults:
                     type: lrs
             owner: arighi
             backport: false
+            snaps:
+                pc-kernel:
+                    repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-u23.10', 'pc']
+                    gated: false
+                    qa: false
+                    hw-cert: false
+                    promote-to: stable
+                    publish-to:
+                        amd64: ['23.10']
+                        arm64: ['23.10']
             swm:
                 kernel-testing: true
             testing:
