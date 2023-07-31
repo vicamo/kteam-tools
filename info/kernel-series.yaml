@@ -3057,7 +3057,7 @@ defaults:
                 linux-signed-kvm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/jammy']
-            owner: lukenow
+            owner: roxanan
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -4812,7 +4812,7 @@ defaults:
                 linux-restricted-signatures:
                     type: lrs
             supported: true
-            owner: smb
+            owner: roxanan
             swm:
                 kernel-testing: true
             testing:
@@ -4848,7 +4848,7 @@ defaults:
                 linux-restricted-signatures-hwe-5.15:
                     type: lrs
             supported: true
-            owner: lukenow
+            owner: smb
             development: false
             backport: true
             derived-from: [ '22.04', 'linux' ]
@@ -4886,7 +4886,7 @@ defaults:
                 linux-restricted-signatures-lowlatency-hwe-5.15:
                     type: lrs
             supported: true
-            owner: lukenow
+            owner: smb
             development: false
             backport: true
             derived-from: [ '22.04', 'linux-lowlatency' ]
@@ -5138,7 +5138,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-efi/+git/focal']
             supported: true
-            owner: smb
+            owner: roxanan
             snaps:
                 pc-kernel:
                     primary: true
@@ -6263,7 +6263,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/focal']
             supported: true
-            owner: lukenow
+            owner: roxanan
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -6589,7 +6589,7 @@ defaults:
                 linux-restricted-signatures-fips:
                     type: lrs
             supported: true
-            owner: lukenow
+            owner: roxanan
             private: true
             derived-from: ['20.04', 'linux']
             swm:
@@ -7782,7 +7782,7 @@ defaults:
                     publish-to:
                         amd64: ['18']
             supported: true
-            owner: lukenow
+            owner: roxanan
             testing:
                 flavours:
                     generic:
@@ -8339,7 +8339,7 @@ defaults:
                 linux-restricted-signatures-azure-fips:
                     type: lrs
             supported: true
-            owner: lukenow
+            owner: roxanan
             private: true
             derived-from: ['18.04', 'linux-azure-4.15']
             swm:
@@ -8830,7 +8830,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-kvm-bionic']
             supported: true
-            owner: lukenow
+            owner: roxanan
             derived-from: [ '18.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -9673,7 +9673,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-kvm-xenial']
             supported: true
-            owner: lukenow
+            owner: roxanan
             derived-from: [ '16.04', 'linux' ]
             testing:
                 flavours:
@@ -10098,7 +10098,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-trusty', 'lts-backport-xenial']
             supported: true
-            owner: kleber-souza
+            owner: roxanan
             backport: true
             derived-from: [ '16.04', 'linux' ]
             testing:
