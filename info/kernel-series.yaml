@@ -2822,7 +2822,7 @@ defaults:
 
         linux-gcp-6.2:
             routing: ubuntu/4
-            variants: [ '-edge' ]
+            variants: [ '--', '-edge' ]
             package-relations: signed-generate
             packages:
                 linux-gcp-6.2:
@@ -2857,7 +2857,7 @@ defaults:
 
         linux-gcp-5.19:
             routing: ubuntu/4
-            variants: ['--']
+            variants: []
             package-relations: signed-generate
             packages:
                 linux-gcp-5.19:
@@ -2877,7 +2877,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp-5.19:
                     type: lrs
-            supported: true
+            supported: false
             owner: kmously
             backport: false
             derived-from: [ '22.04', 'linux-hwe-5.19' ]
@@ -3109,7 +3109,7 @@ defaults:
 
         linux-oracle-6.2:
             routing: ubuntu/4
-            variants: [ '-edge' ]
+            variants: [ '--', '-edge' ]
             package-relations: signed-generate
             packages:
                 linux-oracle-6.2:
@@ -3315,7 +3315,7 @@ defaults:
 
         linux-oracle:
             routing: ubuntu/4
-            variants: ['--']
+            variants: ['-lts-22.04']
             package-relations: signed-generate
             packages:
                 linux-oracle:
@@ -3348,7 +3348,7 @@ defaults:
 
         linux-oracle-5.19:
             routing: ubuntu/4
-            variants: [ '-edge' ]
+            variants: []
             package-relations: signed-generate
             packages:
                 linux-oracle-5.19:
