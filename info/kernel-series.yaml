@@ -1080,15 +1080,15 @@ defaults:
                 linux-signed-aws:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/mantic']
-                linux-restricted-modules-aws:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/mantic']
-                linux-restricted-generate-aws:
-                    type: lrg
-                linux-restricted-signatures-aws:
-                    type: lrs
+                #linux-restricted-modules-aws:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/mantic']
+                #linux-restricted-generate-aws:
+                #    type: lrg
+                #linux-restricted-signatures-aws:
+                #    type: lrs
             owner: timg-tpi
-            derived-from: ['23.10', 'linux']
+            derived-from: ['23.10', 'linux-unstable']
             backport: false
             swm:
                 kernel-testing: true
@@ -1114,15 +1114,15 @@ defaults:
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/mantic']
-                linux-restricted-modules-azure:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/mantic']
-                linux-restricted-generate-azure:
-                    type: lrg
-                linux-restricted-signatures-azure:
-                    type: lrs
+                #linux-restricted-modules-azure:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/mantic']
+                #linux-restricted-generate-azure:
+                #    type: lrg
+                #linux-restricted-signatures-azure:
+                #    type: lrs
             owner: timg-tpi
-            derived-from: ['23.10', 'linux']
+            derived-from: ['23.10', 'linux-unstable']
             backport: false
             swm:
                 deployment-blackout: *swm-azure-blackout
@@ -1150,15 +1150,15 @@ defaults:
                 linux-signed-gcp:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/mantic']
-                linux-restricted-modules-gcp:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/mantic']
-                linux-restricted-generate-gcp:
-                    type: lrg
-                linux-restricted-signatures-gcp:
-                    type: lrs
+                #linux-restricted-modules-gcp:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/mantic']
+                #linux-restricted-generate-gcp:
+                #    type: lrg
+                #linux-restricted-signatures-gcp:
+                #    type: lrs
             owner: kmously
-            derived-from: ['23.10', 'linux']
+            derived-from: ['23.10', 'linux-unstable']
             backport: false
             swm:
                 kernel-testing: true
@@ -1185,7 +1185,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/mantic']
             owner: kmously
-            derived-from: ['23.10', 'linux']
+            derived-from: ['23.10', 'linux-unstable']
             backport: false
             swm:
                 kernel-testing: true
@@ -1212,15 +1212,15 @@ defaults:
                 linux-signed-oracle:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/mantic']
-                linux-restricted-modules-oracle:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/mantic']
-                linux-restricted-generate-oracle:
-                    type: lrg
-                linux-restricted-signatures-oracle:
-                    type: lrs
+                #linux-restricted-modules-oracle:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/mantic']
+                #linux-restricted-generate-oracle:
+                #    type: lrg
+                #linux-restricted-signatures-oracle:
+                #    type: lrs
             owner: kmously
-            derived-from: ['23.10', 'linux']
+            derived-from: ['23.10', 'linux-unstable']
             backport: false
             swm:
                 kernel-testing: true
