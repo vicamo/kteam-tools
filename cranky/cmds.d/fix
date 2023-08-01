@@ -71,7 +71,7 @@ if [ "$type" != 'main' ]; then
 	fi
 fi
 
-if ! variants=$("$C" shell-helper list-variants .); then
+if ! variants=$("$C" shell-helper list-variants ${cycle:+--cycle }${cycle} .); then
        echo "cranky shell-helper failed"
        exit 1
 fi
