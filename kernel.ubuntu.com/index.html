@@ -100,44 +100,100 @@
                         <h1><strong>Kernel SRU Cycles</strong></h1>
 
                         <!-- Start-SRU-Dates -->
-                        <table border="0" class="sru"> <!-- -->
-                            <tr style="text-align: center;">
-                                <td width="15%">
-                                    <table width="100%" class="sru-caption"> <!-- -->
-                                        <tr> <td colspan="4" class="sru-title">&nbsp;</td>       </tr>
-                                        <tr> <td>Last day for kernel commits for this cycle</td> </tr>
-                                        <tr> <td>Kernel prep week</td>                           </tr>
-                                        <tr> <td>Bug verification &amp; Regression testing</td>  </tr>
-                                        <tr> <td>Release to -updates</td>                        </tr>
-                                    </table>
-                                </td>
-                                <td width="12%">
-                                    <table width="100%" class="sru-other"> <!-- -->
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td colspan="2" class="sru-title">2023.05.15<br>(4 weeks)</td>         </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">10-May</td> </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">15-May</td>   <td class="sru-date">19-May</td>     </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">22-May</td>   <td class="sru-date">09-Jun</td>     </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">Week of 12-Jun</td> </tr>
-                                    </table>
-                                </td>
-                                <td width="12%">
-                                    <table width="100%" class="sru-current"> <!-- -->
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td colspan="2" class="sru-title">2023.06.12<br>(4 weeks)</td>         </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">07-Jun</td> </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">12-Jun</td>   <td class="sru-date">16-Jun</td>     </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">19-Jun</td>   <td class="sru-date">07-Jul</td>     </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">Week of 10-Jul</td> </tr>
-                                    </table>
-                                </td>
-                                <td width="12%">
-                                    <table width="100%" class="sru-other"> <!-- -->
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td colspan="2" class="sru-title">2023.07.10<br>(4 weeks)</td>         </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">05-Jul</td> </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">10-Jul</td>   <td class="sru-date">14-Jul</td>     </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">17-Jul</td>   <td class="sru-date">04-Aug</td>     </tr>
-                                        <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">Week of 07-Aug</td> </tr>
-                                    </table>
-                                </td>
+                        <h2>Stable Updates Cycles</h2>
+                        <table width="100%%" border="0" class="sru" style="text-align: center;"> <!-- -->
+                            <tr>
+                                <td width="25%%">&nbsp;</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td colspan="2" class="sru-title sru-other">2023.06.12<br>(4 weeks)</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td colspan="2" class="sru-title sru-current">2023.07.10<br>(4 weeks)</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td colspan="2" class="sru-title sru-other">2023.08.07<br>(4 weeks)</td>
+                            </tr>
+                            <tr>
+                                <td class="sru-caption">Last day for kernel commits for this cycle</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-other">07-Jun</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-current">05-Jul</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-other">02-Aug</td>
+                            </tr>
+                            <tr>
+                                <td class="sru-caption">Kernel prep and testing weeks</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date sru-other">12-Jun</td>
+                                <td class="sru-date sru-other">07-Jul</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date sru-current">10-Jul</td>
+                                <td class="sru-date sru-current">04-Aug</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date sru-other">07-Aug</td>
+                                <td class="sru-date sru-other">01-Sep</td>
+                            </tr>
+                            <tr>
+                                <td class="sru-caption">Release to -updates</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-other">Week of 10-Jul</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-current">Week of 07-Aug</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-other">Week of 04-Sep</td>
+                            </tr>
+                        </table>
+                        <h2>Security Updates Cycles</h2>
+                        <table width="100%%" border="0" class="sru" style="text-align: center;"> <!-- -->
+                            <tr>
+                                <td width="25%%">&nbsp;</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td colspan="2" class="sru-title sru-other">s2023.05.15<br>(2 weeks)</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td colspan="2" class="sru-title sru-current">s2023.06.12<br>(2 weeks)</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td colspan="2" class="sru-title sru-other">s2023.07.10<br>(2 weeks)</td>
+                            </tr>
+                            <tr>
+                                <td class="sru-caption">Last day for kernel commits for this cycle</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-other">07-Jun</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-current">05-Jul</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-other">02-Aug</td>
+                            </tr>
+                            <tr>
+                                <td class="sru-caption">Kernel prep and testing weeks</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date sru-other">12-Jun</td>
+                                <td class="sru-date sru-other">23-Jun</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date sru-current">10-Jul</td>
+                                <td class="sru-date sru-current">21-Jul</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date sru-other">07-Aug</td>
+                                <td class="sru-date sru-other">18-Aug</td>
+                            </tr>
+                            <tr>
+                                <td class="sru-caption">Release to -updates</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-other">Week of 26-Jun</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-current">Week of 24-Jul</td>
+                                <td class="sru-pad">&nbsp;</td>
+                                <td class="sru-date">&nbsp;</td>
+                                <td class="sru-date sru-other">Week of 21-Aug</td>
                             </tr>
                         </table>
                         <!-- End-SRU-Dates -->
