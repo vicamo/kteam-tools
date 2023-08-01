@@ -1021,15 +1021,15 @@ defaults:
                 linux-signed-lowlatency:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/mantic', 'lowlatency']
-                linux-restricted-modules-lowlatency:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/mantic', 'lowlatency']
-                linux-restricted-generate-lowlatency:
-                    type: lrg
-                linux-restricted-signatures-lowlatency:
-                    type: lrs
+                #linux-restricted-modules-lowlatency:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/mantic', 'lowlatency']
+                #linux-restricted-generate-lowlatency:
+                #    type: lrg
+                #linux-restricted-signatures-lowlatency:
+                #    type: lrs
             owner: xnox
-            derived-from: ['23.10', 'linux']
+            derived-from: ['23.10', 'linux-unstable']
             backport: true
             swm:
                 kernel-testing: true
