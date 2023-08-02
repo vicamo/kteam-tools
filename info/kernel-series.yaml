@@ -6589,7 +6589,7 @@ defaults:
                 linux-restricted-signatures-fips:
                     type: lrs
             supported: true
-            owner: roxanan
+            owner: magalilemes
             private: true
             derived-from: ['20.04', 'linux']
             swm:
