@@ -6071,7 +6071,7 @@ defaults:
                 linux-signed-gke-5.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/focal', 'gke-5.15']
-            supported: true
+            supported: false
             owner: kmously
             backport: true
             derived-from: [ '22.04', 'linux-gke' ]
@@ -6144,7 +6144,7 @@ defaults:
             #        hw-cert: false
             #        publish-to:
             #            amd64: [ '20' ]
-            supported: true
+            supported: false
             owner: kmously
             backport: false
             derived-from: [ '20.04', 'linux' ]
