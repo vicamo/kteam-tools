@@ -19,6 +19,10 @@ this database expresses the kernel tree sets as a main package and its
 dependent packages. All of these tree sets have specific attributes that cranky
 will query during command invocation.
 
+A tree set will use the kernel-series for the cycle listed in the main package's
+$DEBIAN/tracking-bug file. It is not currently possible to use explicitly use
+`info/kernel-series.yaml` for cranky commands.
+
 By default, cranky will read the latest per-cycle information published on
 [kernel.ubuntu.com][4]. More information on this process can be found in the
 [specification][5]. Cranky also supports reading from a local copy of this
@@ -27,6 +31,9 @@ you have cloned [kernel-versions][3] to `info/kernel-versions`. Once cloned,
 you may modified the target cycle with the changes needed for your task. For
 example, to test a change on 2023.07.10, you would modify 
 `info/kernel-versions/2023.07.10/info/kernel-series.yaml`.
+
+Use this tree to test your local changes before submitting a pull request to
+[kernel-versions][3].
 
 ### Handle
 
