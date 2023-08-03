@@ -834,6 +834,7 @@ class KernelSeriesCache:
     #    json -- remote native json form
     #    local -- local yaml files in tree
     #    launchpad -- raw primary sources in yaml form from git.launchpad.net
+    #    devel -- read exclusively from local info/kernel-series.yaml
     def form_url(self, use_local, cycle):
         if use_local is None:
             if os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False):
@@ -843,7 +844,7 @@ class KernelSeriesCache:
         which = os.getenv("KERNEL_SERIES_USE", "default")
         if use_local:
             which = "local"
-        if which == "local":
+        if which in ("local", "devel"):
             use_local = True
 
         if which == "launchpad":
@@ -858,6 +859,8 @@ class KernelSeriesCache:
         else:
             if which == "local":
                 urls = self.url_local(cycle)
+            elif which == "devel":
+                urls = self.url_local(None)
             else: # default|json
                 url = "https://kernel.ubuntu.com/info/kernel-series.json.gz"
                 if cycle is not None:
