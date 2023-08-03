@@ -3162,12 +3162,18 @@ defaults:
         linux-s32-eb:
             routing: s32
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-s32-eb:
-                    repo: ['git://git.launchpad.net/~erlangen-team/erlangen/+git/linux-s32-eb', 'master-next']
+                    repo: ['git://git.launchpad.net/~nemos-team/nemos/+git/linux', 'master-next']
                 linux-meta-s32-eb:
                     type: meta
-                    repo: ['git://git.launchpad.net/~erlangen-team/erlangen/+git/linux-meta-s32-eb']
+                    repo: ['git://git.launchpad.net/~nemos-team/nemos/+git/linux-meta']
+                linux-generate-s32-eb:
+                    type: generate
+                linux-signed-s32-eb:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~nemos-team/nemos/+git/linux-signed']
             development: true
             supported: false
             owner: kuba-t-pawlak
