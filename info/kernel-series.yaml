@@ -3894,8 +3894,7 @@ defaults:
             owner: ian-may
             development: true
             supported: false
-            backport: true
-            derived-from: [ '23.04', 'linux-nvidia' ]
+            derived-from: [ '22.04', 'linux-hwe-6.2' ]
             swm:
                 kernel-testing: true
             testing:
