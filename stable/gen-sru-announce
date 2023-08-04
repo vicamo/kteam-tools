@@ -126,7 +126,7 @@ class TheApp(object):
         '''
 
         cycle_phases = {}
-        cycle_phases['patch_end'] = 'Last day for kernel commits for this cycle'
+        cycle_phases['patch_end'] = 'Last day for kernel patches'
         cycle_phases['prep_start'] = 'Kernel prep and testing weeks'
         cycle_phases['release_end'] = 'Release to -updates'
 
