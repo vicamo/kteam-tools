@@ -74,6 +74,14 @@ class TheApp(object):
 
         patch_end = cycle_start - timedelta(days=5)
 
+        # OEM kernels have different deadlines for patch acceptance.
+        #  Regular cycles: Friday of Week 1
+        #  Security cycles: Friday of Week 0
+        if not security:
+            oem_patch_end = cycle_start + timedelta(days=4)
+        else:
+            oem_patch_end = cycle_start - timedelta(days=3)
+
         prep_start = cycle_start
         prep_end = cycle_start + timedelta(days=4)
 
@@ -92,6 +100,7 @@ class TheApp(object):
                  'cycle_end': cycle_end.strftime('%d-%b'),
                  'length': length,
                  'patch_end': patch_end.strftime('%d-%b'),
+                 'oem_patch_end': oem_patch_end.strftime('%d-%b'),
                  'prep_start': prep_start.strftime('%d-%b'),
                  'prep_end': prep_end.strftime('%d-%b'),
                  'test_start': test_start.strftime('%d-%b'),
@@ -126,7 +135,8 @@ class TheApp(object):
         '''
 
         cycle_phases = {}
-        cycle_phases['patch_end'] = 'Last day for kernel commits for this cycle'
+        cycle_phases['patch_end'] = 'Last day for kernel patches'
+        cycle_phases['oem_patch_end'] = 'Last day for kernel patches (OEM kernels)'
         cycle_phases['prep_start'] = 'Kernel prep and testing weeks'
         cycle_phases['release_end'] = 'Release to -updates'
 
@@ -156,6 +166,17 @@ class TheApp(object):
             print('        <td class="sru-pad">&nbsp;</td>')
             print('        <td class="sru-date">&nbsp;</td>')
             print('        <td class="sru-date %s">%s</td>' % (cycle_class, layout['patch_end']))
+        print('    </tr>')
+
+        # Last day for commits line (OEM)
+        print('    <tr>')
+        print('        <td class="sru-caption">%s</td>' % (cycle_phases['oem_patch_end']))
+        for cycle in cycles:
+            layout = cycle['layout']
+            cycle_class = "sru-current" if cycle['current'] else "sru-other"
+            print('        <td class="sru-pad">&nbsp;</td>')
+            print('        <td class="sru-date">&nbsp;</td>')
+            print('        <td class="sru-date %s">%s</td>' % (cycle_class, layout['oem_patch_end']))
         print('    </tr>')
 
         # Kernel prep and testing weeks line
