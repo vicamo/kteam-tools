@@ -6220,7 +6220,7 @@ defaults:
 
         linux-ibm-5.15:
             routing: ubuntu/4
-            variants: [ '-hwe-20.04' ]
+            variants: [ '-lts-20.04' ]
             package-relations: signed-generate
             packages:
                 linux-ibm-5.15:
