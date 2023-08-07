@@ -1053,9 +1053,8 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/mantic']
             owner: juergh
-            #derived-from: ['23.10', 'linux']
-            backport: true
-            derived-from: ['23.04', 'linux-raspi']
+            derived-from: ['23.10', 'linux-unstable']
+            backport: false
             swm:
                 kernel-testing: true
             testing:
