@@ -3832,7 +3832,7 @@ defaults:
 
         linux-nvidia-5.19:
             routing: nvidia-ubuntu/4
-            variants: [ '-5.19', '-hwe-22.04']
+            variants: [ '-5.19', '-eol-hwe-22.04']
             package-relations: signed-generate
             packages:
                 linux-nvidia-5.19:
@@ -3871,7 +3871,7 @@ defaults:
 
         linux-nvidia-6.2:
             routing: nvidia-ubuntu/4
-            variants: [ '-6.2', '-hwe-22.04-edge' ]
+            variants: [ '-6.2', '-hwe-22.04', '-hwe-22.04-edge' ]
             package-relations: signed-generate
             packages:
                 linux-nvidia-6.2:
@@ -3894,8 +3894,7 @@ defaults:
             owner: ian-may
             development: true
             supported: false
-            backport: true
-            derived-from: [ '23.04', 'linux-nvidia' ]
+            derived-from: [ '22.04', 'linux-hwe-6.2' ]
             swm:
                 kernel-testing: true
             testing:
