@@ -912,7 +912,7 @@ class AutoPackageTest(object):
             triggers.append(new_trigger)
             retry_symbol = "+{}".format(retry_symbol)
 
-        cell = fmt.format(status, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '', width)
+        cell = fmt.format(status, status, status_link, pkg + " " + version + annot, ' <span title="Hinted">*</span>' if 'hinted' in annot else '', width)
         archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
         retry_url_cell = "{5}?release={0}&trigger={1}&arch={2}&package={3}{4}".format(self.series, '&trigger='.join(triggers), arch, pkg, archive, retry_url)
         if status != 'GOOD' and show_retry:
