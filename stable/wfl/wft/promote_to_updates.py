@@ -188,6 +188,10 @@ class PromoteToUpdates(Promoter):
                         s.task.status = 'Incomplete'
                         retval = True
                     break
+                elif s.task.status == "Incomplete":
+                    s.task.status = "New"
+                    retval = True
+                    break
 
                 if s.task.status == 'Confirmed':
                     s.task.reason = 'Pending -- ready to copy'
