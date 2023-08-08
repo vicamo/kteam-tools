@@ -2434,12 +2434,12 @@ class Package():
 
     # pocket_routing
     #
-    def pocket_routing(s, pocket):
+    def pocket_routing_old(s, pocket):
         '''
         '''
         retval = None
 
-        bi = s.build_info
+        bi = s.legacy_info
         for pkg in bi:
             if pocket not in bi[pkg]:
                 continue
@@ -2448,6 +2448,21 @@ class Package():
             break
 
         return retval
+    def pocket_routing_new(self, pocket):
+        retval = None
+        for pkg in self.dependent_packages():
+            build_route = self.builds.get(pkg, {}).get(pocket)
+            if build_route is None:
+                continue
+            retval = build_route.routing
+            cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
+            break
+        return retval
+    def pocket_routing(self, pocket):
+        old = self.pocket_routing_old(pocket)
+        new = self.pocket_routing_new(pocket)
+        cinfo("PRv5b: pocket_routing {} = {} -> {}".format(pocket, old, new))
+        return old
 
     # pocket_clear
     #
