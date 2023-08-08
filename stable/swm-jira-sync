@@ -311,7 +311,9 @@ if __name__ == '__main__':
             tracker_issue = trackers[key].get('issue')
             tracker_overall = tracker_tasks.get('kernel-sru-workflow', {}).get('status', 'Invalid')
 
-            if key not in jira_issues and tracker_overall not in ('Fix Committed', 'Fix Released', 'Invalid'):
+            if cycle_complete.get(cycle, False):
+                continue
+            elif key not in jira_issues and tracker_overall not in ('Fix Committed', 'Fix Released', 'Invalid'):
                 print("MISSING ISSUE")
                 print("{}: new issue ...".format(cycle))
                 title = key_to_title(key)
