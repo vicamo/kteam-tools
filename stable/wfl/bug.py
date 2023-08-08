@@ -1154,7 +1154,7 @@ class WorkflowBug():
                 package_package = package
                 break
         if package_package is not None:
-            version = s.debs.package_version(pkg)
+            version = s.debs.package_version_exact(pkg)
             if version is None:
                 published = False
             else:
