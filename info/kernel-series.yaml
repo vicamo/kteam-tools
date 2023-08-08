@@ -2170,6 +2170,21 @@ defaults:
                         arches: ['arm64']
                         clouds: ['metal', 'aws']
 
+        linux-ein:
+            routing: ein-uc20
+            packages:
+                linux-ein:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-ein/+git/jammy', 'master-next']
+                linux-meta-ein:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-meta-ein/+git/jammy']
+            supported: false
+            owner: wenchien
+            development: true
+            private: true
+            derived-from: [ '22.04', 'linux']
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'regression-testing', 'verification-testing' ]
+
         linux-lowlatency:
             routing: ubuntu/4
             variants: ['--']
