@@ -135,6 +135,12 @@ class PromoteToUpdates(Promoter):
                 cinfo('            A hold-promote-to-updates present ({}) on this tracking bug pulling back from Confirmed'.format(blocks), 'yellow')
                 pull_back = True
 
+            # Note this will set appropriate reasons.
+            prerequisites = s._prerequisites_released()
+            if not prerequisites and not s.bug.manual_unblock("prerequisites"):
+                cinfo("            Prerequisites not reported available pulling back from Confirmed", 'yellow')
+                pull_back = True
+
             if s._kernel_block():
                 cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
