@@ -94,6 +94,7 @@ committers = factory.lookup_team('canonical-kernel-committers')
 uploaders = factory.lookup_team('canonical-kernel-uploaders')
 ubuntu = factory.lookup_team('ubuntu-kernel-uploaders')
 ckt = factory.lookup_team('canonical-kernel-team')
+vpn = factory.lookup_team('canonical-vpn-kernel-team')
 
 # CRANKERS:
 #  check direct members are not also indirect
@@ -141,3 +142,14 @@ for name, member in ubuntu.direct_members.items():
         continue
     if name not in uploaders.members and not uploaders.indirect_members[name].is_admin:
         print("WARNING: {}: {} is a direct member and not a member of {}".format(ubuntu.name, name, uploaders.name))
+
+# CKCT:
+#  Check that all members of ckt are on the kernel vpn team
+for name, member in ckt.direct_members.items():
+    # print("CKT", name, member.is_admin)
+    if member.is_admin:
+        continue
+    if member.is_team:
+        continue
+    if name not in vpn.members and name not in vpn.indirect_members:
+        print("WARNING: {}: {} is a direct member and not a member of {}".format(ckt.name, name, vpn.name))
