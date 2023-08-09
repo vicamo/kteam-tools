@@ -132,7 +132,10 @@ class BugSpam:
                         bug.lp_save()
 
                 if 'kernel-spammed-%s-%s' % (self.cfg['series'], self.cfg['package']) in bug.tags:
-                    self.verbose('    . already spammed for this package')
+                    self.verbose('    . already spammed (old-style) for this package')
+                    should_be_spammed = False
+                if 'kernel-spammed-%s-%s-v2' % (self.cfg['series'], self.cfg['package']) in bug.tags:
+                    self.verbose('    . already spammed (new-style) for this package')
                     should_be_spammed = False
 
                 # Now that we are limiting spamming to those bugs which are unique to a kernel
@@ -147,13 +150,13 @@ class BugSpam:
                         if not self.cfg['dryrun']:
                             bug.newMessage(content=self.cfg['comment-text'].replace('_SERIES_', self.cfg['series']).replace('_PACKAGE_', self.cfg['package']).replace('_VERSION_', self.cfg['version']))
 
-                    series = self.cfg['series']
+                    by_package = self.cfg['series'] + "-" + self.cfg['package']
                     tags = set(bug.tags)
                     for tag in (
-                        'verification-failed-' + series,
-                        'verification-reverted-' + series,
-                        'verification-needed-' + series,
-                        'verification-done-' + series,
+                        'verification-failed-' + by_package,
+                        'verification-reverted-' + by_package,
+                        'verification-needed-' + by_package,
+                        'verification-done-' + by_package,
                         'verification-done',
                     ):
                         if tag in tags:
@@ -162,7 +165,7 @@ class BugSpam:
 
                     # Tags
                     #
-                    for tag in ('verification-needed-' + series, 'kernel-spammed-%s-%s' % (self.cfg['series'], self.cfg['package'])):
+                    for tag in ('verification-needed-' + by_package, 'kernel-spammed-%s-%s-v2' % (self.cfg['series'], self.cfg['package'])):
                         self.verbose('        . adding tag: ' + tag)
                         if not self.cfg['dryrun']:
                             tags.add(tag)
