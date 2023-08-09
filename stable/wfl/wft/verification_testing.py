@@ -152,7 +152,12 @@ class VerificationTesting(TaskHandler):
         for bug in sru_bugs:
             try:
                 lp_bug = self.lp.bugs[bug]
-                rls = self.bug.series
+                spammed_v1 = 'kernel-spammed-{}-{}'.format(self.bug.series, self.bug.name)
+                spammed_v2 = spammed_v1 + "-v2"
+                if spammed_v1 in lp_bug.tags:
+                    key = self.bug.series
+                else:
+                    key = self.bug.series + "-" + self.bug.name
 
                 state = 'missing'
                 if   'kernel-tracking-bug'              in lp_bug.tags: state = 'release-tracker'
@@ -166,10 +171,10 @@ class VerificationTesting(TaskHandler):
                 # By making these checks separately and after the previous ones, we
                 # can add the correct state for tracking bugs.
                 #
-                if 'verification-failed-%s' % rls       in lp_bug.tags: state = 'failed'
-                elif 'verification-reverted-%s' % rls   in lp_bug.tags: state = 'reverted'
-                elif 'verification-done-%s'   % rls     in lp_bug.tags: state = 'verified'
-                elif 'verification-needed-%s' % rls     in lp_bug.tags: state = 'needed'
+                if 'verification-failed-%s' % key       in lp_bug.tags: state = 'failed'
+                elif 'verification-reverted-%s' % key   in lp_bug.tags: state = 'reverted'
+                elif 'verification-done-%s'   % key     in lp_bug.tags: state = 'verified'
+                elif 'verification-needed-%s' % key     in lp_bug.tags: state = 'needed'
                 elif 'verification-done'                in lp_bug.tags: state = 'verified'
             except KeyError:
                 state = 'private'
