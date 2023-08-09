@@ -1483,6 +1483,21 @@ class Package():
         cleave('Packages::signer')
         return retval
 
+    def changes_data(self, url):
+        try:
+            changes = self.lp._browser.get(url)
+            return changes.decode('utf-8').rstrip().split('\n')
+        except NotFound:
+            pass
+        except Unauthorized:
+            pass
+        except ServerError:
+            raise WorkflowCrankError("launchpad librarian unavailable")
+        except HTTPError as e:
+            if e.args[0] != 403:
+                raise WorkflowCrankError("launchpad librarian unavailable ({})".format(e.args[0]))
+        return None
+
     # bugs
     #
     @property
@@ -1508,22 +1523,12 @@ class Package():
 
                 # If we managed to find a changes file then we can extract the list.
                 if changes_url is not None:
-                    changes_url = changes_url.replace('https://launchpad.net/', 'https://api.launchpad.net/devel/')
-                    try:
-                        changes = self.lp._browser.get(changes_url)
-                        bugs = []
-                        for line in changes.decode('utf-8').rstrip().split('\n'):
-                            if line.startswith('Launchpad-Bugs-Fixed:'):
-                                bugs = line.split(' ')[1:]
-                    except NotFound:
-                        pass
-                    except Unauthorized:
+                    changes_data = self.changes_data(changes_url)
+                    if changes_data is None:
                         continue
-                    except ServerError:
-                        raise WorkflowCrankError("launchpad librarian unavailable")
-                    except HTTPError as e:
-                        if e.args[0] == 403:
-                            continue
+                    for line in changes_data:
+                        if line.startswith('Launchpad-Bugs-Fixed:'):
+                            bugs = line.split(' ')[1:]
                     break
 
         cleave(self.__class__.__name__ + '.bugs {}'.format(bugs))
