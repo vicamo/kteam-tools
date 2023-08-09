@@ -19,7 +19,7 @@ from .check_component                   import CheckComponent
 from .context                           import ctx
 from .errors                            import ShankError, ErrorExit, WorkflowCrankError
 from .git_tag                           import GitTag, GitTagError
-from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo
+from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo, centerleave
 
 # PackageError
 #
@@ -1925,6 +1925,79 @@ class Package():
 
         cleave(self.__class__.__name__ + '.bugs {}'.format(bugs))
         return bugs
+
+    # prerequisite_packages
+    #
+    @centerleave
+    def prerequisite_packages(self):
+        prereq_re = re.compile(r"^ *(\S+) +\(= +(\S+)\) *$")
+
+        # If we have no version, we can have no build, if we have no build we 
+        # do not know what bugs we have.
+        if self.version is None:
+            return None
+
+        # Find an upload record for the main package.
+        pkg = 'lrm'
+        prereqs = []
+        for pocket in self.__pockets_uploaded:
+            package_version = self.package_version_exact(pkg)
+            if package_version is None:
+                continue
+            build_route = self.builds.get(pkg, {}).get(pocket)
+            if build_route is None:
+                continue
+            build_route_entry = build_route.version_match(exact=package_version, limit_stream=self.bug.built_in)
+            if build_route_entry is None:
+                continue
+            changes_url = build_route_entry.changes_url
+            if changes_url is None:
+                continue
+
+            cdebug("PREREQ-PKGS: CHANGES: url={}".format(changes_url))
+            changes_data = self.changes_data(changes_url)
+            if changes_data is None:
+                continue
+
+            #cdebug("PREREQ-PKGS: CHANGES: data={}".format(changes_data))
+            prereq_data = None
+            for line in changes_data:
+                if line.startswith("Ubuntu-Nvidia-Dependencies:"):
+                    prereq_data = ""
+                    continue
+                if prereq_data is None:
+                    continue
+                if line[0] != " ":
+                    break
+                prereq_data = prereq_data + line.rstrip()
+            cdebug("PREREQ-PKGS: CHANGES: prereq={}".format(prereq_data))
+            for prereq in prereq_data.split(","):
+                match = prereq_re.match(prereq)
+                if not match:
+                    continue
+                prereqs.append((match.group(1), match.group(2)))
+
+        if self.bug.is_development_series:
+            pocket = 'Release'
+        else:
+            pocket = 'Updates'
+        failures = []
+        for package, version in prereqs:
+            build_route = PackageBuildRoute(self.distro_series, "adhoc", pocket, self._routing[pocket], package, bug=self.bug)
+            if build_route is None:
+                failures.append("{}/{} no {} route".format(package, version, pocket))
+                cinfo("{}/{} package has no {} route".format(package, version, pocket))
+                continue
+            build_route_entry = build_route.version_match(exact=version, limit_stream=self.bug.built_in)
+            #built_route_entry = build_route.version_match() # ANY
+            #cinfo("{}/{} package found version={}".format(package, built_route_entry, version))
+            if build_route_entry is None:
+                failures.append("{}/{} package not found in {} route".format(package, version, pocket))
+                cinfo("{}/{} package not found in {} route".format(package, version, pocket))
+                continue
+            cinfo("{}/{} package found as expected".format(package, version))
+
+        return failures
 
     # packages_released
     #
