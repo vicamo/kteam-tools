@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import argparse
 import logging
 import os
 import sys
@@ -315,7 +315,7 @@ def lp_target_valid(lp, target):
         return False
     return True
 
-def publish_tags():
+def publish_tags(dry_run=False):
     ks = KernelSeries()
 
     lp = Launchpad.login_with('publish-tags', 'production', version='devel')
@@ -471,7 +471,7 @@ def publish_tags():
             print("WARNING: private missmatch")
             continue
 
-        refs = GitRefsPackage(package) # , dryrun=True)
+        refs = GitRefsPackage(package, dryrun=dry_run)
 
         if package.type in (None, 'main') and '-uc20' not in source.name and '-uc22' not in source.name: # XXX
             # Sync all of our mainline tags.
@@ -545,7 +545,7 @@ def publish_tags():
             continue
 
         # Re-grab the repo now we have shoved tags into it.
-        refs = GitRefsPackage(package) # , dryrun=True)
+        refs = GitRefsPackage(package, dryrun=dry_run)
 
         # Sync the 'master' branch -- released version tag
         branches_to = [(branch, False)]
@@ -596,7 +596,11 @@ def publish_tags():
                 pass
 
 def main():
-    publish_tags()
+    parser = argparse.ArgumentParser("publish-tags")
+    parser.add_argument("--dry-run", action="store_true", help="Do not make any changes")
+    args = parser.parse_args()
+
+    publish_tags(args.dry_run)
 
 if __name__ == "__main__":
     main()
