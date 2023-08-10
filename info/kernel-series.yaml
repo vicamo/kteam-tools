@@ -1315,6 +1315,41 @@ defaults:
                 kernel-testing: true
             invalid-tasks: ['boot-testing', 'automated-testing', 'certification-testing', 'regression-testing']
 
+        linux-intel-opt:
+            routing: ubuntu/4
+            variants: ['--']
+            package-relations: signed-generate
+            packages:
+                linux-intel-opt:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/mantic', 'intel-opt-next']
+                linux-meta-intel-opt:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/mantic', 'intel-opt']
+                linux-generate-intel-opt:
+                    type: generate
+                linux-signed-intel-opt:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/mantic', 'intel-opt']
+                #linux-restricted-modules-intel-opt:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/mantic', 'intel-opt']
+                #linux-restricted-generate-intel-opt:
+                #    type: lrg
+                #linux-restricted-signatures-intel-opt:
+                #    type: lrs
+            owner: philcox
+            development: true
+            supported: false
+            derived-from: ['23.10', 'linux-unstable']
+            backport: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    intel-opt:
+                        arches: ['amd64']
+            invalid-tasks: [ 'certification-testing' ]
+
 # 23.04 (Lunar Lobster)
 '23.04':
     codename: lunar
