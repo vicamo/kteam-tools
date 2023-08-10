@@ -226,7 +226,7 @@ class GitRefsRepository(object):
 
 class GitRefsPackage(object):
 
-    def __init__(self, package, dryrun=False):
+    def __init__(self, package, source, dryrun=False):
         self.package = package
         self.dryrun = dryrun
 
@@ -480,7 +480,7 @@ def publish_tags(dry_run=False):
             print("WARNING: private missmatch")
             continue
 
-        refs = GitRefsPackage(package, dryrun=dry_run)
+        refs = GitRefsPackage(package, source, dryrun=dry_run)
 
         if package.type in (None, 'main') and '-uc20' not in source.name and '-uc22' not in source.name: # XXX
             # Sync all of our mainline tags.
@@ -554,7 +554,7 @@ def publish_tags(dry_run=False):
             continue
 
         # Re-grab the repo now we have shoved tags into it.
-        refs = GitRefsPackage(package, dryrun=dry_run)
+        refs = GitRefsPackage(package, source, dryrun=dry_run)
 
         # Sync the 'master' branch -- released version tag
         branches_to = [(branch, False)]
