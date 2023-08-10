@@ -18,11 +18,20 @@ from subprocess import CalledProcessError
 
 class ArchiveVersionsPackage(object):
 
-    def __init__(self, package, lp=None):
-        if lp is None:
-            lp = Launchpad.login_with('publish-tags', 'production', version='devel')
-        self.lp = lp
+    _lp = None
+    _ubuntu = None
+
+    def __init__(self, package, lp, ubuntu):
+
         self.package = package
+
+        if ArchiveVersionsPackage._lp is None:
+            ArchiveVersionsPackage._lp = lp
+        self.lp = ArchiveVersionsPackage._lp
+
+        if ArchiveVersionsPackage._ubuntu is None:
+            ArchiveVersionsPackage._ubuntu = ubuntu
+        self.ubuntu = ubuntu
 
         self.load_data()
         self.data = self._data.setdefault('package', {}).setdefault(self.source_key, {})
@@ -102,7 +111,7 @@ class ArchiveVersionsPackage(object):
     @classmethod
     def lp_series(cls, series_name):
         if series_name not in cls.cache_lp_series:
-            cls.cache_lp_series[series_name] = ubuntu.getSeries(name_or_version=series_name)
+            cls.cache_lp_series[series_name] = cls._ubuntu.getSeries(name_or_version=series_name)
         return cls.cache_lp_series[series_name]
 
     # Caching mapping archive_name to launchpad object.
@@ -110,7 +119,7 @@ class ArchiveVersionsPackage(object):
     @classmethod
     def lp_archive(cls, archive_name):
         if archive_name not in cls.cache_lp_archive:
-            cls.cache_lp_archive[archive_name] = lp.archives.getByReference(reference=archive_name)
+            cls.cache_lp_archive[archive_name] = cls._lp.archives.getByReference(reference=archive_name)
         return cls.cache_lp_archive[archive_name]
 
     @property
@@ -439,7 +448,7 @@ def publish_tags(dry_run=False):
 
         #if package.name != 'linux-snapdragon': #not in ('linux', 'linux-oem-osp1', 'linux-gke-5.0'):
         #    continue
-        archive_versions = ArchiveVersionsPackage(package, lp=lp)
+        archive_versions = ArchiveVersionsPackage(package, lp, ubuntu)
         versions = archive_versions.versions
         destinations = archive_versions.destinations
         proposed = destinations.get('proposed')
