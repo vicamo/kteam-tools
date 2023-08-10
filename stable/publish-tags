@@ -315,6 +315,10 @@ def lp_target_valid(lp, target):
         return False
     return True
 
+print("DO NOT RUN THIS!!")
+print("It may make a mess in your local repo but otherwise it just doesn't work.")
+sys.exit(1)
+
 ks = KernelSeries()
 
 lp = Launchpad.login_with('publish-tags', 'production', version='devel')
