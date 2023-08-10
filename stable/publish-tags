@@ -60,12 +60,12 @@ class ArchiveVersionsPackage(object):
                         since = published
                     status = pub.status
                     version = pub.source_package_version
-                    print("  PUBLICATION: ", pub, status, version)
+                    logger.info("  PUBLICATION: %s %s %s", pub, status, version)
                     if status in ('Pending', 'Published', 'Superseded'):
                         if version not in versions and version not in new_versions:
                             new_versions.insert(0, version)
                     if status == 'Published':
-                        print("  PUBLICATION: ", pub, status, destinations.get(route_name, 'none'), '->', version, 'in', route_name)
+                        logger.info("  PUBLICATION: %s %s %s %s %s %s %s", pub, status, destinations.get(route_name, 'none'), '->', version, 'in', route_name)
                         destinations[route_name] = version
 
         self.data['destinations'] = destinations
@@ -155,10 +155,10 @@ class GitRefsRepositoryEntry(object):
             local_ref = self.ref
 
         cmd = ['git', 'fetch', '--force', '--no-tags', self.repo.url, '{}:{}'.format(self.ref, local_ref)]
-        print('  CMD: ' + ' '.join(cmd))
+        logger.info('  CMD: %s', ' '.join(cmd))
         if not self.dryrun:
             result = run(cmd, check=True)
-            print('    rc={}'.format(result.returncode))
+            logger.info('    rc=%d', result.returncode)
 
     def push(self, local_ref=None, force=False):
         if local_ref is None:
@@ -166,10 +166,10 @@ class GitRefsRepositoryEntry(object):
         cmd = ['git', 'push', '--no-tags', self.repo.url, '{}:{}'.format(local_ref, self.ref)]
         if force:
             cmd.insert(2, '--force')
-        print('  CMD: ' + ' '.join(cmd))
+        logger.info('  CMD: %s', ' '.join(cmd))
         if not self.dryrun:
             result = run(cmd, check=True)
-            print('    rc={}'.format(result.returncode))
+            print('    rc=%d', result.returncode)
 
     def __str__(self):
         return 'RepositoryEntry<{} ref:{} sha:{}>'.format(self.repo, self.ref, self.sha)
@@ -196,7 +196,7 @@ class GitRefsRepository(object):
     def git_refs(cls, url):
         if url not in cls.cache_git_refs:
             cmd = ['git', 'ls-remote', url]
-            print('  CMD: ' + ' '.join(cmd))
+            logger.info('  CMD: %s', ' '.join(cmd))
             proc = Popen(cmd, stdout=PIPE)
             refs = {}
             for entry in proc.stdout:
@@ -206,7 +206,7 @@ class GitRefsRepository(object):
                 refs.setdefault(bits[1], []).append(bits[0])
             retcode = proc.wait()
             if retcode != 0:
-                print("APW", retcode)
+                logger.info("APW %d", retcode)
                 raise CalledProcessError(proc.returncode, proc.args,
                     proc.stdout, proc.stderr)
             cls.cache_git_refs[url] = refs
@@ -352,7 +352,7 @@ def publish_tags(codes_names, dry_run=False):
             #   continue
             #if series.codename in ('hirsute', 'groovy'):
             #    continue
-            print(series.codename, source.name, source.supported)
+            logger.info("%s %s %s", series.codename, source.name, source.supported)
             #if series.codename != 'focal' or source.name != 'linux-fips':
             #    continue
             #if not source.private:
@@ -421,9 +421,9 @@ def publish_tags(codes_names, dry_run=False):
 
         lp_pkg_repo = lp.git_repositories.getByPath(path=pkg_repo_path)
         if lp_pkg_repo is None:
-            print("  REPO-NEEDED", package.name)
+            logger.info("  REPO-NEEDED %s", package.name)
             if lp_target_valid(lp, '/ubuntu/+source/{}'.format(package.name)):
-                print("  REPO-NEEDED-MAKE", package.name)
+                logger.info("  REPO-NEEDED-MAKE %s", package.name)
                 lp_pkg_repo = lp.git_repositories.new(owner=lp.people['ubuntu-kernel'], target='/ubuntu/+source/linux', name='initial-seeds-{}'.format(package.name))
                 lp_pkg_repo.target = pkg_repo_target
                 lp_pkg_repo.lp_save()
@@ -462,8 +462,6 @@ def publish_tags(codes_names, dry_run=False):
         source = package.source
         branch = package.repo.branch
 
-        sys.stdout.flush()
-
         # Determine if this is a private repository.
         bits = package.repo.url.split('~', 1)
         repo_private = False
@@ -475,11 +473,13 @@ def publish_tags(codes_names, dry_run=False):
             else:
                 repo_private = lp_repo.private
 
-        print("{} {} {} (source: supported={} esm={} copy_forward={} private={} repo: private={})".format(source.series.codename, source.name, package.name, source.supported, source.series.esm, source.copy_forward, source.private, repo_private))
-        sys.stdout.flush()
+        logger.info("%s %s %s (source: supported=%s esm=%s copy_forward=%s private=%s repo: private=%s)",
+                    source.series.codename, source.name, package.name,
+                    source.supported, source.series.esm, source.copy_forward,
+                    source.private, repo_private)
 
         if source.private and not repo_private:
-            print("WARNING: private missmatch")
+            logger.warn("private missmatch")
             continue
 
         refs = GitRefsPackage(package, source, dryrun=dry_run)
@@ -489,8 +489,8 @@ def publish_tags(codes_names, dry_run=False):
             package_versions = package.source.versions
             if package_versions is None:
                 package_versions = []
-            print("APW package<{}> package.source<{}> package_versions<{}>".format(package, package.source, package_versions))
-            sys.stdout.flush()
+            logger.info("APW package<%s> package.source<%s> package_versions<%s>",
+                        package, package.source, package_versions)
             for mainline in package_versions:
                 if mainline.endswith('.0'):
                     mainline = mainline[:-2]
@@ -503,10 +503,10 @@ def publish_tags(codes_names, dry_run=False):
                 # Ensure this mainline tag exists in the common
                 # /ubuntu/+source/linux/+git/version-seeds.
                 dst_ref = seeds_repo.lookup_ref(tag_ref)
-                print("  COMMON MAINLINE:", tag_ref, dst_ref)
+                logger.info("  COMMON MAINLINE: %s %s", tag_ref, dst_ref)
                 if dst_ref is None:
                     dst_ref = seeds_repo.new_ref(tag_ref)
-                    print("  COMMON MAINLINE: create", tag_ref, dst_ref)
+                    logger.info("  COMMON MAINLINE: create %s %s", tag_ref, dst_ref)
                     src_ref.fetch(tag_ref)
                     dst_ref.push(tag_ref)
 
@@ -514,20 +514,20 @@ def publish_tags(codes_names, dry_run=False):
                 # /ubuntu/+source/{package}/+git/version-seeds.
                 if pkg_seeds_repo:
                     dst_ref = pkg_seeds_repo.lookup_ref(tag_ref)
-                    print("  FAMILY MAINLINE:", tag_ref, dst_ref)
+                    logger.info("  FAMILY MAINLINE: %s %s", tag_ref, dst_ref)
                     if dst_ref is None:
                         dst_ref = pkg_seeds_repo.new_ref(tag_ref)
-                        print("  FAMILY MAINLINE: create", tag_ref, dst_ref)
+                        logger.info("  FAMILY MAINLINE: create %s %s", tag_ref, dst_ref)
                         src_ref.fetch(tag_ref)
                         dst_ref.push(tag_ref)
 
                 # Ensure this mainline tag exists in our
                 # package repository.
                 dst_ref = refs.dst_repo.lookup_ref(tag_ref)
-                print("  PACKAGE MAINLINE:", tag_ref, dst_ref)
+                logger.info("  PACKAGE MAINLINE: %s %s", tag_ref, dst_ref)
                 if dst_ref is None:
                     dst_ref = refs.dst_repo.new_ref(tag_ref)
-                    print("  PACKAGE MAINLINE: create", tag_ref, dst_ref)
+                    logger.info("  PACKAGE MAINLINE: create %s %s", tag_ref, dst_ref)
                     src_ref.fetch(tag_ref)
                     dst_ref.push(tag_ref)
 
@@ -539,11 +539,11 @@ def publish_tags(codes_names, dry_run=False):
                 #print('FOUND', version) #, dst_ref)
                 continue
             src_ref = refs.lookup_version(version)
-            print(" ", version, src_ref)
+            logger.info("%s %s ", version, src_ref)
             if src_ref is None:
-                print('  NOT-AVAILABLE', version, refs.prefixes)
+                logger.info('  NOT-AVAILABLE %s %s', version, refs.prefixes)
                 continue
-            print('  NEEDED', version) #, src_ref)
+            logger.info('  NEEDED %s %s', version, src_ref)
             refs.publish_ref(src_ref)
 
         # Identify the released version.
@@ -565,7 +565,9 @@ def publish_tags(codes_names, dry_run=False):
             branches_to.append((branch[:-5], force))
 
         for branch_base, force in branches_to:
-            print("BRANCH UPDATE: {}:{}:{} {} (force={}) to {}".format(source.series.codename, source.name, package.name, branch_base, force, version))
+            logger.info("BRANCH UPDATE: %s:%s:%s %s (force=%s) to %s",
+                        source.series.codename, source.name, package.name,
+                        branch_base, force, version)
 
             # Look up the source reference.
             branch_ref = 'refs/heads/' + branch_base
@@ -585,12 +587,12 @@ def publish_tags(codes_names, dry_run=False):
             dst_ref = refs.dst_repo.lookup_ref(branch_ref)
             if dst_ref is None:
                 dst_ref = refs.dst_repo.new_ref(branch_ref)
-            print(" ", branch_base, version, src_ref, dst_ref)
+            logger.info("%s %s %s %s", branch_base, version, src_ref, dst_ref)
 
             # If the dst sha1 is one of those the tag expresses
             # then it points to the same place.
             if dst_ref.sha == []:
-                print("  {} completely missing -- creating".format(branch_base))
+                logger.info("  %s completely missing -- creating", branch_base)
 
             elif set(dst_ref.sha).issubset(set(src_ref.sha)):
                 continue
@@ -612,6 +614,13 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Do not make any changes")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
     args = parser.parse_args()
+
+    log_format = '%(levelname)s - %(message)s'
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG, format=log_format)
+    else:
+        logging.basicConfig(level=logging.INFO, format=log_format)
+    logger.debug(args)
 
     publish_tags(args.codename, args.dry_run)
 
