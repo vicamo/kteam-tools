@@ -21,19 +21,21 @@ will query during command invocation.
 
 A tree set will use the kernel-series for the cycle listed in the main package's
 $DEBIAN/tracking-bug file. It is not currently possible to use explicitly use
-`info/kernel-series.yaml` for cranky commands.
+``info/kernel-series.yaml`` for cranky commands.
 
 By default, cranky will read the latest per-cycle information published on
 [kernel.ubuntu.com][4]. More information on this process can be found in the
 [specification][5]. Cranky also supports reading from a local copy of this
 information by setting the env ``KERNEL_SERIES_USE=local``. This requires that
-you have cloned [kernel-versions][3] to `info/kernel-versions`. Once cloned, 
+you have cloned [kernel-versions][3] to ``info/kernel-versions``. Once cloned, 
 you may modified the target cycle with the changes needed for your task. For
 example, to test a change on 2023.07.10, you would modify 
-`info/kernel-versions/2023.07.10/info/kernel-series.yaml`.
+``info/kernel-versions/2023.07.10/info/kernel-series.yaml``. Use this tree to
+test your local changes before submitting a pull request to [kernel-versions][3].
 
-Use this tree to test your local changes before submitting a pull request to
-[kernel-versions][3].
+For development, testing, and other changes that are not intended for production
+you may use ``KERNEL_SERIES_USE=devel`` to read bypass cycle awareness and read
+exclusively from your local ``info/kernel-series.yaml``.
 
 ### Handle
 
