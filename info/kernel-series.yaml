@@ -4060,7 +4060,7 @@ defaults:
                         clouds: ['metal']
 
         linux-uc22-capilano:
-            routing: capilano
+            routing: wendover
             packages:
                 linux-uc22-capilano:
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/ubuntu/+source/linux-uc22-capilano/+git/jammy']
