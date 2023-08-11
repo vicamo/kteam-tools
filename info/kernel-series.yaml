@@ -3775,6 +3775,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-aws-fips:
+            routing: fips-prerelease-pro/3
             package-relations: signed-generate
             packages:
                 linux-aws-fips:
