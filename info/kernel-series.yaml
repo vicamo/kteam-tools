@@ -2461,6 +2461,7 @@ defaults:
                 # The NVIDIA drivers explicitly do not support PREEMPT_RT, so no need for LRM.
             owner: jsalisbury
             derived-from: [ '22.04', 'linux' ]
+            private: true
             swm:
                 kernel-testing: true
             testing:
@@ -3595,6 +3596,7 @@ defaults:
             development: false
             backport: false
             derived-from: [ '22.04', 'linux' ]
+            private: true
             swm:
                 kernel-testing: true
             testing:
@@ -3656,6 +3658,7 @@ defaults:
             development: false
             backport: false
             derived-from: [ '22.04', 'linux-realtime' ]
+            private: true
             invalid-tasks: [ 'automated-testing' ]
             swm:
                 kernel-testing: true
@@ -3688,6 +3691,7 @@ defaults:
                     publish-to:
                         amd64: ['22']
             derived-from: [ '22.04', 'linux-intel-iot-realtime' ]
+            private: true
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
             swm:
                 block-parent-release: true
