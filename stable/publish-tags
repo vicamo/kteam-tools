@@ -323,7 +323,7 @@ def lp_target_valid(lp, target):
         return False
     return True
 
-def publish_tags(codes_names, dry_run=False):
+def publish_tags(targets, dry_run=False):
     ks = KernelSeries()
 
     lp = Launchpad.login_with('publish-tags', 'production', version='devel')
@@ -342,7 +342,8 @@ def publish_tags(codes_names, dry_run=False):
         if not series.supported and not series.development and not series.esm:
             continue
         for source in series.sources:
-            if series.codename not in codes_names:
+            handle = "{}:{}".format(series.codename, source.name)
+            if series.codename not in targets and handle not in targets:
                 continue
 
             logger.debug("Checking %s (supported=%s)", handle, source.supported)
@@ -529,9 +530,13 @@ def publish_tags(codes_names, dry_run=False):
 
 def main():
     parser = argparse.ArgumentParser("publish-tags")
-    parser.add_argument("codename", nargs="+", help="One or more series codenames to sync")
-    parser.add_argument("--dry-run", action="store_true", help="Do not make any changes")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
+    parser.add_argument("target", nargs="+",
+                        help="One or more sync targets consisting of"
+                        "codenames (e.g. focal) or handles (e.g. focal:linux)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Do not make any changes")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Enable verbose logging")
     args = parser.parse_args()
 
     log_format = '{levelname:.4s} {message}'
@@ -541,7 +546,7 @@ def main():
         logging.basicConfig(level=logging.INFO, format=log_format, style='{')
     logger.debug(args)
 
-    publish_tags(args.codename, args.dry_run)
+    publish_tags(args.target, args.dry_run)
 
 if __name__ == "__main__":
     main()
