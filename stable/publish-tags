@@ -1,12 +1,31 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+"""
+@file publish_tags
+@brief Synchronizes kernel master branch with tags that reach -updates
+@details
+This script is responsible for syncing a kernel's master branch to the
+latest version available in the -updates pocket. The caller must have
+commit rights on the repos that this tool is asked to synchronize.
+
+In addition to a kernel's primary repos, the security repos may also
+be synchronized with. This requires that the caller have appropriate
+access to the security repos.
+
+Usage Notes:
+- Must be run from a git repo. Ideally from a kernel repo such as mainline.
+- Master branches will be force pushed. Other branches (e.g. master-next) will
+  not be forced because they may have patches queued for the next kernel.
+
+"""
+
 import argparse
 import logging
 import os
 import sys
 import yaml
 from datetime import datetime, timezone
-from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN
-from subprocess import run, Popen, PIPE, CalledProcessError
+from fcntl import lockf, LOCK_EX, LOCK_UN
+from subprocess import run, Popen, PIPE, CalledProcessError, DEVNULL
 
 from launchpadlib.launchpad import Launchpad
 from ktl.kernel_series import KernelSeries
@@ -507,6 +526,11 @@ def publish_tags(targets, include_security=False, create_pkg_repos=False, dry_ru
             except CalledProcessError:
                 pass
 
+def is_git_dir():
+    cmd = ['git', 'rev-parse', '--git-dir']
+    result = run(cmd, check=False, stdout=DEVNULL)
+    return result.returncode == 0
+
 def main():
     parser = argparse.ArgumentParser("publish-tags")
     parser.add_argument("target", nargs="+",
@@ -528,6 +552,10 @@ def main():
     else:
         logging.basicConfig(level=logging.INFO, format=log_format, style='{')
     logger.debug(args)
+
+    if not is_git_dir():
+        print("Tool must be run from a git repository")
+        sys.exit(1)
 
     publish_tags(args.target, args.include_security, args.create_pkg_repos, args.dry_run)
 
