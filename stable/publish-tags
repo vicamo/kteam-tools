@@ -231,7 +231,7 @@ class GitRefsRepository(object):
 
 class GitRefsPackage(object):
 
-    def __init__(self, package, source, dryrun=False):
+    def __init__(self, package, source, include_security=False, dryrun=False):
         self.package = package
         self.dryrun = dryrun
 
@@ -240,8 +240,8 @@ class GitRefsPackage(object):
 
         type_prefix = '-' + package.type if package.type not in (None, 'main') else ''
         security = 'git://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/linux{}-{}'.format(type_prefix, package.series.codename)
-        urls.append(security)
-
+        if include_security:
+            urls.append(security)
 
         derived_from = source.copy_forward
         if derived_from is None:
@@ -323,7 +323,7 @@ def lp_target_valid(lp, target):
         return False
     return True
 
-def publish_tags(targets, dry_run=False):
+def publish_tags(targets, include_security=False, dry_run=False):
     ks = KernelSeries()
 
     lp = Launchpad.login_with('publish-tags', 'production', version='devel')
@@ -410,7 +410,7 @@ def publish_tags(targets, dry_run=False):
             logger.warning("  private missmatch")
             continue
 
-        refs = GitRefsPackage(package, source, dryrun=dry_run)
+        refs = GitRefsPackage(package, source, include_security=include_security, dryrun=dry_run)
 
         if package.type in (None, 'main') and '-uc20' not in source.name and '-uc22' not in source.name: # XXX
             # Sync all of our mainline tags.
@@ -484,7 +484,7 @@ def publish_tags(targets, dry_run=False):
             continue
 
         # Re-grab the repo now we have shoved tags into it.
-        refs = GitRefsPackage(package, source, dryrun=dry_run)
+        refs = GitRefsPackage(package, source, include_security=include_security, dryrun=dry_run)
 
         # Sync the 'master' branch -- released version tag
         branches_to = [(branch, False)]
@@ -533,6 +533,8 @@ def main():
     parser.add_argument("target", nargs="+",
                         help="One or more sync targets consisting of"
                         "codenames (e.g. focal) or handles (e.g. focal:linux)")
+    parser.add_argument("-s", "--include-security", action="store_true",
+                        help="Synchronize security repos for each kernel")
     parser.add_argument("--dry-run", action="store_true",
                         help="Do not make any changes")
     parser.add_argument("-v", "--verbose", action="store_true",
@@ -546,7 +548,7 @@ def main():
         logging.basicConfig(level=logging.INFO, format=log_format, style='{')
     logger.debug(args)
 
-    publish_tags(args.target, args.dry_run)
+    publish_tags(args.target, args.include_security, args.dry_run)
 
 if __name__ == "__main__":
     main()
