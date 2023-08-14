@@ -425,8 +425,9 @@ def publish_tags(targets, include_security=False, create_pkg_repos=False, dry_ru
                     source.supported, source.series.esm, source.copy_forward,
                     source.private, repo_private)
 
-        if source.private and not repo_private:
-            logger.warning("  private missmatch")
+        # Launchpad and kernel-series must agree on repo visibility
+        if source.private != repo_private:
+            logger.warning("  private missmatch: kernel-series.private=%s repo.private=%s", source.private, repo_private)
             continue
 
         refs = GitRefsPackage(package, source, include_security=include_security, dryrun=dry_run)
