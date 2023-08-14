@@ -239,12 +239,7 @@ class GitRefsPackage(object):
         security = 'git://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/linux{}-{}'.format(type_prefix, package.series.codename)
         urls.append(security)
 
-        # XXX: personal repos to see if my anchient repos have more of them
-        #type_suffix = '-' + package.type if package.type not in (None, 'main') else ''
-        #personal = '/home/apw/git2/ubuntu-{}{}'.format(package.series.codename, type_suffix)
-        #urls.append(personal)
-        #if source.series.esm:
-        #    print('APW ESM', package)
+
         derived_from = source.copy_forward
         if derived_from is None:
             derived_from = package.source.derived_from
@@ -264,7 +259,6 @@ class GitRefsPackage(object):
                 if url != security:
                     raise
         self.dst_repo = self.repos[0]
-        ##self.local_repo = GitRefsRepository('.', package=self)
 
         # What do we call our tags for this package.
         short = package.name
@@ -346,27 +340,11 @@ def publish_tags(codes_names, dry_run=False):
         for source in series.sources:
             if series.codename not in codes_names:
                 continue
-            #if series.codename == 'impish':
-            #    continue
-            #if source.name != 'linux-bluefield':
-            #   continue
-            #if series.codename in ('hirsute', 'groovy'):
-            #    continue
+
             logger.info("%s %s %s", series.codename, source.name, source.supported)
-            #if series.codename != 'focal' or source.name != 'linux-fips':
-            #    continue
-            #if not source.private:
-            #    continue
-            #if series.codename != 'bionic' or source.name != 'linux-aws-fips':
-            #    continue
-            #if source.private:
-            #    continue
             if (series.supported and source.supported) or series.development:
                 for package in source.packages:
-                    #if package.type in (None, 'main'):
-                    #if package.type == 'signed':
                     supported.append(package)
-                    #    break
 
     for package in supported:
         # Pull the branch name from the repository.
@@ -375,49 +353,12 @@ def publish_tags(codes_names, dry_run=False):
 
         if package.source.name == 'linux-ibm-5.4':
             continue
-        # APW
-        #if package.source.series.codename != 'groovy' or package.source.name != 'linux':
-        #    continue
-        #if package.source.series.codename != 'groovy':
-        #    continue
-        #if package.source.series.codename == 'hirsute':
-        #    continue
+
 
         pkg_seeds_repo = None
         pkg_repo_path = '~' + package.repo.url.split('/~')[1]
         pkg_repo_bits = pkg_repo_path.split('/')
         pkg_repo_target = '/' + '/'.join(pkg_repo_bits[1:-2])
-        #if not package.source.private and not package.series.esm and package.type in (None, 'main'):
-        #    #print("******* APW", package.repo.url)
-
-        #    pkg_seeds_path = '/'.join(pkg_repo_bits[:-1] + ['version-seeds'])
-        #    pkg_seeds_url = 'git://git.launchpad.net/' + pkg_seeds_path
-        #    pkg_seeds_owner = pkg_repo_bits[0][1:]
-
-        #    #print("   **** APW", pkg_repo_path)
-        #    #print("   **** APW", pkg_repo_target)
-        #    #print("   **** APW", pkg_seeds_path)
-        #    #print("   **** APW", pkg_seeds_url)
-        #    #print("   **** APW", pkg_seeds_owner)
-
-        #    # If we do not have a version-seeds repository in a package, build it.
-        #    lp_pkg_seeds_repo = lp.git_repositories.getByPath(path=pkg_seeds_path)
-        #    if lp_pkg_seeds_repo is None and 'uc20' not in package.name and 'uc22' not in package.name:
-        #        print("  SEEDS-NEEDED", package.name)
-        #        if lp_target_valid(lp, '/ubuntu/+source/{}'.format(package.name)):
-        #            lp_pkg_seeds_repo = lp.git_repositories.new(owner=lp.people['ubuntu-kernel'], target='/ubuntu/+source/linux', name='version-seeds-{}'.format(package.name))
-        #            lp_pkg_seeds_repo.target = pkg_repo_target
-        #            lp_pkg_seeds_repo.lp_save()
-        #            lp_pkg_seeds_repo.name = 'version-seeds'
-        #            lp_pkg_seeds_repo.lp_save()
-        #            lp_pkg_seeds_repo.owner = lp.people[pkg_seeds_owner]
-        #            lp_pkg_seeds_repo.lp_save()
-        #            lp.git_repositories.setDefaultRepository(repository=lp_pkg_seeds_repo, target=pkg_repo_target)
-
-        #    try:
-        #        pkg_seeds_repo = GitRefsRepository(pkg_seeds_url)
-        #    except CalledProcessError:
-        #        pass
 
         lp_pkg_repo = lp.git_repositories.getByPath(path=pkg_repo_path)
         if lp_pkg_repo is None:
@@ -432,32 +373,12 @@ def publish_tags(codes_names, dry_run=False):
                 lp_pkg_repo.owner = lp.people[pkg_repo_bits[0][1:]]
                 lp_pkg_repo.lp_save()
 
-        ## Make sure we have a security repo.
-        #type_prefix = '-' + package.type if package.type not in (None, 'main') else ''
-        #security = 'lp:~canonical-kernel-security-team/canonical-kernel-private/+git/linux{}-{}'.format(type_prefix, package.series.codename)
-        #lp_sec_repo = lp.git_repositories.getByPath(path=security)
-        #if lp_sec_repo is None:
-        #    print("  REPO-NEEDED", package.name)
-        #    if lp_target_valid(lp, '/ubuntu/+source/{}'.format(package.name)):
-        #        print("  REPO-NEEDED-MAKE", package.name)
-        #        lp_pkg_repo = lp.git_repositories.new(owner=lp.people['ubuntu-kernel'], target='/ubuntu/+source/linux', name='initial-seeds-{}'.format(package.name))
-        #        lp_pkg_repo.target = pkg_repo_target
-        #        lp_pkg_repo.lp_save()
-        #        lp_pkg_repo.name = pkg_repo_bits[-1]
-        #        lp_pkg_repo.lp_save()
-        #        lp_pkg_repo.owner = lp.people[pkg_repo_bits[0][1:]]
-        #        lp_pkg_repo.lp_save()
-
-        #if package.name != 'linux-snapdragon': #not in ('linux', 'linux-oem-osp1', 'linux-gke-5.0'):
-        #    continue
         archive_versions = ArchiveVersionsPackage(package, lp, ubuntu)
         versions = archive_versions.versions
         destinations = archive_versions.destinations
         proposed = destinations.get('proposed')
         updates = destinations.get('updates')
         release = destinations.get('release')
-
-        #print('APW', archive_versions)
 
         source = package.source
         branch = package.repo.branch
@@ -573,15 +494,7 @@ def publish_tags(codes_names, dry_run=False):
             branch_ref = 'refs/heads/' + branch_base
             src_ref = refs.lookup_version(version)
             if src_ref is None:
-                #mainline = package_versions[0]
-                #if mainline.endswith('.0'):
-                #    mainline = mainline[:-2]
-                #    mainline_tag = 'refs/tags/v{}'.format(mainline)
-                #    src_ref = refs.lookup_version(mainline_tag)
-                #print(" ", version, src_ref)
-                #print(" ", "NO-SRC-REF-BUT", package_versions)
                 continue
-                #continue
             # See if the remote reference exists, make a new
             # one if not.
             dst_ref = refs.dst_repo.lookup_ref(branch_ref)
