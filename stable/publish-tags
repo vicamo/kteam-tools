@@ -1,12 +1,31 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+"""
+@file publish_tags
+@brief Synchronizes kernel master branch with tags that reach -updates
+@details
+This script is responsible for syncing a kernel's master branch to the
+latest version available in the -updates pocket. The caller must have
+commit rights on the repos that this tool is asked to synchronize.
 
+In addition to a kernel's primary repos, the security repos may also
+be synchronized with. This requires that the caller have appropriate
+access to the security repos.
+
+Usage Notes:
+- Must be run from a git repo. Ideally from a kernel repo such as mainline.
+- Master branches will be force pushed. Other branches (e.g. master-next) will
+  not be forced because they may have patches queued for the next kernel.
+
+"""
+
+import argparse
 import logging
 import os
 import sys
 import yaml
 from datetime import datetime, timezone
-from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN
-from subprocess import run, Popen, PIPE, CalledProcessError
+from fcntl import lockf, LOCK_EX, LOCK_UN
+from subprocess import run, Popen, PIPE, CalledProcessError, DEVNULL
 
 from launchpadlib.launchpad import Launchpad
 from ktl.kernel_series import KernelSeries
@@ -15,14 +34,25 @@ from lazr.restfulclient.errors import NotFound
 from subprocess import CalledProcessError
 
 
+logger = logging.getLogger(__name__)
+
 
 class ArchiveVersionsPackage(object):
 
-    def __init__(self, package, lp=None):
-        if lp is None:
-            lp = Launchpad.login_with('publish-tags', 'production', version='devel')
-        self.lp = lp
+    _lp = None
+    _ubuntu = None
+
+    def __init__(self, package, lp, ubuntu):
+
         self.package = package
+
+        if ArchiveVersionsPackage._lp is None:
+            ArchiveVersionsPackage._lp = lp
+        self.lp = ArchiveVersionsPackage._lp
+
+        if ArchiveVersionsPackage._ubuntu is None:
+            ArchiveVersionsPackage._ubuntu = ubuntu
+        self.ubuntu = ubuntu
 
         self.load_data()
         self.data = self._data.setdefault('package', {}).setdefault(self.source_key, {})
@@ -42,6 +72,9 @@ class ArchiveVersionsPackage(object):
             for route in reversed(routes):
                 (archive_name, pocket_name) = route
                 archive = self.lp_archive(archive_name)
+                if not archive:
+                    logger.warning("MISSING - archive %s not found", archive_name)
+                    continue
                 pubs = archive.getPublishedSources(pocket=pocket_name,distro_series=self.lp_series(package.series.codename), source_name=package.name, exact_match=True, order_by_date=True, created_since_date=start)
                 for pub in pubs:
                     published = pub.date_published
@@ -49,12 +82,12 @@ class ArchiveVersionsPackage(object):
                         since = published
                     status = pub.status
                     version = pub.source_package_version
-                    print("  PUBLICATION: ", pub, status, version)
+                    logger.debug("  PUBLICATION: %s status=%s %s", pub, status, version)
                     if status in ('Pending', 'Published', 'Superseded'):
                         if version not in versions and version not in new_versions:
                             new_versions.insert(0, version)
                     if status == 'Published':
-                        print("  PUBLICATION: ", pub, status, destinations.get(route_name, 'none'), '->', version, 'in', route_name)
+                        logger.debug("  PUBLICATION: %s status=%s %s -> %s in %s", pub, status, destinations.get(route_name, 'none'), version, route_name)
                         destinations[route_name] = version
 
         self.data['destinations'] = destinations
@@ -102,7 +135,7 @@ class ArchiveVersionsPackage(object):
     @classmethod
     def lp_series(cls, series_name):
         if series_name not in cls.cache_lp_series:
-            cls.cache_lp_series[series_name] = ubuntu.getSeries(name_or_version=series_name)
+            cls.cache_lp_series[series_name] = cls._ubuntu.getSeries(name_or_version=series_name)
         return cls.cache_lp_series[series_name]
 
     # Caching mapping archive_name to launchpad object.
@@ -110,7 +143,7 @@ class ArchiveVersionsPackage(object):
     @classmethod
     def lp_archive(cls, archive_name):
         if archive_name not in cls.cache_lp_archive:
-            cls.cache_lp_archive[archive_name] = lp.archives.getByReference(reference=archive_name)
+            cls.cache_lp_archive[archive_name] = cls._lp.archives.getByReference(reference=archive_name)
         return cls.cache_lp_archive[archive_name]
 
     @property
@@ -144,10 +177,10 @@ class GitRefsRepositoryEntry(object):
             local_ref = self.ref
 
         cmd = ['git', 'fetch', '--force', '--no-tags', self.repo.url, '{}:{}'.format(self.ref, local_ref)]
-        print('  CMD: ' + ' '.join(cmd))
+        logger.debug('  CMD: %s', ' '.join(cmd))
         if not self.dryrun:
             result = run(cmd, check=True)
-            print('    rc={}'.format(result.returncode))
+            logger.debug('    rc=%d', result.returncode)
 
     def push(self, local_ref=None, force=False):
         if local_ref is None:
@@ -155,10 +188,10 @@ class GitRefsRepositoryEntry(object):
         cmd = ['git', 'push', '--no-tags', self.repo.url, '{}:{}'.format(local_ref, self.ref)]
         if force:
             cmd.insert(2, '--force')
-        print('  CMD: ' + ' '.join(cmd))
+        logger.debug('  CMD: %s', ' '.join(cmd))
         if not self.dryrun:
             result = run(cmd, check=True)
-            print('    rc={}'.format(result.returncode))
+            logger.debug('    rc=%d', result.returncode)
 
     def __str__(self):
         return 'RepositoryEntry<{} ref:{} sha:{}>'.format(self.repo, self.ref, self.sha)
@@ -185,7 +218,7 @@ class GitRefsRepository(object):
     def git_refs(cls, url):
         if url not in cls.cache_git_refs:
             cmd = ['git', 'ls-remote', url]
-            print('  CMD: ' + ' '.join(cmd))
+            logger.debug('  CMD: %s', ' '.join(cmd))
             proc = Popen(cmd, stdout=PIPE)
             refs = {}
             for entry in proc.stdout:
@@ -195,7 +228,7 @@ class GitRefsRepository(object):
                 refs.setdefault(bits[1], []).append(bits[0])
             retcode = proc.wait()
             if retcode != 0:
-                print("APW", retcode)
+                logger.error("APW %d", retcode)
                 raise CalledProcessError(proc.returncode, proc.args,
                     proc.stdout, proc.stderr)
             cls.cache_git_refs[url] = refs
@@ -217,7 +250,7 @@ class GitRefsRepository(object):
 
 class GitRefsPackage(object):
 
-    def __init__(self, package, dryrun=False):
+    def __init__(self, package, source, include_security=False, dryrun=False):
         self.package = package
         self.dryrun = dryrun
 
@@ -226,14 +259,9 @@ class GitRefsPackage(object):
 
         type_prefix = '-' + package.type if package.type not in (None, 'main') else ''
         security = 'git://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/linux{}-{}'.format(type_prefix, package.series.codename)
-        urls.append(security)
+        if include_security:
+            urls.append(security)
 
-        # XXX: personal repos to see if my anchient repos have more of them
-        #type_suffix = '-' + package.type if package.type not in (None, 'main') else ''
-        #personal = '/home/apw/git2/ubuntu-{}{}'.format(package.series.codename, type_suffix)
-        #urls.append(personal)
-        #if source.series.esm:
-        #    print('APW ESM', package)
         derived_from = source.copy_forward
         if derived_from is None:
             derived_from = package.source.derived_from
@@ -253,7 +281,6 @@ class GitRefsPackage(object):
                 if url != security:
                     raise
         self.dst_repo = self.repos[0]
-        ##self.local_repo = GitRefsRepository('.', package=self)
 
         # What do we call our tags for this package.
         short = package.name
@@ -315,285 +342,223 @@ def lp_target_valid(lp, target):
         return False
     return True
 
-print("DO NOT RUN THIS!!")
-print("It may make a mess in your local repo but otherwise it just doesn't work.")
-sys.exit(1)
+def publish_tags(targets, include_security=False, create_pkg_repos=False, dry_run=False):
+    ks = KernelSeries()
 
-ks = KernelSeries()
+    lp = Launchpad.login_with('publish-tags', 'production', version='devel')
+    ubuntu = lp.distributions('ubuntu')
 
-lp = Launchpad.login_with('publish-tags', 'production', version='devel')
-ubuntu = lp.distributions('ubuntu')
+    # Repos used for mainline tag management.
+    logger.info("Loading linux repo")
+    linus_repo = GitRefsRepository('git://kernel.ubuntu.com/virgin/linux.git')
 
-# Repos used for mainline tag management.
-#linus_repo = GitRefsRepository('git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/linus--linux')
-linus_repo = GitRefsRepository('git://kernel.ubuntu.com/virgin/linux.git')
-seeds_repo = GitRefsRepository('git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/version-seeds')
-
-# Run through kernel-series data and pick out those which are included
-# in the cycle so we can freeze them.
-supported = []
-for series in ks.series:
-    if not series.supported and not series.development and not series.esm:
-        continue
-    for source in series.sources:
-        if series.codename not in sys.argv[1:]:
+    # Run through kernel-series data and pick out those which are included
+    # in the cycle so we can freeze them.
+    supported = []
+    for series in ks.series:
+        if not series.supported and not series.development and not series.esm:
             continue
-        #if series.codename == 'impish':
-        #    continue
-        #if source.name != 'linux-bluefield':
-        #   continue
-        #if series.codename in ('hirsute', 'groovy'):
-        #    continue
-        print(series.codename, source.name, source.supported)
-        #if series.codename != 'focal' or source.name != 'linux-fips':
-        #    continue
-        #if not source.private:
-        #    continue
-        #if series.codename != 'bionic' or source.name != 'linux-aws-fips':
-        #    continue
-        #if source.private:
-        #    continue
-        if (series.supported and source.supported) or series.development:
-            for package in source.packages:
-                #if package.type in (None, 'main'):
-                #if package.type == 'signed':
-                supported.append(package)
-                #    break
-
-for package in supported:
-    # Pull the branch name from the repository.
-    if package.repo is None:
-        continue
-
-    if package.source.name == 'linux-ibm-5.4':
-        continue
-    # APW
-    #if package.source.series.codename != 'groovy' or package.source.name != 'linux':
-    #    continue
-    #if package.source.series.codename != 'groovy':
-    #    continue
-    #if package.source.series.codename == 'hirsute':
-    #    continue
-
-    pkg_seeds_repo = None
-    pkg_repo_path = '~' + package.repo.url.split('/~')[1]
-    pkg_repo_bits = pkg_repo_path.split('/')
-    pkg_repo_target = '/' + '/'.join(pkg_repo_bits[1:-2])
-    #if not package.source.private and not package.series.esm and package.type in (None, 'main'):
-    #    #print("******* APW", package.repo.url)
-
-    #    pkg_seeds_path = '/'.join(pkg_repo_bits[:-1] + ['version-seeds'])
-    #    pkg_seeds_url = 'git://git.launchpad.net/' + pkg_seeds_path
-    #    pkg_seeds_owner = pkg_repo_bits[0][1:]
-
-    #    #print("   **** APW", pkg_repo_path)
-    #    #print("   **** APW", pkg_repo_target)
-    #    #print("   **** APW", pkg_seeds_path)
-    #    #print("   **** APW", pkg_seeds_url)
-    #    #print("   **** APW", pkg_seeds_owner)
-
-    #    # If we do not have a version-seeds repository in a package, build it.
-    #    lp_pkg_seeds_repo = lp.git_repositories.getByPath(path=pkg_seeds_path)
-    #    if lp_pkg_seeds_repo is None and 'uc20' not in package.name and 'uc22' not in package.name:
-    #        print("  SEEDS-NEEDED", package.name)
-    #        if lp_target_valid(lp, '/ubuntu/+source/{}'.format(package.name)):
-    #            lp_pkg_seeds_repo = lp.git_repositories.new(owner=lp.people['ubuntu-kernel'], target='/ubuntu/+source/linux', name='version-seeds-{}'.format(package.name))
-    #            lp_pkg_seeds_repo.target = pkg_repo_target
-    #            lp_pkg_seeds_repo.lp_save()
-    #            lp_pkg_seeds_repo.name = 'version-seeds'
-    #            lp_pkg_seeds_repo.lp_save()
-    #            lp_pkg_seeds_repo.owner = lp.people[pkg_seeds_owner]
-    #            lp_pkg_seeds_repo.lp_save()
-    #            lp.git_repositories.setDefaultRepository(repository=lp_pkg_seeds_repo, target=pkg_repo_target)
-
-    #    try:
-    #        pkg_seeds_repo = GitRefsRepository(pkg_seeds_url)
-    #    except CalledProcessError:
-    #        pass
-
-    lp_pkg_repo = lp.git_repositories.getByPath(path=pkg_repo_path)
-    if lp_pkg_repo is None:
-        print("  REPO-NEEDED", package.name)
-        if lp_target_valid(lp, '/ubuntu/+source/{}'.format(package.name)):
-            print("  REPO-NEEDED-MAKE", package.name)
-            lp_pkg_repo = lp.git_repositories.new(owner=lp.people['ubuntu-kernel'], target='/ubuntu/+source/linux', name='initial-seeds-{}'.format(package.name))
-            lp_pkg_repo.target = pkg_repo_target
-            lp_pkg_repo.lp_save()
-            lp_pkg_repo.name = pkg_repo_bits[-1]
-            lp_pkg_repo.lp_save()
-            lp_pkg_repo.owner = lp.people[pkg_repo_bits[0][1:]]
-            lp_pkg_repo.lp_save()
-
-    ## Make sure we have a security repo.
-    #type_prefix = '-' + package.type if package.type not in (None, 'main') else ''
-    #security = 'lp:~canonical-kernel-security-team/canonical-kernel-private/+git/linux{}-{}'.format(type_prefix, package.series.codename)
-    #lp_sec_repo = lp.git_repositories.getByPath(path=security)
-    #if lp_sec_repo is None:
-    #    print("  REPO-NEEDED", package.name)
-    #    if lp_target_valid(lp, '/ubuntu/+source/{}'.format(package.name)):
-    #        print("  REPO-NEEDED-MAKE", package.name)
-    #        lp_pkg_repo = lp.git_repositories.new(owner=lp.people['ubuntu-kernel'], target='/ubuntu/+source/linux', name='initial-seeds-{}'.format(package.name))
-    #        lp_pkg_repo.target = pkg_repo_target
-    #        lp_pkg_repo.lp_save()
-    #        lp_pkg_repo.name = pkg_repo_bits[-1]
-    #        lp_pkg_repo.lp_save()
-    #        lp_pkg_repo.owner = lp.people[pkg_repo_bits[0][1:]]
-    #        lp_pkg_repo.lp_save()
-
-    #if package.name != 'linux-snapdragon': #not in ('linux', 'linux-oem-osp1', 'linux-gke-5.0'):
-    #    continue
-    archive_versions = ArchiveVersionsPackage(package, lp=lp)
-    versions = archive_versions.versions
-    destinations = archive_versions.destinations
-    proposed = destinations.get('proposed')
-    updates = destinations.get('updates')
-    release = destinations.get('release')
-
-    #print('APW', archive_versions)
-
-    source = package.source
-    branch = package.repo.branch
-
-    sys.stdout.flush()
-
-    # Determine if this is a private repository.
-    bits = package.repo.url.split('~', 1)
-    repo_private = False
-    if len(bits) == 2:
-        path = '~' + bits[1]
-        lp_repo = lp.git_repositories.getByPath(path=path)
-        if lp_repo is None:
-            repo_private = source.private
-        else:
-            repo_private = lp_repo.private
-
-    print("{} {} {} (source: supported={} esm={} copy_forward={} private={} repo: private={})".format(source.series.codename, source.name, package.name, source.supported, source.series.esm, source.copy_forward, source.private, repo_private))
-    sys.stdout.flush()
-
-    if source.private and not repo_private:
-        print("WARNING: private missmatch")
-        continue
-
-    refs = GitRefsPackage(package) # , dryrun=True)
-
-    if package.type in (None, 'main') and '-uc20' not in source.name and '-uc22' not in source.name: # XXX
-        # Sync all of our mainline tags.
-        package_versions = package.source.versions
-        if package_versions is None:
-            package_versions = []
-        print("APW package<{}> package.source<{}> package_versions<{}>".format(package, package.source, package_versions))
-        sys.stdout.flush()
-        for mainline in package_versions:
-            if mainline.endswith('.0'):
-                mainline = mainline[:-2]
-            tag_ref = 'refs/tags/v{}'.format(mainline)
-
-            src_ref = linus_repo.lookup_ref(tag_ref)
-            if not src_ref:
+        for source in series.sources:
+            handle = "{}:{}".format(series.codename, source.name)
+            if series.codename not in targets and handle not in targets:
                 continue
 
-            # Ensure this mainline tag exists in the common
-            # /ubuntu/+source/linux/+git/version-seeds.
-            dst_ref = seeds_repo.lookup_ref(tag_ref)
-            print("  COMMON MAINLINE:", tag_ref, dst_ref)
-            if dst_ref is None:
-                dst_ref = seeds_repo.new_ref(tag_ref)
-                print("  COMMON MAINLINE: create", tag_ref, dst_ref)
-                src_ref.fetch(tag_ref)
-                dst_ref.push(tag_ref)
+            logger.debug("Checking %s (supported=%s)", handle, source.supported)
+            if (series.supported and source.supported) or series.development:
+                for package in source.packages:
+                    supported.append(package)
 
-            # Ensure this mainline tag exists in our
-            # /ubuntu/+source/{package}/+git/version-seeds.
-            if pkg_seeds_repo:
-                dst_ref = pkg_seeds_repo.lookup_ref(tag_ref)
-                print("  FAMILY MAINLINE:", tag_ref, dst_ref)
+    for package in supported:
+        # Pull the branch name from the repository.
+        if package.repo is None:
+            continue
+
+        if package.source.name == 'linux-ibm-5.4':
+            continue
+
+        handle = "{}:{}".format(package.series.codename, package.name)
+        logger.info("Processing package %s", handle)
+
+        pkg_repo_path = '~' + package.repo.url.split('/~')[1]
+        pkg_repo_bits = pkg_repo_path.split('/')
+        pkg_repo_target = '/' + '/'.join(pkg_repo_bits[1:-2])
+
+        if create_pkg_repos and not dry_run:
+            lp_pkg_repo = lp.git_repositories.getByPath(path=pkg_repo_path)
+            if lp_pkg_repo is None:
+                logger.info("  REPO-NEEDED %s", package.name)
+                if dry_run:
+                    logger.info("    DRY-RUN: SKIP MAKE")
+                elif lp_target_valid(lp, '/ubuntu/+source/{}'.format(package.name)):
+                    logger.info("  REPO-NEEDED-MAKE %s", package.name)
+                    lp_pkg_repo = lp.git_repositories.new(owner=lp.people['ubuntu-kernel'], target='/ubuntu/+source/linux', name='initial-seeds-{}'.format(package.name))
+                    lp_pkg_repo.target = pkg_repo_target
+                    lp_pkg_repo.lp_save()
+                    lp_pkg_repo.name = pkg_repo_bits[-1]
+                    lp_pkg_repo.lp_save()
+                    lp_pkg_repo.owner = lp.people[pkg_repo_bits[0][1:]]
+                    lp_pkg_repo.lp_save()
+
+        archive_versions = ArchiveVersionsPackage(package, lp, ubuntu)
+        versions = archive_versions.versions
+        destinations = archive_versions.destinations
+        proposed = destinations.get('proposed')
+        updates = destinations.get('updates')
+        release = destinations.get('release')
+
+        source = package.source
+        branch = package.repo.branch
+
+        # Determine if this is a private repository.
+        bits = package.repo.url.split('~', 1)
+        repo_private = False
+        if len(bits) == 2:
+            path = '~' + bits[1]
+            lp_repo = lp.git_repositories.getByPath(path=path)
+            if lp_repo is None:
+                repo_private = source.private
+            else:
+                repo_private = lp_repo.private
+
+        logger.debug("  %s %s (source: supported=%s esm=%s copy_forward=%s private=%s repo: private=%s)",
+                    handle, package.name,
+                    source.supported, source.series.esm, source.copy_forward,
+                    source.private, repo_private)
+
+        # Launchpad and kernel-series must agree on repo visibility
+        if source.private != repo_private:
+            logger.warning("  private missmatch: kernel-series.private=%s repo.private=%s", source.private, repo_private)
+            continue
+
+        refs = GitRefsPackage(package, source, include_security=include_security, dryrun=dry_run)
+
+        if package.type in (None, 'main') and '-uc20' not in source.name and '-uc22' not in source.name: # XXX
+            # Sync all of our mainline tags.
+            package_versions = package.source.versions
+            if package_versions is None:
+                package_versions = []
+            logger.debug("  APW package<%s> package.source<%s> package_versions<%s>",
+                        package, package.source, package_versions)
+            for mainline in package_versions:
+                if mainline.endswith('.0'):
+                    mainline = mainline[:-2]
+                tag_ref = 'refs/tags/v{}'.format(mainline)
+
+                src_ref = linus_repo.lookup_ref(tag_ref)
+                if not src_ref:
+                    continue
+
+                # Ensure this mainline tag exists in our
+                # package repository.
+                dst_ref = refs.dst_repo.lookup_ref(tag_ref)
+                logger.debug("  PACKAGE MAINLINE: %s %s", tag_ref, dst_ref)
                 if dst_ref is None:
-                    dst_ref = pkg_seeds_repo.new_ref(tag_ref)
-                    print("  FAMILY MAINLINE: create", tag_ref, dst_ref)
+                    dst_ref = refs.dst_repo.new_ref(tag_ref)
+                    logger.debug("  PACKAGE MAINLINE: create %s %s", tag_ref, dst_ref)
                     src_ref.fetch(tag_ref)
                     dst_ref.push(tag_ref)
 
-            # Ensure this mainline tag exists in our
-            # package repository.
-            dst_ref = refs.dst_repo.lookup_ref(tag_ref)
-            print("  PACKAGE MAINLINE:", tag_ref, dst_ref)
+        # Sync all of our versions.
+        for version in versions:
+            # Firstly see if we have a viable tag in the destination.
+            dst_ref = refs.lookup_version(version, destination=True)
+            if dst_ref is not None:
+                logger.debug('  FOUND %s %s', version, dst_ref)
+                continue
+            src_ref = refs.lookup_version(version)
+            logger.info("%s %s ", version, src_ref)
+            if src_ref is None:
+                logger.info('  NOT-AVAILABLE %s %s', version, refs.prefixes)
+                continue
+            logger.info('  NEEDED %s %s', version, src_ref)
+            refs.publish_ref(src_ref)
+
+        # Identify the released version.
+        version = release
+        if updates is not None:
+            version = updates
+
+        # If we have nothing published, ignore.
+        if version is None:
+            continue
+
+        # Re-grab the repo now we have shoved tags into it.
+        refs = GitRefsPackage(package, source, include_security=include_security, dryrun=dry_run)
+
+        # Sync the 'master' branch -- released version tag
+        branches_to = [(branch, False)]
+        if branch.endswith('-next'):
+            force = package.type in (None, 'main') and package.source.name != 'linux'
+            branches_to.append((branch[:-5], force))
+
+        for branch_base, force in branches_to:
+            logger.info("  BRANCH UPDATE: %s:%s:%s %s (force=%s) to %s",
+                        source.series.codename, source.name, package.name,
+                        branch_base, force, version)
+
+            # Look up the source reference.
+            branch_ref = 'refs/heads/' + branch_base
+            src_ref = refs.lookup_version(version)
+            if src_ref is None:
+                continue
+            # See if the remote reference exists, make a new
+            # one if not.
+            dst_ref = refs.dst_repo.lookup_ref(branch_ref)
             if dst_ref is None:
-                dst_ref = refs.dst_repo.new_ref(tag_ref)
-                print("  PACKAGE MAINLINE: create", tag_ref, dst_ref)
-                src_ref.fetch(tag_ref)
-                dst_ref.push(tag_ref)
+                dst_ref = refs.dst_repo.new_ref(branch_ref)
+            logger.debug("%s %s %s %s", branch_base, version, src_ref, dst_ref)
 
-    # Sync all of our versions.
-    for version in versions:
-        # Firstly see if we have a viable tag in the destination.
-        dst_ref = refs.lookup_version(version, destination=True)
-        if dst_ref is not None:
-            #print('FOUND', version) #, dst_ref)
-            continue
-        src_ref = refs.lookup_version(version)
-        print(" ", version, src_ref)
-        if src_ref is None:
-            print('  NOT-AVAILABLE', version, refs.prefixes)
-            continue
-        print('  NEEDED', version) #, src_ref)
-        refs.publish_ref(src_ref)
+            # If the dst sha1 is one of those the tag expresses
+            # then it points to the same place.
+            if dst_ref.sha == []:
+                logger.info("  %s completely missing -- creating", branch_base)
 
-    # Identify the released version.
-    version = release
-    if updates is not None:
-        version = updates
+            elif set(dst_ref.sha).issubset(set(src_ref.sha)):
+                continue
 
-    # If we have nothing published, ignore.
-    if version is None:
-        continue
+            # This branch needs to be updated, fetch to a local
+            # unique reference and push on to the dst_repo.  Note
+            # we are pushing a tag object but a branch may only point
+            # to the commit, request deferencing to a commit.
+            local_ref = refs.local_ref(src_ref.ref)
+            src_ref.fetch(local_ref)
+            try:
+                dst_ref.push(local_ref + '^{commit}', force=force)
+            except CalledProcessError:
+                pass
 
-    # Re-grab the repo now we have shoved tags into it.
-    refs = GitRefsPackage(package) # , dryrun=True)
+def is_git_dir():
+    cmd = ['git', 'rev-parse', '--git-dir']
+    result = run(cmd, check=False, stdout=DEVNULL)
+    return result.returncode == 0
 
-    # Sync the 'master' branch -- released version tag
-    branches_to = [(branch, False)]
-    if branch.endswith('-next'):
-        force = package.type in (None, 'main') and package.source.name != 'linux'
-        branches_to.append((branch[:-5], force))
+def main():
+    parser = argparse.ArgumentParser("publish-tags")
+    parser.add_argument("target", nargs="+",
+                        help="One or more sync targets consisting of"
+                        "codenames (e.g. focal) or handles (e.g. focal:linux)")
+    parser.add_argument("-s", "--include-security", action="store_true",
+                        help="Synchronize security repos for each kernel")
+    parser.add_argument("--create-pkg-repos", action="store_true",
+                        help="Create Launchpad package repo if missing")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Do not make any changes")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Enable verbose logging")
+    args = parser.parse_args()
 
-    for branch_base, force in branches_to:
-        print("BRANCH UPDATE: {}:{}:{} {} (force={}) to {}".format(source.series.codename, source.name, package.name, branch_base, force, version))
+    log_format = '{levelname:.4s} {message}'
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG, format=log_format, style='{')
+    else:
+        logging.basicConfig(level=logging.INFO, format=log_format, style='{')
+    logger.debug(args)
 
-        # Look up the source reference.
-        branch_ref = 'refs/heads/' + branch_base
-        src_ref = refs.lookup_version(version)
-        if src_ref is None:
-            #mainline = package_versions[0]
-            #if mainline.endswith('.0'):
-            #    mainline = mainline[:-2]
-            #    mainline_tag = 'refs/tags/v{}'.format(mainline)
-            #    src_ref = refs.lookup_version(mainline_tag)
-            #print(" ", version, src_ref)
-            #print(" ", "NO-SRC-REF-BUT", package_versions)
-            continue
-            #continue
-        # See if the remote reference exists, make a new
-        # one if not.
-        dst_ref = refs.dst_repo.lookup_ref(branch_ref)
-        if dst_ref is None:
-            dst_ref = refs.dst_repo.new_ref(branch_ref)
-        print(" ", branch_base, version, src_ref, dst_ref)
+    if not is_git_dir():
+        print("Tool must be run from a git repository")
+        sys.exit(1)
 
-        # If the dst sha1 is one of those the tag expresses
-        # then it points to the same place.
-        if dst_ref.sha == []:
-            print("  {} completely missing -- creating".format(branch_base))
+    publish_tags(args.target, args.include_security, args.create_pkg_repos, args.dry_run)
 
-        elif set(dst_ref.sha).issubset(set(src_ref.sha)):
-            continue
-
-        # This branch needs to be updated, fetch to a local
-        # unique reference and push on to the dst_repo.  Note
-        # we are pushing a tag object but a branch may only point
-        # to the commit, request deferencing to a commit.
-        local_ref = refs.local_ref(src_ref.ref)
-        src_ref.fetch(local_ref)
-        try:
-            dst_ref.push(local_ref + '^{commit}', force=force)
-        except CalledProcessError:
-            pass
+if __name__ == "__main__":
+    main()
