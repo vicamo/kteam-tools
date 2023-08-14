@@ -331,9 +331,7 @@ def publish_tags(targets, include_security=False, create_pkg_repos=False, dry_ru
 
     # Repos used for mainline tag management.
     logger.info("Loading linux repo")
-    #linus_repo = GitRefsRepository('git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/linus--linux')
     linus_repo = GitRefsRepository('git://kernel.ubuntu.com/virgin/linux.git')
-    seeds_repo = GitRefsRepository('git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/version-seeds')
 
     # Run through kernel-series data and pick out those which are included
     # in the cycle so we can freeze them.
@@ -362,7 +360,6 @@ def publish_tags(targets, include_security=False, create_pkg_repos=False, dry_ru
         handle = "{}:{}".format(package.series.codename, package.name)
         logger.info("Processing package %s", handle)
 
-        pkg_seeds_repo = None
         pkg_repo_path = '~' + package.repo.url.split('/~')[1]
         pkg_repo_bits = pkg_repo_path.split('/')
         pkg_repo_target = '/' + '/'.join(pkg_repo_bits[1:-2])
@@ -430,27 +427,6 @@ def publish_tags(targets, include_security=False, create_pkg_repos=False, dry_ru
                 src_ref = linus_repo.lookup_ref(tag_ref)
                 if not src_ref:
                     continue
-
-                # Ensure this mainline tag exists in the common
-                # /ubuntu/+source/linux/+git/version-seeds.
-                dst_ref = seeds_repo.lookup_ref(tag_ref)
-                logger.info("  COMMON MAINLINE: %s %s", tag_ref, dst_ref)
-                if dst_ref is None:
-                    dst_ref = seeds_repo.new_ref(tag_ref)
-                    logger.info("  COMMON MAINLINE: create %s %s", tag_ref, dst_ref)
-                    src_ref.fetch(tag_ref)
-                    dst_ref.push(tag_ref)
-
-                # Ensure this mainline tag exists in our
-                # /ubuntu/+source/{package}/+git/version-seeds.
-                if pkg_seeds_repo:
-                    dst_ref = pkg_seeds_repo.lookup_ref(tag_ref)
-                    logger.info("  FAMILY MAINLINE: %s %s", tag_ref, dst_ref)
-                    if dst_ref is None:
-                        dst_ref = pkg_seeds_repo.new_ref(tag_ref)
-                        logger.info("  FAMILY MAINLINE: create %s %s", tag_ref, dst_ref)
-                        src_ref.fetch(tag_ref)
-                        dst_ref.push(tag_ref)
 
                 # Ensure this mainline tag exists in our
                 # package repository.
