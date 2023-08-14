@@ -367,11 +367,13 @@ def publish_tags(targets, include_security=False, create_pkg_repos=False, dry_ru
         pkg_repo_bits = pkg_repo_path.split('/')
         pkg_repo_target = '/' + '/'.join(pkg_repo_bits[1:-2])
 
-        if create_pkg_repos:
+        if create_pkg_repos and not dry_run:
             lp_pkg_repo = lp.git_repositories.getByPath(path=pkg_repo_path)
             if lp_pkg_repo is None:
                 logger.info("  REPO-NEEDED %s", package.name)
-                if lp_target_valid(lp, '/ubuntu/+source/{}'.format(package.name)):
+                if dry_run:
+                    logger.info("    DRY-RUN: SKIP MAKE")
+                elif lp_target_valid(lp, '/ubuntu/+source/{}'.format(package.name)):
                     logger.info("  REPO-NEEDED-MAKE %s", package.name)
                     lp_pkg_repo = lp.git_repositories.new(owner=lp.people['ubuntu-kernel'], target='/ubuntu/+source/linux', name='initial-seeds-{}'.format(package.name))
                     lp_pkg_repo.target = pkg_repo_target
