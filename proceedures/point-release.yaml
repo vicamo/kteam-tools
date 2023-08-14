@@ -56,3 +56,9 @@ cards:
         cards to fix any issues found.
     prerequisites:
     - "Roll linux-foo to linux-foo-edge package"
+  - name: "Update firmware package for HWE kernel migration"
+    description: |
+      - When a new HWE kernel is rolled out, the linux-firmware package
+        needs to be updated to include the firmware blobs to match. Ideally
+        this needs to be done before the point release is out so it gets
+        included in the installation media.
