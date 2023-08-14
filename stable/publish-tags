@@ -323,7 +323,7 @@ def lp_target_valid(lp, target):
         return False
     return True
 
-def publish_tags(targets, include_security=False, dry_run=False):
+def publish_tags(targets, include_security=False, create_pkg_repos=False, dry_run=False):
     ks = KernelSeries()
 
     lp = Launchpad.login_with('publish-tags', 'production', version='devel')
@@ -367,18 +367,19 @@ def publish_tags(targets, include_security=False, dry_run=False):
         pkg_repo_bits = pkg_repo_path.split('/')
         pkg_repo_target = '/' + '/'.join(pkg_repo_bits[1:-2])
 
-        lp_pkg_repo = lp.git_repositories.getByPath(path=pkg_repo_path)
-        if lp_pkg_repo is None:
-            logger.info("  REPO-NEEDED %s", package.name)
-            if lp_target_valid(lp, '/ubuntu/+source/{}'.format(package.name)):
-                logger.info("  REPO-NEEDED-MAKE %s", package.name)
-                lp_pkg_repo = lp.git_repositories.new(owner=lp.people['ubuntu-kernel'], target='/ubuntu/+source/linux', name='initial-seeds-{}'.format(package.name))
-                lp_pkg_repo.target = pkg_repo_target
-                lp_pkg_repo.lp_save()
-                lp_pkg_repo.name = pkg_repo_bits[-1]
-                lp_pkg_repo.lp_save()
-                lp_pkg_repo.owner = lp.people[pkg_repo_bits[0][1:]]
-                lp_pkg_repo.lp_save()
+        if create_pkg_repos:
+            lp_pkg_repo = lp.git_repositories.getByPath(path=pkg_repo_path)
+            if lp_pkg_repo is None:
+                logger.info("  REPO-NEEDED %s", package.name)
+                if lp_target_valid(lp, '/ubuntu/+source/{}'.format(package.name)):
+                    logger.info("  REPO-NEEDED-MAKE %s", package.name)
+                    lp_pkg_repo = lp.git_repositories.new(owner=lp.people['ubuntu-kernel'], target='/ubuntu/+source/linux', name='initial-seeds-{}'.format(package.name))
+                    lp_pkg_repo.target = pkg_repo_target
+                    lp_pkg_repo.lp_save()
+                    lp_pkg_repo.name = pkg_repo_bits[-1]
+                    lp_pkg_repo.lp_save()
+                    lp_pkg_repo.owner = lp.people[pkg_repo_bits[0][1:]]
+                    lp_pkg_repo.lp_save()
 
         archive_versions = ArchiveVersionsPackage(package, lp, ubuntu)
         versions = archive_versions.versions
@@ -535,6 +536,8 @@ def main():
                         "codenames (e.g. focal) or handles (e.g. focal:linux)")
     parser.add_argument("-s", "--include-security", action="store_true",
                         help="Synchronize security repos for each kernel")
+    parser.add_argument("--create-pkg-repos", action="store_true",
+                        help="Create Launchpad package repo if missing")
     parser.add_argument("--dry-run", action="store_true",
                         help="Do not make any changes")
     parser.add_argument("-v", "--verbose", action="store_true",
@@ -548,7 +551,7 @@ def main():
         logging.basicConfig(level=logging.INFO, format=log_format, style='{')
     logger.debug(args)
 
-    publish_tags(args.target, args.include_security, args.dry_run)
+    publish_tags(args.target, args.include_security, args.create_pkg_repos, args.dry_run)
 
 if __name__ == "__main__":
     main()
