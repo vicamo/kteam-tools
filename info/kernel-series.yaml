@@ -2655,7 +2655,7 @@ defaults:
             testing:
                 flavours:
                     azure:
-                        meta-pkg: linux-azure-fde-edge
+                        meta-pkg: linux-azure-fde-lts-22.04
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks:
@@ -2793,7 +2793,7 @@ defaults:
             testing:
                 flavours:
                     azure:
-                        meta-pkg: linux-azure-fde-6.2-edge
+                        meta-pkg: linux-azure-fde-edge
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks:
