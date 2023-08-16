@@ -961,7 +961,7 @@ defaults:
 
         linux:
             routing: ubuntu/4
-            versions: ['6.4.0']
+            versions: ['6.5.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             package-relations: signed-generate
             packages:
