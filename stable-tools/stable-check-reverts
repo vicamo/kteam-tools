@@ -28,7 +28,7 @@ else
     rstart="${patchdir##*/}"	# extract the tag from the patchdir name (meh)
     rend="${rstart##v}"
     rend="${rend%.*}"
-    rend="linux-${rend}.y"
+    rend="$(git branch -la --format='%(refname:short)' "*linux-${rend}.y" | head -1)"
     range="$rstart..$rend"
 fi
 
