@@ -582,6 +582,9 @@ review.
 **Note** The `verify-release-ready` script is available in
 `kteam-tools/maintscripts`. Add it to your `PATH` for convenience.
 
+The `tag pushed: warning` is an expected warning as long as you do not have
+commit rights.
+
 ### Build sources - `cranky build-sources`
 <!--cheatsheet-->
 ```
