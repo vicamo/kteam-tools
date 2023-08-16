@@ -18,6 +18,37 @@ function out()
 	exit "${rc}"
 }
 
+# Determine correct stream name from tracking-bug
+function get_stream_from_tb()
+{
+	(
+		local dir=$1
+		# If the user gave us a handle, locate the tree so we can read the tracking-bug
+		if [ -z "${dir##*:*}" ] ; then
+			dir=$("$C" shell-helper tree-main-path "${handle}")
+		fi
+
+		cd "$dir" || exit 1
+
+		local stream=
+		local DEBIAN=debian
+		# shellcheck disable=SC1091
+		if [ -e debian/debian.env ] ; then
+			. debian/debian.env
+		fi
+
+		read -r tracking_bug _ <"$DEBIAN/tracking-bug"
+		stream=$("$C" shell-helper read-swm-property "${tracking_bug}" --key built.route-entry)
+		
+		if [ -z "$stream" ] || [ "$stream" -eq "1" ]; then
+			stream="build"
+		else
+			stream="build#$stream"
+		fi
+		echo "$stream"
+	)
+}
+
 function get_changes_file()
 {
 	local dir=$1
@@ -68,7 +99,7 @@ function sign_src()
 			sign_opts+=("-e${maint_email}")
 		fi
 
-		# shellcheck disable=SC2086
+		# shellcheck disable=SC2048,SC2086 # sign_opts array used as arg list
 		debsign ${sign_opts[*]} "${changes}"
 	)
 }
@@ -98,7 +129,8 @@ and list the source packages that it wants to upload and wait for user
 confirmation before doing the actual sign and upload.
 
 Positional arguments:
-  DESTINATION  An upload destination as listed by cranky list-routing.
+  DESTINATION  An upload destination as listed by cranky list-routing. 
+               Use auto to automatically determine the correct destination.
   HANDLE       Handle to a kernel source tree, either a path to a kernel
                source tree or a handle in <series>:<package> format. If not
                given the current working directory is used.
@@ -133,6 +165,10 @@ Example:
   $ cranky dput-sources --current test-build
       Upload only the kernel source package for the current working directory
       to the test builder PPA for that kernel.
+
+  $ cranky dput-sources auto xenial:linux
+      Sign and upload the Xenial linux kernel source packages to the
+      PPA specified on the tracking bug from DEBIAN/tracking-bug.
 EOF
 }
 
@@ -195,6 +231,10 @@ if [ -z "${handle}" ] ; then
 fi
 
 trap out EXIT INT TERM HUP
+
+if [ "${dest}" = "auto" ] ; then
+	dest=$(get_stream_from_tb "${handle}")
+fi
 
 # Get the PPA for the given upload destination
 ppa=$("$C" list-routing ${cycle:+--cycle }${cycle} "${handle}" | awk '$1 == "'"${dest}"'" { print $3 }')

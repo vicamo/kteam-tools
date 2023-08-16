@@ -5,6 +5,7 @@ being processed through the kernel-team SRU workflow.
 '''
 
 # Option
+import copy
 import os
 import sys
 LIBDIR=os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'libs'))
@@ -808,22 +809,31 @@ class TrackingBug(object):
             raise TrackingBugError('Must be at least 1 <spin_nr>')
         s.__update_cycle_tag(cycle, spin_nr)
 
-    def wf_get_property(s, key):
+    def wf_get_property(s, key, default=None):
         '''
-        Fetch the value of a SWM property (or None if not found).
+        Fetch the value of a SWM property (or default if not found).
 
         :param key: Name of the SWM property to get.
         :type  key: str
 
+        :param default: Value to return if key is not found
+        :type  default: Any
+
         :type: opaque
         '''
         center(s.__class__.__name__ + '.wf_get_property')
-        value = None
-        if key in s.__wf_properties:
-            value = s.__wf_properties[key]
+        props = s.__wf_properties
+
+        key = key.split('.')
+        while len(key) > 0:
+            if not props:
+                break
+            props = props.get(key.pop(0))
+        if not props:
+            props = default
 
         cleave(s.__class__.__name__ + '.wf_get_property')
-        return value
+        return props
 
     def wf_set_property(s, key, value):
         '''
