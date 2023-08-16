@@ -319,7 +319,11 @@ class VerifyReleaseReady():
         expected = expected.replace('~', '_')
         msg = 'correct tag (%s)' % expected
         s.verbose('closing commit sha1: %s' % log['commits'][0]['sha1'])
-        tags = Git.tags(contains=log['commits'][0]['sha1'])
+        try:
+            tags = Git.describe(exact_match=log['commits'][0]['sha1'])
+        except GitError as e:
+            eout(colored(e.msg, 'red'))
+            tags = {}
         for tag in tags:
             if tag == expected:
                 s.status(msg, True)

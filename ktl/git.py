@@ -71,6 +71,25 @@ class Git:
 
         return retval
 
+    # describe
+    #
+    @classmethod
+    def describe(cls, exact_match=''):
+        retval =[]
+        cmd = "git describe"
+        if exact_match != '':
+            cmd += ' --exact-match %s' % (exact_match)
+        status, result = run_command(cmd, cls.debug)
+        if status == 0:
+            for line in result:
+                if line != '' and line[0] == '*':
+                    line = line[1:]
+                retval.append(line.strip())
+        else:
+            raise GitError(result)
+
+        return retval
+
     # tags
     #
     @classmethod
