@@ -498,8 +498,8 @@ $ cranky test-build [-a ARCH[,ARCH,...]] -t compileselftests HOST
 This needs to be done only for the master kernels, as the derivatives don't
 have any specific selftests patches applied.
 
-Currently the only architectures supported for this build test is amd64 and
-i386.
+**Currently the only architectures supported for this build test is amd64 and
+i386.**
 
 Example:
 ```
