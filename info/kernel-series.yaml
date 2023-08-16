@@ -5302,7 +5302,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/linux-meta-qcom-qcs410-focal']
             supported: true
-            owner: hwang4
+            owner: hui.wang
             development: false
             private: true
             derived-from: [ '20.04', 'linux']
@@ -5317,7 +5317,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/linux-signed-uc20-qcom-qcs410-focal']
             supported: true
-            owner: hwang4
+            owner: hui.wang
             development: false
             private: true
             snaps:
