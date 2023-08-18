@@ -2335,11 +2335,12 @@ class Package():
                     break
                 prereq_data = prereq_data + line.rstrip()
             cdebug("PREREQ-PKGS: CHANGES: prereq={}".format(prereq_data))
-            for prereq in prereq_data.split(","):
-                match = prereq_re.match(prereq)
-                if not match:
-                    continue
-                prereqs.append((match.group(1), match.group(2)))
+            if prereq_data is not None:
+                for prereq in prereq_data.split(","):
+                    match = prereq_re.match(prereq)
+                    if not match:
+                        continue
+                    prereqs.append((match.group(1), match.group(2)))
 
         if self.bug.is_development_series:
             pocket = 'Release'
