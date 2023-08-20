@@ -203,7 +203,7 @@ class PackageBuildRouteEntry:
             if len(builds) == 0:
                 self.monitor_add({
                         'type': 'launchpad-nobuilds',
-                        'reference': archive.reference,
+                        'reference': self.archive.reference,
                         'pocket': self.pocket,
                         #'status': source.status,
                         'lp-api': source.self_link,
