@@ -2628,6 +2628,7 @@ defaults:
             testing:
                 flavours:
                     azure:
+                        meta-pkg: linux-azure-lts-22.04
                         arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
