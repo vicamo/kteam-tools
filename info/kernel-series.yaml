@@ -3155,7 +3155,6 @@ defaults:
             testing:
                 flavours:
                     oracle:
-                        meta-pkg: linux-oracle-lts-22.04
                         arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
@@ -3360,6 +3359,7 @@ defaults:
             testing:
                 flavours:
                     oracle:
+                        meta-pkg: linux-oracle-lts-22.04
                         arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
