@@ -4090,7 +4090,7 @@ defaults:
             development: true
             owner: kuba-t-pawlak
             derived-from: [ '22.04', 'linux' ]
-            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
             swm:
                 kernel-testing: true
             testing:
