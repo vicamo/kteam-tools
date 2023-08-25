@@ -3319,7 +3319,7 @@ defaults:
                     type: lrs
             supported: false
             owner: tjaalton
-            derived-from: [ '23.10', 'linux-unstable' ]
+            derived-from: [ '23.10', 'linux' ]
             development: true
             swm:
                 kernel-testing: true
