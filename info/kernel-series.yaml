@@ -3572,6 +3572,27 @@ defaults:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: ['automated-testing', 'certification-testing']
 
+        linux-starfive-6.2:
+            variants: ['--']
+            packages:
+                linux-starfive-6.2:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/jammy', 'starfive-6.2-next']
+                linux-meta-starfive-6.2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'starfive-6.2']
+            supported: true
+            owner: esmil
+            development: false
+            backport: true
+            derived-from: ['23.04', 'linux-starfive']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    starfive:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
         linux-uc22:
             routing: uc22-core/2
             packages:
