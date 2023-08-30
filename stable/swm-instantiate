@@ -67,7 +67,10 @@ class TrackerProduction:
 
     def load_properties(self, bug):
         description = bug.description
-        return yaml.safe_load(description.split('-- swm properties --')[-1])
+        bits = description.split('-- swm properties --')
+        if len(bits) != 2:
+            return None
+        return yaml.safe_load(bits[-1])
 
     def lp_task_update(self, lp_task, status=None, importance=None, assignee=None):
         changed = []
@@ -103,6 +106,8 @@ class TrackerProduction:
         # Figure out the package we are instantiating for.
         ks_source = self.lookup_source(bug_id, lp_bug)
         swm_props = self.load_properties(lp_bug)
+        if swm_props is None:
+            return False
         variant = swm_props.get('variant', 'combo')
         master = swm_props.get('master-bug', swm_props.get('kernel-stable-master-bug'))
 
