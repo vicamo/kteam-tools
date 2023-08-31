@@ -5582,7 +5582,7 @@ defaults:
                 linux-restricted-signatures-aws:
                     type: lrs
             supported: true
-            owner: timg-tpi
+            owner: magalilemes
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -8332,7 +8332,7 @@ defaults:
                 linux-restricted-signatures-aws-5.4:
                     type: lrs
             supported: true
-            owner: jsalisbury
+            owner: magalilemes
             backport: true
             derived-from: [ '20.04', 'linux-aws' ]
             swm:
