@@ -3628,7 +3628,7 @@ defaults:
                 linux-restricted-signatures-intel-iotg:
                     type: lrs
             supported: true
-            owner: jianhuilee
+            owner: philcox
             development: false
             backport: false
             derived-from: [ '22.04', 'linux' ]
@@ -3650,7 +3650,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22-intel-iotg/+git/jammy']
             supported: true
-            owner: jianhuilee
+            owner: philcox
             development: false
             snaps:
                 intel-iotg-kernel:
@@ -5171,7 +5171,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel/+git/focal', 'intel-5.13']
             supported: false
-            owner: jianhuilee
+            owner: philcox
             derived-from: [ '20.04', 'linux-hwe-5.13' ]
             swm:
                 kernel-testing: true
@@ -5214,7 +5214,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-intel/+git/focal']
             supported: false
-            owner: jianhuilee
+            owner: philcox
             snaps:
                 intel-kernel:
                     repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'intel']
@@ -7054,7 +7054,7 @@ defaults:
                 linux-restricted-signatures-intel-iotg-5.15:
                     type: lrs
             supported: true
-            owner: jianhuilee
+            owner: philcox
             development: false
             backport: true
             derived-from: [ '22.04', 'linux-intel-iotg' ]
@@ -7075,7 +7075,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-intel-iotg/+git/focal']
             supported: true
-            owner: jianhuilee
+            owner: philcox
             development: false
             snaps:
                 intel-iotg-kernel:
