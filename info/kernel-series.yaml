@@ -2333,7 +2333,7 @@ defaults:
                 linux-restricted-signatures-hwe-5.19:
                     type: lrs
             owner: kleber-souza
-            supported: true
+            supported: false
             development: false
             backport: false
             swm:
@@ -2370,7 +2370,7 @@ defaults:
                 linux-restricted-signatures-lowlatency-hwe-5.19:
                     type: lrs
             owner: smb
-            supported: true
+            supported: false
             development: false
             backport: false
             derived-from: [ '22.04', 'linux-hwe-5.19' ]
@@ -3518,7 +3518,7 @@ defaults:
                 linux-meta-allwinner-5.19:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'allwinner-5.19']
-            supported: true
+            supported: false
             owner: esmil
             development: false
             backport: false
