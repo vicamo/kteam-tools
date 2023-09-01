@@ -61,9 +61,10 @@ class PromoteToRelease(Promoter):
                 s.task.reason = blocks
                 break
 
-            if not prerequisites and not s.bug.manual_unblock("prerequisites"):
-                s.task.reason = 'Pending -- prerequisites not ready'
-                break
+            # Note for now we are just calling these warnings for development.
+            #if not prerequisites and not s.bug.manual_unblock("prerequisites"):
+            #    s.task.reason = 'Pending -- prerequisites not ready'
+            #    break
 
             if s.bug.manual_block("promote-to-release") or s._kernel_block():
                 s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
