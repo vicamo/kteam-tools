@@ -798,10 +798,10 @@ class WorkflowBug():
     def clamp(s, clamp):
         return s.private_props.get('clamps', {}).get(clamp)
 
-    # built_set
+    # group_set
     #
-    def built_set(s, field, value):
-        hold = s.bprops.setdefault('built', {})
+    def group_set(s, group, field, value):
+        hold = s.bprops.setdefault(group, {})
         if value is not None:
             hold[field] = value
 
@@ -809,12 +809,22 @@ class WorkflowBug():
             del hold[field]
 
         if len(hold) == 0:
-            del s.bprops['built']
+            del s.bprops[group]
+
+    # built_get
+    #
+    def group_get(s, group, field):
+        return s.bprops.get(group, {}).get(field)
+
+    # built_set
+    #
+    def built_set(s, field, value):
+        s.group_set('built', field, value)
 
     # built_get
     #
     def built_get(s, field):
-        return s.bprops.get('built', {}).get(field)
+        return s.group_get('built', field)
 
     # built_in
     #
