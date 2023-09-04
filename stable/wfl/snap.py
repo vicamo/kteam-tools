@@ -12,8 +12,11 @@ import json
 from .errors import ShankError
 from datetime import datetime
 
+from lazr.restfulclient.errors import NotFound
+
+
 from wfl.git_tag                                import GitTagsSnap
-from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
+from wfl.log                                    import center, cleave, cinfo, cerror, cdebug, centerleave
 
 from .context                                   import ctx
 from .secrets                                   import Secrets
@@ -193,6 +196,7 @@ class SnapDebs:
         s.snap_info = None
         s._snap_store = None
         s._git_repo = False
+        s.is_v2 = False
 
         if s.bug.variant == 'snap-debs':
             # We take our version from the debs we are snapping up
@@ -222,6 +226,7 @@ class SnapDebs:
             snap_name = s.bug.bprops.get('snap-name')
             if snap_name is None:
                 raise SnapError("snap-name not provided")
+            s.name = snap_name
             source = s.bug.source
             if source is not None:
                 s.snap_info = source.lookup_snap(snap_name)
@@ -229,6 +234,22 @@ class SnapDebs:
                     raise SnapError("{}: snap does not appear in kernel-series for that source".format(snap_name))
 
             s.bug.update_title(suffix='snap-debs snap:' + snap_name)
+
+            # V2: if we have a stream then assume V2, otherwise attempt to locate
+            #     the "edge" "stream" recipe, if it exists we are V2.
+            if s.bug.built_in is not None:
+                s.is_v2 = True
+            else:
+                recipe_edge = s.lookup_recipe_v2("edge", stream=1)
+                if recipe_edge is not None:
+                    s.is_v2 = True
+            cdebug("APW: SNAP is_v2={}".format(s.is_v2))
+
+            # Use our parents stream as soon as it comes ready.  Match our parent in
+            # the normal form.
+            if s.is_v2 and parent_wb is not None and parent_wb.built_in != s.bug.built_in:
+                s.bug.built_in = parent_wb.built_in
+                cinfo("APW: STREAM2 -- SNAP stream set to {}".format(s.bug.built_in))
 
         elif s.bug.variant == 'combo':
             # For a combo bug take versioning from our title.
@@ -243,23 +264,84 @@ class SnapDebs:
                         s.snap_info = snap
                         break
 
+            # Our name is our snap name.
+            if s.snap_info is not None:
+                s.name = s.snap_info.name
+
+        else:
+            s.name = s.bug.name
+
         # Pick up versions from our bug as needed.
         s.series = s.bug.series
-        s.name = s.bug.name
         s.version = s.bug.version
         s.source = s.bug.source
         s.kernel = s.bug.kernel
         s.abi = s.bug.abi
-
-        # Our name is our snap name.
-        if s.snap_info is not None:
-            s.name = s.snap_info.name
 
     @property
     def snap_store(s):
         if s._snap_store is None:
             s._snap_store = SnapStore(s.snap_info)
         return s._snap_store
+
+    @centerleave
+    def recover_recipe_v2(self, handle):
+        lp = ctx.lp
+        recipe = lp.load(handle)
+        return recipe
+
+    def lookup_recipe_v2(self, risk, stream=None):
+        if stream is None:
+            stream = self.bug.built_in
+
+        if stream is None:
+            return None
+
+        risk_clamp = "edge" if risk == "edge" else "beta"
+
+        # mantic--linux--pc-kernel--edge--1
+        recipe_name = "{}--{}--{}--{}--{}".format(self.bug.series, self.bug.source.name, self.name, risk_clamp, stream)
+
+        cdebug("lookup_recipe_manual({}) recipe_name={}".format(risk, recipe_name))
+
+        # Lookup our team snap recipies.
+        lp = ctx.lp
+        if self.bug.source.series.esm:
+            snap_team = 'canonical-kernel-esm'
+        else:
+            snap_team = 'canonical-kernel-snaps'
+        cks = lp.people[snap_team]
+
+        try:
+            lp_snap = lp.snaps.getByName(owner=cks, name=recipe_name)
+        except NotFound as e:
+            lp_snap = None
+        cdebug("lookup_recipe_manual({}) lp_snap={}".format(risk, lp_snap))
+
+        return lp_snap
+
+    @centerleave
+    def snap_request(self, risk):
+        recipe = s.lookup_recipe_v2(risk)
+        cinfo("snap_request: lookup_recipe_v2({}) = {}".format(risk, recipe))
+        if recipe is None:
+            return False
+
+        # Request a snap build and return the request.
+        request = recipe.requestBuilds(
+            archive=recipe.auto_build_archive,
+            pocket=recipe.auto_build_pocket,
+        )
+        cinfo("snap_request: recipe.requestBuilds(archive={}, pocket={}) = {}".format(
+            recipe.auto_build_archive,
+            recipe.auto_build_pocket,
+            request,
+        ))
+        if request is None:
+            return None
+
+        request = request.self_link.split("/devel/")[-1]
+        return request
 
     @property
     def last_published(self):
@@ -489,3 +571,129 @@ class SnapDebs:
 
         return state
 
+    # snap_status_request
+    #
+    @centerleave
+    def snap_status_request(s, request):
+        request = s.recover_request_v2(request)
+
+        # If the request is not yet implemented report it.
+        if request is None:
+            return "REQUEST-MISSING"
+        if request.status != "Completed":
+            return "REQUEST-" + request.status.upper()
+
+        # Run the list of builds for this snap and see if we have one for the sha
+        # we care about.  If so take the first build in each arch as the current
+        # status.  Accumulate the build and upload stati into a single status
+        # for this snap build and upload phase.
+        status = set()
+        status.add('BUILD-MISSING')
+
+        for build in request.builds:
+            cinfo("snap build complete: {} {} {} {}".format(build, build.arch_tag, build.buildstate, build.revision_id))
+
+            # Take only the latest status for an architecture.
+            arch_tag = build.arch_tag
+            if arch_tag in arches_seen:
+                continue
+            arches_seen[arch_tag] = True
+            #print(build, arch_tag, build.revision_id, build.buildstate, build.store_upload_status)
+
+            if build.buildstate in (
+                    'Needs building',
+                    'Currently building',
+                    'Uploading build'):
+                status.add('BUILD-ONGOING')
+
+            elif build.buildstate == 'Dependency wait':
+                status.add('BUILD-DEPWAIT')
+
+            elif build.buildstate == 'Successfully built':
+                status.add('BUILD-COMPLETE')
+
+            else:
+                status.add('BUILD-FAILED')
+                # Anything else is a failure, currently:
+                #  Failed to build
+                #  Dependency wait
+                #  Chroot problem
+                #  Build for superseded Source
+                #  Failed to upload
+                #  Cancelling build
+                #  Cancelled build
+
+            if build.buildstate == 'Successfully built':
+                if build.store_upload_status == 'Unscheduled':
+                    status.add('UPLOAD-DISABLED')
+
+                elif build.store_upload_status == 'Pending':
+                    status.add('UPLOAD-PENDING')
+
+                elif build.store_upload_status == 'Uploaded':
+                    status.add('UPLOAD-COMPLETE')
+
+                else:
+                    status.add('UPLOAD-FAILED')
+                    # Anything else is a failure, currently:
+                    #  Failed to upload
+                    #  Failed to release to channels
+
+        # Find the 'worst' state and report that for everything.
+        for state in (
+                'BUILD-FAILED', 'UPLOAD-FAILED', 'UPLOAD-DISABLED',                  # Errors: earliest first
+                'BUILD-PENDING', 'BUILD-DEPWAIT', 'BUILD-ONGOING', 'UPLOAD-PENDING', # Pending: earliest first
+                'UPLOAD-COMPLETE', 'BUILD-COMPLETE',                                 # Finished: latest first
+                'BUILD-MISSING'):
+            if state in status:
+                break
+
+        # XXX: enable when snap builds are not scheduling.
+        #if state == "BUILD-MISSING":
+        #    s.bug.reasons['snap-start'] = "Stalled -s {}".format(lp_snap)
+
+        cdebug("snap_status_request: build/upload stati {} {}".format(status, state))
+
+        return state
+
+    @centerleave
+    def is_in_risk_request(self, risk, request):
+        request = self.recover_request_v2(request)
+        risk_branch = risk
+        if self.bug.built_in != 1:
+            risk_branch += "/stream{}".format(self.bug.built_in)
+
+        # Identify expected revisions.
+        revisions = {}
+        if request is not None:
+            for build in request.builds:
+                revisions[build.arch_tag] = build.store_upload_revision
+                cinfo("is_in_risks_request: arch={} revision={}".format(build.arch_tag, build.store_upload_revision))
+
+        # Scan and report on revision missmatches.
+        good = True
+        partial = False
+        broken = []
+        publish_to = self.snap_info.publish_to
+        #promote_to = self.snap_info.promote_to
+        for arch in sorted(publish_to):
+            expected_revision = revisions.get(arch)
+            cinfo("is_in_risks_request: arch={} expected_revision={}".format(arch, expected_revision))
+            if expected_revision is None:
+                good = False
+            for track in publish_to[arch]:
+                channel = "{}/{}".format(track, risk_branch)
+                revision = self.snap_store.channel_revision(arch, channel)
+                cinfo("is_in_risks_request: arch={} channel={} revision={}".format(arch, channel, revision))
+                entry = "arch={}:channel={}".format(arch, channel)
+                if expected_revision is not None:
+                    entry += ":rev={}".format(expected_revision)
+                if revision is not None and expected_revision != revision:
+                    entry += ":badrev={}".format(revision)
+                if expected_revision != revision:
+                    good = False
+                if revision is not None and expected_revision == revision:
+                    partial = True
+                broken.append(entry)
+
+        return good, partial, broken
