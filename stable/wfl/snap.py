@@ -252,6 +252,14 @@ class SnapDebs:
             #     the "edge" "stream" recipe, if it exists we are V2.
             if s.bug.built_in is not None:
                 s.is_v2 = True
+                recipe_edge = s.lookup_recipe_v2("edge", stream=1)
+                if recipe_edge is None:
+                    # If we do have no recipe but do have a stream something is off
+                    # drop the stream as a safety response.
+                    cdebug("APW: SNAP is_v2={} RECOVERY".format(s.is_v2))
+                    s.is_v2 = False
+                    s.bug.built_set("route-entry", None)
+
             else:
                 recipe_edge = s.lookup_recipe_v2("edge", stream=1)
                 if recipe_edge is not None:
