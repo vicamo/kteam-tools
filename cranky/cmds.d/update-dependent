@@ -1,7 +1,99 @@
-#!/bin/bash -eu
+#!/bin/bash -u
 #
 # Update a dependent package (-meta, -signed, ...)
 #
+
+# Run update-depdent process. Returns 0 on success.
+function update_dependent()
+{
+	local ignore_abi_check="${1}"
+
+	if ! [ -d debian ] || ! [ -f update-version ] ; then
+		echo "This is not a dependent kernel package repo" >&2
+		return 1
+	fi
+
+	# Sanity check: The repo must be clean
+	if [ -n "$(git status --porcelain)" ] ; then
+		echo "Repo is not clean" >&2
+		return 1
+	fi
+
+	# Get the path to the main package
+	main_path=$("$C" shell-helper tree-main-path .)
+	if [ -z "${main_path}" ] ; then
+		echo "Main kernel source path not found" >&2
+		return 1
+	fi
+
+	# Run cranky fix as step 1.
+	"$C" fix
+
+	# Get main package details (distro, version, ABI, ...)
+	# shellcheck disable=SC1090,SC1091 # do not make shellcheck validate this env
+	. "${main_path}"/debian/debian.env
+	main_changelog="${main_path}/${DEBIAN}"/changelog
+	main_distro=$(dpkg-parsechangelog -l "${main_changelog}" -S Distribution)
+	main_version=$(dpkg-parsechangelog -l "${main_changelog}" -S Version)
+	main_abi=${main_version%~*}
+	main_abi=$(echo "$main_abi" | sed -ne 's/\([0-9]*\.[0-9]*\.[0-9]*-[0-9]*\)\..*/\1/p')
+
+	# Get the dependent package details
+	dep_distro=$(dpkg-parsechangelog -S Distribution)
+	dep_version=$(dpkg-parsechangelog -S Version)
+	dep_abi=${dep_version%~*}
+	dep_abi=$(echo "$dep_abi" | sed -ne 's/\([0-9]*\.[0-9]*\.[0-9]*[-\.][0-9]*\)\..*/\1/p')
+
+	# Replace last '.' with '-' in -meta package ABI version
+	# shellcheck disable=SC2001
+	dep_abi_dash=$(echo "${dep_abi}" | sed -e 's,\.\([0-9]*\)$,-\1,')
+
+	# Sanity check: The distros must match
+	if [ "${main_distro}" != "${dep_distro}" ] ; then
+		echo "Incorrect main package distro: ${main_distro} (!= ${dep_distro})" >&2
+		return 1
+	fi
+
+	# Sanity check: The main package ABI version must not be lower
+	upload_bump=0
+	if dpkg --compare-versions "${main_abi}" lt "${dep_abi_dash}" ; then
+		echo "Main package ABI version is lower: ${main_abi} (< ${dep_abi})" >&2
+		if [ -z "$ignore_abi_check" ]; then
+			echo "Use --ignore-abi-check to proceed anyway."
+			return 1
+		fi
+		upload_bump=1
+	fi
+
+	# Update the changelog and capture stdout
+	readarray -t stdout < <(./update-version "${main_path}")
+
+	# Usually `update-version' will produce a changelog version without entries
+	# for a re-spin (new version with the same ABI). In that case, add a generic
+	# changelog entry.
+	if [ "$upload_bump" -gt 0 ]; then
+		echo -e "\\033[1;31mWarning: Please review the changelog and add a new entry if applicable!\\033[0m" >&2
+		dch -a 'Bump upload number.'
+	fi
+
+	# Cycle through stdout, print each line and look for the 'git commit' line
+	commit_cmd=
+	for line in "${stdout[@]}" ; do
+		echo "${line}"
+		if [ "${line#git commit}" != "${line}" ] ; then
+			commit_cmd=${line}
+		fi
+	done
+
+	if [ -z "${commit_cmd}" ] ; then
+		echo "Commit line not found in output of ./update-version" >&2
+		return 1
+	fi
+
+	# Commit the changelog
+	sh -c "${commit_cmd}"
+	return 0
+}
 
 function usage()
 {
@@ -14,6 +106,8 @@ This script checks that there is an 'update-version' script in the current
 directory and executes it. It parses the output of 'update-version' to extract
 the 'git commit' line and runs that command to commit the changes.
 
+Note: Arguments must match update-dependents
+
 Optional arguments:
   -h, --help            Show this help text and exit.
   --ignore-abi-check    Ignore ABI check (when preparing re-spins).
@@ -25,7 +119,7 @@ while [ $# -gt 0 ] ; do
 	case "${1}" in
 		-h|--help)
 			usage
-			exit
+			exit 2
 			;;
 		--ignore-abi-check)
 			ignore_abi_check=1
@@ -38,87 +132,4 @@ while [ $# -gt 0 ] ; do
 	shift
 done
 
-if ! [ -d debian ] || ! [ -f update-version ] ; then
-	echo "This is not a dependent kernel package repo" >&2
-	exit 1
-fi
-
-# Sanity check: The repo must be clean
-if [ -n "$(git status --porcelain)" ] ; then
-	echo "Repo is not clean" >&2
-	exit 1
-fi
-
-# Get the path to the main package
-main_path=$("$C" shell-helper tree-main-path .)
-if [ -z "${main_path}" ] ; then
-	echo "Main kernel source path not found" >&2
-	exit 1
-fi
-
-# Run cranky fix as step 1.
-"$C" fix
-
-# Get main package details (distro, version, ABI, ...)
-# shellcheck disable=SC1090
-. "${main_path}"/debian/debian.env
-main_changelog="${main_path}/${DEBIAN}"/changelog
-main_distro=$(dpkg-parsechangelog -l "${main_changelog}" -S Distribution)
-main_version=$(dpkg-parsechangelog -l "${main_changelog}" -S Version)
-main_abi=${main_version%~*}
-main_abi=$(echo "$main_abi" | sed -ne 's/\([0-9]*\.[0-9]*\.[0-9]*-[0-9]*\)\..*/\1/p')
-
-# Get the dependent package details
-dep_distro=$(dpkg-parsechangelog -S Distribution)
-dep_version=$(dpkg-parsechangelog -S Version)
-dep_abi=${dep_version%~*}
-dep_abi=$(echo "$dep_abi" | sed -ne 's/\([0-9]*\.[0-9]*\.[0-9]*[-\.][0-9]*\)\..*/\1/p')
-
-# Replace last '.' with '-' in -meta package ABI version
-# shellcheck disable=SC2001
-dep_abi_dash=$(echo "${dep_abi}" | sed -e 's,\.\([0-9]*\)$,-\1,')
-
-# Sanity check: The distros must match
-if [ "${main_distro}" != "${dep_distro}" ] ; then
-	echo "Incorrect main package distro: ${main_distro} (!= ${dep_distro})" >&2
-	exit 1
-fi
-
-# Sanity check: The main package ABI version must not be lower
-upload_bump=0
-if dpkg --compare-versions "${main_abi}" lt "${dep_abi_dash}" ; then
-	echo "Main package ABI version is lower: ${main_abi} (< ${dep_abi})" >&2
-	if [ -z "$ignore_abi_check" ]; then
-		echo "Use --ignore-abi-check to proceed anyway."
-		exit 1
-	fi
-	upload_bump=1
-fi
-
-# Update the changelog and capture stdout
-readarray -t stdout < <(./update-version "${main_path}")
-
-# Usually `update-version' will produce a changelog version without entries
-# for a re-spin (new version with the same ABI). In that case, add a generic
-# changelog entry.
-if [ "$upload_bump" -gt 0 ]; then
-	echo -e "\\033[1;31mWarning: Please review the changelog and add a new entry if applicable!\\033[0m" >&2
-	dch -a 'Bump upload number.'
-fi
-
-# Cycle through stdout, print each line and look for the 'git commit' line
-commit_cmd=
-for line in "${stdout[@]}" ; do
-	echo "${line}"
-	if [ "${line#git commit}" != "${line}" ] ; then
-		commit_cmd=${line}
-	fi
-done
-
-if [ -z "${commit_cmd}" ] ; then
-	echo "Commit line not found in output of ./update-version" >&2
-	exit 1
-fi
-
-# Commit the changelog
-sh -c "${commit_cmd}"
+update_dependent "$ignore_abi_check"
