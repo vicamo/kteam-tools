@@ -3754,25 +3754,6 @@ defaults:
             derived-from: [ '22.04', 'linux-realtime' ]
             private: true
             invalid-tasks: [ 'automated-testing' ]
-            swm:
-                kernel-testing: true
-            testing:
-                flavours:
-                    intel-iot-realtime:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['metal']
-
-        linux-uc22-intel-iot-realtime:
-            routing: realtime-uc22
-            packages:
-                linux-uc22-intel-iot-realtime:
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-uc22-intel-iot-realtime/+git/jammy', 'realtime']
-                linux-signed-uc22-intel-iot-realtime:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-uc22-intel-iot-realtime/+git/jammy', 'realtime']
-            supported: false 
-            owner: philcox
-            development: false
             snaps:
                 intel-iot-realtime-kernel:
                     primary: true
@@ -3784,11 +3765,13 @@ defaults:
                     hw-cert: true
                     publish-to:
                         amd64: ['22']
-            derived-from: [ '22.04', 'linux-intel-iot-realtime' ]
-            private: true
-            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
             swm:
-                block-parent-release: true
+                kernel-testing: true
+            testing:
+                flavours:
+                    intel-iot-realtime:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
 
         linux-xilinx-zynqmp:
             variants: ['--']
