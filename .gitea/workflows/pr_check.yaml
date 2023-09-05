@@ -53,6 +53,10 @@ jobs:
         uses: actions/tnt-sign-off-check@v1
         with:
           check-owner-sob: false
+      - name: Lint
+        run: |
+          pre-commit install
+          pre-commit run --all-files
       - step:
         name: Run Tests
         run: |
