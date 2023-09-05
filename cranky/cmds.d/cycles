@@ -35,9 +35,7 @@ def list_cycles(
     """List cycle references for the specified handle and package"""
     tree = Handle().lookup_set(handle, cycle=cycle, validate=False).get_tree_by_package_type(package)
     if not tree:
-        raise CrankyException(
-            "No package type '{}' found in {}".format(package, handle)
-        )
+        raise CrankyException("No package type '{}' found in {}".format(package, handle))
     cdebug("Found tree {} by package type {}".format(tree.name, package))
 
     cycle_refs = CycleRef.get_list(tree, descending, before, after)
@@ -137,9 +135,7 @@ Delete all local cycle references in your local git tree for this handle
     subparsers = parser.add_subparsers(help="Sub-command help", required=True)
 
     parser_list = subparsers.add_parser("list", help=help_sub_list)
-    parser_list.add_argument(
-        "-d", "--descending", action="store_true", help=help_sub_list_desc
-    )
+    parser_list.add_argument("-d", "--descending", action="store_true", help=help_sub_list_desc)
     parser_list.add_argument("-a", "--after", help=help_sub_list_after)
     parser_list.add_argument("-b", "--before", help=help_sub_list_before)
     parser_list.add_argument(
@@ -151,9 +147,7 @@ Delete all local cycle references in your local git tree for this handle
     parser_list.set_defaults(func=list_cycles)
 
     parser_rebuild = subparsers.add_parser("rebuild", help=help_sub_rebuild)
-    parser_rebuild.add_argument(
-        "-q", "--quiet", action="store_true", help=help_sub_rebuild_quiet
-    )
+    parser_rebuild.add_argument("-q", "--quiet", action="store_true", help=help_sub_rebuild_quiet)
     parser_rebuild.set_defaults(func=rebuild_cycles)
 
     parser_destroy = subparsers.add_parser("destroy", help=help_sub_destroy)
