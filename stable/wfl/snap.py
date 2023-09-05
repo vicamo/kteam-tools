@@ -72,7 +72,13 @@ class SnapStore:
         for arch, tracks in s.snap.publish_to.items():
             actions = []
             for track in tracks:
-                for risk in ["edge", "beta", "candidate", "stable"]: # XXX: streams
+                # XXX: we should be a little more dynamic with streams perhaps.
+                for risk in [
+                    "edge", "edge/stream2",
+                    "beta", "beta/stream2",
+                    "candidate", "candidate/stream2",
+                    "stable"
+                ]:
                     channel = "{}/{}".format(track, risk)
                     actions.append({
                         "action": "download",
@@ -285,7 +291,7 @@ class SnapDebs:
         return s._snap_store
 
     @centerleave
-    def recover_recipe_v2(self, handle):
+    def recover_request_v2(self, handle):
         lp = ctx.lp
         recipe = lp.load(handle)
         return recipe
@@ -322,7 +328,7 @@ class SnapDebs:
 
     @centerleave
     def snap_request(self, risk):
-        recipe = s.lookup_recipe_v2(risk)
+        recipe = self.lookup_recipe_v2(risk)
         cinfo("snap_request: lookup_recipe_v2({}) = {}".format(risk, recipe))
         if recipe is None:
             return False
@@ -331,10 +337,12 @@ class SnapDebs:
         request = recipe.requestBuilds(
             archive=recipe.auto_build_archive,
             pocket=recipe.auto_build_pocket,
+            channels=recipe.auto_build_channels,
         )
-        cinfo("snap_request: recipe.requestBuilds(archive={}, pocket={}) = {}".format(
+        cinfo("snap_request: recipe.requestBuilds(archive={}, pocket={}, channels={}) = {}".format(
             recipe.auto_build_archive,
             recipe.auto_build_pocket,
+            recipe.auto_build_channels,
             request,
         ))
         if request is None:
@@ -593,11 +601,6 @@ class SnapDebs:
         for build in request.builds:
             cinfo("snap build complete: {} {} {} {}".format(build, build.arch_tag, build.buildstate, build.revision_id))
 
-            # Take only the latest status for an architecture.
-            arch_tag = build.arch_tag
-            if arch_tag in arches_seen:
-                continue
-            arches_seen[arch_tag] = True
             #print(build, arch_tag, build.revision_id, build.buildstate, build.store_upload_status)
 
             if build.buildstate in (
@@ -660,7 +663,7 @@ class SnapDebs:
     def is_in_risk_request(self, risk, request):
         request = self.recover_request_v2(request)
         risk_branch = risk
-        if self.bug.built_in != 1:
+        if self.bug.built_in != 1 and risk != "stable":
             risk_branch += "/stream{}".format(self.bug.built_in)
 
         # Identify expected revisions.

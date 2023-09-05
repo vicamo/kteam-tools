@@ -11,7 +11,7 @@ from .promote_to_security               import PromoteToSecurity
 from .promote_to_release                import PromoteToRelease
 from .security_signoff                  import SecuritySignoff
 from .signoff                           import ProposedSignoff, BuildSignoff
-from .kernel_snap                       import SnapReleaseToBeta, SnapReleaseToCandidate, SnapReleaseToEdge, SnapReleaseToStable, SnapCertificationTesting, SnapQaTesting, SnapPublish, SnapPrepare
+from .kernel_snap                       import SnapReleaseToBeta, SnapReleaseToCandidate, SnapReleaseToEdge, SnapReleaseToStable, SnapCertificationTesting, SnapQaTesting, SnapPublish, SnapPrepare, SnapPrepareSigned
 from .syn_prepare_packages              import SynPreparePackages
 from .syn_promote_to_as_proposed        import SynPromoteToAsProposed
 from .reviews                           import SruReview, NewReview
