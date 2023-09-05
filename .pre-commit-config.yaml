@@ -34,3 +34,11 @@ repos:
   hooks:
   - id: shellcheck
     types: [shell]
+
+# Whitelist files as we modernize them
+# This is a regular expression, not a glob
+files: >
+  (?x)^(
+    info/.*\.yaml |
+    cranky/cmds.d/cycles
+  )$
