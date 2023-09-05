@@ -865,6 +865,17 @@ defaults:
         s32:
             build:
                 - ['ppa:erlangen-team/ubuntu/nxp-s32g-bsp', 'Release']
+        larch-carvers/2:
+            build:
+                - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
+            test:
+                - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
+            proposed:
+                - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
+            updates:
+                - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
+            release:
+                - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
   package-relations:
       default:
           meta:
@@ -6855,18 +6866,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-larch:
-            routing: ubuntu/2
-            routing:
-                build:
-                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
-                test:
-                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
-                proposed:
-                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
-                updates:
-                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
-                release:
-                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
+            routing: larch-carvers/2
             packages:
                 linux-larch:
                     repo: ['git://git.launchpad.net/~larch-carvers/ubuntu/+source/linux/+git/larch', 'master-next']
