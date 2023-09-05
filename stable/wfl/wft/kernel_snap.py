@@ -77,6 +77,9 @@ class KernelSnapBase(TaskHandler):
             cinfo("APW: {} {}".format(tracker_nr, tracker_data.get("cycle", "??")))
             if tracker_nr == str(s.bug.lpbug.id):
                 break
+            stream = tracker_data.get('built', {}).get('route-entry')
+            if stream is not None and stream != s.bug.built_in:
+                continue
             return tracker_nr, "LP: #{} {}".format(tracker_nr, tracker_data.get("cycle", "unknown"))
         return None, None
 
