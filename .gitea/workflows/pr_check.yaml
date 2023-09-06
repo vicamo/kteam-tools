@@ -2,7 +2,7 @@
 name: PR Pre Checks
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - edited
       - opened
@@ -34,7 +34,7 @@ jobs:
       - step:
         name: Run Tests
         run: |
-          git config --global user.email "noreply+ckctreview-bot@canonical.co"
+          git config --global user.email "noreply+ckctreview-bot@canonical.com"
           git config --global user.name "Bot"
           (cd ktl/tests && python3 -m unittest -v)
           (cd cranky/crl/tests && python3 -m unittest -v)
