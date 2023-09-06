@@ -784,19 +784,29 @@ class WorkflowBug():
     def flag(s, flag):
         return s.bprops.get('flag', {}).get(flag)
 
-    def clamp_assign(s, clamp, value):
-        clamps = s.private_props.setdefault('clamps', {})
+    # private_group_set
+    #
+    def private_group_set(s, group, field, value):
+        hold = s.private_props.setdefault(group, {})
         if value is not None:
-            clamps[clamp] = value
+            hold[field] = value
 
-        elif clamp in clamps:
-            del clamps[clamp]
+        elif field in hold:
+            del hold[field]
 
-        if len(clamps) == 0:
-            del s.private_props['clamps']
+        if len(hold) == 0:
+            del s.private_props[group]
+
+    # private_group_get
+    #
+    def private_group_get(s, group, field):
+        return s.private_props.get(group, {}).get(field)
+
+    def clamp_assign(s, clamp, value):
+        s.private_group_set('clamps', clamp, value)
 
     def clamp(s, clamp):
-        return s.private_props.get('clamps', {}).get(clamp)
+        return s.private_group_get('clamps', clamp)
 
     # group_set
     #
