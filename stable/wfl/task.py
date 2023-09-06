@@ -135,6 +135,10 @@ class WorkflowBugTask(object):
             s.bug.refresh_at(task_start + acceptable, "{} stall check {}".format(s.name, acceptable))
         return state
 
+    @property
+    def date_confirmed(self):
+        return self.lp_task.date_confirmed.replace(tzinfo=None)
+
     # modified
     #
     @property

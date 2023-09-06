@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #
+from copy                               import copy
 from datetime                           import datetime, timedelta, timezone
 from textwrap                           import fill
 import yaml
@@ -776,6 +777,24 @@ class WorkflowBug():
         cinfo("source_block_present: " + str(block), "yellow")
         return block
 
+    @property
+    def owner(self):
+        owner = None
+        workflow_task = self.tasks_by_name.get("kernel-sru-workflow")
+        if workflow_task is not None:
+            assignee = workflow_task.assignee
+            if assignee is not None and assignee.name != 'canonical-kernel-team':
+                owner = assignee.name
+        if owner is None and self.source is not None and self.source.owner is not None:
+            owner = self.source.owner
+        if owner is None:
+            prepare_package_task = self.tasks_by_name.get("prepare_package")
+            if prepare_package_task is not None:
+                assignee = prepare_package_task.assignee
+                if assignee is not None and assignee.name != 'canonical-kernel-team':
+                    owner = assignee.name
+        return owner
+
     def status_summary(s):
         '''
         Return the current reason set for this bug.
@@ -1227,6 +1246,27 @@ class WorkflowBug():
         from ktl.announce import Announce
         announce = Announce()
         announce.send(key, subject=subject, summary=summary, body=body)
+
+    def announce_drip(self, key, subject=None, summary=None, body=None, every=None, since=None):
+        now = datetime.utcnow().replace(tzinfo=None)
+        last = self.private_group_get("announce", key)
+        delay = now - since if since else None
+        if subject is not None and delay is not None and delay > every:
+            delay_hours = int(delay.total_seconds() / 3600)
+            delay_days = int(delay_hours / 24)
+            delay_hours = delay_hours % 24
+            if delay_days > 0 or delay_hours > 0:
+                subject += " (for"
+                if delay_days > 0:
+                    subject += " {} day{}".format(delay_days, "s"[:delay_days^1])
+                if delay_hours > 0:
+                    subject += " {} hour{}".format(delay_hours, "s"[:delay_hours^1])
+                subject += ")"
+        if last is None or (now - last) > every:
+            self.announce(key, subject, summary, body)
+            self.private_group_set("announce", key, now)
+            last = now
+        self.refresh_at((last + every).replace(tzinfo=timezone.utc), "Re-announce status")
 
     # send_upload_announcement
     #
