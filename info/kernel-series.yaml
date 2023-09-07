@@ -263,6 +263,9 @@ defaults:
             proposed:
                 - ['ubuntu', 'Proposed']
                 - ['ubuntu', 'Proposed']
+            as-proposed:
+                - ['ppa:canonical-kernel-team/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/proposed2', 'Release']
         esm1-release-fragment: &routing-table-release-esm1
             proposed:
                 - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
