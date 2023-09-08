@@ -158,6 +158,11 @@ session_chroot_create()
 		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install gcc-i686-linux-gnu libc6-dev-i386-cross gcc-riscv64-linux-gnu libc6-dev-riscv64-cross
 	fi
 
+	if [ "${series}" = "mantic" ] ; then
+		# mantic has rust toolchain
+		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install rustc-1.68 rust-1.68-src rustfmt-1.68 bindgen-0.56 clang-15 llvm-15 libclang1-15
+	fi
+
 	if [ "${series}" = "lunar" ] ; then
 		# lunar has rust toolchain
 		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install rustc-1.62 rust-1.62-src rustfmt-1.62 bindgen-0.56 clang-14 llvm-14
