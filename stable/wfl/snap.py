@@ -52,84 +52,11 @@ class SnapStore:
         """
         s.snap = snap
         s._channel_map = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
-        s._new_channel_map = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
         s.secrets = Secrets(os.path.expanduser("~/.swm-secrets.yaml")).get('snaps')
 
     # channel_map_lookup
     #
     def channel_map_lookup(s):
-        """
-        Query the snap store URL to get the information about the kernel snap
-        publishing.
-
-        :return: publishing array
-        """
-        cdebug("    snap.name={}".format(s.snap.name))
-        cdebug("    snap.publish_to={}".format(s.snap.publish_to))
-
-        result = {}
-        try:
-            headers = s.common_headers
-
-            params = urlencode({'fields': 'revision,version'})
-            store_id = s.secrets.get(s.snap.name, {}).get('store-id')
-            if store_id is not None:
-                cdebug('SnapStore: {} using snap specific store-id')
-                headers['Snap-Device-Store'] = store_id
-            url = "{}?{}".format(urljoin(s.base_url, s.snap.name), params)
-            req = Request(url, headers=headers)
-            with urlopen(req) as resp:
-                raw_data = resp.read().decode('utf-8')
-                cinfo("SNAP JSON: {}".format(raw_data))
-                response = json.loads(raw_data)
-                cdebug(response)
-                for channel_rec in response['channel-map']:
-                    channel = (channel_rec['channel']['architecture'],
-                        channel_rec['channel']['track'] + '/' +
-                        channel_rec['channel']['risk'])
-                    entry = {}
-                    entry['version'] = channel_rec['version']
-                    entry['revision'] = channel_rec['revision']
-                    entry['released-at'] = channel_rec['channel']['released-at']
-                    result[channel] = entry
-
-        except HTTPError as e:
-            # Error 404 is returned if the snap has never been published
-            # to the given channel.
-            store_err = False
-            if hasattr(e, 'code') and e.code == 404:
-                ret_body = e.read().decode()
-                ret_data = json.loads(ret_body)
-                cinfo("SNAP 404: {}".format(ret_data))
-                for error in ret_data.get('error-list', []):
-                    cinfo("SNAP ERROR: code={} message={}".format(error['code'], error['message']))
-                    if error['code'] == 'resource-not-found':
-                        store_err = True
-                # XXX: convert to something sane in the above loop.
-                store_err_str = 'has no published revisions in the given context'
-                if store_err_str in ret_body:
-                    store_err = True
-            if not store_err:
-                raise SnapStoreError('failed to retrieve store URL (%s)' % str(e))
-        except (URLError, KeyError) as e:
-            raise SnapStoreError('failed to retrieve store URL (%s: %s)' %
-                                 (type(e), str(e)))
-        return result
-
-    # curl -s \
-    #   -H 'Snap-Device-Architecture: amd64' \
-    #   -H 'Content-Type: application/json' \
-    #   -H 'Snap-Device-Series: 16' \
-    #   https://api.snapcraft.io/v2/snaps/refresh \
-    #   -d '{"context":[],"actions":[
-    #       {"action":"download","instance-key":"flange","name":"pc-kernel","channel":"24/edge/proposed1"},
-    #       {"action":"download","instance-key":"flange2","name":"pc-kernel","channel":"24/edge"}
-    #   ],"fields":["architectures","name","revision","type","version"]}' | \
-    #   jq
-
-    # new_channel_map_lookup
-    #
-    def new_channel_map_lookup(s):
         """
         Probe the snap publishing records in the store.
 
@@ -212,28 +139,17 @@ class SnapStore:
             s._channel_map = s.channel_map_lookup()
         return s._channel_map
 
-    def new_channel_map(s):
-        if s._new_channel_map is None:
-            s._new_channel_map = s.new_channel_map_lookup()
-        return s._new_channel_map
-
     # channel_version
     #
     def channel_version(s, arch, channel):
         key = (arch, channel)
-        old = s.channel_map().get(key, {}).get('version', None)
-        new = s.new_channel_map().get(key, {}).get('version', None)
-        cinfo("SDv2: channel_version({}, {}) = {} -> {}".format(arch, channel, old, new))
-        return old
+        return s.channel_map().get(key, {}).get('version', None)
 
     # channel_revision
     #
     def channel_revision(s, arch, channel):
         key = (arch, channel)
-        old = s.channel_map().get(key, {}).get('revision', None)
-        new = s.new_channel_map().get(key, {}).get('revision', None)
-        cinfo("SDv2: channel_revisions({}, {}) = {} -> {}".format(arch, channel, old, new))
-        return old
+        return s.channel_map().get(key, {}).get('revision', None)
 
     def _last_published(self, data):
         last_published = None
@@ -262,10 +178,7 @@ class SnapStore:
 
     @property
     def last_published(self):
-        old = self._last_published(self.channel_map())
-        new = self._last_published(self.new_channel_map())
-        cinfo("SDv1: last_published() = {} -> {}".format(old, new))
-        return old
+        return self._last_published(self.channel_map())
 
 
 # SnapDebs
