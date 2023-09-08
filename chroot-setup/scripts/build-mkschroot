@@ -230,6 +230,11 @@ jammy|lunar)
 	ADDPKG="$ADDPKG rustc-1.62 rust-1.62-src rustfmt-1.62 bindgen-0.56 clang-14 llvm-14"
 	;;
 esac
+case "$SUITE" in
+mantic)
+	ADDPKG="$ADDPKG rustc-1.68 rust-1.68-src rustfmt-1.68 bindgen-0.56 clang-15 llvm-15 libclang1-15"
+	;;
+esac
 
 # Always needed for selftests, available in all suites, not declared
 # as a default build-dep
