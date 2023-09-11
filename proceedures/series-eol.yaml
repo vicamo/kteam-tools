@@ -38,3 +38,10 @@ cards:
       - kteam-tools/bugs/close-eol-nominations <series>
     prerequisites:
     list: Backlog
+  - name: "Purge all packages from all PPAs"
+    description: |
+      - NEEDS: EOL date formally past
+      - Construct list of ppas used for series, and construct ppa-package-cleaner for it
+      - kteam-tools/mainline-build/ppa-package-cleaner can be hand adapted to do this
+    prerequisites:
+    list: Backlog
