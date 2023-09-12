@@ -54,9 +54,9 @@ class PackageBuildRouteEntry:
     :ivar dependent:
         the package-type for this build
     :ivar route_name:
-        the human visible name for the pocket for this route entry
+        the human visible name for this route entry
     :ivar route_entry:
-        the human visible offset for the pocket for this route entry
+        the human visible offset for this route entry
     :ivar archive:
         the Launchpad archive object for this route entry
     :ivar pocket:
@@ -72,9 +72,9 @@ class PackageBuildRouteEntry:
         :param dependent:
             the package-type for this build
         :param route_name:
-            the human visible name for the pocket for this route entry
+            the human visible name for route entry
         :param route_entry:
-            the human visible offset for the pocket for this route entry
+            the human visible offset for this route entry
         :param archive:
             the Launchpad archive object for this route entry
         :param pocket:
@@ -90,6 +90,8 @@ class PackageBuildRouteEntry:
         self.archive = archive
         self.pocket = pocket
         self.package = package
+
+        self.route_name_entry = "{}#{}".format(self.route_name, self.route_entry)
 
         self._source = False
         self._binary_analysis = False
@@ -108,7 +110,7 @@ class PackageBuildRouteEntry:
     def source(self):
         """the Launchpad source package object"""
         if self._source is False:
-            cdebug("SOURCE {} {}#{} {}".format(self.dependent, self.route_name, self.route_entry, self.package))
+            cdebug("SOURCE {} {} {}".format(self.dependent, self.route_name_entry, self.package))
             srcs = self.archive.getPublishedSources(
                 order_by_date=True,
                 exact_match=True,
@@ -167,7 +169,7 @@ class PackageBuildRouteEntry:
             self._binary_analysis = {}
 
         elif self._binary_analysis is False:
-            cdebug("BINARY {} {}#{} {}".format(self.dependent, self.route_name, self.route_entry, self.package))
+            cdebug("BINARY {} {} {}".format(self.dependent, self.route_name_entry, self.package))
             published = source.date_published
             latest_build = source.date_published
             status = set()
@@ -414,8 +416,8 @@ class PackageBuildRoute:
         the Ubuntu distribution series codename for this build
     :ivar dependent:
         the package-type for this build
-    :ivar pocket:
-        the human visible name for the pocket for this route
+    :ivar route_name:
+        the human visible name for this route
     :ivar routing:
         the routing (reference, pocket) pairs list for this route
     :ivar package:
@@ -424,14 +426,14 @@ class PackageBuildRoute:
         a boolean indicating whether this is route is affected by streaming
     """
 
-    def __init__(self, series, dependent, pocket, routing, package, bug=None):
+    def __init__(self, series, dependent, route_name, routing, package, bug=None):
         """
         :param series:
             the Ubuntu distribution series codename for this build
         :param dependent:
             the package-type for this build
-        :param pocket:
-            the human visible name for the pocket (e.g. proposed#1)
+        :param route_name:
+            the human visible name for the route (e.g. proposed)
         :param routing:
             a list of (reference, pocket) pairs representing the archive
             which make up this pocket
@@ -441,11 +443,11 @@ class PackageBuildRoute:
         self.bug = bug
         self.series = series
         self.dependent = dependent
-        self.pocket = pocket
+        self.route_name = route_name
         self.routing = routing
         self.package = package
 
-        self.stream_route = self.pocket in ('ppa', 'Proposed', 'as-proposed') or self.pocket.startswith('build')
+        self.stream_route = self.route_name in ('ppa', 'Proposed', 'as-proposed') or self.route_name.startswith('build')
 
         self._publications = False
 
@@ -457,7 +459,7 @@ class PackageBuildRoute:
         :return:
             List of publications one per route element
         """
-        cdebug("PUBLICATIONS {} {} {}".format(self.dependent, self.pocket, self.package))
+        cdebug("PUBLICATIONS {} {} {}".format(self.dependent, self.route_name, self.package))
 
         if self._publications is False:
             publications = []
@@ -465,9 +467,9 @@ class PackageBuildRoute:
             for archive, pocket in self.routing:
                 archive_num += 1
                 if archive is None:
-                    raise WorkflowCrankError("Routing table entry {}#{} invalid".format(self.pocket, archive_num))
-
-                publications.append(PackageBuildRouteEntry(self.series, self.dependent, self.pocket, archive_num, archive, pocket, self.package, bug=self.bug))
+                    route_name_entry = "{}#{}".format(self.route_name, archive_num)
+                    raise WorkflowCrankError("Routing table entry {} invalid".format(route_name_entry))
+                publications.append(PackageBuildRouteEntry(self.series, self.dependent, self.route_name, archive_num, archive, pocket, self.package, bug=self.bug))
 
             self._publications = publications
         return self._publications
