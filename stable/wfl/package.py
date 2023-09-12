@@ -43,8 +43,45 @@ class SeriesLookupFailure(ShankError):
 # PackageBuildRouteEntry
 #
 class PackageBuildRouteEntry:
+    """
+    Represents a package build (source and binaries) on a specified source
+    package route (proposed etc) offset.
+
+    :ivar bug:
+        the associated WorkflowBug (or None)
+    :ivar series:
+        the Ubuntu distribution series codename for this build
+    :ivar dependent:
+        the package-type for this build
+    :ivar route_name:
+        the human visible name for the pocket for this route entry
+    :ivar route_entry:
+        the human visible offset for the pocket for this route entry
+    :ivar archive:
+        the Launchpad archive object for this route entry
+    :ivar pocket:
+        the Launchpad pocket name this route entry
+    :ivar package:
+        the source package name for this build
+    """
 
     def __init__(self, series, dependent, route_name, route_entry, archive, pocket, package, bug=None):
+        """
+        :param series:
+            the Ubuntu distribution series codename for this build
+        :param dependent:
+            the package-type for this build
+        :param route_name:
+            the human visible name for the pocket for this route entry
+        :param route_entry:
+            the human visible offset for the pocket for this route entry
+        :param archive:
+            the Launchpad archive object for this route entry
+        :param pocket:
+            the Launchpad pocket name this route entry
+        :param package:
+            the source package name for this build
+        """
         self.bug = bug
         self.series = series
         self.dependent = dependent
@@ -64,10 +101,12 @@ class PackageBuildRouteEntry:
 
     @property
     def reference(self):
+        """the archive reference for this route entry"""
         return self.archive.reference
 
     @property
     def source(self):
+        """the Launchpad source package object"""
         if self._source is False:
             cdebug("SOURCE {} {}#{} {}".format(self.dependent, self.route_name, self.route_entry, self.package))
             srcs = self.archive.getPublishedSources(
@@ -99,21 +138,25 @@ class PackageBuildRouteEntry:
 
     @property
     def version(self):
+        """the Launchpad source package version"""
         src = self.source
         return src.source_package_version if src is not None else None
 
     @property
     def changes_url(self):
+        """the Launchpad source package changes URL"""
         src = self.source
         return src.changesFileUrl() if src is not None else None
 
     @property
     def creator(self):
+        """the Launchpad source package creator"""
         src = self.source
         return src.package_creator if src is not None else None
 
     @property
     def signer(self):
+        """the Launchpad source package signer"""
         src = self.source
         return src.package_signer if src is not None else None
 
@@ -336,10 +379,12 @@ class PackageBuildRouteEntry:
 
     @property
     def published(self):
+        """the most recent publication source and binary timestamp"""
         return self.binary_analysis.get("published")
 
     @property
     def latest_build(self):
+        """the most recent build completion timestamp"""
         return self.binary_analysis.get("latest_build")
 
     # XXX: legacy interface.
@@ -347,18 +392,52 @@ class PackageBuildRouteEntry:
 
     @property
     def status(self):
+        """the overall status of this build"""
         return self.binary_analysis.get("status")
 
     @property
     def status_detail(self):
+        """the overall status details of this build"""
         return self.binary_analysis.get("status_detail")
 
 
 # PackageBuildRoute
 #
 class PackageBuildRoute:
+    """
+    Represents a package build (source and binaries) on a specified source
+    package route (proposed etc).
+
+    :ivar bug:
+        the associated WorkflowBug (or None)
+    :ivar series:
+        the Ubuntu distribution series codename for this build
+    :ivar dependent:
+        the package-type for this build
+    :ivar pocket:
+        the human visible name for the pocket for this route
+    :ivar routing:
+        the routing (reference, pocket) pairs list for this route
+    :ivar package:
+        the source package name for this buidl
+    :ivar stream_route:
+        a boolean indicating whether this is route is affected by streaming
+    """
 
     def __init__(self, series, dependent, pocket, routing, package, bug=None):
+        """
+        :param series:
+            the Ubuntu distribution series codename for this build
+        :param dependent:
+            the package-type for this build
+        :param pocket:
+            the human visible name for the pocket (e.g. proposed#1)
+        :param routing:
+            a list of (reference, pocket) pairs representing the archive
+            which make up this pocket
+        :param package:
+            the source package name for this build
+        """
         self.bug = bug
         self.series = series
         self.dependent = dependent
@@ -372,6 +451,12 @@ class PackageBuildRoute:
 
     @property
     def publications(self):
+        """
+        Lazily instantiated list of publications in each route element
+
+        :return:
+            List of publications one per route element
+        """
         cdebug("PUBLICATIONS {} {} {}".format(self.dependent, self.pocket, self.package))
 
         if self._publications is False:
@@ -388,10 +473,33 @@ class PackageBuildRoute:
         return self._publications
 
     def publications_match(self, limit_stream=None):
+        """
+        Return the publications in this route appropriate for ``limit_stream``
+        if present.
+
+        :param limit_stream:
+            optional stream number to select from the route
+        :return:
+            list of ``PackageBuildRouteEntry`` objects representing selected
+            builds
+        """
         archive_only = limit_stream if self.stream_route else None
         return [pub for pub in self.publications if archive_only is None or pub.route_entry == archive_only]
 
     def version_match(self, exact=None, prefix=None, limit_stream=None):
+        """
+        Return the publications in this route which match the supplied criteria.
+
+        :param exact:
+            requests an exact version match
+        :param prefix:
+            requests a version prefix match
+        :param limit_stream:
+            requests consideration of entries in that stream
+        :return:
+            ``PackageBuildRouteEntry`` for the matching build
+            ``None`` if no match is found
+        """
         for pub in self.publications_match(limit_stream=limit_stream):
             if exact is not None and pub.version == exact:
                 return pub
