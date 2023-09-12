@@ -593,63 +593,113 @@ class Package():
 
         return version
 
-    # ancillary_package_for
-    #
-    def ancillary_package_for(self, pkg):
-        pkg = self.source.lookup_package(type=pkg)
-        if pkg is None:
-            return None
-        pkg = pkg.ancillary_for
-        if pkg is None:
-            return None
-        return pkg.type or "main"
+    def ancillary_package_for(self, ptype):
+        """
+        Returns the package-type of the package for which ``ptype`` is an
+        ancillary, if any.  That is the package which owns ``ptype``.
 
-    # signing_package_for
-    #
-    def signing_package_for(self, pkg):
-        pkg = self.source.lookup_package(type=pkg)
+        :param ptype:
+            package-type of the package to examine.
+        :return:
+            package-type of our owning package.
+            ``None`` if ``ptype`` is not an ancillary.
+        """
+        pkg = self.source.lookup_package(type=ptype)
         if pkg is None:
             return None
-        pkg = pkg.signing_from
-        if pkg is None:
+        owner = pkg.ancillary_for
+        if owner is None:
             return None
-        return pkg.type or "main"
+        return owner.type or "main"
 
-    # generate_package_for
-    #
-    def generate_package_for(self, pkg):
-        pkg = self.source.lookup_package(type=pkg)
-        if pkg is None:
-            return None
-        pkg = pkg.signing_to
-        if pkg is None:
-            return None
-        return pkg.type or "main"
+    def signing_package_for(self, ptype):
+        """
+        Returns the package-type of the package for which ``ptype`` is a signing
+        consumer, if any.  That is the package which produces the signable material
+        which ``ptype`` consumes.
 
-    # feeder_package_for
-    #
-    def feeder_package_for(self, pkg):
-        pkg = self.source.lookup_package(type=pkg)
+        :param ptype:
+            package-type of the package to examine.
+        :return:
+            package-type of our signing producer.
+            ``None`` if ``ptype`` is not a signing consumer.
+        """
+        pkg = self.source.lookup_package(type=ptype)
         if pkg is None:
             return None
-        pkg = pkg.depends
-        if pkg is None:
+        signing = pkg.signing_from
+        if signing is None:
             return None
-        return pkg.type or "main"
+        return signing.type or "main"
 
-    # feeder_key
-    #
-    def feeder_key(self, pkg):
+    def generate_package_for(self, ptype):
+        """
+        Returns the package-type of the package for which ``ptype`` is a signing
+        producer, if any.  That is the package which consumes the signable material
+        which ``ptype`` produces.
+
+        :param ptype:
+            package-type of the package to examine.
+        :return:
+            package-type of our signing consumer.
+            ``None`` if ``ptype`` is not a signing producer.
+        """
+        pkg = self.source.lookup_package(type=ptype)
+        if pkg is None:
+            return None
+        generate = pkg.signing_to
+        if generate is None:
+            return None
+        return generate.type or "main"
+
+    def feeder_package_for(self, ptype):
+        """
+        Returns the package-type of the package which ``ptype`` follows in
+        the build sequence, if any.
+
+        :param ptype:
+            package-type of the package to examine.
+        :return:
+            package-type of our feeder package.
+            ``None`` if ``ptype`` is a top-level package.
+        """
+        pkg = self.source.lookup_package(type=ptype)
+        if pkg is None:
+            return None
+        feeder = pkg.depends
+        if feeder is None:
+            return None
+        return feeder.type or "main"
+
+    def feeder_key(self, ptype):
+        """
+        Returns a sorting key representing the order in which packages are
+        built.  This is determined from the feeder chain.
+
+        :param ptype:
+            package-type of the package to generate the key.
+        :return:
+            list of package-types for our entire feeder chain, top to bottom.
+        """
+        pkg = ptype
         key = []
         while pkg is not None:
             key.insert(0, pkg)
             pkg = self.feeder_package_for(pkg)
         return key
 
-    # adjunct_package
-    #
-    def adjunct_package(self, pkg):
-        pkg = self.source.lookup_package(type=pkg)
+    def adjunct_package(self, ptype):
+        """
+        Returns a boolean indicating if ``ptype`` is an adjunct package.  That is
+        an embargoed package which should only be expressed in private archives.
+        For example the linux-restricted-generate packages.
+
+        :param ptype:
+            package-type of the package to examine.
+        :return:
+            boolean indicating if ``ptype`` is an adjunct package
+        """
+        pkg = self.source.lookup_package(type=ptype)
         if pkg is None:
             return None
         return pkg.adjunct
