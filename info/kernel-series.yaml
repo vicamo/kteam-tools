@@ -3804,7 +3804,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-mtk/+git/jammy']
             supported: false
-            owner: shanelin
+            owner: jianhuilee
             development: true
             private: true
             derived-from: [ '22.04', 'linux' ]
