@@ -593,36 +593,49 @@ class Package():
 
         return version
 
-    def _ptype_map(self, ptype):
-        return 'main' if ptype is None else ptype
-
     # ancillary_package_for
     #
     def ancillary_package_for(self, pkg):
         pkg = self.source.lookup_package(type=pkg)
-        pkg = pkg and pkg.ancillary_for
-        return pkg and self._ptype_map(pkg.type)
+        if pkg is None:
+            return None
+        pkg = pkg.ancillary_for
+        if pkg is None:
+            return None
+        return pkg.type or "main"
 
     # signing_package_for
     #
     def signing_package_for(self, pkg):
         pkg = self.source.lookup_package(type=pkg)
-        pkg = pkg and pkg.signing_from
-        return pkg and self._ptype_map(pkg.type)
+        if pkg is None:
+            return None
+        pkg = pkg.signing_from
+        if pkg is None:
+            return None
+        return pkg.type or "main"
 
     # generate_package_for
     #
     def generate_package_for(self, pkg):
         pkg = self.source.lookup_package(type=pkg)
-        pkg = pkg and pkg.signing_to
-        return pkg and self._ptype_map(pkg.type)
+        if pkg is None:
+            return None
+        pkg = pkg.signing_to
+        if pkg is None:
+            return None
+        return pkg.type or "main"
 
     # feeder_package_for
     #
     def feeder_package_for(self, pkg):
         pkg = self.source.lookup_package(type=pkg)
-        pkg = pkg and pkg.depends
-        return pkg and self._ptype_map(pkg.type)
+        if pkg is None:
+            return None
+        pkg = pkg.depends
+        if pkg is None:
+            return None
+        return pkg.type or "main"
 
     # feeder_key
     #
@@ -637,7 +650,9 @@ class Package():
     #
     def adjunct_package(self, pkg):
         pkg = self.source.lookup_package(type=pkg)
-        return pkg and pkg.adjunct
+        if pkg is None:
+            return None
+        return pkg.adjunct
 
     # __determine_build_status
     #
