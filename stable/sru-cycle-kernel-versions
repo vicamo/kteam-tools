@@ -63,6 +63,17 @@ class TheApp(object):
                     if args.no_devel and source.development:
                         continue
 
+                    # one of the tags is kernel-sru-cycle-<cycle-no>-<respin-no>
+                    cycle=""
+                    for tag in bug['tags']:
+                        if "kernel-sru-cycle" in tag:
+                            # remove the 'kernel-sry-cycle' bit
+                            cycle = tag[17:]
+                            break
+                    if cycle.startswith('s'):
+                        # we don't do announcement for security cycles for now
+                        continue
+
                     version = '{}{}{}.{}{}'.format(m.group('version'), m.group('sep'),
                                                    m.group('abi'), m.group('upload'),
                                                    m.group('bpextra'))
