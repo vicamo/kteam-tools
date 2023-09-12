@@ -394,7 +394,13 @@ def is_nvidia(source):
     return source.name.startswith('linux-nvidia')
 
 def is_gitea(source):
-    return source.name == "linux-oem-6.1"
+    if source.name  == "linux-oem-6.1":
+        return True
+    # For the linux main package, allow access to specific series
+    if source.name == "linux":
+        if source.series.codename in ("focal",):
+            return True
+    return False
 
 def add_primary(repo_set):
     people_owner = [
