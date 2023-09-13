@@ -213,9 +213,11 @@ class PackageBuildRouteEntry:
                 ##print(build, build.buildstate, build.datebuilt)
                 cdebug("build arch={} status={}".format(build.arch_tag, buildstate))
                 if build.buildstate in (
-                        'Needs building',
-                        'Currently building',
-                        'Uploading build'):
+                    "Needs building",
+                    "Currently building",
+                    "Gathering build output",
+                    "Uploading build",
+                ):
                     status.add('BUILDING')
 
                 elif buildstate == 'Dependency wait':
@@ -236,11 +238,13 @@ class PackageBuildRouteEntry:
                     status.add('FAILEDTOBUILD')
 
                 if build.buildstate in (
-                        'Failed to build',
-                        'Needs building',
-                        'Currently building',
-                        'Uploading build',
-                        'Dependency wait'):
+                    "Failed to build",
+                    "Needs building",
+                    "Currently building",
+                    "Gathering build output",
+                    "Uploading build",
+                    "Dependency wait",
+                ):
                     self.monitor_add({
                             'type': 'launchpad-build',
                             'reference': self.reference,
@@ -691,9 +695,11 @@ class PackageBuild:
             ##print(build, build.buildstate, build.datebuilt)
             cdebug("build arch={} status={}".format(build.arch_tag, buildstate))
             if build.buildstate in (
-                    'Needs building',
-                    'Currently building',
-                    'Uploading build'):
+                "Needs building",
+                "Currently building",
+                "Gathering build output",
+                "Uploading build",
+            ):
                 status.add('BUILDING')
 
             elif buildstate == 'Dependency wait':
@@ -714,11 +720,13 @@ class PackageBuild:
                 status.add('FAILEDTOBUILD')
 
             if build.buildstate in (
-                    'Failed to build',
-                    'Needs building',
-                    'Currently building',
-                    'Uploading build',
-                    'Dependency wait'):
+                "Failed to build",
+                "Needs building",
+                "Currently building",
+                "Gathering build output",
+                "Uploading build",
+                "Dependency wait"
+            ):
                 s.bug.debs.monitor_debs_add({
                         'type': 'launchpad-build',
                         'reference': archive.reference,
@@ -1956,9 +1964,11 @@ class Package():
                     # If this is not retryable but is in progress now,
                     # so just behave as if we retried it.
                     if lp_build.buildstate in (
-                            'Needs building',
-                            'Currently building',
-                            'Uploading build'):
+                        "Needs building",
+                        "Currently building",
+                        "Gathering build output",
+                        "Uploading build",
+                    ):
                         retried = True
                 else:
                     try:
