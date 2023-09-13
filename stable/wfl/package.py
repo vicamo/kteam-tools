@@ -1986,6 +1986,17 @@ class Package():
         return retval
 
     def changes_data(self, url):
+        """
+        Return the changes file contents located at ``url``.
+
+        :param url:
+            the URL from which we should fetch the changes file
+        :return:
+            list of changes file lines
+            ``None`` no changes file was found at ``url``
+        :raises:
+            ``WorkflowCrankError`` on librarian errors
+        """
         try:
             changes = self.lp._browser.get(url)
             return changes.decode('utf-8').rstrip().split('\n')
