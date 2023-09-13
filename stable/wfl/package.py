@@ -2051,6 +2051,13 @@ class Package():
     #
     @centerleave
     def prerequisite_packages(self):
+        """
+        Return a list of failed prerequisite debian packages.
+
+        :returns:
+            list of errors for any known prerequisite package which is not
+            in the -updates pocket, an empty list indicates success
+        """
         prereq_re = re.compile(r"^ *(\S+) +\(= +(\S+)\) *$")
 
         # If we have no version, we can have no build, if we have no build we 
