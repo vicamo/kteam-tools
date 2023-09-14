@@ -128,19 +128,21 @@ class PackageBuildRouteEntry:
                 src = srcs[0]
             else:
                 src = None
-                monitor = {
-                    "type": "launchpad-source",
-                    "reference": self.archive.reference,
-                    "pocket": self.pocket,
-                    #"series": s.series,
-                    "package": self.package,
-                    "last-scanned": self.bug.tracker_instantiated, # XXX: can we fill this in at conversion?
-                }
-                if src:
-                    monitor['status'] = src.status
-                    monitor['lp-api'] = src.self_link
-                self.monitor_add(monitor)
             self._source = src
+
+            # Generate a monitor record for this source.
+            monitor = {
+                "type": "launchpad-source",
+                "reference": self.archive.reference,
+                "pocket": self.pocket,
+                #"series": s.series,
+                "package": self.package,
+                "last-scanned": self.bug.tracker_instantiated, # XXX: can we fill this in at conversion?
+            }
+            if src:
+                monitor['status'] = src.status
+                monitor['lp-api'] = src.self_link
+            self.monitor_add(monitor)
         return self._source
 
     @property
