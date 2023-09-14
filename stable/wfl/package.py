@@ -44,8 +44,13 @@ class SeriesLookupFailure(ShankError):
 #
 class PackageBuildRouteEntry:
     """
-    Represents a package build (source and binaries) on a specified source
-    package route (proposed etc) offset.
+    Represents a package-build on a specified source package
+    route-entry.
+
+    This object represents all infomation related to both the
+    top-level Debian source package for the `package` and the
+    related Debian binary binary-packages including the current
+    Launchpad build stati where relevant.
 
     :ivar bug:
         the associated WorkflowBug (or None)
@@ -2065,7 +2070,7 @@ class Package():
         if self.version is None:
             return None
 
-        # Find an upload record for the main package.
+        # Find an upload record for the lrm package.
         pkg = 'lrm'
         prereqs = []
         for pocket in self.__pockets_uploaded:
