@@ -4054,7 +4054,7 @@ defaults:
             owner: jacobmartin
             development: true
             supported: false
-            derived-from: [ '22.04', 'linux-realtime' ]
+            derived-from: [ '22.04', 'linux-nvidia-tegra' ]
             swm:
                 kernel-testing: true
             testing:
