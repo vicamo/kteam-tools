@@ -3690,7 +3690,7 @@ defaults:
             development: false
             backport: false
             derived-from: [ '22.04', 'linux' ]
-            private: public
+            private: false
             swm:
                 kernel-testing: true
             testing:
