@@ -294,6 +294,10 @@ class SnapReleaseToEdge(KernelSnapBase):
                         "watch": str(older)})
                     break
 
+            if s.bug.manual_block("snap-release-to-edge"):
+                s.task.reason = "Stalled -- promotion manually blocked"
+                break
+
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
 
@@ -369,6 +373,10 @@ class SnapReleaseToBeta(KernelSnapBase):
                     "watch": str(older)})
                 break
 
+            if s.bug.manual_block("snap-release-to-beta"):
+                s.task.reason = "Stalled -- promotion manually blocked"
+                break
+
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
 
@@ -434,6 +442,10 @@ class SnapReleaseToCandidate(KernelSnapBase):
                 cinfo('    task snap-certification-testing is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
                 break
 
+            if s.bug.manual_block("snap-release-to-candidate"):
+                s.task.reason = "Stalled -- promotion manually blocked"
+                break
+
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
 
@@ -494,6 +506,10 @@ class SnapReleaseToStable(KernelSnapBase):
             cinfo('    task promote-to-updates/release is \'Invalid\' and promote-to-security is neither \'Fix Released\''
                   ' nor \'Invalid\'', 'yellow')
             s.task.reason = 'Holding -- waiting for debs to promote-to-security'
+            return False
+
+        if s.bug.manual_block("snap-release-to-stable"):
+            s.task.reason = "Stalled -- promotion manually blocked"
             return False
 
         return True
