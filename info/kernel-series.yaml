@@ -3197,7 +3197,7 @@ defaults:
 
         linux-oracle-6.2:
             routing: ubuntu/4
-            variants: [ '--', '-edge' ]
+            variants: [ '-edge' ]
             package-relations: signed-generate
             packages:
                 linux-oracle-6.2:
@@ -3403,7 +3403,7 @@ defaults:
 
         linux-oracle:
             routing: ubuntu/4
-            variants: ['-lts-22.04']
+            variants: ['--', '-lts-22.04']
             package-relations: signed-generate
             packages:
                 linux-oracle:
