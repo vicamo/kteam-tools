@@ -1996,6 +1996,13 @@ class Package():
             msg['ppa']    = archive.reference.replace('~', 'ppa:')
             msg['key']    = 'kernel.published.ppa.%s' % s.series
 
+            # If we have additioanl testing PPAs for this source add them to the ppa
+            # specifier.  Convert the specifier from a simple string to a list of
+            # PPAs.
+            add_ppas = s.bug.swm_config.testing_ppas
+            if ppa and add_ppas is not None:
+                msg['ppa'] = [msg['ppa']] + add_ppas
+
         if s.bug._dryrun or s.bug._no_announcements:
             cinfo('    dryrun - Sending msgq announcement', 'red')
             for i, v in msg.items():

@@ -94,3 +94,8 @@ class SwmConfig:
     @property
     def block_parent_release(self):
         return self._data.get('block-parent-release', False)
+
+    @property
+    def testing_ppas(self):
+        """Returns a list of addition PPA references needed when testing."""
+        return self._data.get('testing-ppas', None)
