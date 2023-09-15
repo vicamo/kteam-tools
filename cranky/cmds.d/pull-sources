@@ -43,8 +43,12 @@ function get_params()
 function dget_src()
 {
 	local dir=$1
+	local verify=$2
 	local params=
 	params=$(get_params "$dir")
+	if [ "$verify" -eq 0 ]; then
+		params="--no-verify ${params}"
+	fi
 	# shellcheck disable=SC2086
 	"${C}" pull-source ${params}
 }
@@ -66,6 +70,7 @@ Positional arguments:
 
 Optional arguments:
   -h, --help     Show this help text and exit.
+  -n, --no-verify  Disable GPG signature verification of the downloaded dsc file.
 
 Example:
   $ cranky pull-sources bionic:linux-hwe-5.4
@@ -76,12 +81,16 @@ EOF
 }
 
 handle=
+verify=1
 
 while [ ${#} -gt 0 ] ; do
 	case "${1}" in
 		-h|--help)
 			usage
 			exit
+			;;
+		-n|--no-verify)
+			verify=0
 			;;
 		-*)
 			usage
@@ -111,5 +120,5 @@ if [ ${#srcs[@]} -eq 0 ] ; then
 fi
 
 for src in "${srcs[@]}" ; do
-	dget_src "${src}"
+	dget_src "${src}" "${verify}"
 done
