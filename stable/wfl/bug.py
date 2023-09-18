@@ -674,6 +674,10 @@ class WorkflowBug():
             new_children.setdefault(key, []).append("bug " + child_id)
             # Accumulate any interlock data from our children.
             blockers.update(child_data.get('interlocks', {}))
+        # Zap 'trackers' if someone clears the content and not the key in
+        # swm-properties.
+        if s.bprops.get('trackers', False) is None:
+            s.bprops['trackers'] = {}
         for key, key_ids in new_children.items():
             s.bprops.setdefault('trackers', {})[key] = ", ".join(key_ids)
 
