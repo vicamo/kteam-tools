@@ -1,20 +1,26 @@
 #!/bin/bash
 
+here=$(dirname $(readlink -f "$0"))
+
 if [ "$#" -eq 0 ]; then
 	set - web
 fi
 out="$1"
 payload="$1/kernel-stable-dashboard.html"
 
-./gather-releases > supported-releases.json
-./gather-releases --all > all-releases.json
-./generate-dashboard kernel-stable-dashboard.rc >"$payload.tmp" && mv "$payload.tmp" "$payload"
+(
+	cd "$here" || exit 1
+
+	"$here/gather-releases" > "supported-releases.json"
+	"$here/gather-releases" --all > "all-releases.json"
+	"$here/generate-dashboard" "kernel-stable-dashboard.rc" >"$payload.tmp" && mv "$payload.tmp" "$payload"
+)
 
 if [ ! -f "$out/kernel-stable-board.html" ]; then
 	echo LINKING BOARD
-	ln -sf $(realpath --relative-to="$out" web/kernel-stable-board.html) "$out"
+	ln -sf $(realpath --relative-to="$out" "$here/web/kernel-stable-board.html") "$out"
 fi
 if [ ! -d "$out/media" ]; then
 	echo LINKING MEDIA
-	ln -sf $(realpath --relative-to="$out" web/media) "$out"
+	ln -sf $(realpath --relative-to="$out" "$here/web/media") "$out"
 fi
