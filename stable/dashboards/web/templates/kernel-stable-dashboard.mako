@@ -10,7 +10,7 @@ __testing_status_colors = {
     'Incomplete'    : 'red',
     'Invalid'       : 'grey',
     'Fix Released'  : 'green', # '#1496bb',
-    'Fix Committed' : '#1496bb',
+    'Fix Committed' : 'green', # '#1496bb',
     'Task missing'  : 'red',
     'unknown'       : 'magenta',
     'n/a'           : 'grey',
@@ -31,7 +31,9 @@ __review_status_text = {
     'New'           : 'Not Ready',
     'In Progress'   : 'In Progress',
     'Confirmed'     : 'Ready',
+    'Triaged'       : 'Ready/Bins',
     'Incomplete'    : 'Rejected',
+    'Fix Committed' : 'Approved/aNR',
     'Fix Released'  : 'Approved',
 }
 %>
@@ -69,12 +71,6 @@ import textwrap
 def bite_format(thing_prefix, payload, thing_in):
     bite = '<span style="display: inline-block; min-width: 20px; width=20px;">{}</span>'.format(thing_prefix)
     bite += '<span style="display: inline-block; min-width: 400px; width=400px;">{}</span>'.format(payload)
-    if len(thing_in) != 0:
-        if payload[-2:] not in ('', '  '):
-            bite += '  '
-        bite += 'in: ' + __coloured('/', 'silver').join(thing_in)
-        # We have consumed the thing_in specifier, clear it out.
-        thing_in[:] = []
     return bite
 
 # tagged_block
@@ -165,6 +161,9 @@ def __status_bites(bug, attrs):
     promote_to_proposed_status = __task_status(bug, 'promote-to-proposed')
     sru_review_status = __task_status(bug, 'sru-review')
     new_review_status = __task_status(bug, 'new-review')
+    # Suppress new-review on the dashboard till it is in Triaged.
+    if new_review_status == 'Confirmed':
+        new_review_status = 'New'
     testing_valid = (
             boot_testing_status not in test_set_invalid or
             new_review_status not in test_set_invalid or
@@ -339,7 +338,7 @@ def __status_bites(bug, attrs):
         if workflow_status not in ('Invalid', 'Fix Committed', 'Fix Released'):
             bites.append(bite_format(thing_prefix, retval, thing_in))
 
-    return bites
+    return bites, thing_in
 
 %>
 <%
@@ -356,7 +355,7 @@ def cycle_key(cycle):
 cycles = {}
 cadence = {}
 owners = {}
-swm_trackers = data['swm'].get('trackers', data['swm'])
+swm_trackers = data['swm'].trackers
 for bid in sorted(swm_trackers):
     b = swm_trackers[bid]
 
@@ -366,8 +365,8 @@ for bid in sorted(swm_trackers):
         if 'cycle' in b:
             (cycle, spin) = (b['cycle'].split('-') + ['?'])[0:2]
 
-        package = b.get('source', 'unknown')
-        version = b.get('version', '-')
+        package = b.get('source') or 'unknown'
+        version = b.get('version') or '-'
 
         if 'snap-name' in b:
             package = package + ' / ' + b['snap-name']
@@ -378,9 +377,11 @@ for bid in sorted(swm_trackers):
 
     cycles[cycle] = True
 
-    phase = b.get('phase', 'unknown (no phase set)')
+    phase = b.get('phase') or 'unknown (no phase set)'
 
-    sn = b.get('series', 'unknown')
+    stream = b.get('built', {}).get('route-entry') or '-'
+
+    sn = b.get('series') or 'unknown'
 
     if cycle not in cadence:
         cadence[cycle] = {}
@@ -408,7 +409,7 @@ for bid in sorted(swm_trackers):
     attrs['tooltip-nr:'] = 'New Review'
     attrs['tooltip-sr:'] = 'SRU Review'
 
-    status_list = __status_bites(b, attrs)
+    status_list, thing_in = __status_bites(b, attrs)
     first = True
     #row_style = ' background: #f0f0f0;' if row_number % 2 == 0 else ''
     row_class = ['entry-any']
@@ -467,6 +468,12 @@ for bid in sorted(swm_trackers):
             row_class.append('phase-prepare')
             break
 
+    for task_name in ('signing-signoff', 'kernel-signoff'):
+        status = __task_status(b, task_name)
+        if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            row_class.append('phase-team-signoffs')
+            break
+
     row_class.append('cycle-' + cycle)
 
     for status in status_list:
@@ -474,6 +481,8 @@ for bid in sorted(swm_trackers):
         if first:
             status_row['bug'] = bid
             status_row['version'] = version
+            status_row['stream'] = stream
+            status_row['thing-in'] = thing_in
             first = False
         cadence[cycle][sn][package].append(status_row)
 
@@ -549,6 +558,7 @@ for bid in sorted(swm_trackers):
                                         <option value="prepare">prepare</option>
                                         <option value="reviews">reviews</option>
                                         <option value="peer-reviews">peer-reviews</option>
+                                        <option value="team-signoffs">team-signoffs</option>
                                         <option value="deb-promotions">deb-promotions</option>
                                         <option value="snap-promotions">snap-promotions</option>
                                         <option value="testing">testing</option>
@@ -577,44 +587,57 @@ for bid in sorted(swm_trackers):
                                     % for cycle in sorted(cycles, key=cycle_key):
                                         % if cycle_first is False:
                                             <tr class="entry-any owner-any phase-any">
-                                                <td colspan="5">&nbsp;</td>
+                                                <td colspan="7">&nbsp;</td>
                                             </tr>
                                         % endif
-                                        <tr class="entry-any owner-any phase-any cycle-${cycle}">
-                                            <td colspan="5" style="background: #ffffc0; font-size: 140%; ">${cycle}</td>
-                                        </tr>
                                         <%
                                             cycle_first = False
+                                            sru_cycle = data['sru-cycle'].lookup_cycle(cycle)
+                                            if sru_cycle is not None:
+                                                cycle_notes = "{} to {}".format(sru_cycle.start_date, sru_cycle.release_date)
+                                            else:
+                                                cycle_notes = ""
                                         %>
+                                        <tr class="entry-any owner-any phase-any cycle-${cycle}">
+                                            <td colspan="5" style="background: #ffffc0; font-size: 140%;">${cycle}</td><td colspan="2" style="background: #ffffc0; font-size: 140%; text-align: right;">${cycle_notes}</td>
+                                        </tr>
                                         % for rls in sorted(releases, reverse=True):
                                             <%
                                                 codename = releases[rls].capitalize()
                                                 row_number = 0
                                             %>
-                                            % if releases[rls] in cadence[cycle]:
-                                            <tr class="entry-any owner-any phase-any cycle-${cycle}">
-                                                <td colspan="5" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
-                                            </tr>
+                                            % if releases[rls] in cadence[cycle] and len(cadence[cycle][releases[rls]]) > 0:
                                                 % for pkg in sorted(cadence[cycle][releases[rls]]):
                                                     % for bug in cadence[cycle][releases[rls]][pkg]:
                                                         <%
                                                             cell_version = '&nbsp;'
                                                             cell_package = '&nbsp;'
                                                             cell_spin = '&nbsp;'
+                                                            cell_stream = '&nbsp;'
+                                                            cell_in = '&nbsp;'
                                                             if bug['bug'] is not None:
                                                                 url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % bug['bug']
                                                                 cell_version = '<a href="{}">{}</a>'.format(url, bug['version'])
                                                                 cell_package = '<a href="{}">{}</a>'.format(url, pkg)
                                                                 cell_spin = '#{}'.format(bug['spin'])
+                                                                cell_in = 'in: ' + __coloured('/', 'silver').join(bug['thing-in'])
+                                                                cell_stream = bug['stream']
                                                                 row_number += 1
                                                             row_style = ' background: #f6f6f6;' if row_number % 2 == 0 else ''
                                                         %>
+                                                        % if row_number == 1 and bug['bug'] is not None:
+                                                            <tr class="entry-any owner-any phase-any cycle-${cycle}">
+                                                                <td colspan="7" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
+                                                            </tr>
+                                                        % endif
                                                         <tr class="${bug['row-class']}" style="line-height: 100%;${row_style}">
                                                             <td>&nbsp;</td>
                                                             <td width="120" align="right" class="${bug['master-class']}">${cell_version}</td>
                                                             <td class="${bug['master-class']}">${cell_package}</a></td>
                                                             <td style="color: grey">${cell_spin}</td>
                                                             <td>${bug['phase']}</td>
+                                                            <td>${cell_stream}</td>
+                                                            <td>${cell_in}</td>
                                                         </tr>
                                                     % endfor
                                                 % endfor
@@ -623,7 +646,7 @@ for bid in sorted(swm_trackers):
                                     % endfor
                                     % if cycle_first is True:
                                         <tr>
-                                            <td colspan="5">No active SRU cycle at this time (see <a href="https://kernel.ubuntu.com/">kernel.ubuntu.com</a> for any announcements).</td>
+                                            <td colspan="7">No active SRU cycle at this time (see <a href="https://kernel.ubuntu.com/">kernel.ubuntu.com</a> for any announcements).</td>
                                         </tr>
                                     % endif
                                     </table>

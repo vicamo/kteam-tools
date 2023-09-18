@@ -6,8 +6,6 @@ fi
 out="$1"
 payload="$1/kernel-stable-dashboard.html"
 
-curl -sL https://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml >swm-status.yaml
-#curl https://kernel.ubuntu.com/sru/kernel-sru-workflow.json --output kernel-sru-workflow.json
 ./gather-releases > supported-releases.json
 ./gather-releases --all > all-releases.json
 ./generate-dashboard kernel-stable-dashboard.rc >"$payload.tmp" && mv "$payload.tmp" "$payload"

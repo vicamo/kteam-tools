@@ -17,6 +17,9 @@ from dash.cfg                           import Cfg, CfgError
 from mako.template                      import Template
 from mako.exceptions                    import RichTraceback
 
+from ktl.sru_cycle                      import SruCycle
+from ktl.swm_status                     import SwmStatus
+
 # CmdlineError
 #
 # The type of exception that will be raised by Cmdline.process() if there
@@ -185,7 +188,12 @@ class GenerateDashboard():
             try:
                 for section in self.dash['data']:
                     file_name = self.dash['data'][section]
-                    data[section] = data_load(file_name)
+                    if file_name == "SruCycle":
+                        data[section] = SruCycle()
+                    elif file_name == "SwmStatus":
+                        data[section] = SwmStatus()
+                    else:
+                        data[section] = data_load(file_name)
             except FileDoesntExist as e:
                 e.print_std_error()
                 raise Exit()

@@ -2,7 +2,8 @@
     "template" : "web/templates/kernel-stable-dashboard.mako",
     "title"    : "Kernel Stable Team Dashboard",
     "data"     : {
-        "swm": "swm-status.yaml",
+        "swm": "SwmStatus",
+        "sru-cycle": "SruCycle",
         "releases" : "all-releases.json",
         "testing": "testing.json"
     }
