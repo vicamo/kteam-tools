@@ -39,12 +39,15 @@ class CertificationTesting(TaskHandler):
             if not s.bug.debs.ready_for_testing:
                 break
 
-            route_archive, route_pocket = s.bug.debs.pocket_route("Proposed")
-            cinfo("APW route_archive={}".format(route_archive.reference))
-            if route_archive.reference == "ubuntu":
-                s.task.status = "Confirmed"
-            else:
-                s.task.status = "Invalid"
+            if s.bug.built_in != 1:
+                route_archive, route_pocket = s.bug.debs.pocket_route("Proposed")
+                cinfo("APW route_archive={}".format(route_archive.reference))
+                if route_archive.reference != "ubuntu":
+                    s.task.status = "Invalid"
+                    retval = True
+                    break
+
+            s.task.status = "Confirmed"
             retval = True
             break
 
