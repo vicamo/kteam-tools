@@ -1,0 +1,34 @@
+#!/bin/bash
+
+here=$(dirname $(readlink -f "$0"))
+stable="$here/.."
+web="$here/../../web"
+scripts="$web/scripts"
+
+mkdir -p data
+
+for out in kernel-sru-workflow
+do
+	mkdir -p "$out"
+	ln -sfT $(realpath --relative-to "$out" "$web/css") "$out/css"
+	ln -sfT $(realpath --relative-to "$out" "$web/img") "$out/img"
+done
+
+# kernel-sru-workflow.json
+echo "Rebuild kernel-sru-workflow.json ..."
+if [ ! -f "data/kernel-sru-workflow.json" ]; then
+	cp "$web/kernel-sru-workflow-bare.json" "data/kernel-sru-workflow.json"
+fi
+cp -p "data/kernel-sru-workflow.json" "data/kernel-sru-workflow.json.new"
+time "$scripts/cbd" --db="data/kernel-sru-workflow.json.new"
+rc="$?"
+if [ "$rc" -eq 0 ]; then
+	mv -f "data/kernel-sru-workflow.json.new"  "data/kernel-sru-workflow.json"
+
+	# kernel-sru-workflow.html
+	echo "Rebuild kernel-sru-workflow.html ..."
+	"$scripts/gen-workflow-report" "data/kernel-sru-workflow.json" >"kernel-sru-workflow/kernel-sru-workflow.html.new"
+	mv -f "kernel-sru-workflow/kernel-sru-workflow.html.new" "kernel-sru-workflow/kernel-sru-workflow.html"
+else
+	echo "ERROR: failed to rebuild kernel-sru-workflow.json" 1>&2
+fi
