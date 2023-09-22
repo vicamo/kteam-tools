@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 
 from sys                                import argv
@@ -32,7 +32,8 @@ class Cmdline:
     # error
     #
     def error(self, e, defaults):
-        if e != '': print e
+        if e != '':
+            print(e)
         self.usage(defaults)
 
     # usage
@@ -95,7 +96,7 @@ class Cmdline:
                 if len(args) > 0:
                     self.cfg['sru'] = args[0]
 
-        except GetoptError, error:
+        except GetoptError as error:
             print(error, defaults)
             raise CmdlineError('')
 
@@ -197,8 +198,7 @@ class SruReport:
             if len(self.data['releases'][rls]) == 0:
                 retval += "                    <div class=\"l2-section-heading\">%s</div>\n<div class=\"section\">                    No packages in proposed.</div>\n" % rls
             else:
-                pkg_keys = self.data['releases'][rls].keys()
-                pkg_keys.sort(key=self.package_type_key)
+                pkg_keys = sorted(self.data['releases'][rls].keys(), key=self.package_type_key)
 
                 retval += "                <div class=\"l2-section-heading\">%s</div>\n" % rls
                 retval += '            <div class="section">\n'
@@ -397,7 +397,10 @@ class Sru2Html(StdApp):
                 with open(self.cfg['sru'], 'r') as f:
                     sru = json.load(f)
 
-            print unicode(SruReport(sru)).encode("utf-8")
+            #report = str(SruReport(sru))
+            #print(report.encode("utf-8"))
+            #print(str(SruReport(sru)).encode("utf-8"))
+            print(SruReport(sru))
 
         # Handle the user presses <ctrl-C>.
         #
