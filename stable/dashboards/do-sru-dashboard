@@ -8,6 +8,8 @@ fi
 out="$1"
 payload="$1/kernel-stable-dashboard.html"
 
+echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): starting"
+
 (
 	cd "$here" || exit 1
 
@@ -24,3 +26,5 @@ if [ ! -d "$out/media" ]; then
 	echo LINKING MEDIA
 	ln -sf $(realpath --relative-to="$out" "$here/web/media") "$out"
 fi
+
+echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): complete"

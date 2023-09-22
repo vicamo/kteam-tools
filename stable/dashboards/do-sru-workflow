@@ -12,6 +12,8 @@ stable="$here/.."
 web="$here/../../web"
 scripts="$web/scripts"
 
+echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): starting"
+
 mkdir -p data
 
 for out in kernel-sru-workflow
@@ -39,3 +41,5 @@ if [ "$rc" -eq 0 ]; then
 else
 	echo "ERROR: failed to rebuild kernel-sru-workflow.json" 1>&2
 fi
+
+echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): complete"

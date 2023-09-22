@@ -12,6 +12,8 @@ stable="$here/.."
 web="$here/../../web"
 scripts="$web/scripts"
 
+echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): starting"
+
 mkdir -p data
 
 for out in sru-report sru-versions 1-day-new
@@ -56,3 +58,5 @@ if [ "$rc" -eq 0 ]; then
 else
 	echo "ERROR: failed to rebuild 1-day-window.json" 1>&2
 fi
+
+echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): complete"
