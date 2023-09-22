@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ "$#" != 1 ]; then
+	echo "Usage: $0 <out>" 1>&2
+	exit 1
+fi
+out="$1"
+cd "$out" || exit 1
+
 here=$(dirname $(readlink -f "$0"))
 stable="$here/.."
 web="$here/../../web"
