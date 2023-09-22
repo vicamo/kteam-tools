@@ -2,11 +2,11 @@
 #
 
 from sys                    import stdout, stderr
-from commands               import getstatusoutput
 from decimal                            import Decimal
 import json
 from os.path                import exists, getmtime
 from time                   import time
+import subprocess
 
 # o2ascii
 #
@@ -43,7 +43,9 @@ def run_command(cmd, dbg=False, dry_run=False):
         status = ""
         result = ""
         if not dry_run:
-            status, result = getstatusoutput(cmd)
+            p = subprocess.Popen(*args, **kwargs)
+            result, stderr = p.communicate()
+            status = p.returncode
             debug("     cmd: '%s'" % cmd, dbg)
             debug("  status: '%d'" % status, dbg)
             debug("  result: '%s'" % result, dbg)
