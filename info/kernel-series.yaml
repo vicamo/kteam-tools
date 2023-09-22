@@ -300,6 +300,7 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
         fips-build-fragment: &routing-table-fips-build
             test-build:
+                - ['ppa:fips-cc-stig/ubuntu/test-builds', 'Release']
                 - ['ppa:fips-cc-stig/ubuntu/fips-kernel', 'Release']
             build:
                 - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
