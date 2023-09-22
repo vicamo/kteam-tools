@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # This script is intended to produce an html, report of all the bugs in any "open"
 # state that have been tagged with a "regression" tag.
@@ -16,7 +16,7 @@ import json
 
 # FileDoesntExist
 #
-class FileDoesntExist():
+class FileDoesntExist(Exception):
     def __init__(self, file_name=''):
         self.file_name = file_name
 
