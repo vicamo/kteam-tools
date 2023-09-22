@@ -1,0 +1,65 @@
+#!/bin/bash
+
+here=$(dirname $(readlink -f "$0"))
+stable="$here/.."
+web="$here/../../web"
+scripts="$web/scripts"
+
+echo "here=$here stable=$stable scripts=$scripts"
+
+# make kernel-sru-workflow.html sru-report.html versions.html 1-day-new.html
+
+# kernel-sru-workflow.json
+echo "Rebuild kernel-sru-workflow.json ..."
+if [ ! -f "kernel-sru-workflow.json" ]; then
+	cp "$web/kernel-sru-workflow-bare.json" "kernel-sru-workflow.json.new"
+fi
+cp -p "kernel-sru-workflow.json" "kernel-sru-workflow.json.new"
+time "$scripts/cbd" --db="kernel-sru-workflow.json.new"
+rc="$?"
+if [ "$rc" -eq 0 ]; then
+	mv -f "kernel-sru-workflow.json.new"  "kernel-sru-workflow.json"
+
+	# kernel-sru-workflow.html
+	echo "Rebuild kernel-sru-workflow.html ..."
+	"$scripts/gen-workflow-report" "kernel-sru-workflow.json" >"kernel-sru-workflow.html.new"
+	mv -f "kernel-sru-workflow.html.new" "kernel-sru-workflow.html"
+else
+	echo "ERROR: failed to rebuild kernel-sru-workflow.json" 1>&2
+fi
+
+# sru-data.json
+echo "Rebuild sru-data.json ..."
+time "$stable/sru-report" --archive-versions --cache sru-data.cache >sru-data.json.new
+rc="$?"
+if [ "$rc" -eq 0 ]; then
+	mv sru-data.json.new sru-data.json
+
+	# sru-report.html
+	echo "Rebuild sru-report.html ..."
+	"$scripts/sru2html" sru-data.json >"sru-report.html.new"
+	mv -f "sru-report.html.new" "sru-report.html"
+
+	# versions.html
+	"$scripts/versions2html" sru-data.json >"versions.html.new"
+	mv -f "versions.html.new" "versions.html"
+
+else
+	echo "ERROR: failed to rebuild sru-data.json" 1>&2
+fi
+
+# 1-day-window.json
+echo "Rebuild 1-day-window.json ..."
+time "$scripts/collect-window-data" --window=1 --db=1-day-window.json.new --title="24 Hours of New Bugs"
+rc="$?"
+if [ "$rc" -eq 0 ]; then
+	mv 1-day-window.json.new 1-day-window.json
+
+	# 1-day-new.html
+	echo "Rebuild 1-day-new.html ..."
+	"$scripts/mk-regressions-report" --sru=sru-data.json 1-day-window.json >1-day-new.html.new
+	mv -f 1-day-new.html.new 1-day-new.html
+
+else
+	echo "ERROR: failed to rebuild 1-day-window.json" 1>&2
+fi
