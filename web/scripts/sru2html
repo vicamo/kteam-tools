@@ -236,7 +236,7 @@ class SruReport:
                         tmp = lpurl + proposed_version
                         retval += '                            <td width="200" valign="top"><a href="%s" >%s</a> (-proposed)</td>\n' % (tmp, self.data['releases'][rls][pkg]['Proposed'])
                     retval += '                            <td>&nbsp;</td>\n'
-                    if 'age' not in self.data['releases'][rls][pkg]:
+                    if 'age' not in self.data['releases'][rls][pkg] or self.data['releases'][rls][pkg]['age'] == 0:
                         retval += '                            <td width="10">&nbsp</td>\n'
                     else:
                         retval += '                            <td width="10">%s</td>\n' % (self.data['releases'][rls][pkg]['age'])
