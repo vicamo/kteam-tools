@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 
 from sys                                import argv
@@ -32,7 +32,8 @@ class Cmdline:
     # error
     #
     def error(self, e, defaults):
-        if e != '': print e
+        if e != '':
+            print(e)
         self.usage(defaults)
 
     # usage
@@ -95,7 +96,7 @@ class Cmdline:
                 if len(args) > 0:
                     self.cfg['sru'] = args[0]
 
-        except GetoptError, error:
+        except GetoptError as error:
             print(error, defaults)
             raise CmdlineError('')
 
@@ -153,14 +154,12 @@ class SruReport:
         retval += '\n'
 
         trackers_only_packages = ['linux-lts-backport-maverick']
-        suite_keys = self.data['releases'].keys()
-        suite_keys.sort()
+        suite_keys = sorted(self.data['releases'].keys())
         for rls in suite_keys:
             if len(self.data['releases'][rls]) == 0:
                 retval += "                    <div class=\"l2-section-heading\">%s</div>\n<div class=\"section\">                    No packages in proposed.</div>\n" % rls
             else:
-                pkg_keys = self.data['releases'][rls].keys()
-                pkg_keys.sort()
+                pkg_keys = sorted(self.data['releases'][rls].keys())
                 odd_row = False
 
                 retval += "            <div class=\"l2-section-heading\">%s</div>\n" % rls
@@ -277,7 +276,7 @@ class Sru2Html(StdApp):
                 with open(self.cfg['sru'], 'r') as f:
                     sru = json.load(f)
 
-            print SruReport(sru)
+            print(SruReport(sru))
 
         # Handle the user presses <ctrl-C>.
         #
