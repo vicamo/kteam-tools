@@ -5445,6 +5445,7 @@ defaults:
                         armhf: [ '20' ]
                         arm64: [ '20' ]
             supported: true
+            # also see linux-denver
             owner: diewald
             derived-from: [ '20.04', 'linux' ]
             swm:
@@ -6917,6 +6918,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-meta-denver']
             supported: true
+            # EOL date 2025-07-31 - do not renew
             owner: wenchien
             development: false
             derived-from: [ '20.04', 'linux-raspi' ]
@@ -6936,6 +6938,7 @@ defaults:
             owner: wenchien
             development: false
             snaps:
+                # EOL date 2025-07-31 - do not renew
                 avnet-avt-iiotg20-kernel:
                     repo: [ 'git://git.launchpad.net/~canonical-hwe-team/denver/+git/denver-kernel-snaps', 'denver']
                     gated: false
