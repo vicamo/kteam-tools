@@ -16,18 +16,22 @@ BASE_URL = "https://kernel.ubuntu.com/~kernel-ppa/mainline"
 STATUS = {
     "0": "pass",
     "1": "setup",  # build setup failure
-    "2": "fail",   # build failure
+    "2": "fail",  # build failure
 }
 
+
 def cmp_version(v1, v2):
-    """ Compare kernel versions
+    """
+    Compare kernel versions
     """
     v1 = v1.replace("-rc", "~rc")
     v2 = v2.replace("-rc", "~rc")
     return apt_pkg.version_compare(v1, v2)  # pylint: disable=I1101
 
+
 def get_arches(version):
-    """ Return the list of supported arches for the given kernel version
+    """
+    Return the list of supported arches for the given kernel version
     """
     arches = ["amd64", "i386"]
 
@@ -41,8 +45,7 @@ def get_arches(version):
         arches.append("arm64")
 
     # armel: version >= 2.6 && version <= 3.4
-    if ((cmp_version(version, "v2.5") >= 0 and  # pylint: disable=R1716
-         cmp_version(version, "v3.4") <= 0)):
+    if cmp_version(version, "v2.5") >= 0 and cmp_version(version, "v3.4") <= 0:  # pylint: disable=R1716
         arches.append("armel")
 
     # armhf: version >= 3.1
@@ -50,8 +53,7 @@ def get_arches(version):
         arches.append("armhf")
 
     # powerpc: version >= 2.6 && version <= 4.11
-    if ((cmp_version(version, "v2.6") >= 0 and  # pylint: disable=R1716
-         cmp_version(version, "v4.11") <= 0)):
+    if cmp_version(version, "v2.6") >= 0 and cmp_version(version, "v4.11") <= 0:  # pylint: disable=R1716
         arches.append("powerpc")
 
     # ppc64el: version >= 3.12
@@ -68,8 +70,10 @@ def get_arches(version):
 
     return sorted(arches)
 
+
 def get_build_status(path, arches):
-    """ Return the statuses of a single build for the different architectures
+    """
+    Return the statuses of a single build for the different architectures
     """
     status = {
         "old_build": False,
@@ -83,8 +87,7 @@ def get_build_status(path, arches):
         with open(f, encoding="utf-8") as fh:
             for line in fh:
                 comps = line.strip().split(" ")
-                if ((len(comps) != 3 or comps[0] != "Status:" or
-                     comps[1] not in arches)):
+                if len(comps) != 3 or comps[0] != "Status:" or comps[1] not in arches:
                     continue
                 found = True
                 arch, arch_status = comps[1:]
@@ -92,8 +95,7 @@ def get_build_status(path, arches):
 
         if not found:
             # No status found, so scan for debs
-            debs = [f for f in os.listdir(path)
-                    if f.startswith("linux-image-") and f.endswith(".deb")]
+            debs = [f for f in os.listdir(path) if f.startswith("linux-image-") and f.endswith(".deb")]
             for f in debs:
                 arch = f.split("_")[-1][:-4]
                 status[arch] = STATUS["0"]
@@ -111,8 +113,10 @@ def get_build_status(path, arches):
 
     return status
 
+
 def get_build_timestamp(path):
-    """ Return the timestamp of the build
+    """
+    Return the timestamp of the build
     """
     f = os.path.join(path, "HEADER.html")
     if os.path.exists(f):
@@ -121,6 +125,7 @@ def get_build_timestamp(path):
 
     return "unknown"
 
+
 # ----------------------------------------------------------------------------
 # Main entry point
 
@@ -128,7 +133,8 @@ apt_pkg.init_system()  # pylint: disable=I1101
 
 now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
 
-print("""
+print(
+    """
 <!DOCTYPE html>
 <html>
   <head>
@@ -204,7 +210,10 @@ print("""
       <tr><td id='fail'>fail</td><td>Build failed</td></tr>
       <tr><td id='missing'></td><td>Missing/No build</td></tr>
     </table>
-""".format(now))
+""".format(
+        now
+    )
+)
 
 versions = [f for f in os.listdir(BASE_PATH) if f.startswith("v")]
 
@@ -242,19 +251,19 @@ for version in sorted(versions, reverse=True, key=cmp_to_key(cmp_version)):
     # Data row
     url = BASE_URL + "/" + version
     print("      <tr>")
-    print("        <td id='version'><a href='" + url + "'>" + version +
-          "</a></td>")
+    print("        <td id='version'><a href='" + url + "'>" + version + "</a></td>")
     print("        <td id='date'>" + ts + "</td>")
     for arch in arches:
         arch_url = url if status["old_build"] else url + "/" + arch
         arch_status = status.get(arch, "missing")
         arch_text = "" if arch_status == "missing" else arch_status
-        print("        <td id='" + arch_status + "'><a href='" + arch_url +
-              "'>" + arch_text + "</a></td>")
+        print("        <td id='" + arch_status + "'><a href='" + arch_url + "'>" + arch_text + "</a></td>")
     print("      </tr>")
 
-print("""
+print(
+    """
     </table>
   </body>
 </html>
-""")
+"""
+)
