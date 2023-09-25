@@ -40,5 +40,6 @@ repos:
 files: >
   (?x)^(
     info/.*\.yaml |
-    cranky/cmds.d/cycles
+    cranky/cmds.d/cycles |
+    mainline-build/cod-mainline-dashboard
   )$
