@@ -2351,6 +2351,7 @@ class Package():
                     if not match:
                         continue
                     prereqs.append((match.group(1), match.group(2)))
+            break
 
         if self.bug.is_development_series:
             pocket = 'Release'
@@ -2367,7 +2368,7 @@ class Package():
             #built_route_entry = build_route.version_match() # ANY
             #cinfo("{}/{} package found version={}".format(package, built_route_entry, version))
             if build_route_entry is None:
-                failures.append("{}/{} package not found in {} route".format(package, version, pocket))
+                failures.append("{}/{} missing".format(package, version, pocket))
                 cinfo("{}/{} package not found in {} route".format(package, version, pocket))
                 continue
             cinfo("{}/{} package found as expected".format(package, version))
