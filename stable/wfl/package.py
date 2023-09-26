@@ -3245,8 +3245,8 @@ class Package():
             if lp_archive is None:
                 continue
 
-            if pocket_data.version is None:
-                continue
+            #if pocket_data.version is None:
+            #    continue
             if pocket_data.version == meta_version:
                 previously_published = True
                 continue
@@ -3254,19 +3254,20 @@ class Package():
             # See if we have different names in this pocket.
             src = pocket_data.source
             cinfo("meta_check: previous src={}\n".format(pocket_data.source))
-            previously_published = True
-            bins = src.getPublishedBinaries(active_binaries_only=False)
-            bins_image_prev = []
-            for binary in bins:
-                binary_name = binary.binary_package_name
-                if "-image-" in binary_name:
-                    bins_image_prev.append(binary)
-            #cinfo("meta_check: bins_image_prev={}".format(bins_image))
+            if src is not None:
+                previously_published = True
+                bins = src.getPublishedBinaries(active_binaries_only=False)
+                bins_image_prev = []
+                for binary in bins:
+                    binary_name = binary.binary_package_name
+                    if "-image-" in binary_name:
+                        bins_image_prev.append(binary)
+                    #cinfo("meta_check: bins_image_prev={}".format(bins_image))
 
-            bins_image_prev_names = set([binary.binary_package_name for binary in bins_image_prev])
-            if bins_image_prev_names != bins_image_names:
-                cinfo("meta_check: names are different variant change prev={} curr={}".format(bins_image_prev_names, bins_image_names))
-                variant_change = True
+                bins_image_prev_names = set([binary.binary_package_name for binary in bins_image_prev])
+                if bins_image_prev_names != bins_image_names:
+                    cinfo("meta_check: names are different variant change prev={} curr={}".format(bins_image_prev_names, bins_image_names))
+                    variant_change = True
 
             # See if we can see different versions of this package in the released
             # pocket.
