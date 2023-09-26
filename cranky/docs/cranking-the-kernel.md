@@ -703,6 +703,11 @@ in the current directory. If you are keeping files from older cranks in the
 same directory, provide different parameters that would create the debdiffs
 only for the latest crank.
 
+**Note** Make sure to check that the contents of the .changes files contain the
+intended delta from the previous release. If the .changes file is too large,
+Launchpad may not accept the package upload, and it will not indicate whether
+or not the packages were accepted or rejected.
+
 ### Sign packages - `debsign`
 
 Sign the source packages:
