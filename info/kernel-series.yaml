@@ -1284,19 +1284,19 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-laptop:
-            # Concept kernel for the Lenovo x13s ARM laptop
+            # Concept kernel for the Lenovo X13s ARM laptop
             owner: juergh
-            routing: concept-x13s
-            variants: ['--']
+            routing: ubuntu/2
+            variants: ['-23.10']
             packages:
                 linux-laptop:
                     repo: ['git://git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux/+git/mantic', 'linux-laptop']
                 linux-meta-laptop:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux-meta/+git/mantic', 'linux-laptop']
-            derived-from: ['23.04', 'linux']
+            derived-from: ['23.10', 'linux']
             backported: false
-            supported: false
+            invalid-tasks: ['certification-testing']
 
         linux-nvidia:
             routing: nvidia-ubuntu/4
