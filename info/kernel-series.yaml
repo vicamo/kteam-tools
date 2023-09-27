@@ -2641,6 +2641,7 @@ defaults:
             testing:
                 flavours:
                     aws:
+                        meta-pkg: linux-aws-lts-22.04
                         arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
@@ -2682,7 +2683,7 @@ defaults:
 
         linux-aws-6.2:
             routing: ubuntu/4
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             package-relations: signed-generate
             packages:
                 linux-aws-6.2:
@@ -2711,6 +2712,43 @@ defaults:
             testing:
                 flavours:
                     aws:
+                        meta-pkg: linux-aws
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-aws-6.5:
+            routing: ubuntu/4
+            variants: [ '-edge' ]
+            package-relations: signed-generate
+            packages:
+                linux-aws-6.5:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/jammy', 'aws-6.5-next']
+                linux-meta-aws-6.5:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/jammy', 'aws-6.5']
+                linux-generate-aws-6.5:
+                    type: generate
+                linux-signed-aws-6.5:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/jammy', 'aws-6.5']
+                linux-restricted-modules-aws-6.5:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/jammy', 'aws-6.5']
+                linux-restricted-generate-aws-6.5:
+                    type: lrg
+                linux-restricted-signatures-aws-6.5:
+                    type: lrs
+            supported: true
+            owner: timg-tpi
+            backport: true
+            derived-from: [ '23.10', 'linux-aws' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    aws:
+                        meta-pkg: linux-aws-edge
                         arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
