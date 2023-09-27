@@ -877,6 +877,18 @@ defaults:
                 - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
             release:
                 - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
+        gcp-tcpx:
+            <<: [*routing-table-security-build, *routing-table-security-proposed]
+            build:
+                - ['ppa:canonical-kernel-gcp-tcpx/ubuntu/build', 'Release']
+                - ['ppa:canonical-kernel-gcp-tcpx/ubuntu/build2', 'Release']
+            proposed:
+                - ['ppa:canonical-kernel-gcp-tcpx/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-gcp-tcpx/ubuntu/proposed2', 'Release']
+            updates:
+                - ['ppa:canonical-kernel-gcp-tcpx/ubuntu/release', 'Release']
+            release:
+                - ['ppa:canonical-kernel-gcp-tcpx/ubuntu/release', 'Release']
   package-relations:
       default:
           meta:
@@ -6261,6 +6273,39 @@ defaults:
                         arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
+
+        linux-gcp-tcpx:
+            routing: gcp-tcpx
+            variants: [ '--' ]
+            package-relations: signed-generate
+            packages:
+                linux-gcp-tcpx:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-gcp-tcpx/ubuntu/+source/linux-gcp-tcpx/+git/focal', 'gcp-tcpx-next']
+                linux-meta-gcp-tcpx:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel-gcp-tcpx/ubuntu/+source/linux-meta-gcp-tcpx/+git/focal']
+                linux-generate-gcp-tcpx:
+                    type: generate
+                linux-signed-gcp-tcpx:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel-gcp-tcpx/ubuntu/+source/linux-signed-gcp-tcpx/+git/focal']
+                linux-restricted-generate-gcp-tcpx:
+                    type: lrg
+                linux-restricted-signatures-gcp-tcpx:
+                    type: lrs
+            owner: john-cabaj
+            private: true
+            supported: false
+            development: true
+            derived-from: ['20.04', 'linux-gcp-5.15']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    gcp-tcpx:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: ['automated-testing']
 
         linux-gcp-5.13:
             routing: ubuntu/2
