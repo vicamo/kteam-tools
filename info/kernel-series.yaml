@@ -1295,7 +1295,13 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux-meta/+git/mantic', 'linux-laptop']
             derived-from: ['23.10', 'linux']
-            backported: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    laptop:
+                        arches: ['arm64']
+                        clouds: ['metal']
             invalid-tasks: ['certification-testing']
 
         linux-nvidia:
