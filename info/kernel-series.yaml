@@ -1587,6 +1587,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/lunar']
             owner: kmously
+            supported: false
             derived-from: ['23.04', 'linux']
             swm:
                 kernel-testing: true
