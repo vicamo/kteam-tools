@@ -1565,7 +1565,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp:
                     type: lrs
-            owner: kmously
+            owner: diewald
             derived-from: ['23.04', 'linux']
             swm:
                 kernel-testing: true
@@ -1652,7 +1652,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oracle:
                     type: lrs
-            owner: kmously
+            owner: smb
             derived-from: ['23.04', 'linux']
             swm:
                 kernel-testing: true
@@ -2932,7 +2932,7 @@ defaults:
                 linux-restricted-signatures-gcp-6.2:
                     type: lrs
             supported: true
-            owner: kmously
+            owner: myamada
             backport: true
             derived-from: [ '23.04', 'linux-gcp' ]
             swm:
@@ -2999,7 +2999,7 @@ defaults:
                 linux-signed-gke:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/jammy']
-            owner: kmously
+            owner: portias
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -3035,7 +3035,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/jammy', 'gkeop']
             supported: true
-            owner: kmously
+            owner: hui.wang
             backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
@@ -3225,7 +3225,7 @@ defaults:
                 linux-restricted-signatures-oracle-6.2:
                     type: lrs
             supported: true
-            owner: kmously
+            owner: smb
             backport: true
             derived-from: [ '23.04', 'linux-oracle' ]
             swm:
@@ -3430,7 +3430,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oracle:
                     type: lrs
-            owner: corytodd
+            owner: nwager
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -5631,7 +5631,7 @@ defaults:
                 linux-restricted-signatures-aws:
                     type: lrs
             supported: true
-            owner: magalilemes
+            owner: kuba-t-pawlak
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -6129,7 +6129,7 @@ defaults:
                 linux-restricted-signatures-gcp-5.15:
                     type: lrs
             supported: true
-            owner: kmously
+            owner: gagath
             backport: true
             derived-from: [ '22.04', 'linux-gcp' ]
             swm:
@@ -6249,7 +6249,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/focal', 'gkeop-5.15']
             supported: true
-            owner: kmously
+            owner: nathan-sweetman
             backport: true
             derived-from: [ '22.04', 'linux-gkeop' ]
             swm:
@@ -6328,7 +6328,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/focal', 'gkeop']
             supported: true
-            owner: kmously
+            owner: gagath
             backport: false
             derived-from: [ '20.04', 'linux' ]
             swm:
@@ -6411,7 +6411,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/focal']
             supported: true
-            owner: roxanan
+            owner: thibf
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -6510,7 +6510,7 @@ defaults:
                 linux-restricted-signatures-oracle-5.15:
                     type: lrs
             supported: true
-            owner: corytodd
+            owner: nwager
             backport: true
             derived-from: [ '22.04', 'linux-oracle' ]
             swm:
@@ -8293,7 +8293,7 @@ defaults:
                 linux-restricted-signatures-aws:
                     type: lrs
             supported: true
-            owner: ian-may
+            owner: cascardo
             derived-from: [ '18.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -8372,7 +8372,7 @@ defaults:
                 linux-restricted-signatures-aws-5.4:
                     type: lrs
             supported: true
-            owner: magalilemes
+            owner: kuba-t-pawlak
             backport: true
             derived-from: [ '20.04', 'linux-aws' ]
             swm:
@@ -8451,7 +8451,7 @@ defaults:
                 linux-restricted-signatures-azure-4.15:
                     type: lrs
             supported: true
-            owner: philcox
+            owner: jacobmartin
             backport: false
             derived-from: [ '18.04', 'linux' ]
             swm:
@@ -8635,7 +8635,7 @@ defaults:
                 #    type: lrm
                 #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/bionic', 'gcp-4.15']
             supported: true
-            owner: kmously
+            owner: thibf
             backport: false
             derived-from: [ '18.04', 'linux' ]
             swm:
@@ -8662,7 +8662,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips', 'gcp-fips']
             supported: true
-            owner: philcox
+            owner: myamada
             private: true
             derived-from: ['18.04', 'linux-gcp-4.15']
             swm:
@@ -8722,7 +8722,7 @@ defaults:
                 linux-restricted-signatures-gcp-5.4:
                     type: lrs
             supported: true
-            owner: kmously
+            owner: nathan-sweetman
             backport: true
             derived-from: [ '20.04', 'linux-gcp' ]
             swm:
@@ -9275,7 +9275,7 @@ defaults:
                 linux-restricted-signatures-aws-fips:
                     type: lrs
             supported: true
-            owner: ian-may
+            owner: cascardo
             private: true
             derived-from: ['18.04', 'linux-aws']
             swm:
@@ -9311,7 +9311,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-fde-bionic']
             supported: true
-            owner: smb
+            owner: diewald
             development: false
             private: true
             derived-from: ['18.04', 'linux']
@@ -9626,7 +9626,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-azure-xenial']
             supported: true
-            owner: philcox
+            owner: jacobmartin
             backport: true
             derived-from: [ '18.04', 'linux-azure-4.15' ]
             swm:
@@ -9713,7 +9713,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-gcp-xenial']
             supported: true
-            owner: kmously
+            owner: hui.wang
             backport: true
             derived-from: [ '18.04', 'linux-gcp-4.15' ]
             testing:
@@ -10145,7 +10145,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-aws-trusty']
             supported: true
-            owner: ian-may
+            owner: cascardo
             derived-from: [ '16.04', 'linux' ]
             testing:
                 flavours:
@@ -10169,7 +10169,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-azure-trusty']
             supported: true
-            owner: philcox
+            owner: jacobmartin
             backport: true
             derived-from: [ '18.04', 'linux-azure-4.15' ]
             swm:
