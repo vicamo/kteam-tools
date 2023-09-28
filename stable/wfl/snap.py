@@ -207,6 +207,7 @@ class SnapDebs:
         s._snap_store = None
         s._git_repo = False
         s.is_v2 = False
+        s.is_v2v = False
 
         if s.bug.variant == 'snap-debs':
             # We take our version from the debs we are snapping up
@@ -249,23 +250,16 @@ class SnapDebs:
 
             s.bug.update_title(suffix='snap-debs snap:' + snap_name)
 
-            # V2: if we have a stream then assume V2, otherwise attempt to locate
-            #     the "edge" "stream" recipe, if it exists we are V2.
-            if s.bug.built_in is not None:
+            # V2: attempt to locate the "edge" "stream=1" recipe.
+            recipe_edge = s.lookup_recipe_v2("edge", stream=1, probe_2v=True)
+            if recipe_edge is not None:
                 s.is_v2 = True
-                recipe_edge = s.lookup_recipe_v2("edge", stream=1)
-                if recipe_edge is None:
-                    # If we do have no recipe but do have a stream something is off
-                    # drop the stream as a safety response.
-                    cdebug("APW: SNAP is_v2={} RECOVERY".format(s.is_v2))
-                    s.is_v2 = False
-                    s.bug.built_set("route-entry", None)
-
+                s.is_v2v = True
             else:
                 recipe_edge = s.lookup_recipe_v2("edge", stream=1)
                 if recipe_edge is not None:
                     s.is_v2 = True
-            cdebug("APW: SNAP is_v2={}".format(s.is_v2))
+            cdebug("SNAP is_v2={} is_v2v={}".format(s.is_v2, s.is_v2v))
 
             # Use our parents stream as soon as it comes ready.  Match our parent in
             # the normal form.
@@ -312,18 +306,26 @@ class SnapDebs:
         recipe = lp.load(handle)
         return recipe
 
-    def lookup_recipe_v2(self, risk, stream=None):
+    def lookup_recipe_v2(self, risk, stream=None, probe_2v=None):
         if stream is None:
             stream = self.bug.built_in
+        if probe_2v is None:
+            probe_2v = self.is_v2v
 
         if stream is None:
             return None
 
         risk_clamp = "edge" if risk == "edge" else "beta"
-
+        variant = "+2v" if probe_2v else "+2"
         # mantic--linux--pc-kernel--edge--1
-        recipe_name = "{}--{}--{}--{}--{}".format(self.bug.series, self.bug.source.name, self.name, risk_clamp, stream)
-
+        recipe_name = "{}--{}--{}--{}--{}{}".format(
+            self.bug.series,
+            self.bug.source.name,
+            self.name,
+            risk_clamp,
+            stream,
+            variant,
+        )
         cdebug("lookup_recipe_manual({}) recipe_name={}".format(risk, recipe_name))
 
         # Lookup our team snap recipies.

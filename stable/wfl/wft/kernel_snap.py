@@ -1,7 +1,7 @@
 from datetime                                   import datetime, timedelta, timezone
 
 from wfl.git_tag                                import GitTagsSnap, GitTagError
-from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
+from wfl.log                                    import center, cleave, cinfo, cerror, cdebug, centerleave
 from wfl.snap                                   import SnapStoreError
 from wfl.errors                                 import WorkflowCrankError
 from .base                                      import TaskHandler
@@ -86,6 +86,10 @@ class KernelSnapBase(TaskHandler):
     @property
     def is_v2(self):
         return self.bug.snap is not None and self.bug.snap.is_v2
+
+    @property
+    def is_v2v(self):
+        return self.bug.snap is not None and self.bug.snap.is_v2v
 
 
 class SnapPrepareV1(KernelSnapBase):
@@ -267,12 +271,18 @@ class SnapPrepareManual(KernelSnapBase):
 
     # _verify_prepared
     #
+    @centerleave
     def _verify_prepared(s):
-        center(s.__class__.__name__ + '._verify_prepared')
         retval = False
 
         request = s.bug.group_get("snap-prepare", s.snap_build)
         if request is None:
+            if s.is_v2v:
+                if not s.bug.snap.update_version(s.snap_build, s.bug.version):
+                    cinfo('    unable to set snap version', 'yellow')
+                    s.task.reason = 'Stalled -- unable to set snap version'
+                    return
+
             request = s.bug.snap.snap_request(s.snap_build)
             s.bug.group_set("snap-prepare", s.snap_build, request)
 
@@ -295,7 +305,6 @@ class SnapPrepareManual(KernelSnapBase):
                 retval = True
             break
 
-        cleave(s.__class__.__name__ + '._verify_prepared (%s)' % (retval))
         return retval
 
 
