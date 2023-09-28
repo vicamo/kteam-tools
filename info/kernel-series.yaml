@@ -1303,38 +1303,6 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: ['certification-testing']
 
-        linux-nvidia:
-            routing: nvidia-ubuntu/4
-            variants: ['--']
-            package-relations: signed-generate
-            packages:
-                linux-nvidia:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nvidia/+git/mantic', 'main-next']
-                linux-meta-nvidia:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nvidia/+git/mantic', 'main']
-                linux-generate-nvidia:
-                    type: generate
-                linux-signed-nvidia:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nvidia/+git/mantic', 'main']
-                linux-restricted-modules-nvidia:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-nvidia/+git/mantic', 'main']
-                linux-restricted-generate-nvidia:
-                    type: lrg
-                linux-restricted-signatures-nvidia:
-                    type: lrs
-            owner: ian-may
-            development: true
-            supported: false
-            #derived-from: [ '23.10', 'linux' ]
-            backported: true
-            derived-from: [ '23.04', 'linux-nvidia' ]
-            swm:
-                kernel-testing: true
-            invalid-tasks: ['boot-testing', 'automated-testing', 'certification-testing', 'regression-testing']
-
         linux-intel-opt:
             routing: ubuntu/4
             variants: ['--']
