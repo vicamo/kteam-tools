@@ -11,6 +11,7 @@ import os
 import json
 from .errors import ShankError
 from datetime import datetime
+import subprocess
 
 from lazr.restfulclient.errors import NotFound
 
@@ -715,3 +716,22 @@ class SnapDebs:
                 broken.append(entry)
 
         return good, partial, broken
+
+    def update_version(self, risk, version):
+        # Usage: $0 <tracker> <repo-url> <repo-branch> <build-branch> <version>
+
+        cmd = [
+            os.path.join(os.path.dirname(__file__), "..", "snap-set-version"),
+            str(self.bug.lpbug.id),
+            self.snap_info.repo.url,
+            self.snap_info.repo.branch,
+            risk,
+            str(self.bug.built_in),
+            version,
+        ]
+        cinfo("repo_update_version: cmd={}".format(cmd))
+        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        for line in proc.stdout.split(b"\n"):
+            cinfo("repo_update_version: {}".format(line))
+
+        return proc.returncode == 0

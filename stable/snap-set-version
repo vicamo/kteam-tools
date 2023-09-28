@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if [ "$#" != 6 ]; then
+	echo "Usage: $0 <tracker> <repo-url> <repo-branch> <risk> <stream> <version>" 1>&2
+	exit 1
+fi
+tracker="$1"
+repo_url="$2"
+repo_branch="$3"
+risk="$4"
+stream="$5"
+version="$6"
+
+branch="$repo_branch--$risk--$stream"
+echo "tracker=$tracker repo_url=$repo_url repo_branch=$repo_branch risk=$risk stream=$stream branch=$branch version=$version"
+
+channel="$risk"
+if [ "$stream" -ne 1 ]; then
+	channel="$risk/stream$stream"
+fi
+
+mkdir -p "$HOME/.snap-workspace"
+workspace="$HOME/.snap-workspace/$tracker"
+
+rm -rf "$workspace"
+git clone --depth 1 --branch "$repo_branch" "$repo_url" "$workspace" || exit 1
+
+(
+	cd "$workspace" || exit 1
+
+	sed -i -e "s/version: .*/version: $version/" kernel-info.yaml
+	if [ -f "snapcraft.yaml.in" ]; then
+		sed -e "s#@CHANNEL@#$channel#g" <"snapcraft.yaml.in" >"snapcraft.yaml"
+	fi
+	sed -i -e "s/version: .*/version: $version/" snapcraft.yaml
+	git diff-index --quiet HEAD || git commit -a -s -m "VERSION: $channel $version" || exit 1
+	git push origin "+${repo_branch}:${branch}" || exit 1
+) || exit "$?"
