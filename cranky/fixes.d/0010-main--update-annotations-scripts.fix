@@ -41,8 +41,8 @@ if [ -z "${release_ver}" ]; then
 	exit 1
 fi
 
-# Only applies to releases >= 22.04
-if dpkg --compare-versions "${release_ver}" lt '22.04'; then
+# Only applies to releases >= 20.04
+if dpkg --compare-versions "${release_ver}" lt '20.04'; then
 	fix_verbose "nothing to do"
 	exit 0
 fi
