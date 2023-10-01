@@ -346,6 +346,8 @@ class WorkflowBug():
     # save
     #
     def save(s):
+        for taskname, task in s.tasks_by_name.items():
+            task.save()
         s.save_bug_properties()
         s._remove_live_tag()
         if s.tracker_modified:
