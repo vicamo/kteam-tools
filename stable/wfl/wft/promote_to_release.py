@@ -105,6 +105,10 @@ class PromoteToRelease(Promoter):
                 break
 
             pull_back = False
+
+            if s._kernel_manual_release():
+                break
+
             if s.bug.master_bug is not None:
                 if not s.master_bug_ready():
                     cinfo('            Master bug no longer ready pulling back from Confirmed', 'yellow')
