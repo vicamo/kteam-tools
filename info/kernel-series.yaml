@@ -2452,6 +2452,83 @@ defaults:
                         clouds: ['metal', 'aws']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-hwe-6.5:
+            routing: ubuntu/4
+            variants: [ '-hwe-22.04-wip' ]
+            package-relations: signed-generate
+            packages:
+                linux-hwe-6.5:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'hwe-6.5-next']
+                linux-meta-hwe-6.5:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'hwe-6.5']
+                linux-generate-hwe-6.5:
+                    type: generate
+                linux-signed-hwe-6.5:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'hwe-6.5']
+                linux-restricted-modules-hwe-6.5:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jammy', 'hwe-6.5']
+                linux-restricted-generate-hwe-6.5:
+                    type: lrg
+                linux-restricted-signatures-hwe-6.5:
+                    type: lrs
+            owner: ian-may
+            supported: false
+            development: true
+            backport: true
+            derived-from: [ '23.10', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal']
+
+        linux-lowlatency-hwe-6.5:
+            routing: ubuntu/4
+            variants: [ '-hwe-22.04-wip' ]
+            package-relations: signed-generate
+            packages:
+                linux-lowlatency-hwe-6.5:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'lowlatency-hwe-6.5-next']
+                linux-meta-lowlatency-hwe-6.5:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'lowlatency-hwe-6.5']
+                linux-generate-lowlatency-hwe-6.5:
+                    type: generate
+                linux-signed-lowlatency-hwe-6.5:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'lowlatency-hwe-6.5']
+                linux-restricted-modules-lowlatency-hwe-6.5:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jammy', 'lowlatency-hwe-6.5']
+                linux-restricted-generate-lowlatency-hwe-6.5:
+                    type: lrg
+                linux-restricted-signatures-lowlatency-hwe-6.5:
+                    type: lrs
+            owner: ian-may
+            supported: false
+            development: true
+            backport: true
+            derived-from: [ '23.10', 'linux-lowlatency' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    lowlatency:
+                        arches: ['amd64', 'arm64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'aws']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-raspi:
             variants: ['--']
             packages:
