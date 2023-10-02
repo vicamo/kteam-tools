@@ -4183,6 +4183,45 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-nvidia-6.5:
+            routing: nvidia-ubuntu/4
+            variants: [ '-6.5', '-hwe-22.04-wip' ]
+            package-relations: signed-generate
+            packages:
+                linux-nvidia-6.5:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nvidia/+git/jammy', 'nvidia-6.5-next']
+                linux-meta-nvidia-6.5:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nvidia/+git/jammy', 'nvidia-6.5']
+                linux-generate-nvidia-6.5:
+                    type: generate
+                linux-signed-nvidia-6.5:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nvidia/+git/jammy', 'nvidia-6.5']
+                linux-restricted-modules-nvidia-6.5:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-nvidia/+git/jammy', 'nvidia-6.5']
+                linux-restricted-generate-nvidia-6.5:
+                    type: lrg
+                linux-restricted-signatures-nvidia-6.5:
+                    type: lrs
+            owner: ian-may
+            development: true
+            supported: false
+            derived-from: [ '23.10', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    nvidia:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'arm64']
+                        clouds: ['metal']
+                    nvidia-64k:
+                        arches: ['arm64']
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-nvidia-tegra:
             routing: nvidia-ubuntu/4
             variants: ['--']
