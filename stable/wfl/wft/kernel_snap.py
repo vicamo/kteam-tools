@@ -335,12 +335,12 @@ class SnapPrepareUnsigned(SnapPrepareManual):
             if s.bug.master_bug is not None:
                 if s.bug.master_bug.task_status("snap-release-to-" + s.snap_build) not in ("Fix Released", "Invalid"):
                     cinfo("    task snap-release-to-{} is not 'Fix Released'".format(s.snap_build), 'yellow')
-                    s.task.reason = "Holding -b Not ready to be cranked (source snap not in {})".format(s.snap_build)
+                    s.task.reason = "Holding -b Automated crank waiting (source snap not in {})".format(s.snap_build)
                     break
             if s.debs_bug is not None:
                 if s.debs_bug.task_status(':prepare-packages') != 'Fix Released':
                     cinfo('    task :prepare-packages is not \'Fix Released\'', 'yellow')
-                    s.task.reason = 'Holding -b Not ready to be cranked'
+                    s.task.reason = 'Holding -b Automated crank waiting (packages not built)'
                     break
 
             # Check if this is the oldest tracker for this target.
@@ -393,19 +393,19 @@ class SnapPrepareSigned(SnapPrepareManual):
                 if s.bug.master_bug.task_status("snap-release-to-" + s.snap_build) not in ("Fix Released", "Invalid"):
                     cinfo("    task snap-release-to-{} is not 'Fix Released'".format(s.snap_build), 'yellow')
                     if not edge_reason:
-                        s.task.reason = "Holding -b Not ready to be cranked (source snap not in {})".format(s.snap_build)
+                        s.task.reason = "Holding -b Automated crank waiting (source snap not in {})".format(s.snap_build)
                     break
             if s.debs_bug is not None:
                 if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
                     cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
                     if not edge_reason:
-                        s.task.reason = 'Holding -b Not ready to be cranked'
+                        s.task.reason = 'Holding -b Automated crank waiting (packages not in proposed)'
                     break
 
                 if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
                     cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\'', 'yellow')
                     if not edge_reason:
-                        s.task.reason = 'Holding -b Not ready to be cranked'
+                        s.task.reason = 'Holding -b Automated crank waiting (packages not in proposed)'
                     break
 
             # Attempt to apply replaces as we are ready to promote.
