@@ -2277,21 +2277,28 @@ class Package():
         pkg = 'main'
         bi = self.build_info
         for pocket in self.__pockets_uploaded:
-            if pkg not in bi or pocket not in bi[pkg]:
-                    continue
-            if bi[pkg][pocket]['status'] in self.__states_present:
-                changes_url = bi[pkg][pocket]['changes']
-                cdebug("CHANGES: url={}".format(changes_url))
+            package_version = self.package_version_exact(pkg)
+            if package_version is None:
+                continue
+            build_route = self.builds.get(pkg, {}).get(pocket)
+            if build_route is None:
+                continue
+            build_route_entry = build_route.version_match(exact=package_version, limit_stream=self.bug.built_in)
+            if build_route_entry is None:
+                continue
+            changes_url = build_route_entry.changes_url
+            if changes_url is None:
+                continue
 
-                # If we managed to find a changes file then we can extract the list.
-                if changes_url is not None:
-                    changes_data = self.changes_data(changes_url)
-                    if changes_data is None:
-                        continue
-                    for line in changes_data:
-                        if line.startswith('Launchpad-Bugs-Fixed:'):
-                            bugs = line.split(' ')[1:]
-                    break
+            cdebug("BUGS: CHANGES: url={}".format(changes_url))
+            changes_data = self.changes_data(changes_url)
+            if changes_data is None:
+                continue
+
+            for line in changes_data:
+                if line.startswith('Launchpad-Bugs-Fixed:'):
+                    bugs = line.split(' ')[1:]
+            break
 
         cleave(self.__class__.__name__ + '.bugs {}'.format(bugs))
         return bugs
