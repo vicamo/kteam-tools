@@ -161,7 +161,9 @@ class Workflow(TaskHandler):
                 cinfo("workflow: snap risk={}".format(risk))
                 (consistent, reasons) = s.bug.snap.channel_revisions_consistent(risk)
                 if consistent is False:
-                    s.bug.reasons['snap-publishing'] = "snap channel revisions inconsistent {}".format(",".join(reasons))
+                    s.bug.reasons['snap-publishing'] = "Stalled -- snap channel revisions inconsistent {}".format(",".join(reasons))
+                if s.bug.flag("error-snap-extra-arch"):
+                    s.bug.reasons['error-snap'] = "Stalled -b Warning unexpected architecture builds seen"
 
             if phase_text is not None:
                 s.bug.phase = phase_text

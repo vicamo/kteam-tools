@@ -306,6 +306,17 @@ class SnapPrepareManual(KernelSnapBase):
                     s.bug.snap.name, s.bug.version))
                 break
 
+            if s.is_v2v:
+                validate_version = s.bug.version
+            else:
+                validate_version = s.debs_bug.debs.package_version_exact("meta")
+            if not s.bug.snap.snap_validate_request(request, validate_version):
+                s.task.reason = 'Stalled -- snap package version missmatch'
+                if s.task.status != 'Incomplete':
+                    s.task.status = 'Incomplete'
+                    retval = True
+                    break
+
             if s.task.status != 'Fix Released':
                 s.task.status = 'Fix Released'
                 retval = True

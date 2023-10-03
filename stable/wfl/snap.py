@@ -56,6 +56,7 @@ class SnapStore:
         """
         s.snap = snap
         s._channel_map = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
+        s._revision_map = None  # dictionary with {<revision}: {<version>,<revision>}}
         s.secrets = Secrets(os.path.expanduser("~/.swm-secrets.yaml")).get('snaps')
 
     # channel_map_lookup
@@ -70,6 +71,7 @@ class SnapStore:
         cdebug("    snap.publish_to={}".format(s.snap.publish_to))
 
         channels = {}
+        revisions = {}
         for arch, tracks in s.snap.publish_to.items():
             actions = []
             for track in tracks:
@@ -119,6 +121,7 @@ class SnapStore:
                         entry['revision'] = result["snap"]["revision"]
                         entry['released-at'] = result["released-at"]
                         channels[(arch, result["instance-key"])] = entry
+                        revisions[entry["revision"]] = entry
 
             except HTTPError as e:
                 # Error 404 is returned if the snap has never been published
@@ -142,12 +145,17 @@ class SnapStore:
             except (URLError, KeyError) as e:
                 raise SnapStoreError('failed to retrieve store URL (%s: %s)' %
                                      (type(e), str(e)))
-        return channels
+        return channels, revisions
 
     def channel_map(s):
         if s._channel_map is None:
-            s._channel_map = s.channel_map_lookup()
+            s._channel_map, s._revision_map = s.channel_map_lookup()
         return s._channel_map
+
+    def revision_map(s):
+        if s._revision_map is None:
+            s._channel_map, s._revision_map = s.channel_map_lookup()
+        return s._revision_map
 
     # channel_version
     #
@@ -160,6 +168,11 @@ class SnapStore:
     def channel_revision(s, arch, channel):
         key = (arch, channel)
         return s.channel_map().get(key, {}).get('revision', None)
+
+    # revision_version
+    #
+    def revision_version(s, revision):
+        return s.revision_map().get(revision, {}).get("version", None)
 
     def _last_published(self, data):
         last_published = None
@@ -599,6 +612,37 @@ class SnapDebs:
         cdebug("snap_status: build/upload stati {} {}".format(status, state))
 
         return state
+
+    # snap_validate_request
+    #
+    @centerleave
+    def snap_validate_request(self, request, version):
+        request = self.recover_request_v2(request)
+
+        # If the request is not yet complete return inconclusive result.
+        if request is None:
+            cinfo("snap_validate_request: no request")
+            return None
+        if request.status != "Completed":
+            cinfo("snap_validate_request: request.status={}".format(request.status))
+            return None
+
+        publish_to = self.snap_info.publish_to
+        good = True
+        for build in request.builds:
+            if build.arch_tag not in publish_to:
+                self.bug.flag_assign("error-snap-extra-arch", True)
+                continue
+            rev = build.store_upload_revision
+            if rev is None:
+                cinfo("snap_validate_request: build={} no rev recorded".format(build))
+                return None
+            rev_version = self.snap_store.revision_version(rev)
+            cinfo("snap_validate_request: arch={} version={} rev={} rev_version={}".format(build.arch_tag, version, rev, rev_version))
+            if rev_version != version:
+                good = False
+
+        return good
 
     # snap_status_request
     #
