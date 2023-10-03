@@ -330,14 +330,17 @@ class SnapDebs:
 
         # Lookup our team snap recipies.
         lp = ctx.lp
+        # XXX: we should really move these to the right team instead.
         if self.bug.source.series.esm:
-            snap_team = 'canonical-kernel-esm'
+            owner = lp.people['canonical-kernel-esm']
         else:
-            snap_team = 'canonical-kernel-snaps'
-        cks = lp.people[snap_team]
+            path = '~' + self.snap_info.repo.url.split('~')[1]
+            lp_repo = lp.git_repositories.getByPath(path=path)
+            owner = lp_repo.owner
+        cdebug("lookup_recipe_manual({}) owner={}".format(risk, owner))
 
         try:
-            lp_snap = lp.snaps.getByName(owner=cks, name=recipe_name)
+            lp_snap = lp.snaps.getByName(owner=owner, name=recipe_name)
         except NotFound as e:
             lp_snap = None
         cdebug("lookup_recipe_manual({}) lp_snap={}".format(risk, lp_snap))
