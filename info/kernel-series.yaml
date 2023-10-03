@@ -3368,7 +3368,7 @@ defaults:
         linux-oem-5.17:
             routing: ubuntu/4
             versions: ['5.17.0']
-            variants: ['-22.04', '-22.04a']
+            variants: ['-22.04a']
             package-relations: signed-generate
             packages:
                 linux-oem-5.17:
@@ -3435,7 +3435,7 @@ defaults:
         linux-oem-6.1:
             routing: ubuntu/4
             versions: ['6.1.0']
-            variants: ['-22.04c']
+            variants: ['-22.04', '-22.04c']
             package-relations: signed-generate
             packages:
                 linux-oem-6.1:
