@@ -21,7 +21,13 @@ class KernelSnapBase(TaskHandler):
         # are associated with this bug.  For a snap variant they come from
         # our parent tracker.  Add a direct pointer to whichever bug that is.
         if s._bug.variant == 'snap-debs':
-            s.debs_bug = bug.master_bug
+            master_bug = bug.master_bug
+            while master_bug is not None and master_bug.variant == "snap-debs":
+                master_bug = master_bug.master_bug
+            s.debs_bug = master_bug
+            if master_bug != bug.master_bug:
+                cinfo("cascaded snap-debs tracker parent={} debs_tracker={}".format(
+                    bug.master_bug, master_bug))
         else:
             s.debs_bug = bug
 
@@ -326,6 +332,11 @@ class SnapPrepareUnsigned(SnapPrepareManual):
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
         while not retval:
+            if s.bug.master_bug is not None:
+                if s.bug.master_bug.task_status("snap-release-to-" + s.snap_build) not in ("Fix Released", "Invalid"):
+                    cinfo("    task snap-release-to-{} is not 'Fix Released'".format(s.snap_build), 'yellow')
+                    s.task.reason = "Holding -b Not ready to be cranked (source snap not in {})".format(s.snap_build)
+                    break
             if s.debs_bug is not None:
                 if s.debs_bug.task_status(':prepare-packages') != 'Fix Released':
                     cinfo('    task :prepare-packages is not \'Fix Released\'', 'yellow')
@@ -377,6 +388,11 @@ class SnapPrepareSigned(SnapPrepareManual):
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
         while not retval:
+            if s.bug.master_bug is not None:
+                if s.bug.master_bug.task_status("snap-release-to-" + s.snap_build) not in ("Fix Released", "Invalid"):
+                    cinfo("    task snap-release-to-{} is not 'Fix Released'".format(s.snap_build), 'yellow')
+                    s.task.reason = "Holding -b Not ready to be cranked (source snap not in {})".format(s.snap_build)
+                    break
             if s.debs_bug is not None:
                 if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
                     cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
