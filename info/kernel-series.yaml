@@ -887,8 +887,6 @@ defaults:
                 - ['ppa:canonical-kernel-gcp-tcpx/ubuntu/proposed2', 'Release']
             updates:
                 - ['ppa:canonical-kernel-gcp-tcpx/ubuntu/release', 'Release']
-            release:
-                - ['ppa:canonical-kernel-gcp-tcpx/ubuntu/release', 'Release']
   package-relations:
       default:
           meta:
@@ -6289,10 +6287,6 @@ defaults:
                 linux-signed-gcp-tcpx:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-gcp-tcpx/ubuntu/+source/linux-signed-gcp-tcpx/+git/focal']
-                linux-restricted-generate-gcp-tcpx:
-                    type: lrg
-                linux-restricted-signatures-gcp-tcpx:
-                    type: lrs
             owner: john-cabaj
             private: true
             supported: false
