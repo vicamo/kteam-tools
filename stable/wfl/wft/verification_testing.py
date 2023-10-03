@@ -1,12 +1,9 @@
 
 import os
 import json
-from wfl.log                                    import Clog, center, cleave, cdebug, cinfo, cerror
+from wfl.log                                    import Clog, center, cleave, cdebug, cinfo, cerror, centerleave
 from wfl.context                                import ctx
 from wfl.errors                                 import ShankError
-
-from ktl.sru_report                             import SruReport
-from ktl.bug_spam                               import BugSpam
 
 from .base                                      import TaskHandler
 
@@ -39,88 +36,56 @@ class VerificationTesting(TaskHandler):
 
         cleave(s.__class__.__name__ + '.__init__')
 
-    # _sru_report
+    # _spam_bug
     #
-    def _sru_report(s, series, package):
-        try:
-            # generate the sru report json
-            sru_report_cfg = {}
-            sru_report_cfg['series'] = [series]
-            sru_report_cfg['pkgs'] = [package]
-            sru_report_cfg['archive-versions'] = False
-            if Clog.debug:
-                sru_report_cfg['debug'] = 'core'
-            sru_report = json.loads(SruReport(cfg=sru_report_cfg, lp=s.lp).generate())
-        except Exception as e:
-            raise BugSpamError('Failed to generate sru-report: %s' % str(e))
+    @centerleave
+    def _spam_bug(self, lp_bug, dry_run=False):
+        spammed_v1 = 'kernel-spammed-{}-{}'.format(self.bug.series, self.bug.name)
+        spammed_v2 = spammed_v1 + "-v2"
+        if spammed_v1 in lp_bug.tags or spammed_v2 in lp_bug.tags:
+            return
 
-        if (series not in sru_report['releases'] or
-                package not in sru_report['releases'][series]):
-            raise BugSpamError('Failed to generate sru-report: series/package not found')
+        # We are going to comment, load and fill in the template.
+        comment_file = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "../../boilerplate/bugtext-start-verification.txt",
+        )
+        with open(comment_file) as cfd:
+            comment_text = "\n".join(cfd.readlines())
+        comment_text = (
+            comment_text.replace("_SERIES_", self.bug.series)
+            .replace("_PACKAGE_", self.bug.name)
+            .replace("_VERSION_", self.bug.version)
+        )
+        cinfo("_spam_bug: comment_text={}".format(comment_text))
+        if not dry_run:
+            lp_bug.newMessage(content=comment_text)
 
-        return sru_report
+        by_package = self.bug.series + "-" + self.bug.name
+        tags = set(lp_bug.tags)
+        for tag in (
+            'verification-failed-' + by_package,
+            'verification-reverted-' + by_package,
+            'verification-needed-' + by_package,
+            'verification-done-' + by_package,
+            'verification-done',
+        ):
+            if tag in tags:
+                cinfo('_spam_bug: removing tag {}'.format(tag))
+                tags.remove(tag)
+        for tag in (
+            'verification-needed-' + by_package,
+            'kernel-spammed-{}-{}-v2'.format(self.bug.series, self.bug.name)
+        ):
+            cinfo('_spam_bug: adding tag {}'.format(tag))
+            tags.add(tag)
 
-    # _spam_bugs
-    #
-    def _spam_bugs(s, dry_run=False):
-        '''
-        Get the list of bugs for this release and spam them.
-        '''
-        center(s.__class__.__name__ + '._spam_bugs')
-
-        s._comment_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                       "../../boilerplate/bugtext-start-verification.txt")
-
-        # Grab our list of bugs.
-        sru_report = s._sru_report(s.bug.series, s.bug.name)
-        sru_bugs = sru_report['releases'][s.bug.series][s.bug.name]['bugs']
-
-        cdebug("SPAM sru_bugs {} {}".format(len(sru_bugs), sru_bugs))
-
-        # If we have a parent tracker then we ask for its list of bugs and subtract those from ours
-        master_bug = s.bug.master_bug
-        if master_bug is not None:
-            master_report = s._sru_report(master_bug.series, master_bug.name)
-            master_bugs = master_report['releases'][master_bug.series][master_bug.name]['bugs']
-
-            if master_bugs is None:
-                raise BugSpamError("master-bug has no bugs list yet...")
-
-            cdebug("SPAM master_bugs {} {}".format(len(master_bugs), master_bugs))
-
-            # sru_bugs = sru_bugs - master_bugs
-            for bug in master_bugs:
-                if bug in sru_bugs:
-                    del sru_bugs[bug]
-
-            sru_report['releases'][s.bug.series][s.bug.name]['bugs'] = sru_bugs
-
-        if not dry_run and len(sru_bugs) > 0:
-            try:
-                bug_spam_cfg = {}
-                bug_spam_cfg['series'] = s.bug.series
-                bug_spam_cfg['package'] = s.bug.name
-                bug_spam_cfg['version'] = s.bug.version
-                bug_spam_cfg['sru'] = sru_report
-                # the dryrun flag is passed from the swm CLI to the WorkflowBug object
-                bug_spam_cfg['dryrun'] = s.bug._dryrun
-                if Clog.debug:
-                    bug_spam_cfg['debug'] = True
-
-                # load the contents from the comment file
-                with open(s._comment_file, 'r') as f:
-                    bug_spam_cfg['comment-text'] = f.read()
-
-                # feed the report to the bug spammer
-                BugSpam(cfg=bug_spam_cfg, lp=s.lp).spam()
-            except Exception as e:
-                raise BugSpamError('Failed to spam bugs: %s' % str(e))
-            except:
-                raise BugSpamError('Failed to spam bugs: unknown error')
-
-        cdebug("SPAM final_bugs {} {}".format(len(sru_bugs), sru_bugs))
-
-        cleave(s.__class__.__name__ + '._spam_bugs')
+        # Write the tags back if they are changed.
+        if set(lp_bug.tags) != tags:
+            cinfo('_spam_bug: tags changed writing back')
+            if not dry_run:
+                lp_bug.tags = list(tags)
+                lp_bug.lp_save()
 
     # _verification_status
     #
@@ -150,6 +115,7 @@ class VerificationTesting(TaskHandler):
         human_state = []
         overall = {}
         for bug in sru_bugs:
+            spam = False
             try:
                 lp_bug = self.lp.bugs[bug]
                 spammed_v1 = 'kernel-spammed-{}-{}'.format(self.bug.series, self.bug.name)
@@ -176,6 +142,10 @@ class VerificationTesting(TaskHandler):
                 elif 'verification-done-%s'   % key     in lp_bug.tags: state = 'verified'
                 elif 'verification-needed-%s' % key     in lp_bug.tags: state = 'needed'
                 elif 'verification-done'                in lp_bug.tags: state = 'verified'
+
+                if spammed_v1 not in lp_bug.tags and spammed_v2 not in lp_bug.tags:
+                    spam = True
+
             except KeyError:
                 state = 'private'
 
@@ -184,6 +154,9 @@ class VerificationTesting(TaskHandler):
             # Trackers are not individually verified.
             if state.endswith('-tracker'):
                 continue
+
+            if spam:
+                self._spam_bug(lp_bug)
 
             overall[state] = overall.get(state, 0) + 1
 
@@ -259,26 +232,12 @@ class VerificationTesting(TaskHandler):
                 retval = True
 
         else:
-            # Spam bugs against this package (but not those against our master)
-            # if they haven't been spammed already.
-            if not s.bug.flag('bugs-spammed'):
-                cinfo('            Spamming bugs for verification', 'yellow')
-                try:
-                    s._spam_bugs()
-                    s.bug.flag_assign('bugs-spammed', True)
-                except BugSpamError as e:
-                    cerror('            %s' % str(e))
-
-            # If we have managed to spam the bugs then verification is now in-progress.
-            if s.bug.flag('bugs-spammed'):
-                if s.task.status == 'Confirmed':
-                    s.task.status = 'In Progress'
-                    retval = True
-
             # Work out if the testing is complete.
             status = 'needed'
             try:
                 status = s._verification_status()
+                s.bug.flag_assign('bugs-spammed', True)
+
             except BugSpamError as e:
                 cerror('            %s' % str(e))
 

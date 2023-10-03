@@ -2244,11 +2244,14 @@ class Package():
             ``WorkflowCrankError`` on librarian errors
         """
         try:
+            url = url.replace('https://launchpad.net/', 'https://api.launchpad.net/devel/')
             changes = self.lp._browser.get(url)
             return changes.decode('utf-8').rstrip().split('\n')
         except NotFound:
+            cdebug("changes_data: NotFound")
             pass
         except Unauthorized:
+            cdebug("changes_data: Unauthorized")
             pass
         except ServerError:
             raise WorkflowCrankError("launchpad librarian unavailable")
