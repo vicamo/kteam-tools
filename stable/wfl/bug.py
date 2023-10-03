@@ -1264,6 +1264,11 @@ class WorkflowBug():
             return s.tasks_by_name[taskname].status
         return "Invalid"
 
+    # task_reason
+    #
+    def task_reason(s, taskname):
+        return s.bprops.get('reason', {}).get(taskname)
+
     # phase
     #
     @property
