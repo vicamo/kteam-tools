@@ -1338,7 +1338,7 @@ defaults:
             owner: philcox
             development: true
             supported: false
-            derived-from: ['23.10', 'linux-unstable']
+            derived-from: ['23.10', 'linux']
             backport: false
             swm:
                 kernel-testing: true
