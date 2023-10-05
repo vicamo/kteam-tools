@@ -25,7 +25,6 @@ class ThisApp:
         """ """
         s.args = args
         s.finder_init()
-        s.data = {}
         s.title_max = 60
         s.kernel_series = KernelSeries()
 
@@ -57,18 +56,34 @@ class ThisApp:
         #
         s.distro = s.launchpad.distributions["ubuntu"]
 
-    def finder(s, package_name, callback):
+    def finder(s, package_name):
+        data = {}
         now = datetime.now(timezone.utc)
 
         source_package = s.distro.getSourcePackage(name=package_name)
         if source_package is None:
             warning('No source package found for "%s"' % (package_name))
-            return
+            return {}
+
         tasks = source_package.searchTasks(status=s.search_status, modified_since=s.search_since)
         for task in tasks:
             delta = now - task.date_created
             if (delta.days < 1) and ("kernel-release-tracking-bug" not in task.bug.tags):
-                callback(task)
+                try:
+                    assignee = task.assignee.display_name
+                except AttributeError:
+                    assignee = "unassigned"
+
+                data[task.bug.id] = {
+                    "id": task.bug.id,
+                    "title": task.bug.title,
+                    "series_name": s.series(task.bug),
+                    "importance": task.importance,
+                    "status": task.status,
+                    "assignee": assignee,
+                }
+
+        return data
 
     # _find_series_in_tags
     #
@@ -93,21 +108,6 @@ class ThisApp:
             break
 
         return result
-
-    def cb(s, task):
-        try:
-            assignee = task.assignee.display_name
-        except AttributeError:
-            assignee = "unassigned"
-
-        s.data[task.bug.id] = {
-            "id": task.bug.id,
-            "title": task.bug.title,
-            "series_name": s.series(task.bug),
-            "importance": task.importance,
-            "status": task.status,
-            "assignee": assignee,
-        }
 
     # per_bug_report
     #
@@ -181,10 +181,9 @@ class ThisApp:
 
         the_report = ""
         for package_name in packages_of_interest:
-            s.data = {}
-            s.finder(package_name, s.cb)
-            if len(s.data) > 0:
-                the_report += s.per_package_report(package_name, s.data)
+            data = s.finder(package_name)
+            if data:
+                the_report += s.per_package_report(package_name, data)
 
         if len(the_report) > 0:
             BugMail.load_config("email.yaml")
