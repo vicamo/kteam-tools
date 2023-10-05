@@ -163,11 +163,6 @@ class ThisApp:
 
         return retval
 
-    def send_email(s, subject, body, to):
-        BugMail.load_config("email.yaml")
-        BugMail.to_address = to
-        BugMail.send(subject, body)
-
     # main
     #
     def main(s):
@@ -192,9 +187,9 @@ class ThisApp:
                 the_report += s.per_package_report(package_name, s.data)
 
         if len(the_report) > 0:
-            s.send_email(
-                "The Daily Bug Report for %s" % str(datetime.utcnow()), the_report, "kernel-team@lists.ubuntu.com"
-            )
+            BugMail.load_config("email.yaml")
+            BugMail.to_address = "kernel-team@lists.ubuntu.com"
+            BugMail.send("The Daily Bug Report for %s" % str(datetime.utcnow()), the_report)
 
         return retval
 
