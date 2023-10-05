@@ -6297,7 +6297,7 @@ defaults:
             testing:
                 flavours:
                     gcp-tcpx:
-                        arches: ['amd64', 'arm64']        # test system arch names
+                        arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
             invalid-tasks: ['automated-testing']
 
