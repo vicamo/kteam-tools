@@ -24,11 +24,9 @@ class ThisApp:
     def __init__(s, args):
         """ """
         s.args = args
-        s.finder_init()
         s.title_max = 60
         s.kernel_series = KernelSeries()
 
-    def finder_init(s):
         # We want all the bugs that have been modified since the last time we searched. Once
         # we have that list, we eliminate any that have not been created within the time
         # window we are interested in.
