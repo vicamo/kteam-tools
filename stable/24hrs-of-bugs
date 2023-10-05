@@ -105,7 +105,7 @@ class ThisApp:
     def cb(s, task):
         try:
             assignee = task.assignee.display_name
-        except:
+        except AttributeError:
             assignee = "unassigned"
 
         s.data[task.bug.id] = {
@@ -163,7 +163,8 @@ class ThisApp:
             "Assignee",
         )
         retval += "\n"
-        retval += "------------   ------------------------------------------------------------    --------    ------------    -------------    ---------------------\n"
+        retval += "------------   ------------------------------------------------------------"
+        retval += "    --------    ------------    -------------    ---------------------\n"
         for bug in sorted(data):
             retval += s.per_bug_report(bug, data[bug])
         retval += "\n\n"
