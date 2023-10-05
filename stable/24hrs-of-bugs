@@ -5,19 +5,8 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from logging import basicConfig, INFO, warning
 from ktl.log import Clog
 from datetime import datetime, timedelta, timezone
-from launchpadlib.launchpad import Launchpad as _Launchpad
+from launchpadlib.launchpad import Launchpad
 from ktl.kernel_series import KernelSeries
-
-
-class Launchpad:
-    """
-    Manages connection to Launchpad services.
-    """
-
-    def __init__(s, client_name):
-        """ """
-        s.service = _Launchpad.login_anonymously(client_name, "production", ".shadow-cache")
-        return
 
 
 # ThisApp
@@ -56,7 +45,7 @@ class ThisApp:
 
         s.search_since = datetime.utcnow() - timedelta(days=1)
 
-        s.launchpad = Launchpad("kernel-team-24hrs-of-bugs").service
+        s.launchpad = Launchpad.login_anonymously("kernel-team-24hrs-of-bugs", "production", ".shadow-cache")
         s.search_tags = []
         s.search_tags_combinator = "All"
 
