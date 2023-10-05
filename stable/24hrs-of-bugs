@@ -39,7 +39,10 @@ class ThisApp:
             "Fix Released",
         ]  # A list of the bug statuses that we care about
 
-        self.search_since = datetime.utcnow() - timedelta(days=1)
+        if self.args.datetime:
+            self.datetime = datetime.strptime(self.args.datetime + ":00+0000", "%Y-%m-%d %H:%M:%S%z")
+        else:
+            self.datetime = datetime.now(timezone.utc)
 
         self.lp = Launchpad.login_anonymously("kernel-team-24hrs-of-bugs", "production", ".shadow-cache")
 
@@ -50,30 +53,38 @@ class ThisApp:
 
     def finder(self, package_name):
         data = {}
-        now = datetime.now(timezone.utc)
 
         source_package = self.distro.getSourcePackage(name=package_name)
         if source_package is None:
             warning('No source package found for "%s"' % (package_name))
             return {}
 
-        tasks = source_package.searchTasks(status=self.search_status, modified_since=self.search_since)
+        # Search for tasks that were modified in the 24 hours before the specified date/time
+        search_since = self.datetime - timedelta(days=1)
+        tasks = source_package.searchTasks(status=self.search_status, modified_since=search_since)
         for task in tasks:
-            delta = now - task.date_created
-            if (delta.days < 1) and ("kernel-release-tracking-bug" not in task.bug.tags):
-                try:
-                    assignee = task.assignee.display_name
-                except AttributeError:
-                    assignee = "unassigned"
+            # Ignore tracking bugs
+            if "kernel-release-tracking-bug" in task.bug.tags:
+                continue
 
-                data[task.bug.id] = {
-                    "id": task.bug.id,
-                    "title": task.bug.title,
-                    "series_name": self.find_series_in_tags(task.bug),
-                    "importance": task.importance,
-                    "status": task.status,
-                    "assignee": assignee,
-                }
+            # Ignore tasks that were *not* created in the 24 hours before the specified date/time
+            delta = self.datetime - task.date_created
+            if delta.days != 0:
+                continue
+
+            try:
+                assignee = task.assignee.display_name
+            except AttributeError:
+                assignee = "unassigned"
+
+            data[task.bug.id] = {
+                "id": task.bug.id,
+                "title": task.bug.title,
+                "series_name": self.find_series_in_tags(task.bug),
+                "importance": task.importance,
+                "status": task.status,
+                "assignee": assignee,
+            }
 
         return data
 
@@ -156,7 +167,7 @@ class ThisApp:
 
         if len(the_report) > 0:
             to = "kernel-team@lists.ubuntu.com"
-            subject = "The Daily Bug Report for %s" % str(datetime.utcnow())
+            subject = "The Daily Bug Report for %s" % str(self.datetime)
             if self.args.dry_run:
                 print()
                 print("To: " + to)
@@ -175,6 +186,12 @@ A utility that finds the LP bugs filed in the last 24 hrs. that the kernel team 
     """
     parser = ArgumentParser(description=app_description, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument("--dry-run", action="store_true", help="Print the email but don't send it")
+    parser.add_argument(
+        "--datetime",
+        help="Search for bugs created in the 24 hours before DATETIME. DATETIME must be in the "
+        "form 'YYYY-MM-DD HH:MM'. If not provided defaults to 'now'.",
+    )
+
     args = parser.parse_args()
 
     log_format = "%(message)s"
