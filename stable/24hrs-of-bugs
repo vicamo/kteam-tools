@@ -75,7 +75,7 @@ class ThisApp:
                 data[task.bug.id] = {
                     "id": task.bug.id,
                     "title": task.bug.title,
-                    "series_name": s.series(task.bug),
+                    "series_name": s.find_series_in_tags(task.bug),
                     "importance": task.importance,
                     "status": task.status,
                     "assignee": assignee,
@@ -83,29 +83,16 @@ class ThisApp:
 
         return data
 
-    # _find_series_in_tags
-    #
-    def _find_series_in_tags(s, bug):
+    def find_series_in_tags(s, bug):
         """
         Search through all the tags on a bug to see if we can find the series that the
         bug was filed against.
         """
-        series_name = ""
-
         for series in sorted(s.kernel_series.series, key=KernelSeries.key_series_name):
             if series.codename in bug.tags:
-                series_name = series.codename
-                break
+                return series.codename
 
-        return series_name
-
-    def series(s, bug):
-        result = ""
-        while True:
-            result = s._find_series_in_tags(bug)
-            break
-
-        return result
+        return ""
 
     # per_bug_report
     #
