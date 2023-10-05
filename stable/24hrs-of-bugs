@@ -3,9 +3,12 @@
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from logging import basicConfig, INFO, warning
-from ktl.log import Clog
 from datetime import datetime, timedelta, timezone
+
 from launchpadlib.launchpad import Launchpad
+
+from wfl.bugmail import BugMail
+from ktl.log import Clog
 from ktl.kernel_series import KernelSeries
 
 
@@ -161,8 +164,6 @@ class ThisApp:
         return retval
 
     def send_email(s, subject, body, to):
-        from wfl.bugmail import BugMail
-
         BugMail.load_config("email.yaml")
         BugMail.to_address = to
         BugMail.send(subject, body)
