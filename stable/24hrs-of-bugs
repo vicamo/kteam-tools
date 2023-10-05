@@ -155,9 +155,18 @@ class ThisApp:
                 the_report += self.per_package_report(package_name, data)
 
         if len(the_report) > 0:
-            BugMail.load_config("email.yaml")
-            BugMail.to_address = "kernel-team@lists.ubuntu.com"
-            BugMail.send("The Daily Bug Report for %s" % str(datetime.utcnow()), the_report)
+            to = "kernel-team@lists.ubuntu.com"
+            subject = "The Daily Bug Report for %s" % str(datetime.utcnow())
+            if self.args.dry_run:
+                print()
+                print("To: " + to)
+                print("Subject: " + subject)
+                print()
+                print(the_report)
+            else:
+                BugMail.load_config("email.yaml")
+                BugMail.to_address = to
+                BugMail.send(subject, the_report)
 
 
 if __name__ == "__main__":
@@ -165,6 +174,7 @@ if __name__ == "__main__":
 A utility that finds the LP bugs filed in the last 24 hrs. that the kernel team cares about.
     """
     parser = ArgumentParser(description=app_description, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument("--dry-run", action="store_true", help="Print the email but don't send it")
     args = parser.parse_args()
 
     log_format = "%(message)s"
