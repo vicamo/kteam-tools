@@ -12,15 +12,11 @@ from ktl.log import Clog
 from ktl.kernel_series import KernelSeries
 
 
-# ThisApp
-#
 class ThisApp:
     """
     This class is just the engine that makes everything go.
     """
 
-    # __init__
-    #
     def __init__(self, args):
         """ """
         self.args = args
@@ -92,15 +88,11 @@ class ThisApp:
 
         return ""
 
-    # per_bug_report
-    #
     def per_bug_report(self, bid, data):
         """
         Generate the report for a single bug.
         """
-        retval = ""
-
-        retval += "LP: #%-7s" % (bid)
+        retval = "LP: #%-7s" % (bid)
 
         # Chop the title to a specific length
         #
@@ -120,8 +112,6 @@ class ThisApp:
 
         return retval
 
-    # per_package_report
-    #
     def per_package_report(self, pkg, data):
         """
         Generate the report for a single package.
@@ -146,11 +136,7 @@ class ThisApp:
 
         return retval
 
-    # main
-    #
     def main(self):
-        """ """
-        retval = 0
         packages_of_interest = ["linux-firmware"]
         for series in self.kernel_series.series:
             if series.supported is False:
@@ -173,20 +159,12 @@ class ThisApp:
             BugMail.to_address = "kernel-team@lists.ubuntu.com"
             BugMail.send("The Daily Bug Report for %s" % str(datetime.utcnow()), the_report)
 
-        return retval
-
 
 if __name__ == "__main__":
-    # Command line argument setup and initial processing
-    #
     app_description = """
 A utility that finds the LP bugs filed in the last 24 hrs. that the kernel team cares about.
     """
-    app_epilog = """
-examples:
-    ThisApp --help
-    """
-    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser = ArgumentParser(description=app_description, formatter_class=RawDescriptionHelpFormatter)
     args = parser.parse_args()
 
     log_format = "%(message)s"
@@ -194,7 +172,7 @@ examples:
     Clog.color = True
 
     app = ThisApp(args)
-    exit(app.main())
+    app.main()
 
 
 # vi:set ts=4 sw=4 expandtab:
