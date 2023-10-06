@@ -51,17 +51,27 @@ class ThisApp:
         #
         self.distro = self.lp.distributions["ubuntu"]
 
-    def finder(self, package_name):
+    def finder(self, entry_type, entry_name):
         data = {}
 
-        source_package = self.distro.getSourcePackage(name=package_name)
-        if source_package is None:
-            warning('No source package found for "%s"' % (package_name))
+        if entry_type == "package":
+            entry = self.distro.getSourcePackage(name=entry_name)
+            if entry is None:
+                warning('No source package found for "%s"' % (entry_name))
+                return {}
+        elif entry_type == "project":
+            try:
+                entry = self.lp.projects[entry_name]
+            except KeyError:
+                warning('No project "%s" found' % (entry_name))
+                return {}
+        else:
+            warning('Invalid entry type "%s"' % (entry_type))
             return {}
 
         # Search for tasks that were modified in the 24 hours before the specified date/time
         search_since = self.datetime - timedelta(days=1)
-        tasks = source_package.searchTasks(status=self.search_status, modified_since=search_since)
+        tasks = entry.searchTasks(status=self.search_status, modified_since=search_since)
         for task in tasks:
             # Ignore tracking bugs
             if "kernel-release-tracking-bug" in task.bug.tags:
@@ -123,11 +133,11 @@ class ThisApp:
 
         return retval
 
-    def per_package_report(self, pkg, data):
+    def per_entry_report(self, entry_type, entry_name, data):
         """
-        Generate the report for a single package.
+        Generate the report for a single package or project.
         """
-        retval = "The %s package acquired %d new bugs in the last 24 hrs.\n" % (pkg, len(data))
+        retval = "The %s %s acquired %d new bugs in the last 24 hrs.\n" % (entry_name, entry_type, len(data))
         retval += "\n"
         retval += "%-7s        %-*s    %-8s    %-12s    %-13s    %-s" % (
             "Bug",
@@ -161,9 +171,15 @@ class ThisApp:
 
         the_report = ""
         for package_name in packages_of_interest:
-            data = self.finder(package_name)
+            data = self.finder("package", package_name)
             if data:
-                the_report += self.per_package_report(package_name, data)
+                the_report += self.per_entry_report("package", package_name, data)
+
+        projects_of_interest = ["canonical-kernel-snaps"]
+        for project_name in projects_of_interest:
+            data = self.finder("project", project_name)
+            if data:
+                the_report += self.per_entry_report("project", project_name, data)
 
         if len(the_report) > 0:
             to = "kernel-team@lists.ubuntu.com"
