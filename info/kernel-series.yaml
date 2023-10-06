@@ -2903,7 +2903,7 @@ defaults:
 
         linux-azure-6.2:
             routing: ubuntu/4
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             package-relations: signed-generate
             packages:
                 linux-azure-6.2:
@@ -2933,6 +2933,7 @@ defaults:
             testing:
                 flavours:
                     azure:
+                        meta-pkg: linux-azure
                         arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
@@ -2940,7 +2941,7 @@ defaults:
 
         linux-azure-fde-6.2:
             routing: classic-fde-ubuntu/4
-            variants: ['--', '-edge']
+            variants: ['--']
             packages:
                 linux-azure-fde-6.2:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-fde-6.2']
@@ -2960,7 +2961,7 @@ defaults:
             testing:
                 flavours:
                     azure:
-                        meta-pkg: linux-azure-fde-edge
+                        meta-pkg: linux-azure-fde
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks:
@@ -2968,6 +2969,44 @@ defaults:
               - automated-testing
               - certification-testing
               - verification-testing
+            stakeholder: 'linux-azure-signoff'
+
+        linux-azure-6.5:
+            routing: ubuntu/4
+            variants: [ '-edge' ]
+            package-relations: signed-generate
+            packages:
+                linux-azure-6.5:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-6.5-next']
+                linux-meta-azure-6.5:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/jammy', 'azure-6.5']
+                linux-generate-azure-6.5:
+                    type: generate
+                linux-signed-azure-6.5:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/jammy', 'azure-6.5']
+#                linux-restricted-modules-azure-6.5:
+#                    type: lrm
+#                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/jammy', 'azure-6.5']
+#                linux-restricted-generate-azure-6.5:
+#                    type: lrg
+#                linux-restricted-signatures-azure-6.5:
+#                    type: lrs
+            supported: true
+            owner: timg-tpi
+            backport: true
+            derived-from: [ '23.10', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
+            testing:
+                flavours:
+                    azure:
+                        meta-pkg: linux-azure-edge
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
