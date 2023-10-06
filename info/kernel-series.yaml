@@ -1211,6 +1211,7 @@ defaults:
             owner: kmously
             derived-from: ['23.10', 'linux']
             backport: false
+            supported: false
             swm:
                 kernel-testing: true
             testing:
