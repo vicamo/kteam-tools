@@ -8229,7 +8229,7 @@ defaults:
                     publish-to:
                         amd64: ['18']
             supported: true
-            owner: roxanan
+            owner: cascardo
             testing:
                 flavours:
                     generic:
