@@ -1181,7 +1181,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp:
                     type: lrs
-            owner: kmously
+            owner: john-cabaj
             derived-from: ['23.10', 'linux']
             backport: false
             swm:
