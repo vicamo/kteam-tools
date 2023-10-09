@@ -11,11 +11,11 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-incoming="$HOME/incoming"
+incoming="$HOME/mainline-builds/incoming"
 lock_tmp="$incoming/.LOCK-$$"
 lock="$incoming/.LOCK"
 
-out="$HOME/public_html"
+out="$HOME/mainline-builds/xfer"
 
 mkdir -p "$incoming"
 
