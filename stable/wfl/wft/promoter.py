@@ -33,7 +33,7 @@ class Promoter(TaskHandler):
         '''
         If a package is under a development blackout return True.
         '''
-        return s.bug.swm_config.in_blackout(datetime.now())
+        return s.bug.swm_config.in_blackout(datetime.now()) and not s.bug.manual_unblock("development-blackout")
 
     def _kernel_block(s):
         '''
