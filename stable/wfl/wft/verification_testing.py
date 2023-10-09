@@ -141,7 +141,7 @@ class VerificationTesting(TaskHandler):
                 elif 'verification-reverted-%s' % key   in lp_bug.tags: state = 'reverted'
                 elif 'verification-done-%s'   % key     in lp_bug.tags: state = 'verified'
                 elif 'verification-needed-%s' % key     in lp_bug.tags: state = 'needed'
-                elif 'verification-done'                in lp_bug.tags: state = 'verified'
+                #elif 'verification-done'                in lp_bug.tags: state = 'verified'
 
                 if spammed_v1 not in lp_bug.tags and spammed_v2 not in lp_bug.tags:
                     spam = True

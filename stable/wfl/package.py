@@ -19,7 +19,7 @@ from .check_component                   import CheckComponent
 from .context                           import ctx
 from .errors                            import ShankError, ErrorExit, WorkflowCrankError
 from .git_tag                           import GitTag, GitTagError
-from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo, centerleave
+from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo, centerleave, centerleaveargs
 
 # PackageError
 #
@@ -2262,8 +2262,7 @@ class Package():
 
     # bugs
     #
-    @property
-    def bugs(self):
+    def bugs_old(self):
         center(self.__class__.__name__ + '.bugs')
 
         # If we have no version, we can have no build, if we have no build we 
@@ -2275,7 +2274,6 @@ class Package():
         changes_url = None
         bugs = None
         pkg = 'main'
-        bi = self.build_info
         for pocket in self.__pockets_uploaded:
             package_version = self.package_version_exact(pkg)
             if package_version is None:
@@ -2302,6 +2300,81 @@ class Package():
 
         cleave(self.__class__.__name__ + '.bugs {}'.format(bugs))
         return bugs
+
+    @centerleaveargs
+    def bugs_new(self):
+        # If we have no version, we can have no build, if we have no build we 
+        # do not know what bugs we have.
+        if self.version is None:
+            return None
+
+        # Find an upload record for the main package.
+        changes_url = None
+        bugs = None
+        pkg = 'main'
+        for pocket in self.__pockets_uploaded:
+            package_version = self.package_version_exact(pkg)
+            if package_version is None:
+                continue
+            build_route = self.builds.get(pkg, {}).get(pocket)
+            if build_route is None:
+                continue
+            build_route_entry = build_route.version_match(exact=package_version, limit_stream=self.bug.built_in)
+            if build_route_entry is None:
+                continue
+            changes_url = build_route_entry.changes_url
+            if changes_url is None:
+                continue
+
+            cdebug("BUGS: CHANGES: url={}".format(changes_url))
+            changes_data = self.changes_data(changes_url)
+            if changes_data is None:
+                continue
+
+            updates_version = None
+            updates_route = self.builds.get(pkg, {}).get("Updates")
+            if updates_route is not None:
+                updates_route_entry = updates_route.version_match(limit_stream=self.bug.built_in)
+                if updates_route_entry is not None:
+                    updates_version = updates_route_entry.version
+
+            #cinfo("APW: bugs_since build={} updates={}".format(build_route_entry.version, updates_version))
+
+            version_re = re.compile(r"\(([^\)]+)\)")
+            bug_re = re.compile(r"LP: *#([0-9]+)")
+            in_changes = False
+            bugs = []
+            bugs_version = None
+            bugs_fallback = []
+            version = None
+            for line in changes_data:
+                if line.startswith('Launchpad-Bugs-Fixed:'):
+                    bugs_fallback = line.split(' ')[1:]
+                if len(line) > 0 and line[0] != " ":
+                    in_changes = False
+                if line.startswith("Changes:"):
+                    in_changes = True
+                if in_changes:
+                    if len(line) > 1 and line[1] not in (" ", "."):
+                        match = version_re.search(line)
+                        #cinfo("BUGS: match={}".format(match))
+                        #if match:
+                        #    cinfo("BUGS: match={} group(1)={} version={}".format(match, match.group(1), updates_version))
+                        if match and match.group(1) == updates_version:
+                            bugs_version = list(bugs)
+                    for match in bug_re.finditer(line):
+                        bugs.append(match.group(1))
+            cinfo("BUGS: bugs_version={}".format(bugs_version))
+            return bugs_version if bugs_version is not None else bugs_fallback
+        return None
+
+    @property
+    def bugs(self):
+        old = self.bugs_old()
+        new = self.bugs_new()
+        cinfo("BUGSv1: bugs = {} -> {}".format(old, new))
+
+        return new
 
     # prerequisite_packages
     #
