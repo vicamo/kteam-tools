@@ -36,7 +36,7 @@ done
 if [ "$results" = 1 ]; then
 	echo "$(date --rfc-3339=seconds) $P: syncing results to kernel.ubuntu.com ..."
 	rsync --remove-source-files -e "ssh -i $key" -a -v \
-		$HOME/public_html/* ubuntu@10.131.229.161:mainline/incoming/ && \
+		$HOME/public_html/* ubuntu@10.131.229.161:mainline-builds/incoming/ && \
 	    find "$HOME/public_html/"* -empty -type d -delete
 	"$here/cod-enqueue" cod-queue-publish
 fi
