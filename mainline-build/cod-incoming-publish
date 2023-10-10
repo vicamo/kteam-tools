@@ -15,6 +15,7 @@ incoming="$HOME/mainline-builds/incoming"
 lock_tmp="$incoming/.LOCK-$$"
 lock="$incoming/.LOCK"
 
+crack="$HOME/mainline-builds/crack.git"
 out="$HOME/mainline-builds/xfer"
 
 mkdir -p "$incoming"
@@ -169,12 +170,13 @@ publish_tip()
 			(
 				# Bundle found.
 				echo "$P: $which/$build: publishing crack.bundle ..."
-				cd /srv/kernel.ubuntu.com/git/virgin/testing/crack.git || exit 1
+				cd "$crack" || exit 1
 				git bundle list-heads "$out/$which/$build/crack.bundle" | \
 				while read sha ref
 				do
 					git tag -d "$ref"
 					git fetch "$out/$which/$build/crack.bundle" "$ref:$ref"
+					git push origin "$ref:$ref"
 				done
 			)
 		fi
