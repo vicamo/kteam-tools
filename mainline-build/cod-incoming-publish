@@ -171,6 +171,7 @@ publish_tip()
 				# Bundle found.
 				echo "$P: $which/$build: publishing crack.bundle ..."
 				cd "$crack" || exit 1
+				git fetch --tags origin
 				git bundle list-heads "$out/$which/$build/crack.bundle" | \
 				while read sha ref
 				do
