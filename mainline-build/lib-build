@@ -75,8 +75,8 @@ repo_remote_url_set	'drm-intel'		'git://kernel.ubuntu.com/virgin/testing/drm-int
 repo_remote_url_set	'extended-stable'	'git://git.launchpad.net/~canonical-kernel/linux/+git/linux-stable-ckt'
 repo_remote_url_set	'freedesktop--drm-tip'	'git://kernel.ubuntu.com/virgin/testing/freedesktop--drm-tip'
 
-repo_remote_url_set	'crack'			'git://kernel.ubuntu.com/virgin/testing/crack.git'
-repo_remote_url_set	'crack-push'		'/srv/kernel.ubuntu.com/git/virgin/testing/crack.git'
+repo_remote_url_set	'crack'			'git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack'
+repo_remote_url_set	'crack-push'		'git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack'
 repo_remote_url_set	'crack-extra'		'git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/cod-extra'
 
 repo_remote_url_set	'stable-queue'		'git://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git'
