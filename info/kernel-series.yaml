@@ -2003,7 +2003,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp:
                     type: lrs
-            owner: kmously
+            owner: john-cabaj
             derived-from: [ '22.10', 'linux' ]
             swm:
                 kernel-testing: true
@@ -3045,7 +3045,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp:
                     type: lrs
-            owner: cascardo
+            owner: john-cabaj
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
