@@ -28,7 +28,7 @@ def remove_flags_and_drop_lines(file_path):
         sys.exit(1)
 
     # Remove unsupported annotations
-    updated_content = re.sub(r"(flag|mark)<.*?>", "", content)
+    updated_content = re.sub(r"(flag|mark)<.*?> ?", "", content)
 
     # Drop lines with a single word and trailing spaces
     updated_content = re.sub(r"^\w+\s*$", "", updated_content, flags=re.MULTILINE)
