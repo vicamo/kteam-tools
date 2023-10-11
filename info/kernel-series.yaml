@@ -160,7 +160,7 @@ defaults:
   assets:
     deployment-blackout:
         azure-blackout: &swm-azure-blackout
-            - ['2023-10-06 16:00', '2023-11-14 16:00'] # Holiday Readiness Monday, November 6 16:00 UTC - Tuesday, November 14 16:00 UTC
+            - ['2023-11-06 16:00', '2023-11-14 16:00'] # Holiday Readiness Monday, November 6 16:00 UTC - Tuesday, November 14 16:00 UTC
             - ['2023-11-08 16:00', '2023-11-13 16:00'] # Singles Day 2023 Wednesday, November 8 16:00 UTC - Monday, November 13 16:00 UTC
             - ['2023-11-19 08:00', '2023-11-28 16:00'] # Black Friday, Cyber Monday 2023 Sunday, November 19 08:00 UTC - Tuesday, November 28 16:00 UTC
             - ['2023-12-22 08:00', '2024-01-08 16:00'] # December Holidays 2023 Friday, December 22 08:00 UTC - Monday, January 8 16:00 UTC
