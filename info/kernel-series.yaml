@@ -3264,6 +3264,36 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
+        linux-ibm-gt-opt:
+            routing: ibm-gt/1
+            variants: ['--']
+            package-relations: signed-generate
+            packages:
+                linux-ibm-gt-opt:
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-jammy', 'ibm-gt-opt']
+                linux-meta-ibm-gt-opt:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-meta-jammy', 'ibm-gt-opt']
+                linux-generate-ibm-gt-opt:
+                    type: generate
+                linux-signed-ibm-gt-opt:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-jammy', 'ibm-gt-opt']
+            development: true
+            supported: false
+            owner: magalilemes
+            private: true
+            derived-from: [ '23.10', 'linux-intel-opt' ]
+            backport: true
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    ibm-gt-opt:
+                        arches: ['amd64']   # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
         linux-kvm:
             routing: ubuntu/4
             variants: ['--']
