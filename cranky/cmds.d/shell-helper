@@ -99,6 +99,26 @@ def config(args):
         sys.exit(1)
     print(handle.lookup_config(args.key, ''))
 
+
+def package_name(args):
+    try:
+        handle = Handle().lookup_set(args.handle, validate=False)
+        tree = Handle().lookup_tree(args.handle)
+    except HandleError as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(1)
+    tree_type = tree_package_type(tree)
+    short_source = handle.source.name.replace('linux-', '')
+    if tree_type == "main":
+        package_prefix = "linux"
+    else:
+        package_prefix = "linux-" + \
+            tree_type.replace('lrm', 'restricted-modules')
+    package_pattern = package_prefix + "-" + short_source + "_" + \
+        args.tag.replace("Ubuntu-" + short_source + "-", "").replace("_", "~")
+    print(package_pattern)
+
+
 def read_swm_property(args):
     tbs = TrackingBugs()
     try:
@@ -182,10 +202,18 @@ Helper program for getting cranky config and handle data from shell scripts.
                            help="The SWM property key to read in the form of <key>[.<key>]. May be repeated.")
     subparser.set_defaults(func=read_swm_property)
 
+    # package-name subparser
+    subparser = subparsers.add_parser("package-name",
+                                      help="Print the package name expected.")
+    subparser.add_argument("-t", "--tag", required=True,
+                           help="The tag originating the package.")
+
+    subparser.set_defaults(func=package_name)
+
     # Add common subparser arguments
     for name, subparser in subparsers.choices.items():
         # These subcommands don't take a cycle argument
-        if name not in ["list-cycles", "read-swm-property"]:
+        if name not in ["list-cycles", "read-swm-property", "package-name"]:
             subparser.add_argument("--cycle",
                                    help="sru cycle to use when looking up the source")
         # These subcommands don't require a 'handle' argument
