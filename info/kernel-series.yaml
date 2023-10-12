@@ -939,14 +939,14 @@ defaults:
 # 23.10 (Mantic Minotaur)
 '23.10':
     codename: mantic
-    development: true
-    supported: false
+    development: false
+    supported: true
     routing-table: *routing-table
     routing-map:
-        devel: dev-unsigned # XXX: until we drop the base mapping
-        default: dev-unsigned
-        ubuntu/2: dev-ubuntu/2
-        ubuntu/4: dev-ubuntu/4
+        devel: stable-unsigned # XXX: until we drop the base mapping
+        default: stable-unsigned
+        ubuntu/2: stable-ubuntu/2
+        ubuntu/4: stable-ubuntu/4
         unstable-ubuntu/4: dev-unstable-ubuntu/4
     sources:
         linux-unstable:
