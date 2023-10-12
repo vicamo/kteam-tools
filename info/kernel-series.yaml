@@ -3563,6 +3563,15 @@ defaults:
             owner: tjaalton
             derived-from: [ '23.10', 'linux' ]
             development: true
+            snaps:
+                pc-kernel:
+                    repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'oem']
+                    gated: false
+                    qa: false
+                    hw-cert: false
+                    promote-to: stable
+                    publish-to:
+                        amd64: ['22-oem']
             swm:
                 kernel-testing: true
             testing:
