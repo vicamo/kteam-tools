@@ -3951,6 +3951,17 @@ defaults:
                 linux-meta-xilinx-zynqmp:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-xilinx-zynqmp/+git/jammy']
+
+            snaps:
+                xilinx-zynqmp-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'xilinx-zynqmp']
+                    gated: false
+                    promote-to: candidate
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        arm64: ['22']
+
             supported: false
             owner: wenchien
             development: true
