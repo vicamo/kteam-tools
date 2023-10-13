@@ -33,7 +33,7 @@ class SruCycleSpinEntry:
             sdate = datetime.strptime(sdate, '%Y-%m-%d').date()
         else:
             sdate = cycle
-            if sdate.startswith('d') or sdate.startswith('s'):
+            if not sdate[0].isdigit():
                 sdate = sdate[1:]
             sdate = datetime.strptime(sdate, '%Y.%m.%d').date()
         self._start_date = sdate
@@ -45,6 +45,7 @@ class SruCycleSpinEntry:
 
         self._hold = data.get('hold', False)
         self._complete = data.get('complete', False)
+        self._stream = data.get('stream')
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
@@ -83,6 +84,10 @@ class SruCycleSpinEntry:
         return self._known
 
     @property
+    def stream(self):
+        return self._stream
+
+    @property
     def ready_to_release(self):
         if self.hold:
             return False
@@ -97,7 +102,8 @@ class SruCycleSpinEntry:
 # SruCycle
 #
 class SruCycle:
-    _url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/sru-cycle.yaml'
+    #_url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/sru-cycle.yaml'
+    _url = 'https://kernel.ubuntu.com/info/sru-cycle.yaml'
     _url_local = 'file://' + os.path.realpath(os.path.join(os.path.dirname(__file__),
                                                            '..', 'info', 'sru-cycle.yaml'))
     #_url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
