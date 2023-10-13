@@ -5636,7 +5636,7 @@ defaults:
                 linux-meta-qcom-qcs410:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/linux-meta-qcom-qcs410-focal']
-            supported: true
+            supported: false
             owner: hui.wang
             development: false
             private: true
@@ -5651,7 +5651,7 @@ defaults:
                 linux-signed-uc20-qcom-qcs410:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/linux-signed-uc20-qcom-qcs410-focal']
-            supported: true
+            supported: false
             owner: hui.wang
             development: false
             private: true
@@ -5661,7 +5661,7 @@ defaults:
                     gated: false
                     promote-to: 'stable'
                     qa: false
-                    hw-cert: true
+                    hw-cert: false
                     publish-to:
                         arm64: ['latest']
             derived-from: [ '20.04', 'linux-qcom-qcs410']
