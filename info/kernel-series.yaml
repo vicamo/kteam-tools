@@ -2212,9 +2212,9 @@ defaults:
                 linux-meta-ein:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-meta-ein/+git/jammy']
-            supported: false
-            owner: wenchien
-            development: true
+            supported: true
+            owner: thibf
+            development: false
             private: true
             derived-from: [ '22.04', 'linux']
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
@@ -2227,9 +2227,9 @@ defaults:
                 linux-signed-uc22-ein:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-signed-uc22-ein/+git/jammy']
-            supported: false
-            owner: wenchien
-            development: true
+            supported: true
+            owner: thibf
+            development: false
             private: true
             derived-from: [ '22.04', 'linux-ein']
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
