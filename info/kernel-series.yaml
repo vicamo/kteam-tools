@@ -6438,7 +6438,7 @@ defaults:
                     gcp-tcpx:
                         arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
-            invalid-tasks: ['automated-testing']
+            invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-gcp-5.13:
             routing: ubuntu/2
