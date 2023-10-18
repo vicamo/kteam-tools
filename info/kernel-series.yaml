@@ -2474,7 +2474,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-6.5:
-            routing: ubuntu/4
+            routing: wip-ubuntu/4
             variants: [ '-hwe-22.04-wip' ]
             package-relations: signed-generate
             packages:
