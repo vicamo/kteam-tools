@@ -883,9 +883,13 @@ class SnapCertificationTesting(KernelSnapBase):
         # We only care about setting the task to 'Confirmed' when the
         # snap is published to the beta channel.
         if s.bug.tasks_by_name['snap-release-to-beta'].status == 'Fix Released':
-            s.task.status = 'Confirmed'
-            s.task.timestamp('started')
+            if s.bug.built_in != 1:
+                s.task.status = "Invalid"
+            else:
+                s.task.status = 'Confirmed'
+                s.task.timestamp('started')
             retval = True
+
         else:
             cinfo('    task snap-release-to-beta is not \'Fix Released\'', 'yellow')
 
