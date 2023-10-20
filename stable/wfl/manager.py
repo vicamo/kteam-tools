@@ -255,9 +255,11 @@ class WorkflowManager():
 
         # Follow the master-bug links we have recorded back up the hierachy
         # counting the number of levels.
+        seen = set()
         master_bug = bug_nr
         depth = 0
-        while master_bug != '0':
+        while master_bug != '0' and master_bug not in seen:
+            seen.add(master_bug)
             master_bug = str(s.status_start.get(master_bug, {}).get('master-bug', 0))
             depth += 1
 
