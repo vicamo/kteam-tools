@@ -316,6 +316,12 @@ In particular, check if any changes were made to `debian.master/rules.d` that
 should be reflected in `debian.DERIVATIVE/rules.d`. Those commits may not be
 obvious in the master changelog.
 
+In the event of a config change in the derivative, this commit title is
+used: "UBUNTU: [Config] <derivative>: Whatever title",
+i.e "UBUNTU: [Config] oracle: Whatever title".
+This is useful in the changelog to make the distiction between a config
+change in the parent vs a change in the derivative.
+
 <!--cheatsheet-->
 ```
 $ cranky review-master-changes
