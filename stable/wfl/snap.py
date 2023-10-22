@@ -315,6 +315,8 @@ class SnapDebs:
 
     @centerleave
     def recover_request_v2(self, handle):
+        if handle is None:
+            return None
         lp = ctx.lp
         recipe = lp.load(handle)
         return recipe
