@@ -100,9 +100,11 @@ class SwmWorker(SwmWorkCmds):
                         self.mq.connection.process_data_events()
                     self.log.info("Complete {} res={}".format(cmd, res) )
 
-                    if res == 0:
-                        ack = MsgQueueService.ACK
-                    else:
+                    # All requests are idempotent and any dropped ones will be
+                    # resubmitted.  Therefore we ack this one away regardless
+                    # of whether it fails.
+                    ack = MsgQueueService.ACK
+                    if res != 0:
                         time.sleep(10)
 
                     #self._announce('cod-job-stop', 'finished ' + job_tag)
