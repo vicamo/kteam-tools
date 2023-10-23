@@ -2437,44 +2437,50 @@ class Package():
             break
 
         if self.bug.is_development_series:
-            pocket = 'Release'
+            pockets = ['Release']
         else:
-            pocket = 'Updates'
+            pockets = ['Updates', 'Release']
         failures = []
         for package, version in prereqs:
-            build_route = PackageBuildRoute(self.distro_series, "adhoc", pocket, self._routing[pocket], package, bug=self.bug)
-            if build_route is None:
-                failures.append("{}/{} no {} route".format(package, version, pocket))
-                cinfo("{}/{} package has no {} route".format(package, version, pocket))
-                continue
-            #build_route_entry = build_route.version_match(exact=version, limit_stream=self.bug.built_in)
-            build_route_entry = build_route.version_match() # ANY
-            cinfo("{}/{} package found version={}".format(package, build_route_entry, build_route_entry.version if build_route_entry is not None else None))
-            if (
-                build_route_entry is not None
-                and build_route_entry.version is not None
-                and package.startswith("nvidia-graphics-drivers-")
-            ):
-                version_prefix = version.split("-")[0]
-                build_prefix = build_route_entry.version.split("-")[0]
-                if version_prefix != build_prefix:
-                    failures.append("{}/{} version ABI missmatch".format(package, version, pocket))
-                    cinfo("{}/{} package ABI missmatch in {} route {}".format(package, version, pocket, build_route_entry.version))
+            for pocket in pockets:
+                route = self._routing.get(pocket)
+                if route is None:
+                    cinfo("{}/{} package has no {} route data".format(package, version, pocket))
                     continue
+                build_route = PackageBuildRoute(self.distro_series, "adhoc", pocket, self._routing[pocket], package, bug=self.bug)
+                if build_route is None:
+                    cinfo("{}/{} package has no {} route".format(package, version, pocket))
+                    continue
+                #build_route_entry = build_route.version_match(exact=version, limit_stream=self.bug.built_in)
+                build_route_entry = build_route.version_match() # ANY
+                cinfo("{}/{} package found version={}".format(package, build_route_entry, build_route_entry.version if build_route_entry is not None else None))
+                if (
+                    build_route_entry is not None
+                    and build_route_entry.version is not None
+                    and package.startswith("nvidia-graphics-drivers-")
+                ):
+                    version_prefix = version.split("-")[0]
+                    build_prefix = build_route_entry.version.split("-")[0]
+                    if version_prefix != build_prefix:
+                        failures.append("{}/{} version ABI missmatch".format(package, version, pocket))
+                        cinfo("{}/{} package ABI missmatch in {} route {}".format(package, version, pocket, build_route_entry.version))
+                        break
 
-            elif (
-                build_route_entry is not None
-                and build_route_entry.version is not None
-                and build_route_entry.version != version
-            ):
-                failures.append("{}/{} version missmatch".format(package, version, pocket))
-                cinfo("{}/{} package missmatch in {} route {}".format(package, version, pocket, build_route_entry.version))
-                continue
+                elif (
+                    build_route_entry is not None
+                    and build_route_entry.version is not None
+                    and build_route_entry.version != version
+                ):
+                    failures.append("{}/{} version missmatch".format(package, version, pocket))
+                    cinfo("{}/{} package missmatch in {} route {}".format(package, version, pocket, build_route_entry.version))
+                    break
+                else:
+                    cinfo("{}/{} package not found in {} route".format(package, version, pocket))
+                    continue
+                cinfo("{}/{} package found as expected".format(package, version))
+                break
             else:
                 failures.append("{}/{} missing".format(package, version))
-                cinfo("{}/{} package not found in {} route".format(package, version, pocket))
-                continue
-            cinfo("{}/{} package found as expected".format(package, version))
 
         return failures
 
