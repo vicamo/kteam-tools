@@ -126,6 +126,7 @@ class SourceReview(TaskHandler):
             cinfo("{} id has changed, recinding {}".format(s.review_task, s.review_task))
             if s.task.status != 'New':
                 s.task.status = 'New'
+                s.bug.clamp_assign(s.review_task, None)
                 retval = True
 
         cleave(s.__class__.__name__ + '._recind (%s)' % retval)
