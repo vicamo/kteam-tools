@@ -36,7 +36,7 @@ if __name__ == "__main__":
     swm_work = SwmWork(local=args.local, config="~/.kernel-swm-worker.yaml")
 
     if args.cmd == "workers":
-        if args.count < 4 or args.count > 16:
+        if args.count < 0 or args.count > 16:
             raise ValueError("worker count out of range 4..16")
 
         start = []
