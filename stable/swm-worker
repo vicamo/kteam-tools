@@ -90,6 +90,8 @@ class SwmWorker(SwmWorkCmds):
 
                 try:
                     self.log.info("Starting {} (priority={} key={})".format(cmd, properties.priority, method.routing_key))
+                    cmd.insert(0, os.path.join(os.path.dirname(__file__), "..", "sbin", "oops-stream"))
+                    cmd.insert(1, "swm")
                     child = Popen(cmd)
                     while True:
                         try:

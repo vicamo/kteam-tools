@@ -8,4 +8,4 @@ cd "$here" || exit 1
 # Run swm as requested and record a copy to the persistent log.
 set -o pipefail
 
-"$here/../sbin/oops-stream" swm "$here/swm" --no-color "$@" 2>&1 | tee -a "$HOME/logs/shank.log"
+"$here/swm" --no-color "$@" 2>&1 | tee -a "$HOME/logs/shank.log"
