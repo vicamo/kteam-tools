@@ -112,6 +112,7 @@ class WorkflowBug():
         s.snap = None
         s._tasks_by_name = False
         s.load_bug_properties()
+        s.task_updates = 0
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
@@ -211,6 +212,11 @@ class WorkflowBug():
         if s._tasks_by_name is False:
             s._tasks_by_name = s._create_tasks_by_name_mapping()
         return s._tasks_by_name
+
+    def task_updated(s):
+        s.task_updates += 1
+        if s.task_updates > 100:
+            raise WorkflowBugError("runaway task updates")
 
     @property
     def sc(self):

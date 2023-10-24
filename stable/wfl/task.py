@@ -73,6 +73,7 @@ class WorkflowBugTask(object):
             cinfo('    Task %s status changing from %s to %s' % (s.name, s.__status, val), 'yellow')
             s.__modified = True
             s.__status = val
+            s.bug.task_updated()
         cleave(s.__class__.__name__ + '.status')
 
     # reason
@@ -189,6 +190,7 @@ class WorkflowBugTaskSynthetic(WorkflowBugTask):
     @status.setter
     def status(self, val):
         self.__status = val
+        s.bug.task_updated()
 
     # assignee
     #
