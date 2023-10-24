@@ -1,0 +1,51 @@
+#!/bin/bash
+
+here=$(dirname "$(readlink -f "${0}")")
+
+error_ok=999
+if [ "$1" = "--error-ok" ]; then
+	error_ok="$2"
+	shift 2
+fi
+
+key="$1"
+shift
+
+[ "$key" = "" ] && key="UNKNOWN"
+
+if [ -d "$HOME/oops" ]; then
+	mkdir -p "$HOME/oops/$key"
+	oops_url="$key/oops"
+	oops=$(mktemp "$HOME/oops/$key/XXXXXXXXXXXXXXXX")
+else
+	oops_url="oops"
+	oops=$(mktemp "$HOME/public_html/oops/$key.XXXXXXXXXX")
+fi
+chmod 644 "$oops"
+
+# { { { { someprog; echo $? >&3; } | filter >&4; } 3>&1; } | { read xs; exit $xs; } } 4>&1
+set -o pipefail
+
+echo "RUNNING: $@" >>"$oops"
+{
+	"$@"
+} 2>&1 | tee -a "$oops"
+rc="$?"
+echo "EXIT: rc=<$rc>" >>"$oops"
+
+if [ "$rc" = "$error_ok" ]; then
+	tail -2 "$oops" | head -1
+	rm -f "$oops"
+
+elif [ "$rc" != 0 ]; then
+	oops_csum=$(sha256sum $oops); oops_csum=${oops_csum%% *}
+	final_oops="$(dirname "$oops")/$oops_csum"
+	mv "$oops" "$final_oops"
+	echo "OOPS: https://kernel.ubuntu.com/$oops_url/$(basename "$final_oops")"
+	"$here/../bin/announce" "oops" "https://kernel.ubuntu.com/$oops_url/$(basename "$final_oops")"
+
+else
+	rm -f "$oops"
+fi
+
+exit "$rc"
