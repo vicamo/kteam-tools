@@ -40,6 +40,7 @@ repos:
 files: >
   (?x)^(
     info/.*\.yaml |
+    cranky/annotations-tools/tests/.*\.py |
     cranky/cmds.d/cycles |
     mainline-build/cod-mainline-dashboard
   )$

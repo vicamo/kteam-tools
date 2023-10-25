@@ -38,6 +38,7 @@ jobs:
           git config --global user.name "Bot"
           (cd ktl/tests && python3 -m unittest -v)
           (cd cranky/crl/tests && python3 -m unittest -v)
+          (cd cranky/annotations-tools && python3 -m unittest -v)
 
   # Tests that are not affected by the host's environment
   series-agnostic-tests:
