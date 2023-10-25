@@ -270,6 +270,9 @@ def add_misc(repo_set):
     admins_test = [
         '/~canonical-kernel-test-admins',
     ]
+    admins_main = [
+        '/~canonical-kernel-admins',
+    ]
     people_core = [
         "/~canonical-kernel-committers",
         "/~canonical-kernel-hwe-committers",
@@ -311,6 +314,11 @@ def add_misc(repo_set):
             + grants("refs/heads/*", people_gitea, force=True)
             + grants("refs/heads/*/*", people_gitea, force=True)
             + grants("refs/heads/*", people_kernel_bot, force=True)
+        ],
+        [
+            "~canonical-kernel/+git/kernel-users",
+            grants("refs/heads/main", team_owner)
+            + grants("refs/heads/main", admins_main, force=True)
         ],
         [
             "~canonical-kernel/+git/cbd",
