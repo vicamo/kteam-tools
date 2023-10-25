@@ -316,12 +316,16 @@ defaults:
                 - ['ppa:canonical-kernel-private/ubuntu/fips-proposed2', 'Release']
             updates:
                 - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
+                - ['ppa:ubuntu-esm/ubuntu/esm-infra-security', 'Release']
+                - ['ubuntu', 'Updates']
         fips-prerelease-fragment: &routing-table-fips-prerelease
             proposed:
                 - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
                 - ['ppa:canonical-kernel-private/ubuntu/fips-proposed2', 'Release']
             updates:
                 - ['ppa:fips-cc-stig/ubuntu/fips-prerelease', 'Release']
+                - ['ppa:ubuntu-esm/ubuntu/esm-infra-security', 'Release']
+                - ['ubuntu', 'Updates']
         bluefield-ppas-build-fragment: &routing-table-build-bluefield-ppas
             build:
                 - ['ppa:canonical-kernel-bluefield/ubuntu/ppa', 'Release']
