@@ -18,7 +18,12 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
 
 from ktl.kernel_series import KernelSeries
 
-crankers = ['/~canonical-kernel-crankers']
+people_crankers = [
+    '/~canonical-kernel-crankers',
+]
+people_kernel_bot = [
+    "/~ubuntu-kernel-bot",
+]
 
 
 def generate_grant(create=False, push=False, rewind=False, person=None):
@@ -265,6 +270,9 @@ def add_misc(repo_set):
     admins_test = [
         '/~canonical-kernel-test-admins',
     ]
+    admins_main = [
+        '/~canonical-kernel-admins',
+    ]
     people_core = [
         "/~canonical-kernel-committers",
         "/~canonical-kernel-hwe-committers",
@@ -274,9 +282,6 @@ def add_misc(repo_set):
     ]
     people_gitea = [
         "/~ubuntu-kernel-gitea",
-    ]
-    people_kernel_bot = [
-        "/~ubuntu-kernel-bot",
     ]
 
     series = [x for x in kernel_series.series if x.supported or x.development]
@@ -309,6 +314,11 @@ def add_misc(repo_set):
             + grants("refs/heads/*", people_gitea, force=True)
             + grants("refs/heads/*/*", people_gitea, force=True)
             + grants("refs/heads/*", people_kernel_bot, force=True)
+        ],
+        [
+            "~canonical-kernel/+git/kernel-users",
+            grants("refs/heads/main", team_owner)
+            + grants("refs/heads/main", admins_main, force=True)
         ],
         [
             "~canonical-kernel/+git/cbd",
@@ -345,7 +355,7 @@ def add_misc(repo_set):
 
         repo_rules = repo_set.lookup(repo_path)
 
-        repo_rules.add_subscriptions(crankers)
+        repo_rules.add_subscriptions(people_crankers)
         repo_rules.add_tag(os.path.basename(repo_path))
         repo_rules.add_tag('misc')
 
@@ -378,7 +388,7 @@ def add_esm(repo_set):
             repo_rules.add_grant('*', generate_grant(person=admins, create=True, push=True, rewind=True))
             if admins != 'owner':
                 repo_rules.add_grant('*', generate_grant(person='owner'))
-            repo_rules.add_subscriptions(crankers)
+            repo_rules.add_subscriptions(people_crankers)
             #update_webhooks(git_repo, dry_run=args.dry_run)
 
 def sync_esm(args):
@@ -488,7 +498,7 @@ def add_primary(repo_set):
 
             #repo_rules.add_tag(thing_type)
             #repo_rules.add_tag(thing.series.codename)
-            repo_rules.add_subscriptions(crankers)
+            repo_rules.add_subscriptions(people_crankers)
 
             people = ['/~canonical-kernel-committers']
             if is_hwe(thing.source):
@@ -545,6 +555,12 @@ def add_primary(repo_set):
                     repo_rules.add_grants(
                         grants(ref, people=people_gitea, create=True, push=True, rewind=rewind)
                     )
+                if thing_type == 'snap' and not branch_name.endswith('-test'):
+                    for build in ("edge--1", "beta--1", "edge--2", "beta--2"):
+                        ref = "refs/heads/{}--{}".format(branch_name, build)
+                        repo_rules.add_grants(
+                            grants(ref, people=people_kernel_bot, create=True, push=True, rewind=True)
+                        )
             if is_gitea(thing.source):
                 repo_rules.add_grants(
                     grants("refs/heads/*/*", people=people_gitea, force=True)
