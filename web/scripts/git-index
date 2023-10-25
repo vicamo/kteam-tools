@@ -1,0 +1,100 @@
+#!/usr/bin/python3
+
+import os
+from argparse import ArgumentParser
+from datetime import datetime
+from textwrap import dedent
+
+from launchpadlib.launchpad import Launchpad
+
+from ktl.kernel_series import KernelSeries
+
+
+class Application:
+    def __init__(self, ks=None):
+        if ks is None:
+            ks = KernelSeries()
+
+        self.ks = ks
+
+        self.lp = Launchpad.login_with("git-index", "production", version="devel")
+
+    def main(self):
+        parser = ArgumentParser()
+        parser.add_argument("out")
+        args = parser.parse_args()
+
+        out = args.out
+        with open(out + ".new", "w") as ifd:
+            print(
+                dedent(
+                    """\
+                    <head>
+                    <title>Ubuntu Kernel Repositories</title>
+                    <style>
+                    .repos th {
+                      text-align: left;
+                    }
+                    .repos td {
+                      padding-right: 10px;
+                    }
+                    </style>
+                    </head>
+                    <body>
+                    <h1>Ubuntu Kernel Repositories</h1>
+                    <table class="repos">
+                    <tr><th width="10%">Source<th width="20%">Source<th>Repository<th>Branch<th>Links</tr>
+                    """
+                ),
+                file=ifd,
+            )
+            for series in sorted(self.ks.series, key=KernelSeries.key_series_name, reverse=True):
+                if series.esm:
+                    continue
+                for source in series.sources:
+                    if not source.development and not source.supported or source.private:
+                        continue
+
+                    main = source.lookup_package(type="main")
+                    url_path = main.repo.url.replace("git://git.launchpad.net/", "")
+                    lp_repo = self.lp.git_repositories.getByPath(path=url_path)
+                    if lp_repo is None or lp_repo.private:
+                        continue
+                    url_human = main.repo.url.replace("git://git.launchpad.net/", "lp:")
+                    url_link = main.repo.url.replace("git://git.launchpad.net/", "https://code.launchpad.net/")
+                    url_branch = url_link + "/+ref/" + main.repo.branch
+                    url_code = (
+                        main.repo.url.replace("git://git.launchpad.net/", "https://git.launchpad.net/")
+                        + "?h="
+                        + main.repo.branch
+                    )
+                    print(
+                        '<tr><td>{series}<td>{source}<td>{url_human}<td>{branch}<td>(<a href="{url_link}">repo</a> <a href="{url_branch}">branch</a> <a href="{url_code}">code</a>)</tr>'.format(
+                            series=series.codename,
+                            source=source.name,
+                            url_link=url_link,
+                            url_branch=url_branch,
+                            url_human=url_human,
+                            branch=main.repo.branch,
+                            url_code=url_code,
+                        ),
+                        file=ifd,
+                    )
+
+            print(
+                dedent(
+                    """\
+                    </table>
+                    <p>Generated: {generated}
+                    </body>
+                    """.format(
+                        generated=datetime.now().strftime("%d/%m/%Y %H:%M")
+                    )
+                ),
+                file=ifd,
+            )
+        os.rename(out + ".new", out)
+
+
+if __name__ == "__main__":
+    Application().main()
