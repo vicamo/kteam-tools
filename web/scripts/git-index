@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 from textwrap import dedent
 
-from launchpadlib.launchpad import Launchpad
+from ktl.launchpad_cache import LaunchpadCache as Launchpad
 
 from ktl.kernel_series import KernelSeries
 
@@ -17,7 +17,7 @@ class Application:
 
         self.ks = ks
 
-        self.lp = Launchpad.login_with("git-index", "production", version="devel")
+        self.lp = Launchpad.login_application("git-index")
 
     def main(self):
         parser = ArgumentParser()
