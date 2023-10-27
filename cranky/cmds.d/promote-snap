@@ -197,8 +197,9 @@ Example: cranky promote-snap pi-kernel
                 snapvars[name] = value
             arch = snapvars['arch']
             channel = snapvars['channel']
-            if 'latest/' in channel:
-                channel = channel.split('/')[1]
+            # If this is on the latest/ track drop the prefix.
+            if channel.startswith('latest/'):
+                channel = channel.split('/', 1)[1]
             if 'rev' not in snapvars:
                 cerror('# {}/{} needs to be produced'.format(snapname, channel))
                 continue
