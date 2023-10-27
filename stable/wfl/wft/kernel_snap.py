@@ -62,7 +62,7 @@ class KernelSnapBase(TaskHandler):
                         s.task.status = 'New'
                         retval = True
                 issue = 'snap {} not in expected channel(s): {}'.format(s.bug.snap.name, ' '.join(reasons))
-                s.task.reason = 'Pending -- {}'.format(issue)
+                s.task.reason = 'Pending -s {}'.format(issue)
                 cinfo('    {}'.format(issue), 'yellow')
                 s.bug.monitor_add({
                     'type': 'snap-publishing',
