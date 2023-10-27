@@ -3573,10 +3573,10 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oem-6.5:
                     type: lrs
-            supported: false
+            supported: true
             owner: tjaalton
             derived-from: [ '23.10', 'linux' ]
-            development: true
+            development: false
             snaps:
                 pc-kernel:
                     repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'oem']
