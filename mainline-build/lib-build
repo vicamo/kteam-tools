@@ -7,7 +7,11 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-master_main="$HOME/COD"
+if [ -d "$HOME/COD" ]; then
+	master_main="$HOME/COD"
+else
+	master_main="$HOME/mainline-builds"
+fi
 master_tree="$master_main/linux"
 
 master_state="$master_main/state"
