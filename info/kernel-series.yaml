@@ -1011,7 +1011,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures:
                     type: lrs
-            owner: arighi
+            owner: roxanan
             backport: false
             snaps:
                 pc-kernel:
@@ -1057,7 +1057,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-lowlatency:
                     type: lrs
-            owner: xnox
+            owner: roxanan
             derived-from: ['23.10', 'linux']
             backport: true
             swm:
@@ -1248,7 +1248,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oracle:
                     type: lrs
-            owner: kmously
+            owner: john-cabaj
             derived-from: ['23.10', 'linux']
             backport: false
             swm:
