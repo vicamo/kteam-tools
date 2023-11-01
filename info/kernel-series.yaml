@@ -4210,7 +4210,7 @@ defaults:
 
         linux-nvidia-6.2:
             routing: nvidia-ubuntu/4
-            variants: [ '-6.2', '-hwe-22.04', '-hwe-22.04-edge' ]
+            variants: [ '-6.2', '-hwe-22.04' ]
             package-relations: signed-generate
             packages:
                 linux-nvidia-6.2:
@@ -4249,7 +4249,7 @@ defaults:
 
         linux-nvidia-6.5:
             routing: nvidia-ubuntu/4
-            variants: [ '-6.5', '-hwe-22.04-wip' ]
+            variants: [ '-6.5', '-hwe-22.04-edge' ]
             package-relations: signed-generate
             packages:
                 linux-nvidia-6.5:
