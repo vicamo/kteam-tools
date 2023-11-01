@@ -155,6 +155,7 @@ esac
 #  mainline			- backwards compatibility
 for versions_path_tail in \
 	"$our_series:$our_source:$our_type" \
+	"$our_series:$our_mainline:$our_type" \
 	"$our_series:$our_type" \
 	"$our_mainline:$our_type" \
 	"$our_series" \
