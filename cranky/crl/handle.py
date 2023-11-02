@@ -42,7 +42,7 @@ class HandleCore:
 
         if self.base_path == '':
             # Bail out if base-path is not set
-            raise HandleError("No 'base-path' option found in your .cranky config file. "
+            raise HandleError("No 'base-path' option found in your cranky config file. "
                               "Check the config example in kteam-tools/cranky/docs/"
                               "snip-cranky.yaml for more information.")
 
@@ -90,7 +90,7 @@ class HandleCore:
                                            type_suffix=which_suffix)
 
         if package_path.startswith('/') or package_path.startswith('~'):
-            print("The 'package-path' option in your .cranky config file is "
+            print("The 'package-path' option in your cranky config file is "
                   "an absolute path rather than a path relative to "
                   "'base-path'. Fix that to get rid of this warning.",
                   file=sys.stderr)

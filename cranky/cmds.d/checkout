@@ -120,7 +120,7 @@ if __name__ == '__main__':
     # Get the config options from file
     config = Config()
     if config.lookup('clone', None) is not None:
-        cerror("Deprecated 'clone' section found in the .cranky config file.")
+        cerror("Deprecated 'clone' section found in the cranky config file.")
         cerror("You need to remove it or rename it to 'checkout'.")
         sys.exit(1)
     config_cmd = config.lookup('checkout', {})
@@ -166,16 +166,16 @@ Examples:
 Notes:
   Some kernel variants have their own repos (like aws, for example) whereas
   others simply reside on branches of the main repos (like raspi2). Depending
-  on the 'package-path' configuration in your .cranky config file you'll end
+  on the 'package-path' configuration in your cranky config file you'll end
   up with one local clone per repo or with individual clones for the different
   variants which means you'll have multiple local copies of the same repo.
 
 Configuration file:
-  ~/.cranky is a yaml format configuration file where the optional commandline
-  options can be specified. Note that options specified via the commandline
-  take precedence over options from the configuration file.
+  ~/.config/cranky/cranky.yaml is a yaml format configuration file where the
+  optional commandline options can be specified. Note that options specified via
+  the commandline take precedence over options from the configuration file.
 
-  Example ~/.cranky section:
+  Example ~/.config/cranky/cranky.yaml section:
   ---
     checkout:
       reference: '/home/repo/linux-2.6'

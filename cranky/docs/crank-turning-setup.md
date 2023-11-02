@@ -70,7 +70,7 @@ See "cranky/docs/snip-bashrc".
 
 See "cranky/docs/snip-gitconfig".
 
-### ~/.cranky.yaml
+### ~/.config/cranky/cranky.yaml
 
 See "cranky/docs/snip-cranky.yaml".
 

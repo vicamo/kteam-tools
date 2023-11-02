@@ -27,8 +27,8 @@ this can be done by setting (and exporting):
 KERNEL_SERIES_USE=local
 ```
 
-Instructions for creating the "~/.cranky.yaml" file are included in the
-"crank-turning-setup.md" document.
+Instructions for creating the "~/.config/cranky/cranky.yaml" file are included
+in the "crank-turning-setup.md" document.
 
 This document is now a part of the kteam-tools repo to ensure it is regularly
 updated along with the various tools it described.  This information will no
