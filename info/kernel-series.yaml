@@ -173,6 +173,9 @@ defaults:
             - ['2024-11-08 16:00', '2024-11-12 16:00'] # Singles Day 2024 Friday, November 8 16:00 UTC - Tuesday, November 12 16:00 UTC
             - ['2024-11-24 21:00', '2024-12-03 16:00'] # Black Friday, Cyber Monday 2024 Sunday, November 24 21:00 UTC - Tuesday, December 3 16:00 UTC
             - ['2024-12-23 08:00', '2025-01-06 16:00'] # December Holidays 2024 Monday, December 23 08:00 UTC - Monday, January 6 16:00 UTC
+        gcp-blackout: &swm-gcp-blackout
+            - ['2023-11-17 16:00', '2023-11-28 16:00'] # Thanksgiving Holiday Friday, November 17 16:00 UTC - Tuesday, November 28 16:00 UTC
+            - ['2023-12-21 16:00', '2024-01-01 16:00'] # December Holidays 2023 Thursday, December 21 08:00 UTC - Monday, January 1 16:00 UTC
     routing-fragments:
         security-build-fragment: &routing-table-security-build
             security-build:
@@ -1189,6 +1192,7 @@ defaults:
             derived-from: ['23.10', 'linux']
             backport: false
             swm:
+                deployment-blackout: *swm-gcp-blackout
                 kernel-testing: true
             testing:
                 flavours:
@@ -1551,6 +1555,7 @@ defaults:
             owner: diewald
             derived-from: ['23.04', 'linux']
             swm:
+                deployment-blackout: *swm-gcp-blackout
                 kernel-testing: true
             testing:
                 flavours:
@@ -3048,6 +3053,7 @@ defaults:
             owner: john-cabaj
             derived-from: [ '22.04', 'linux' ]
             swm:
+                deployment-blackout: *swm-gcp-blackout
                 kernel-testing: true
             testing:
                 flavours:
@@ -3083,6 +3089,7 @@ defaults:
             backport: true
             derived-from: [ '23.04', 'linux-gcp' ]
             swm:
+                deployment-blackout: *swm-gcp-blackout
                 kernel-testing: true
             testing:
                 flavours:
@@ -6341,6 +6348,7 @@ defaults:
             owner: cascardo
             derived-from: [ '20.04', 'linux' ]
             swm:
+                deployment-blackout: *swm-gcp-blackout
                 kernel-testing: true
             testing:
                 flavours:
@@ -6407,6 +6415,7 @@ defaults:
             backport: true
             derived-from: [ '22.04', 'linux-gcp' ]
             swm:
+                deployment-blackout: *swm-gcp-blackout
                 kernel-testing: true
             testing:
                 flavours:
@@ -7151,6 +7160,7 @@ defaults:
             derived-from: ['20.04', 'linux-gcp']
             backport: true # use local-mangle to keep it in sync with linux-gcp
             swm:
+                deployment-blackout: *swm-gcp-blackout
                 kernel-testing: true
             testing:
                 flavours:
@@ -8969,6 +8979,7 @@ defaults:
             private: true
             derived-from: ['18.04', 'linux-gcp-4.15']
             swm:
+                deployment-blackout: *swm-gcp-blackout
                 kernel-testing: true
             testing:
                 flavours:
@@ -9029,6 +9040,7 @@ defaults:
             backport: true
             derived-from: [ '20.04', 'linux-gcp' ]
             swm:
+                deployment-blackout: *swm-gcp-blackout
                 kernel-testing: true
             testing:
                 flavours:
