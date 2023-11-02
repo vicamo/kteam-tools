@@ -36,6 +36,9 @@ git push "$push_url" "linus/master:master"
 # UPSTREAM TAGS: Find all the new upstream release tags.
 #
 git tag -l >"$tags_list.new"
+if [ ! -f "$tags_list" ]; then
+	cp -p "$tags_list.new" "$tags_list"
+fi
 
 diff "$tags_list" "$tags_list.new" | \
 	awk '/>/ && $2 ~ /^v/ { print $2 }' | tac >"$tags_list.added"
