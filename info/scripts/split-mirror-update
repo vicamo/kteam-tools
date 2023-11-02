@@ -14,15 +14,6 @@ echo "$(date): starting"
 cd "$out" || exit "$?"
 
 # Update the data and tooling.
-if [ ! -d "$data/kteam-tools" ]; then
-	git clone git://git.launchpad.net/~canonical-kernel/+git/kteam-tools "$data/kteam-tools" || exit "$?"
-else
-	(
-		cd "$data/kteam-tools" || exit 1
-		git fetch --prune origin
-		git reset --hard origin/master
-	) || exit "$?"
-fi
 if [ ! -d "$data/kernel-versions" ]; then
 	git clone git://git.launchpad.net/~canonical-kernel/+git/kernel-versions "$data/kernel-versions" || exit "$?"
 else
@@ -32,34 +23,50 @@ else
 		git reset --hard origin/main
 	) || exit "$?"
 fi
+# If kernel-versions does not contain info then we also need kteam-tools.
+if [ ! -d "$data/kernel-versions/info" ]; then
+	if [ ! -d "$data/kteam-tools" ]; then
+		git clone git://git.launchpad.net/~canonical-kernel/+git/kteam-tools "$data/kteam-tools" || exit "$?"
+	else
+		(
+			cd "$data/kteam-tools" || exit 1
+			git fetch --prune origin
+			git reset --hard origin/master
+		) || exit "$?"
+	fi
+fi
 
 # Update and convert branches...
 {
-	(
-		cd "$data/kteam-tools" || exit 1
-		git for-each-ref --format "kernel-series - $data/kteam-tools %(refname) %(objectname) info/kernel-series.yaml" refs/remotes/origin/master
-		git for-each-ref --format "sru-cycle - $data/kteam-tools %(refname) %(objectname) info/sru-cycle.yaml" refs/remotes/origin/master
-		git for-each-ref --format "signing-config - $data/kteam-tools %(refname) %(objectname) info/signing-config.yaml" refs/remotes/origin/master
-	)
+	if [ ! -d "$data/kernel-versions/info" ]; then
+		(
+			cd "$data/kteam-tools" || exit 1
+			git for-each-ref --format "kernel-series - $data/kteam-tools %(refname) %(objectname) info/kernel-series.yaml" refs/remotes/origin/master
+			git for-each-ref --format "sru-cycle - $data/kteam-tools %(refname) %(objectname) info/sru-cycle.yaml" refs/remotes/origin/master
+			git for-each-ref --format "signing-config - $data/kteam-tools %(refname) %(objectname) info/signing-config.yaml" refs/remotes/origin/master
+		)
+	fi
 	(
 		cd "$data/kernel-versions" || exit 1
 		main=$(git for-each-ref --format "$data/kernel-versions kernel-series %(objectname) %(refname)" refs/remotes/origin/main)
 		if [ "$main" ]; then
 			objectname=$(git for-each-ref --format "%(objectname)" refs/remotes/origin/main)
-			git ls-tree --name-only -r refs/remotes/origin/main | grep info/kernel-series.yaml | \
+			git ls-tree --name-only -r refs/remotes/origin/main | egrep "info/.*\.yaml" | \
 			while read ks
 			do
 				case "$ks" in
 				tip/*)	continue ;;
 				esac
+				which="$(echo "$ks" | sed -e "s@.*/@@" -e "s@.yaml\$@@")"
 				variant="$(echo "$ks" | sed -e "s@^complete/@@" -e "s@/.*@@")"
-				echo "kernel-series @$variant $data/kernel-versions refs/remotes/origin/main $objectname $ks"
+				#echo "$which @$variant $data/kernel-versions refs/remotes/origin/main $objectname $ks"
+				echo "$which @$variant $data/kernel-versions HEAD $objectname $ks"
 			done
 		else
 			git for-each-ref --format "kernel-series @%(refname:lstrip=-1) $data/kernel-versions %(refname) %(objectname) info/kernel-series.yaml" refs/remotes/origin | grep -v -- "-next$"
 		fi
 	)
-} | \
+} | tee APW | \
 while read filename variant repo refname objectname objectpath x
 do
 	case "$repo:$refname" in
@@ -67,9 +74,9 @@ do
 	*/kernel-versions:*/master)		continue ;;
 	esac
 
-	if [ "$variant" = "-" ]; then
-		variant=""
-	fi
+	case "$variant" in
+	-|@info)	variant=""
+	esac
 	objectname_file="$out/.$filename$variant.on"
 	#echo "REPO<$repo> ON<$objectname> RN<$refname> objectname_file<$objectname_file>"
 	objectname_existing="$(cat "$objectname_file" 2>/dev/null)"
