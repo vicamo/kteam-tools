@@ -4,6 +4,7 @@ import os
 import sys
 import warnings
 import yaml
+import xdg
 
 
 class Config:
@@ -18,10 +19,7 @@ class Config:
         if data is None and filename is None:
             warn = False
             for path in (
-                    os.path.join(os.getenv('XDG_CONFIG_HOME',
-                                           os.path.join(os.environ['HOME'],
-                                                        '.config')),
-                                 'cranky', 'cranky.yaml'),
+                    os.path.join(xdg.XDG_CONFIG_HOME, 'cranky', 'cranky.yaml'),
                     os.path.join(os.environ['HOME'], '.cranky.yaml'),
                     os.path.join(os.environ['HOME'], '.cranky')
             ):
