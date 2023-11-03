@@ -59,14 +59,13 @@ fi
 				esac
 				which="$(echo "$ks" | sed -e "s@.*/@@" -e "s@.yaml\$@@")"
 				variant="$(echo "$ks" | sed -e "s@^complete/@@" -e "s@/.*@@")"
-				#echo "$which @$variant $data/kernel-versions refs/remotes/origin/main $objectname $ks"
-				echo "$which @$variant $data/kernel-versions HEAD $objectname $ks"
+				echo "$which @$variant $data/kernel-versions refs/remotes/origin/main $objectname $ks"
 			done
 		else
 			git for-each-ref --format "kernel-series @%(refname:lstrip=-1) $data/kernel-versions %(refname) %(objectname) info/kernel-series.yaml" refs/remotes/origin | grep -v -- "-next$"
 		fi
 	)
-} | tee APW | \
+} | tee SOURCE.new | \
 while read filename variant repo refname objectname objectpath x
 do
 	case "$repo:$refname" in
@@ -99,5 +98,7 @@ do
 	) || exit "$?"
 	echo "$objectname" >"$objectname_file"
 done
+
+mv -f SOURCE.new SOURCE
 
 echo "$(date): complete"
