@@ -54,7 +54,7 @@ fi
 			git ls-tree --name-only -r refs/remotes/origin/main | egrep "info/.*\.yaml" | \
 			while read ks
 			do
-				objectname=$(git ls-tree --object-only origin/main:$(dirname "$ks") $(basename "$ks"))
+				objectname=$(git ls-tree origin/main:$(dirname "$ks") $(basename "$ks") | awk '{print($3);}')
 				case "$ks" in
 				tip/*)	continue ;;
 				esac
