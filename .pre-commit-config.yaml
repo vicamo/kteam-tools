@@ -42,5 +42,6 @@ files: >
     info/.*\.yaml |
     cranky/annotations-tools/tests/.*\.py |
     cranky/cmds.d/cycles |
+    cranky/crl/config.py |
     mainline-build/cod-mainline-dashboard
   )$
