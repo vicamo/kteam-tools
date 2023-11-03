@@ -54,6 +54,7 @@ fi
 			git ls-tree --name-only -r refs/remotes/origin/main | egrep "info/.*\.yaml" | \
 			while read ks
 			do
+				objectname=$(git ls-tree --object-only origin/main:$(dirname "$ks") $(basename "$ks"))
 				case "$ks" in
 				tip/*)	continue ;;
 				esac
@@ -82,7 +83,7 @@ do
 	if [ "$objectname_existing" = "$objectname" ]; then
 		continue
 	fi
-	echo "II: upstream $(basename "$repo"):$(basename "$refname") $filename.yaml$variant tip changed ..."
+	echo "II: upstream $(basename "$repo"):$(basename "$refname") $filename.yaml$variant object changed ..."
 	(
 		cd "$repo" || exit 1
 		git show "$refname:$objectpath" >"$out/$filename.yaml.new" || exit 0
