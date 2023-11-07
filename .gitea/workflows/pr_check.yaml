@@ -36,6 +36,7 @@ jobs:
         run: |
           git config --global user.email "noreply+ckctreview-bot@canonical.com"
           git config --global user.name "Bot"
+          pip3 install xdg
           (cd ktl/tests && python3 -m unittest -v)
           (cd cranky/crl/tests && python3 -m unittest -v)
           (cd cranky/annotations-tools && python3 -m unittest -v)
