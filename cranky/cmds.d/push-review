@@ -201,7 +201,7 @@ done
 summary="${summary}packages: ${host}:~${USER}/${remote_artifacts_path}"
 
 if [ "${dry_run}" -eq 0 ] ; then
-	pr_note "${summary}"
+	printf "Ready for review:\n\n\`\`\`\n%b\n\`\`\`\n" "${summary}"
 else
 	pr_note "Dry Run -- no changes made"
 fi
