@@ -43,5 +43,6 @@ files: >
     cranky/annotations-tools/tests/.*\.py |
     cranky/cmds.d/cycles |
     cranky/crl/config.py |
+    cranky/crl/tests/test_config.py |
     mainline-build/cod-mainline-dashboard
   )$
