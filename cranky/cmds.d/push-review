@@ -16,11 +16,6 @@ pr_warn()
 	printf "\e[33mWARN: %b\e[0m\n" "${*}" 1>&2
 }
 
-pr_note()
-{
-	printf "\e[32mNOTE: %b\e[0m\n" "${*}" 1>&2
-}
-
 pr_info()
 {
 	printf "\e[32mINFO: %b\e[0m\n" "${*}" 1>&2
@@ -129,7 +124,7 @@ remote_artifacts_path="${sru_cycle}/${series}/${source}"
 if ssh "${host}" test -d "${remote_artifacts_path}"; then
 	pr_warn "${remote_artifacts_path} already exist on ${host}: Overwriting existing file may happen"
 else
-	pr_note "Creating ${host}:${remote_artifacts_path}"
+	pr_info "Creating ${host}:${remote_artifacts_path}"
 	if [ "${dry_run}" -eq 0 ]; then
 		# shellcheck disable=SC2029
 		ssh "${host}" mkdir -p "${remote_artifacts_path}" >/dev/null
@@ -147,7 +142,7 @@ for linux_dir in ${directories} ; do
 	remote_path="${series}-linux${repo_suffix:+-${repo_suffix}}"
 	origin2=$(cd "${linux_dir}" && git remote get-url origin)
 	if ! ssh "${host}" test -d "${remote_path}"; then
-		pr_note "Copying ${host}:${bare_repo_path} to ${host}:~/${remote_path}"
+		pr_info "Copying ${host}:${bare_repo_path} to ${host}:~/${remote_path}"
 		if [ "${dry_run}" -eq 0 ] ; then
 			# We actually want the tilde to be expanded after ssh, not in current shell
 			# shellcheck disable=SC2088
@@ -181,7 +176,7 @@ for linux_dir in ${directories} ; do
 	fi
 
 	remote_addr="ssh://${host}/~${USER}/${series}-${repo}"
-	pr_note "${repo}: Pushing ${latest_tag} to ${remote_addr}"
+	pr_info "${repo}: Pushing ${latest_tag} to ${remote_addr}"
 
 	if [ "${dry_run}" -eq 0 ] ; then
 		if (cd "${linux_dir}" && git remote) | grep -q "${remote_name}"; then
@@ -193,7 +188,7 @@ for linux_dir in ${directories} ; do
 	fi
 	summary="${summary}${repo}: ${remote_addr} tag ${latest_tag}\n"
 
-	pr_note "${repo}: Pushing ${artifacts_count} artifacts to ${host}:${remote_artifacts_path}"
+	pr_info "${repo}: Pushing ${artifacts_count} artifacts to ${host}:${remote_artifacts_path}"
 	if [ "${dry_run}" -eq 0 ] ; then
 		scp ../*"${artifacts_name}"* "${host}:${remote_artifacts_path}"
 	fi
@@ -203,7 +198,7 @@ summary="${summary}packages: ${host}:~${USER}/${remote_artifacts_path}"
 if [ "${dry_run}" -eq 0 ] ; then
 	printf "Ready for review:\n\n\`\`\`\n%b\n\`\`\`\n" "${summary}"
 else
-	pr_note "Dry Run -- no changes made"
+	pr_info "Dry Run -- no changes made"
 fi
 
 exit 0
