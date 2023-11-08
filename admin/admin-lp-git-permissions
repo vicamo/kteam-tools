@@ -349,6 +349,8 @@ def add_misc(repo_set):
             + grants("refs/heads/main", admins_test, force=True)
             + grants("refs/heads/main", people_core, push=True)
             + grants("refs/heads/main", people_tools, push=True)
+            + grants("refs/heads/main", people_gitea, force=True)
+            + grants("refs/heads/*/*", people_gitea, force=True)
         ],
     ]:
         print("misc: {}".format(os.path.basename(repo_path)))
