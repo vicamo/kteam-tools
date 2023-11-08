@@ -2397,7 +2397,7 @@ defaults:
 
         linux-hwe-6.2:
             routing: ubuntu/4
-            variants: [ '-hwe-22.04', '-hwe-22.04-edge' ]
+            variants: [ '-hwe-22.04' ]
             package-relations: signed-generate
             packages:
                 linux-hwe-6.2:
@@ -2445,7 +2445,7 @@ defaults:
 
         linux-lowlatency-hwe-6.2:
             routing: ubuntu/4
-            variants: [ '-hwe-22.04', '-hwe-22.04-edge' ]
+            variants: [ '-hwe-22.04' ]
             package-relations: signed-generate
             packages:
                 linux-lowlatency-hwe-6.2:
@@ -2483,8 +2483,8 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-6.5:
-            routing: wip-ubuntu/4
-            variants: [ '-hwe-22.04-wip' ]
+            routing: ubuntu/4
+            variants: [ '-hwe-22.04-edge' ]
             package-relations: signed-generate
             packages:
                 linux-hwe-6.5:
@@ -2521,8 +2521,8 @@ defaults:
                         clouds: ['metal']
 
         linux-lowlatency-hwe-6.5:
-            routing: wip-ubuntu/4
-            variants: [ '-hwe-22.04-wip' ]
+            routing: ubuntu/4
+            variants: [ '-hwe-22.04-edge' ]
             package-relations: signed-generate
             packages:
                 linux-lowlatency-hwe-6.5:
