@@ -11,6 +11,11 @@ pr_error()
 	printf "\e[31mERROR: %b\e[0m\n" "${*}" 1>&2
 }
 
+pr_warn()
+{
+	printf "\e[33mWARN: %b\e[0m\n" "${*}" 1>&2
+}
+
 pr_note()
 {
 	printf "\e[32mNOTE: %b\e[0m\n" "${*}" 1>&2
@@ -122,7 +127,7 @@ fi
 remote_artifacts_path="${sru_cycle}/${series}/${source}"
 # shellcheck disable=SC2029
 if ssh "${host}" test -d "${remote_artifacts_path}"; then
-	pr_error "${remote_artifacts_path} already exist on ${host}: Overwriting existing file may happen"
+	pr_warn "${remote_artifacts_path} already exist on ${host}: Overwriting existing file may happen"
 else
 	pr_note "Creating ${host}:${remote_artifacts_path}"
 	if [ "${dry_run}" -eq 0 ]; then
@@ -172,7 +177,7 @@ for linux_dir in ${directories} ; do
 		exit 1
 	fi
 	if [ "${artifacts_count}" -ne 5 ]; then
-		pr_info "Only ${artifacts_count} artifacts found, usually 5 expected."
+		pr_warn "Only ${artifacts_count} artifacts found, usually 5 expected."
 	fi
 
 	remote_addr="ssh://${host}/~${USER}/${series}-${repo}"
