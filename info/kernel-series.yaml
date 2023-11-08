@@ -6441,8 +6441,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel-gcp-tcpx/ubuntu/+source/linux-signed-gcp-tcpx/+git/focal']
             owner: john-cabaj
             private: true
-            supported: false
-            development: true
+            supported: true
             derived-from: ['20.04', 'linux-gcp-5.15']
             swm:
                 kernel-testing: true
