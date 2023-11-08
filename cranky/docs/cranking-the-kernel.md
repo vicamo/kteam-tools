@@ -737,70 +737,23 @@ team member with the necessary rights.
 **Note** _DO NOT_ publish private kernels such as ESM, linux-ibm-gt and
 linux-fips to public repositories, see section "Special kernels" below.
 
-The best way to provide the git trees for a review is pushing them to one of
-our builders (which are hidden behind the VPN). All the builders have all the
-git trees under `/usr3/ubuntu/` so they can be quickly cloned from there to your
-home directory.
-
-Tips:
-- The same git repo cloned by `cranky test-build` can be used for the reviews.
-- It's not necessary to clone all trees as different sources can be pushed to
-  the same tree. A good solution to save some disk space is to clone only the
-  tree for the main kernel for each of the series.
-
-You only need to push master or master-next and the last tag applied:
+`cranky push-review` is used to push build artifacts and tags to a runner in
+order to be reviewed by another kernel member. It needs to be run inside
+the main kernel directory:
 ```
-$ cd linux-main
-$ git remote add for-review ssh://<builder>/~/xenial-linux-oracle
-$ git push for-review cranky/master-next
-$ git push for-review TAG
-$ cd ..
-
-$ cd linux-meta
-$ git remote add for-review ssh://<builder>/~/xenial-linux-meta-oracle
-$ git push for-review cranky/master
-$ git push for-review TAG
-$ cd ..
-
-$ cd linux-signed
-$ git remote add for-review ssh://<builder>/~/xenial-linux-signed-oracle
-$ git push for-review cranky/master
-$ git push for-review TAG
-$ cd ..
+cranky push-review -s 2023.09.04 kathleen
 ```
 
-`TAG` represents the last tag applied on each repository as per the process
-detailed above. The last tag can be determined running the following command:
+It will output a summary which you can copy/paste to the matching JIRA ticket:
 ```
-$ git tag --sort=creatordate | tail -1
-```
+Ready for review:
 
-Make sure the tag matches the last version that we are currently uploading for
-review.
-
-Upload source packages to one of the builders for a review:
-```
-$ ssh <builder> "mkdir -p for-review/xenial-linux-oracle"
-$ scp *4.15.0.1031.31* *4.15.0-1031.31* <builder>:~/for-review/xenial-linux-oracle
-```
-
-Add the information about the git tags and the source packages to the crank
-card/issue in a way that would be easy for the reviewer to fetch them. I.e.,
-the tag location can be used as a copy+paste parameter to `git fetch` and the
-packages location to `scp`.
-
-Example:
-
-```
 main:   git+ssh://kathleen/~<user>/xenial-linux-oracle tag <TAG>
 meta:   git+ssh://kathleen/~<user>/xenial-linux-meta-oracle tag <TAG>
 signed: git+ssh://kathleen/~<user>/xenial-linux-signed-oracle tag <TAG>
 
-packages: kathleen:~<user>/for-review/xenial-linux-oracle/
+packages: kathleen:~<user>/2023.09.04/xenial/linux-oracle
 ```
-
-`kathleen` and the paths are used as an example. Make sure you replace them as
-needed along with `<user>` and `TAG`.
 
 After source packages and git repositories have been reviewed and acknowledged
 by another kernel team member, this person could either upload the packages
