@@ -138,14 +138,19 @@ for linux_dir in ${directories} ; do
 	repo_suffix="$(cd "${linux_dir}" && \
 	        cranky shell-helper tree-type | \
 	        sed "s/main//")"
-	bare_repo_path="/usr3/ubuntu/ubuntu-${source_short}-${series}${repo_suffix:+-${repo_suffix}}.git"
+	bare_repo_path="/usr3/ubuntu/ubuntu-${series}${repo_suffix:+-${repo_suffix}}.git"
 	remote_path="${series}-linux${repo_suffix:+-${repo_suffix}}"
+	origin2=$(cd "${linux_dir}" && git remote get-url origin)
 	if ! ssh "${host}" test -d "${remote_path}"; then
 		pr_note "Copying ${host}:${bare_repo_path} to ${host}:~/${remote_path}"
 		if [ "${dry_run}" -eq 0 ] ; then
 			# We actually want the tilde to be expanded after ssh, not in current shell
 			# shellcheck disable=SC2088
 			ssh "${host}" cp -r "${bare_repo_path}" "~/${remote_path}"
+			# shellcheck disable=SC2087
+			ssh "${host}" /bin/bash <<EOF
+cd ~/${remote_path} && git remote add origin2 ${origin2} && git fetch origin2
+EOF
 		fi
 	fi
 done
