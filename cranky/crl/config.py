@@ -20,6 +20,7 @@ class Config:
             warn = False
             for path in (
                 os.path.join(xdg.XDG_CONFIG_HOME, "cranky", "cranky.yaml"),
+                os.path.join(os.environ["HOME"], ".config", "cranky", "cranky.yaml"),
                 os.path.join(os.environ["HOME"], ".cranky.yaml"),
                 os.path.join(os.environ["HOME"], ".cranky"),
             ):
