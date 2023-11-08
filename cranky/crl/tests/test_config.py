@@ -4,6 +4,7 @@ import os
 import sys
 from testfixtures               import TempDirectory
 import unittest
+import xdg
 
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
 
@@ -68,7 +69,7 @@ class TestConfig(unittest.TestCase):
             self.assertIsNone(data)
 
     def test_config_xdg_config_home_cranky_dot_yaml(self):
-        with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'XDG_CONFIG_HOME': d.path}):
+        with TempDirectory() as d, unittest.mock.patch.object(xdg, "XDG_CONFIG_HOME", d.path):
             d.write('cranky/cranky.yaml', self.data_yaml.encode('utf-8'))
 
             config = Config()
@@ -78,7 +79,7 @@ class TestConfig(unittest.TestCase):
             self.assertEqual(data, 'data')
 
     def test_config_home_cranky_dot_yaml(self):
-        with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'HOME': d.path}):
+        with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'HOME': d.path}), unittest.mock.patch.object(xdg, "XDG_CONFIG_HOME", "/non-existant"):
             d.write('.config/cranky/cranky.yaml', self.data_yaml.encode('utf-8'))
 
             config = Config()
@@ -88,7 +89,7 @@ class TestConfig(unittest.TestCase):
             self.assertEqual(data, 'data')
 
     def test_config_deprecated_home_cranky(self):
-        with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'HOME': d.path}):
+        with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'HOME': d.path}), unittest.mock.patch.object(xdg, "XDG_CONFIG_HOME", "/non-existant"):
             d.write('.cranky', self.data_yaml.encode('utf-8'))
 
             config = Config()
@@ -98,7 +99,7 @@ class TestConfig(unittest.TestCase):
             self.assertEqual(data, 'data')
 
     def test_config_deprecated_home_cranky_dot_yaml(self):
-        with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'HOME': d.path}):
+        with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'HOME': d.path}), unittest.mock.patch.object(xdg, "XDG_CONFIG_HOME", "/non-existant"):
             d.write('.cranky.yaml', self.data_yaml.encode('utf-8'))
 
             config = Config()
@@ -108,7 +109,7 @@ class TestConfig(unittest.TestCase):
             self.assertEqual(data, 'data')
 
     def test_config_xdg_config_home_override_empty(self):
-        with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'XDG_CONFIG_HOME': d.path}):
+        with TempDirectory() as d, unittest.mock.patch.object(xdg, "XDG_CONFIG_HOME", d.path):
             d.write('cranky/cranky.yaml', self.data_yaml.encode('utf-8'))
 
             config = Config(data='')
