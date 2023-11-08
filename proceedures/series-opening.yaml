@@ -183,3 +183,9 @@ cards:
       - Ensure we reflect all changes to the proceedure in the primary kteam-tools:proceedures/series-opening
     prerequisites:
     list: Backlog
+  - name: "Notify TNT team to Prepare for Testing"
+    description: |
+      - Ensure proper notification is giving to the testing team so that TNT tools are updated to support the new kernel series
+    prerequisites:
+      - "Add new series to Ubuntu KTL"
+    list: Backlog
