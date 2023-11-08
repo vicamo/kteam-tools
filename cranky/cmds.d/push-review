@@ -8,17 +8,17 @@
 
 pr_error()
 {
-	printf "\e[31m%b\e[0m\n" "${*}" 1>&2
+	printf "\e[31mERROR: %b\e[0m\n" "${*}" 1>&2
 }
 
 pr_note()
 {
-	printf "\e[32m%b\e[0m\n" "${*}"
+	printf "\e[32mNOTE: %b\e[0m\n" "${*}" 1>&2
 }
 
 pr_info()
 {
-	printf "\e[32m%b\e[0m\n" "${*}"
+	printf "\e[32mINFO: %b\e[0m\n" "${*}" 1>&2
 }
 
 usage()
