@@ -35,7 +35,6 @@ Positional arguments:
 
 Optional arguments:
   -d, --dry-run               Do everything except push to the builder (recommended as first run).
-  -f, --force                 Ignore errors while checking 'verify-release-ready' on each repo.
   -s, --sru-cycle             Specify the SRU cycle for the cranking. Can be passed as an environment
                               variable as 'SRU_CYCLE'.
   -h, --help                  Show this help message and exit.
@@ -60,7 +59,6 @@ EOF
 }
 
 dry_run=0
-force=0
 host=
 sru_cycle=
 
@@ -72,9 +70,6 @@ while [ "${#}" -gt 0 ] ; do
 			;;
 		-d|--dry-run)
 			dry_run=1
-			;;
-		-f|--force)
-			force=1
 			;;
 		-h|--help)
 			usage
@@ -136,23 +131,7 @@ else
 	fi
 fi
 
-# Checks first if repos exist and are good to review
 directories=$(cranky shell-helper source-packages-path)
-
-for linux_dir in ${directories} ; do
-		if [ -d "${linux_dir}" ]; then
-			pr_note "Checking ${linux_dir}"
-			if ! (cd "${linux_dir}" && verify-release-ready) ; then
-				if [ "${force}" -eq 0 ]; then
-					exit 1
-				fi
-				pr_note "${linux_dir} error(s) ignored due to force flag"
-			fi
-		else
-			pr_error "${linux_dir} not found, expected for ${series}:${source}"
-			exit 1
-		fi
-done
 
 # Prepare REPOs on the host if non-existing
 for linux_dir in ${directories} ; do
