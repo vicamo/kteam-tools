@@ -31,7 +31,11 @@ class Config:
                 warn = True
 
             if filename is not None and warn:
-                warnings.warn("cranky config other than $XDG_CONFIG_HOME/cranky/cranky.yaml is deprecated")
+                warnings.warn(
+                    "Using config file {}. You need to move it to {}/cranky/cranky.yaml to prevent this warning".format(
+                        filename, xdg.XDG_CONFIG_HOME
+                    )
+                )
 
         if data is None and filename is not None and os.path.exists(filename):
             with open(filename) as yfd:
