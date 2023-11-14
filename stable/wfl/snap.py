@@ -351,6 +351,8 @@ class SnapDebs:
         else:
             path = '~' + self.snap_info.repo.url.split('~')[1]
             lp_repo = lp.git_repositories.getByPath(path=path)
+            if lp_repo is None:
+                return None
             owner = lp_repo.owner
         cdebug("lookup_recipe_manual({}) owner={}".format(risk, owner))
 
