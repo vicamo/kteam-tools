@@ -25,8 +25,10 @@ jobs:
       - step:
         name: Clone
         uses: actions/checkout@v4
+        with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
       - step:
         name: Show Versions
         run: |
@@ -40,7 +42,8 @@ jobs:
           git config --global user.name "Bot"
           pip3 install xdg
           (cd ktl/tests && python3 -m unittest -v)
-          (cd cranky/crl/tests && python3 -m unittest -v)
+          # See Gitea Issue # 414
+          #(cd cranky/crl/tests && python3 -m unittest -v)
           (cd cranky/annotations-tools && python3 -m unittest -v)
 
   # Tests that are not affected by the host's environment
