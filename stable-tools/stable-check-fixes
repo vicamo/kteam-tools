@@ -1,0 +1,93 @@
+#!/bin/bash
+
+# stable-check-fixes <tag>
+#
+# Run this tool from either an upstream repository or a tree that has upstream
+# configured as a remote. The script will check if future upstream tags contain
+# potentially critical fixes for any of the commits in the patchset with the
+# specified tag, e.g. 'v5.15.127'. Fixes are considered critical if the commit
+# message matches any of the following regular expressions:
+
+critical=(
+  "fail.*boot"
+  "boot.\?fail"
+  "can \?not boot"
+  "[^_]panic"
+  "[^a-z]oops"
+  "crash[a-z]*"
+  "[^a-z]hang\(s\|ing\)\?[^a-z]"
+  "deadlock[a-z]*"
+  "freez[a-z]*"
+)
+
+# Concatenate regular expressions with alternation operator '|'
+re_concat() {
+  local line re
+  while read -r line; do
+    re="${re}${re+\\|}${line}"
+  done </dev/stdin
+  echo "\(${re}\)"
+}
+
+die() {
+  echo "${*}" 1>&2
+  exit 1
+}
+
+[[ ${#} -eq 1 ]] || die "usage: stable-check-fixes <tag>"
+
+# The tag of the patchset that we want to inspect
+next="${1}"
+[[ "$(git tag -l "${next}")" ]] || die "error: tag '${next}' does not exist."
+[[ "${next}" =~ ^v[0-9.]*-rc1$ ]] \
+  && die "error: '${next}' first in series. No previous tag."
+
+# The tag preceding the patchset we want to look at
+prev="$(git tag -l "${next%.*}*" | sed -e 's/-rc/~/' | sort -V \
+  | sed -e 's/~/-rc/' | grep -B1 "${next}$" | head -1)"
+[[ "$(git tag -l "${prev}")" ]] \
+  || die "error: previous tag '${prev}' does not exist."
+git merge-base --is-ancestor "${prev}" "${next}" \
+  || die "error: '${prev}' is not an ancestor of '${next}'."
+
+count=$(git log --oneline "${prev}..${next}" | wc -l)
+# This should not happen but whatever
+[[ ${count} -gt 0 ]] || die "error: empty patchset (from '${prev}')."
+
+printf "checking future fixes for upstream stable patchset %s (%s)...\n" \
+  "${next}" "${count} patches"
+
+version="$(echo ${next#v} | sed -e 's/\([0-9]\+\.[0-9]\+\)[-.].*/\1/')"
+# Upstream branch on which to look for future fixes
+upstream="$(git branch -la --format='%(refname:short)' "*linux-${version}.y" \
+  | head -1)"
+git merge-base --is-ancestor "${next}" "${upstream}" \
+  || die "error: '${next}' is not an ancestor of '${upstream}'."
+
+# Regular expression that matches any of the subjects in the patchset
+subjects_re="$(git log --format="%s" "${prev}..${next}" \
+  | sed -e 's/\([[*"^$\.]\)/\\\1/g' \
+  | sed -e 's/^/[0-9a-f]\\{12\\} (\\"/' -e 's/$/\\")/' \
+  | re_concat)"
+# Regular expression that matches any of the critical expressions
+critical_re="$(printf "%s\n" "${critical[@]}" | re_concat)"
+
+# Find fixes that fix a patch in the set and that contain critical expressions
+fixes="$(git log --format="%h" "${upstream}" "^${next}" -i --all-match \
+  --grep "Fixes: ${subjects_re}" \
+  --grep "${critical_re}")"
+[[ "${fixes}" ]] \
+  && echo "potentially critical fixes ($(echo "${fixes}" | wc -l)) detected:"
+
+for f in ${fixes}; do
+  patchset="$(git describe --contains "${f}" | sed -e 's/~.*//')"
+  # List all potentially critical fixes including the patchset they come with
+  git -P show -s --format="%C(cyan)${patchset} %C(yellow)%h %C(reset)%s" "${f}"
+  # Highlight matches of expressions considered critical and print patchset
+  echo -e "$(git show --color=always "${f}" \
+    | sed -e "s/${critical_re//\//\\\/}/\\\\033[0;39;41m\1\\\\033[0m/gi" \
+          -e 's/\(\\033\[0;39;41m\)\( \+\)/\2\1/g' \
+          -e 's/\( \+\)\(\\033\[0m\)/\2\1/g' \
+          -e "1{s/\$/ \\\\033[0;36m${patchset}/}")" \
+    | ${PAGER:-less -R --use-color}
+done
