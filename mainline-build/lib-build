@@ -7,7 +7,11 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-master_main="$HOME/COD"
+if [ -d "$HOME/COD" ]; then
+	master_main="$HOME/COD"
+else
+	master_main="$HOME/mainline-builds"
+fi
 master_tree="$master_main/linux"
 
 master_state="$master_main/state"
@@ -60,20 +64,15 @@ repo_remote_url()
 	eval RET="\$url_${remote}"
 }
 
-#repo_remote_url_set	'linus'			'git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git'
-repo_remote_url_set	'linus'			'git://kernel.ubuntu.com/virgin/linux.git'
+repo_remote_url_set	'linus'			'git://git.launchpad.net/~ubuntu-kernel-test/+git/linus--linux'
+repo_remote_url_set	'linux-stable'		'git://git.launchpad.net/~ubuntu-kernel-test/+git/linux-stable'
+repo_remote_url_set	'airlied--linux'	'git://git.launchpad.net/~ubuntu-kernel-test/+git/airlied--linux'
+repo_remote_url_set	'drm-intel'		'git://git.launchpad.net/~ubuntu-kernel-test/+git/freedesktop--drm-intel'
+repo_remote_url_set	'freedesktop--drm-tip'	'git://git.launchpad.net/~ubuntu-kernel-test/+git/freedesktop--drm-tip'
+
 repo_remote_url_set	'2.6.32.y.33.z'		'git://kernel.ubuntu.com/smb/linux-2.6.32.y-drm33.z.git'
-#repo_remote_url_set	'linux-stable'		'git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git'
-repo_remote_url_set	'linux-stable'		'git://kernel.ubuntu.com/virgin/linux-stable.git'
 repo_remote_url_set	'ubuntu-stable'		'git://kernel.ubuntu.com/herton/linux-stable.git'
-#repo_remote_url_set	'airlied--linux'	'git://people.freedesktop.org/~airlied/linux'
-repo_remote_url_set	'airlied--linux'	'git://kernel.ubuntu.com/virgin/testing/airlied--linux.git'
-#repo_remote_url_set	'drm-intel'		'git://anongit.freedesktop.org/drm-intel'
-repo_remote_url_set	'drm-intel'		'git://kernel.ubuntu.com/virgin/testing/drm-intel.git'
-#repo_remote_url_set	'debloat-testing'	'git://git.infradead.org/debloat-testing.git'
-#repo_remote_url_set	'debloat-testing'	'git://kernel.ubuntu.com/herton/debloat-testing.git'
 repo_remote_url_set	'extended-stable'	'git://git.launchpad.net/~canonical-kernel/linux/+git/linux-stable-ckt'
-repo_remote_url_set	'freedesktop--drm-tip'	'git://kernel.ubuntu.com/virgin/testing/freedesktop--drm-tip'
 
 repo_remote_url_set	'crack'			'git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack'
 repo_remote_url_set	'crack-push'		'git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack'

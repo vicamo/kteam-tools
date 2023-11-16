@@ -23,7 +23,7 @@ mkdir -p "$master_tags"
 master_tree_select
 
 # Pull in all trees containing tags we wish to build.
-remotes="linus 2.6.32.y.33.z linux-stable extended-stable crack-extra"
+remotes="linus linux-stable extended-stable crack-extra"
 repo_remote_update_list $remotes
 
 # Work out where we are going to push the tags et al to.
@@ -36,6 +36,9 @@ git push "$push_url" "linus/master:master"
 # UPSTREAM TAGS: Find all the new upstream release tags.
 #
 git tag -l >"$tags_list.new"
+if [ ! -f "$tags_list" ]; then
+	cp -p "$tags_list.new" "$tags_list"
+fi
 
 diff "$tags_list" "$tags_list.new" | \
 	awk '/>/ && $2 ~ /^v/ { print $2 }' | tac >"$tags_list.added"

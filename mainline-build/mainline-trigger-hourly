@@ -10,6 +10,11 @@ case "$here" in
 esac
 
 #
+# MAINLINE MIRRORS: update our mainline virgin repositories
+#
+"$here/cod-update-virgin"
+
+#
 # MAINLINE TAGS: tagged versions in mainline trees.
 #
 "$here/cod-tags-trigger"
@@ -20,14 +25,9 @@ esac
 "$here/cod-ubuntu-config-trigger"
 
 #
-# UBUNTU VERSION MAP: use the (above) triggered configuration jobs to extract
-# the required data and tabulate.
-"$here/cod-version-map-builder"
-
-#
 # STABLE QUEUE: coversion of the stable queue quilt trees
 #
-"$here/cod-stable-queue" "/srv/kernel.ubuntu.com/git/kernel-ppa/stable-queue-branches.git"
+#PS5 "$here/cod-stable-queue" "/srv/kernel.ubuntu.com/git/kernel-ppa/stable-queue-branches.git"
 
 #
 # UBUNTU SOURCE: source package uploads, tips of the ubuntu trees etc
@@ -42,6 +42,6 @@ esac
 #
 # UBUNTU STABLE: tagged versions in Ubuntu stable trees.
 #
-"$here/cod-ubuntu-stable-trigger"
+#PS5 "$here/cod-ubuntu-stable-trigger"
 
 echo "$P: trigger run complete"

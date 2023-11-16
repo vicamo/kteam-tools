@@ -1,0 +1,16 @@
+#!/bin/bash
+P="mainline-publish-hourly"
+
+#set -e
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+# UBUNTU VERSION MAP: use the (above) triggered configuration jobs to extract
+# the required data and tabulate.
+"$here/cod-version-map-builder"
+
+echo "$P: trigger run complete"

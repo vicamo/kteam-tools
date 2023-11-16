@@ -1,0 +1,51 @@
+#!/bin/bash
+P="cod-update-virgin"
+
+#set -e
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+commit="$1"
+
+. "$here/lib-build"
+
+linux_linus="$master_main/virgin/linus--linux"
+mkdir -p "$master_main/virgin"
+
+while read primary mirror
+do
+	name="$mirror"
+	directory="$master_main/virgin/$mirror"
+	mirror="git://git.launchpad.net/~ubuntu-kernel-test/+git/$mirror"
+
+	if [ ! -d "$directory" ]; then
+		echo "II: initial clone of $name ..."
+		if [ "$directory" = "$linux_linus" ]; then
+			git clone --mirror "$primary" "$directory"
+		else
+			git clone --reference "$linux_linus" --mirror "$primary" "$directory"
+		fi
+	fi
+	(
+		cd "$directory" || exit 1
+		echo "II: update clone of $name ..."
+		git fetch --tags origin
+
+		if ! git config remote.mirror.url >/dev/null; then
+			git remote add mirror "$mirror"
+		fi
+		echo "II: update mirror of $name ..."
+		git push --mirror mirror
+	)
+done <<EOL
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git	linus--linux
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git	linux-stable
+git://people.freedesktop.org/~airlied/linux				airlied--linux
+git://anongit.freedesktop.org/drm-intel					freedesktop--drm-intel
+git://anongit.freedesktop.org/drm-tip					freedesktop--drm-tip
+EOL
+#git://git.infradead.org/debloat-testing.git				infradead--debloat-testing
