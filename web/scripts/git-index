@@ -44,7 +44,7 @@ class Application:
                     <body>
                     <h1>Ubuntu Kernel Repositories</h1>
                     <table class="repos">
-                    <tr><th width="10%">Source<th width="20%">Source<th>Repository<th>Branch<th>Links</tr>
+                    <tr><th width="10%">Series<th width="20%">Source<th>Repository<th>Branch<th>Links</tr>
                     """
                 ),
                 file=ifd,
