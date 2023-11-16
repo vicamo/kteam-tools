@@ -9,8 +9,13 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-config_data="$HOME/public_html/config"
-info="$HOME/public_html/info"
+if [ -d "$HOME/website/" ]; then
+	config_data="$HOME/website/config"
+	info="$HOME/website/info"
+else
+	config_data="$HOME/public_html/config"
+	info="$HOME/public_html/info"
+fi
 
 #
 # UBUNTU TAGS: Find all the new Ubuntu release tags.
