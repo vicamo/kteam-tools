@@ -10,6 +10,11 @@ case "$here" in
 esac
 
 #
+# MAINLINE MIRRORS: update our mainline virgin repositories
+#
+"$here/cod-update-virgin"
+
+#
 # MAINLINE TAGS: tagged versions in mainline trees.
 #
 "$here/cod-tags-trigger"
