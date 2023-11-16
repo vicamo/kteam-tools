@@ -306,10 +306,10 @@ class GitHandle():
         pkg_type = self.package.type
         codename = self.package.series.codename
         if pkg_type is None:
-            result = run(["getent", "hosts", "cbd"], stdout=PIPE)
+            result = run(["getent", "hosts", "cbd.kernel"], stdout=PIPE)
             if result.returncode == 0:
                 self.update_remote("cbd",
-                                   f"cbd:{codename}.git", False)
+                                   f"cbd.kernel:{codename}.git", False)
 
 
 class GitHandleSet():
