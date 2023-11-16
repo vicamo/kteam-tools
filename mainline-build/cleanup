@@ -6,22 +6,28 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
+if [ -d "$HOME/website/mainline/" ]; then
+	where="$HOME/website"
+else
+	where="$HOME/public_html"
+fi
+
 # Cleanup the daily build
-for which in "$HOME/public_html/mainline"/*/current
+for which in "$where/mainline"/*/current
 do
 	which=`dirname "$which"`
 	"$here/cleanup-daily-one" "$which" 10
 done
 
 # Cleanup the test-builds.
-for which in "$HOME/public_html/test-build"/*/*/order
+for which in "$where/test-build"/*/*/order
 do
 	which=`dirname "$which"`
 	"$here/cleanup-daily-one" "$which" 30
 done
 
 # Cleanup the ubuntu-stable.
-for which in "$HOME/public_html/ubuntu-stable"/*/order
+for which in "$where/ubuntu-stable"/*/order
 do
 	which=`dirname "$which"`
 	"$here/cleanup-daily-one" "$which" 20
