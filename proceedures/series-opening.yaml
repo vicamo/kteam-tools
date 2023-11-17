@@ -51,19 +51,22 @@ cards:
     list: On Deck
   - name: "Create new linux-snap git repository"
     description: |
-      - NEEDS: launchpad admin for ubuntu-kernel
-      - NOTE: Only needed on LTS+1 for their corresponding ucNN
-      - NOTE: Likely is already created so we can test against development.
-      - git fetch origin
-      - git push lp:~canonical-kernel-snaps/+git/kernel-snaps-ucNN refs/remotes/origin/master:refs/heads/master
+      - NEEDS: launchpad admin for canonical-kernel-snaps
+      - NOTE: Needed for every release named uYY.MM
+      - find previous url in launchpad
+      - navigate to /+fork page
+      - fork, rename to new series
+      - clean up branches as needed for supported snaps (usually pc & pi to start with)
     prerequisites:
     list: On Deck
   - name: "Request new snap tracks"
     description: |
-      - NOTE: Only needed on LTS+1 for their corresponding ucNN
+      - NOTE: Needed for every interim release for Desktop FDE kernels tracks YY.MM
+      - NOTE: Needed for every LTS release for all core model kernels tracks YY
       - NOTE: Likely is already created so we can test against development.
       - Email snap-store-admins@lists.canonical.com requesting all the new tracks needed,
         should mirror those in previous ucNN mostly.
+      - Although they also keep trying to tell us to use public snapcraft forum
     prerequisites:
     list: On Deck
   - name: "Switch development series to stable"
