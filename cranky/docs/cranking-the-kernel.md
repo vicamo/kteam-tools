@@ -611,6 +611,14 @@ Example:
 
 ```
 $ cd ..
+$ cranky pull-sources linux-oracle:xenial --latest
+$ cd -
+```
+
+Or if you want to do it manually:
+
+```
+$ cd ..
 $ cranky pull-source linux-oracle xenial
 $ cranky pull-source linux-meta-oracle xenial
 $ cranky pull-source linux-signed-oracle xenial
