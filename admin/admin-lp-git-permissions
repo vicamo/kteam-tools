@@ -334,6 +334,7 @@ def add_misc(repo_set):
             + grants("refs/heads/master", people_core, force=True)
             + grants("refs/heads/master", people_tools, force=True)
             + grants("refs/heads/master", people_kernel_bot, force=True)
+            + grants("refs/heads/master", people_gitea, force=True)
             + grant_sets([grants(branch, team_owner) for branch, force in fw_branches])
             + grant_sets([grants(branch, admins_core, force=True) for branch, force in fw_branches])
             + grant_sets([grants(branch, people_core + people_tools, force=force, push=True) for branch, force in fw_branches])
