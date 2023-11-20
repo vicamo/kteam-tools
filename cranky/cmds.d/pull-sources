@@ -19,6 +19,7 @@ function out()
 function get_params()
 {
 	local dir=$1
+	local latest=$2
 	local DEBIAN src version series
 
 	(
@@ -32,11 +33,17 @@ function get_params()
 
 		src=$(dpkg-parsechangelog -l "${DEBIAN}"/changelog -S Source)
 		series=$(dpkg-parsechangelog -l "${DEBIAN}"/changelog -S Distribution)
+
+		if [ "$latest" -eq 1 ]; then
+			# shellcheck disable=SC2086
+			echo ${src} ${series}
+			return
+		fi
+
 		version=$(dpkg-parsechangelog -c 1 -o 1 -l "${DEBIAN}"/changelog -S Version)
 
 		# shellcheck disable=SC2086
 		echo ${src} ${version} ${series}
-	
 	)
 }
 
@@ -44,8 +51,9 @@ function dget_src()
 {
 	local dir=$1
 	local verify=$2
+	local latest=$3
 	local params=
-	params=$(get_params "$dir")
+	params=$(get_params "$dir" "$latest")
 	if [ "$verify" -eq 0 ]; then
 		params="--no-verify ${params}"
 	fi
@@ -69,10 +77,15 @@ Positional arguments:
                given the current working directory is used.
 
 Optional arguments:
-  -h, --help     Show this help text and exit.
+  -h, --help       Show this help text and exit.
+  -l, --latest     Use latest release, skipping .getabis file.
   -n, --no-verify  Disable GPG signature verification of the downloaded dsc file.
 
 Example:
+  $ cranky pull-sources bionic:linux-hwe-5.4 --latest
+      Looks into checked out trees for bionic:linux-hwe-5.4 and downloads
+      the latest the source packages (main, meta, signed, lrm).
+
   $ cranky pull-sources bionic:linux-hwe-5.4
       Looks into checked out trees for bionic:linux-hwe-5.4 and downloads
       all the source packages (main, meta, signed, lrm) for that kernel.
@@ -82,6 +95,7 @@ EOF
 
 handle=
 verify=1
+latest=0
 
 while [ ${#} -gt 0 ] ; do
 	case "${1}" in
@@ -91,6 +105,9 @@ while [ ${#} -gt 0 ] ; do
 			;;
 		-n|--no-verify)
 			verify=0
+			;;
+		-l|--latest)
+			latest=1
 			;;
 		-*)
 			usage
@@ -120,5 +137,5 @@ if [ ${#srcs[@]} -eq 0 ] ; then
 fi
 
 for src in "${srcs[@]}" ; do
-	dget_src "${src}" "${verify}"
+	dget_src "${src}" "${verify}" ${latest}
 done
