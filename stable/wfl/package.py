@@ -3169,6 +3169,7 @@ class Package():
             "key"            : "kernel.publish.proposed.%s" % s.series,
             "op"             : op,
             "who"            : [who],
+            "bug-id"         : str(s.bug.lpbug.id),
             "pocket"         : "proposed",
             "date"           : str(datetime.utcnow()),
             "series-name"    : s.series,
