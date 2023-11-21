@@ -335,19 +335,23 @@ class VerifyReleaseReady():
         else:
             # Verify tag has been pushed!
             msg = 'tag pushed'
-            branch = Git.remote()
-            status, result = run_command("git ls-remote --tags %s %s" % (branch, expected))
-            if status == 0 and expected in result[0]:
-                s.status(msg, True)
-            else:
-                s.status(msg, 'warning')
-            # Verify tag signature
-            msg = 'tag signed'
-            status, result = run_command("git tag -v %s" % expected)
-            if status == 0:
-                s.status(msg, True)
-            else:
-                s.status(msg, 'warning')
+            try:
+                branch = Git.remote()
+                status, result = run_command(
+                    "git ls-remote --tags %s %s" % (branch, expected))
+                if status == 0 and expected in result[0]:
+                    s.status(msg, True)
+                else:
+                    s.status(msg, 'warning')
+                # Verify tag signature
+                msg = 'tag signed'
+                status, result = run_command("git tag -v %s" % expected)
+                if status == 0:
+                    s.status(msg, True)
+                else:
+                    s.status(msg, 'warning')
+            except GitError as e:
+                eout(colored(e.msg, 'red'))
 
     def verify_changelog_nomisc(s):
         # Verify that no "Miscellaneous {upstream,Ubuntu,whatever} changes"
