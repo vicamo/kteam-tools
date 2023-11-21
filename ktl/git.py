@@ -139,14 +139,18 @@ class Git:
 
     # remote
     #
-    # Return a string that is the remote this branch tracks or origin.
+    # Return a string that is the remote this branch tracks.
     #
     @classmethod
     def remote(cls):
+        """
+        Return a string that is the remote this branch tracks.
+        Will raise an exception if it fails.
+        """
         branch = cls.current_branch()
         status, result = run_command("git config branch.%s.remote" % branch, cls.debug)
         if status != 0:
-            return "origin"
+            raise GitError("no remote tracked")
         return result[0]
 
     @classmethod
