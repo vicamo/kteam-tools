@@ -46,6 +46,7 @@ class SruCycleSpinEntry:
         self._hold = data.get('hold', False)
         self._complete = data.get('complete', False)
         self._stream = data.get('stream')
+        self._notes_link = data.get('notes-link')
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
@@ -94,6 +95,10 @@ class SruCycleSpinEntry:
         if self.release_date is None:
             return False
         return datetime.now().date() >= self.release_date
+
+    @property
+    def notes_link(self):
+        return self._notes_link
 
     def __str__(self):
         return "{} ({})".format(self.name, self.release_date)
