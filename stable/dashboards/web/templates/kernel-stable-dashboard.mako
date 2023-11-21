@@ -503,20 +503,30 @@ for bid in sorted(swm_trackers):
             background-color: transparent;
             text-decoration: none;
         }
-
         a:visited {
             color: green;
             background-color: transparent;
             text-decoration: none;
         }
+
         .master a:link {
             color: darkblue;
             background-color: transparent;
             text-decoration: none;
         }
-
         .master a:visited {
             color: darkblue;
+            background-color: transparent;
+            text-decoration: none;
+        }
+
+        .note a:link {
+            color: black;
+            background-color: transparent;
+            text-decoration: none;
+        }
+        .note a:visited {
+            color: black;
             background-color: transparent;
             text-decoration: none;
         }
@@ -600,13 +610,15 @@ for bid in sorted(swm_trackers):
                                         <%
                                             cycle_first = False
                                             sru_cycle = data['sru-cycle'].lookup_cycle(cycle)
+                                            cycle_notes = ""
+                                            cycle_readme = ""
                                             if sru_cycle is not None:
                                                 cycle_notes = "{} to {}".format(sru_cycle.start_date, sru_cycle.release_date)
-                                            else:
-                                                cycle_notes = ""
+                                                if sru_cycle.notes_link is not None:
+                                                    cycle_readme = '<a href="https://warthogs.atlassian.net/browse/' + sru_cycle.notes_link + '">Notes</a>'
                                         %>
-                                        <tr class="entry-any owner-any phase-any cycle-${cycle}">
-                                            <td colspan="5" style="background: #ffffc0; font-size: 140%;">${cycle}</td><td colspan="2" style="background: #ffffc0; font-size: 140%; text-align: right;">${cycle_notes}</td>
+                                        <tr class="entry-any owner-any phase-any cycle-${cycle}" style="background: #ffffc0; font-size: 140%;">
+                                            <td colspan="1" >${cycle}</td><td class="note" colspan="4">${cycle_readme}</td><td colspan="2">${cycle_notes}</td>
                                         </tr>
                                         % for rls in sorted(releases, reverse=True):
                                             <%
