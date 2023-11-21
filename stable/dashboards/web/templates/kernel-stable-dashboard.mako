@@ -351,10 +351,12 @@ def cycle_key(cycle):
         cycle = cycle[1:] + cycle[0]
     return cycle
 
+# Match the suffix on linux-uc20 and linux-uc22-efi style packages.  We will
+# subsitute this off as the primary "package" so that we consider them more
+# like dependent packages of the primary kernel from an ordering perspective.
 pkg_key_re = re.compile(r"-uc[0-9]+(?:-efi)?")
 def pkg_key(pkg):
     bits = pkg.split()
-    #bits[0] = bits[0].replace("-efi", "")
     bits[0] = pkg_key_re.sub("", bits[0])
 
     return bits[0], pkg
