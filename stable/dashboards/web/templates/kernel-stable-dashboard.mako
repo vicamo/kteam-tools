@@ -351,6 +351,15 @@ def cycle_key(cycle):
         cycle = cycle[1:] + cycle[0]
     return cycle
 
+# Match the suffix on linux-uc20 and linux-uc22-efi style packages.  We will
+# subsitute this off as the primary "package" so that we consider them more
+# like dependent packages of the primary kernel from an ordering perspective.
+pkg_key_re = re.compile(r"-uc[0-9]+(?:-efi)?")
+def pkg_key(pkg):
+    bits = pkg.split()
+    bits[0] = pkg_key_re.sub("", bits[0])
+
+    return bits[0], pkg
 
 cycles = {}
 cadence = {}
@@ -496,20 +505,30 @@ for bid in sorted(swm_trackers):
             background-color: transparent;
             text-decoration: none;
         }
-
         a:visited {
             color: green;
             background-color: transparent;
             text-decoration: none;
         }
+
         .master a:link {
             color: darkblue;
             background-color: transparent;
             text-decoration: none;
         }
-
         .master a:visited {
             color: darkblue;
+            background-color: transparent;
+            text-decoration: none;
+        }
+
+        .note a:link {
+            color: black;
+            background-color: transparent;
+            text-decoration: none;
+        }
+        .note a:visited {
+            color: black;
             background-color: transparent;
             text-decoration: none;
         }
@@ -593,13 +612,15 @@ for bid in sorted(swm_trackers):
                                         <%
                                             cycle_first = False
                                             sru_cycle = data['sru-cycle'].lookup_cycle(cycle)
+                                            cycle_notes = ""
+                                            cycle_readme = ""
                                             if sru_cycle is not None:
                                                 cycle_notes = "{} to {}".format(sru_cycle.start_date, sru_cycle.release_date)
-                                            else:
-                                                cycle_notes = ""
+                                                if sru_cycle.notes_link is not None:
+                                                    cycle_readme = '<a href="https://warthogs.atlassian.net/browse/' + sru_cycle.notes_link + '">Notes</a>'
                                         %>
-                                        <tr class="entry-any owner-any phase-any cycle-${cycle}">
-                                            <td colspan="5" style="background: #ffffc0; font-size: 140%;">${cycle}</td><td colspan="2" style="background: #ffffc0; font-size: 140%; text-align: right;">${cycle_notes}</td>
+                                        <tr class="entry-any owner-any phase-any cycle-${cycle}" style="background: #ffffc0; font-size: 140%;">
+                                            <td colspan="1" >${cycle}</td><td colspan="4" class="note" style="text-align: right;">${cycle_readme}</td><td colspan="2" style="text-align: right;">${cycle_notes}</td>
                                         </tr>
                                         % for rls in sorted(releases, reverse=True):
                                             <%
@@ -607,7 +628,7 @@ for bid in sorted(swm_trackers):
                                                 row_number = 0
                                             %>
                                             % if releases[rls] in cadence[cycle] and len(cadence[cycle][releases[rls]]) > 0:
-                                                % for pkg in sorted(cadence[cycle][releases[rls]]):
+                                                % for pkg in sorted(cadence[cycle][releases[rls]], key=pkg_key):
                                                     % for bug in cadence[cycle][releases[rls]][pkg]:
                                                         <%
                                                             cell_version = '&nbsp;'
