@@ -618,7 +618,7 @@ for bid in sorted(swm_trackers):
                                                     cycle_readme = '<a href="https://warthogs.atlassian.net/browse/' + sru_cycle.notes_link + '">Notes</a>'
                                         %>
                                         <tr class="entry-any owner-any phase-any cycle-${cycle}" style="background: #ffffc0; font-size: 140%;">
-                                            <td colspan="1" >${cycle}</td><td class="note" colspan="4">${cycle_readme}</td><td colspan="2">${cycle_notes}</td>
+                                            <td colspan="1" >${cycle}</td><td colspan="4" class="note" style="text-align: right;">${cycle_readme}</td><td colspan="2" style="text-align: right;">${cycle_notes}</td>
                                         </tr>
                                         % for rls in sorted(releases, reverse=True):
                                             <%
