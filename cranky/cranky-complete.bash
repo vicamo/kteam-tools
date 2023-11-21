@@ -115,15 +115,19 @@ _cranky_get_info() {
 	local cache_dir=~/.cache/cranky
 	local cranky="$base_dir/cranky"
 	local cache_file yaml_file cranky_cmd
+	kernel_versions_dir="${KERNEL_VERSIONS:-}"
+	if ! [ -d "$kernel_versions_dir" ]; then
+		kernel_versions_dir="$base_dir/../../kernel-versions"
+	fi
 	case "$1" in
 		handles)
 			cache_file="$cache_dir/handles"
-			yaml_file="$base_dir/../info/kernel-series.yaml"
+			yaml_file="$kernel_versions_dir/info/kernel-series.yaml"
 			cranky_cmd="list-handles"
 			;;
 		cycles)
 			cache_file="$cache_dir/cycles"
-			yaml_file="$base_dir/../info/sru-cycle.yaml"
+			yaml_file="$kernel_versions_dir/info/sru-cycle.yaml"
 			cranky_cmd="list-cycles"
 			;;
 		*)
