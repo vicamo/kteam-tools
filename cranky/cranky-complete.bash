@@ -25,7 +25,7 @@ _cranky() {
 		"open -h --help -d --dry-run -r --reuse-abi"
 		"promote-snap -h --help --dry-run --debug"
 		"pull-source -h --help -n --no-verify"
-		"pull-sources  -h --help -n --no-verify HANDLE"
+		"pull-sources  -h --help -n --no-verify -l --latest HANDLE"
 		"push-review -h --help -d --dry-run -s --sru-cycle"
 		"rebase -h -r -b -l -d --dry-run"
 		"reorder -h --help -d --dry-run"
