@@ -3,12 +3,12 @@ cards:
   - name: "Identify point release owner"
     description: |
       - Identify the formal owner for the cycle.
-    list: On Deck
+    list: To Do
   - name: "Identify formal release date"
     description: |
       - Find the formal release date for use in cycle selection.
       - Update the board title with this date.
-    list: On Deck
+    list: To Do
   - name: "Pick point release kernel cut over cycle and announce"
     description: |
       - Pick a likely last SRU cycle to hit the point release image, this
@@ -18,47 +18,51 @@ cards:
     - "Identify formal release date"
   - name: "Identify kernels to be rolled with the point release"
     description: |
-      - Copy "Roll linux-foo-edge to point release version" card for
-        all kernels which will be rolled at the point release to this
-        column.
-      - Copy "Roll linux-foo to linux-foo-edge package" cards for the same
-        list of kernels to the "At Cut Over" column.
-  - name: "Roll linux-foo-edge and lowlatency flavors to point release version"
-    description: |
-      - Prepare and upload updates to the linux-foo-edge package moving it
-        to the release kernel base version as soon as the primary series
-        kernel reaches the final version.
-    prerequisites:
-    - "Identify kernels to be rolled with the point release"
-  - name: "Review linux-*-edge upgrade testing and approve"
-    description: |
-      - Review all of the ADT and upgrade testing and approve rolls
-    prerequisites:
-  - name: "Sync with Certification Team"
-    description: |
-      - Notify the Certification Team as soon as possible about a new HWE kernel
-        being prepared to allow them to plan for the certification tests on
-        time.
-  - name: "Roll linux-foo to linux-foo-edge package"
-    description: |
-      - Update the variants of the linux-foo-edge package to '-foo' so the
-        meta and lrm packages will start producing the final variant and
-        replace the older ones.
-      - Note: we need to confirm testing and have stakeholder-signoff for
-        these.
-    prerequisites:
-    - "Pick point release kernel cut over cycle and announce"
-    - "Identify kernels to be rolled with the point release"
-    - "Sync with Certification Team"
+      - Create sub-tasks on Each "linux-*" issue for
+        all kernels which will be rolled at the point release.
   - name: "Review linux-*-edge testing"
     description: |
       - Once kernels are rolled review ADT testing for those and create
         cards to fix any issues found.
     prerequisites:
-    - "Roll linux-foo to linux-foo-edge package"
+      - "Identify kernels to be rolled with the point release"
   - name: "Update firmware package for HWE kernel migration"
     description: |
       - When a new HWE kernel is rolled out, the linux-firmware package
         needs to be updated to include the firmware blobs to match. Ideally
         this needs to be done before the point release is out so it gets
         included in the installation media.
+  - name: "Roll linux-*-edge to point release version"
+    description: |
+      - Prepare and upload updates to the linux-*-edge package moving it
+        to the release kernel base version as soon as the primary series
+        kernel reaches the final version.
+    prerequisites:
+      - "Identify kernels to be rolled with the point release"
+      - "Pick point release kernel cut over cycle and announce"
+      - "Review linux-*-edge testing"
+      - "Sync with Certification Team"
+  - name: "Review linux-*-edge upgrade testing and approve"
+    description: |
+      - Review all of the ADT and upgrade testing and approve rolls
+  - name: "Sync with Certification Team"
+    description: |
+      - Notify the Certification Team as soon as possible about a new HWE kernel
+        being prepared to allow them to plan for the certification tests on
+        time.
+    prerequisites:
+      - "Roll linux-*-edge to point release version"
+  - name: "Roll linux-*-edge to linux-* package"
+    description: |
+      - Update the variants of the linux-*-edge package to '-*' so the
+        meta and lrm packages will start producing the final variant and
+        replace the older ones.
+      - Note: we need to confirm testing and have stakeholder-signoff for
+        these.
+    prerequisites:
+      - "Review linux-*-edge upgrade testing and approve"
+  - name: "Review linux-* final acceptance and upgrade testing and approve"
+    description: |
+      - Review all of the ADT and upgrade testing and approve rolls of final kernels
+    prerequisites:
+      - "Roll linux-*-edge to linux-* package"
