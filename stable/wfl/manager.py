@@ -62,6 +62,7 @@ class WorkflowManager():
             'certification-testing'     : wfl.wft.CertificationTesting,
             'regression-testing'        : wfl.wft.RegressionTesting,
             'boot-testing'              : wfl.wft.BootTesting,
+            'abi-testing'               : wfl.wft.AbiTesting,
             'promote-to-updates'        : wfl.wft.PromoteToUpdates,
             'promote-to-security'       : wfl.wft.PromoteToSecurity,
             'promote-to-release'        : wfl.wft.PromoteToRelease,
