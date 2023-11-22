@@ -108,6 +108,9 @@ class VerificationTesting(TaskHandler):
                 master_bugs = []
             cdebug("SPAM-V master_bugs {} {}".format(len(master_bugs), master_bugs))
 
+            if not set(sru_bugs).issuperset(set(master_bugs)):
+                cdebug("SPAM-V sru_bugs is not supperset of master_bugs")
+
             sru_bugs = list(set(sru_bugs) - set(master_bugs))
         cdebug("SPAM-V final_bugs {} {}".format(len(sru_bugs), sru_bugs))
 
