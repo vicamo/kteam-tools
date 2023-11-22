@@ -158,6 +158,7 @@ def __status_bites(bug, attrs):
 
     # debs: testing status mashup (early phase Touch Testing)
     boot_testing_status = __task_status(bug, 'boot-testing')
+    abi_testing_status = __task_status(bug, 'abi-testing')
     promote_to_proposed_status = __task_status(bug, 'promote-to-proposed')
     sru_review_status = __task_status(bug, 'sru-review')
     new_review_status = __task_status(bug, 'new-review')
@@ -166,10 +167,12 @@ def __status_bites(bug, attrs):
         new_review_status = 'New'
     testing_valid = (
             boot_testing_status not in test_set_invalid or
+            abi_testing_status not in test_set_invalid or
             new_review_status not in test_set_invalid or
             sru_review_status not in test_set_invalid)
     testing_complete = (
             boot_testing_status in test_set_complete and
+            abi_testing_status in test_set_complete and
             new_review_status in test_set_complete and
             sru_review_status in test_set_complete)
     if testing_valid and not testing_complete:
@@ -178,7 +181,9 @@ def __status_bites(bug, attrs):
         color = __testing_status_colors[boot_testing_status]
         boot_testing_status = __testing_status_text.get(boot_testing_status, boot_testing_status)
         retval += tagged_block_valid('bt:', boot_testing_status, color)
-        retval += tagged_block('', '')
+        color = __testing_status_colors[abi_testing_status]
+        abi_testing_status = __testing_status_text.get(abi_testing_status, abi_testing_status)
+        retval += tagged_block_valid('At:', abi_testing_status, color)
         color = __review_status_colors[sru_review_status]
         sru_review_status = __review_status_text.get(sru_review_status, sru_review_status)
         retval += tagged_block_valid('sr:', sru_review_status, color)
@@ -447,14 +452,14 @@ for bid in sorted(swm_trackers):
             row_class.append('phase-snap-promotions')
             break
 
-    for testing_task in ('boot-testing', 'automated-testing',
+    for testing_task in ('boot-testing', 'abi-testing', 'automated-testing',
             'certification-testing', 'regression-testing', 'verification-testing'):
         status = __task_status(b, testing_task)
         if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
             row_class.append('phase-testing')
             break
 
-    for testing_task in ('boot-testing', 'automated-testing',
+    for testing_task in ('boot-testing', 'abi-testing', 'automated-testing',
             'certification-testing', 'regression-testing', 'verification-testing',
             'snap-certification-testing', 'snap-qa-testing'):
         status = __task_status(b, testing_task)
@@ -582,6 +587,7 @@ for bid in sorted(swm_trackers):
                                         <option value="snap-promotions">snap-promotions</option>
                                         <option value="testing">testing</option>
                                         <option value="boot-testing">&nbsp;&nbsp;boot-testing</option>
+                                        <option value="abi-testing">&nbsp;&nbsp;abi-testing</option>
                                         <option value="automated-testing">&nbsp;&nbsp;automated-testing</option>
                                         <option value="certification-testing">&nbsp;&nbsp;certification-testing</option>
                                         <option value="regression-testing">&nbsp;&nbsp;regression-testing</option>
