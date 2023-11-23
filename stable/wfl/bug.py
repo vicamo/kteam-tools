@@ -1122,6 +1122,13 @@ class WorkflowBug():
 
             redo = True
 
+        # TRANSITION: add any missing abi-testing tasks.
+        if s.variant in ('debs', 'combo') and 'abi-testing' not in tasks_by_name:
+            tasks_by_name['abi-testing'] = s.lpbug.addTask(target='/kernel-sru-workflow/abi-testing')
+
+            cinfo("    abi-testing added {}".format(tasks_by_name['abi-testing']))
+            redo = True
+
         if redo:
             cinfo('    Re-scanning bug tasks:', 'cyan')
             for t in s.lpbug.bug_tasks:
