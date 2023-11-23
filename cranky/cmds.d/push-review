@@ -61,6 +61,7 @@ EOF
 dry_run=0
 host=
 sru_cycle=
+force=
 
 while [ "${#}" -gt 0 ] ; do
 	case "${1}" in
@@ -70,6 +71,9 @@ while [ "${#}" -gt 0 ] ; do
 			;;
 		-d|--dry-run)
 			dry_run=1
+			;;
+		-f|--force)
+			force=1
 			;;
 		-h|--help)
 			usage
@@ -184,7 +188,7 @@ for linux_dir in ${directories} ; do
 		fi
 		(cd "${linux_dir}" && \
 			git remote add "${remote_name}" "${remote_addr}" && \
-			git push "${remote_name}" "${latest_tag}")
+			git push "${remote_name}" "${latest_tag}" ${force:+"--force"})
 	fi
 	summary="${summary}${repo}: ${remote_addr} tag ${latest_tag}\n"
 
