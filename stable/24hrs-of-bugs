@@ -1,48 +1,33 @@
 #!/usr/bin/env python3
 #
 
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, INFO, warning
-from ktl.log                            import Clog
-from datetime                           import datetime, timedelta, timezone
-from launchpadlib.launchpad             import Launchpad as _Launchpad
-from ktl.kernel_series                  import KernelSeries
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from logging import basicConfig, INFO, warning
+from datetime import datetime, timedelta, timezone
 
-class Launchpad():
+from launchpadlib.launchpad import Launchpad
+
+from wfl.bugmail import BugMail
+from ktl.log import Clog
+from ktl.kernel_series import KernelSeries
+
+
+class ThisApp:
     """
-    Manages connection to Launchpad services.
-    """
-    def __init__(s, client_name):
-        """
-        """
-        s.service = _Launchpad.login_anonymously(client_name, 'production', '.shadow-cache')
-        return
-
-
-# ThisApp
-#
-class ThisApp():
-    '''
     This class is just the engine that makes everything go.
-    '''
+    """
 
-    # __init__
-    #
-    def __init__(s, args):
-        '''
-        '''
-        s.args = args
-        s.finder_init()
-        s.data = {}
-        s.title_max = 60
-        s.kernel_series = KernelSeries()
+    def __init__(self, args):
+        """ """
+        self.args = args
+        self.title_max = 60
+        self.kernel_series = KernelSeries()
 
-    def finder_init(s):
         # We want all the bugs that have been modified since the last time we searched. Once
         # we have that list, we eliminate any that have not been created within the time
         # window we are interested in.
         #
-        s.search_status = [
+        self.search_status = [
             "New",
             "Incomplete (with response)",
             "Incomplete (without response)",
@@ -52,132 +37,129 @@ class ThisApp():
             "Fix Committed",
             "Invalid",
             "Fix Released",
-        ] # A list of the bug statuses that we care about
+        ]  # A list of the bug statuses that we care about
 
-        s.search_since = datetime.utcnow() - timedelta(days=1)
+        if self.args.datetime:
+            self.datetime = datetime.strptime(self.args.datetime + ":00+0000", "%Y-%m-%d %H:%M:%S%z")
+        else:
+            self.datetime = datetime.now(timezone.utc)
 
-        s.launchpad = Launchpad('kernel-team-24hrs-of-bugs').service
-        s.search_tags = []
-        s.search_tags_combinator = "All"
+        self.lp = Launchpad.login_anonymously("kernel-team-24hrs-of-bugs", "production", ".shadow-cache")
 
         # The service.distributions property is a collection of distributions. We
         # pretty much only care about one, 'ubuntu'.
         #
-        s.distro = s.launchpad.distributions['ubuntu']
+        self.distro = self.lp.distributions["ubuntu"]
 
-    def finder(s, package_name, callback):
-        now = datetime.now(timezone.utc)
+    def finder(self, entry_type, entry_name):
+        data = {}
 
-        source_package = s.distro.getSourcePackage(name=package_name)
-        if source_package is None:
-            warning('No source package found for "%s"' % (package_name))
-            return
-        tasks = source_package.searchTasks(status=s.search_status, modified_since=s.search_since)
+        if entry_type == "package":
+            entry = self.distro.getSourcePackage(name=entry_name)
+            if entry is None:
+                warning('No source package found for "%s"' % (entry_name))
+                return {}
+        elif entry_type == "project":
+            try:
+                entry = self.lp.projects[entry_name]
+            except KeyError:
+                warning('No project "%s" found' % (entry_name))
+                return {}
+        else:
+            warning('Invalid entry type "%s"' % (entry_type))
+            return {}
+
+        # Search for tasks that were modified in the 24 hours before the specified date/time
+        search_since = self.datetime - timedelta(days=1)
+        tasks = entry.searchTasks(status=self.search_status, modified_since=search_since)
         for task in tasks:
-            delta = now - task.date_created
-            if (delta.days < 1) and ('kernel-release-tracking-bug' not in task.bug.tags):
-                callback(task)
+            # Ignore tracking bugs
+            if "kernel-release-tracking-bug" in task.bug.tags:
+                continue
 
-    # _find_series_in_tags
-    #
-    def _find_series_in_tags(s, bug):
+            # Ignore tasks that were *not* created in the 24 hours before the specified date/time
+            delta = self.datetime - task.date_created
+            if delta.days != 0:
+                continue
+
+            try:
+                assignee = task.assignee.display_name
+            except AttributeError:
+                assignee = "unassigned"
+
+            data[task.bug.id] = {
+                "id": task.bug.id,
+                "title": task.bug.title,
+                "series_name": self.find_series_in_tags(task.bug),
+                "importance": task.importance,
+                "status": task.status,
+                "assignee": assignee,
+            }
+
+        return data
+
+    def find_series_in_tags(self, bug):
         """
         Search through all the tags on a bug to see if we can find the series that the
         bug was filed against.
         """
-        series_name = ''
-
-        for series in sorted(s.kernel_series.series, key=KernelSeries.key_series_name):
+        for series in sorted(self.kernel_series.series, key=KernelSeries.key_series_name):
             if series.codename in bug.tags:
-                series_name = series.codename
-                break
+                return series.codename
 
-        return series_name
+        return ""
 
-    def series(s, bug):
-        result = ''
-        while True:
-            result = s._find_series_in_tags(bug)
-            break
-
-        return result
-
-    def cb(s, task):
-        try:
-            assignee = task.assignee.display_name
-        except:
-            assignee = 'unassigned'
-
-        s.data[task.bug.id] = {
-            'id'          : task.bug.id,
-            'title'       : task.bug.title,
-            'series_name' : s.series(task.bug),
-            'importance'  : task.importance,
-            'status'      : task.status,
-            'assignee'    : assignee,
-        }
-
-    # per_bug_report
-    #
     def per_bug_report(self, bid, data):
         """
         Generate the report for a single bug.
         """
-        retval = ""
-
-        retval += 'LP: #%-7s' % (bid)
+        retval = "LP: #%-7s" % (bid)
 
         # Chop the title to a specific length
         #
-        if len(data['title']) > self.title_max:
-            title = data['title'][:self.title_max - 3]
-            retval += '   %-*s...' % (self.title_max - 3, title)
+        if len(data["title"]) > self.title_max:
+            title = data["title"][: self.title_max - 3]
+            retval += "   %-*s..." % (self.title_max - 3, title)
         else:
-            retval += '   %-*s' % (self.title_max, data['title'])
+            retval += "   %-*s" % (self.title_max, data["title"])
 
         # Yes! This is a little hackish
-        retval += '    %-8s' % (data['series_name'])
-        retval += '    %-12s' % (data['importance'])
-        retval += '    %-13s' % (data['status'])
-        retval += '    %-s' % (data['assignee'])
+        retval += "    %-8s" % (data["series_name"])
+        retval += "    %-12s" % (data["importance"])
+        retval += "    %-13s" % (data["status"])
+        retval += "    %-s" % (data["assignee"])
 
-        retval += '\n'
+        retval += "\n"
 
         return retval
 
-    # per_package_report
-    #
-    def per_package_report(s, pkg, data):
+    def per_entry_report(self, entry_type, entry_name, data):
         """
-        Generate the report for a single package.
+        Generate the report for a single package or project.
         """
-        retval = 'The %s package acquired %d new bugs in the last 24 hrs.\n' % (pkg, len(data))
-        retval += '\n'
-        retval += '%-7s        %-*s    %-8s    %-12s    %-13s    %-s' % ('Bug', s.title_max, 'Title', 'Series', 'Importance', 'Status', 'Assignee')
-        retval += '\n'
-        retval += '------------   ------------------------------------------------------------    --------    ------------    -------------    ---------------------\n'
+        retval = "The %s %s acquired %d new bugs in the last 24 hrs.\n" % (entry_name, entry_type, len(data))
+        retval += "\n"
+        retval += "%-7s        %-*s    %-8s    %-12s    %-13s    %-s" % (
+            "Bug",
+            self.title_max,
+            "Title",
+            "Series",
+            "Importance",
+            "Status",
+            "Assignee",
+        )
+        retval += "\n"
+        retval += "------------   ------------------------------------------------------------"
+        retval += "    --------    ------------    -------------    ---------------------\n"
         for bug in sorted(data):
-            retval += s.per_bug_report(bug, data[bug])
-        retval += '\n\n'
+            retval += self.per_bug_report(bug, data[bug])
+        retval += "\n\n"
 
         return retval
 
-    def send_email(s, subject, body, to):
-        from wfl.bugmail import BugMail
-        BugMail.load_config('email.yaml')
-        BugMail.to_address = to
-        BugMail.send(subject, body)
-
-    # main
-    #
-    def main(s):
-        '''
-        '''
-        retval = 0
-        packages_of_interest = [
-            'linux-firmware'
-        ]
-        for series in s.kernel_series.series:
+    def main(self):
+        packages_of_interest = ["linux-firmware"]
+        for series in self.kernel_series.series:
             if series.supported is False:
                 continue
             for source in series.sources:
@@ -187,30 +169,45 @@ class ThisApp():
                     if package.name not in packages_of_interest:
                         packages_of_interest.append(package.name)
 
-        the_report = ''
+        the_report = ""
         for package_name in packages_of_interest:
-            s.data = {}
-            s.finder(package_name, s.cb)
-            if len(s.data) > 0:
-                the_report += s.per_package_report(package_name, s.data)
+            data = self.finder("package", package_name)
+            if data:
+                the_report += self.per_entry_report("package", package_name, data)
+
+        projects_of_interest = ["canonical-kernel-snaps"]
+        for project_name in projects_of_interest:
+            data = self.finder("project", project_name)
+            if data:
+                the_report += self.per_entry_report("project", project_name, data)
 
         if len(the_report) > 0:
-            s.send_email('The Daily Bug Report for %s' % str(datetime.utcnow()), the_report, 'kernel-team@lists.ubuntu.com')
+            to = "kernel-team@lists.ubuntu.com"
+            subject = "The Daily Bug Report for %s" % str(self.datetime)
+            if self.args.dry_run:
+                print()
+                print("To: " + to)
+                print("Subject: " + subject)
+                print()
+                print(the_report)
+            else:
+                BugMail.load_config("email.yaml")
+                BugMail.to_address = to
+                BugMail.send(subject, the_report)
 
-        return retval
 
-
-if __name__ == '__main__':
-    # Command line argument setup and initial processing
-    #
-    app_description = '''
+if __name__ == "__main__":
+    app_description = """
 A utility that finds the LP bugs filed in the last 24 hrs. that the kernel team cares about.
-    '''
-    app_epilog = '''
-examples:
-    ThisApp --help
-    '''
-    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    """
+    parser = ArgumentParser(description=app_description, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument("--dry-run", action="store_true", help="Print the email but don't send it")
+    parser.add_argument(
+        "--datetime",
+        help="Search for bugs created in the 24 hours before DATETIME. DATETIME must be in the "
+        "form 'YYYY-MM-DD HH:MM'. If not provided defaults to 'now'.",
+    )
+
     args = parser.parse_args()
 
     log_format = "%(message)s"
@@ -218,7 +215,7 @@ examples:
     Clog.color = True
 
     app = ThisApp(args)
-    exit(app.main())
+    app.main()
 
 
 # vi:set ts=4 sw=4 expandtab:

@@ -43,11 +43,12 @@ repos:
 # This is a regular expression, not a glob
 files: >
   (?x)^(
-    info/.*\.yaml |
     cranky/annotations-tools/tests/.*\.py |
     cranky/cmds.d/cycles |
     cranky/cmds.d/push-review |
     cranky/crl/config.py |
     cranky/crl/tests/test_config.py |
-    mainline-build/cod-mainline-dashboard
+    info/.*\.yaml |
+    mainline-build/cod-mainline-dashboard |
+    stable/24hrs-of-bugs
   )$
