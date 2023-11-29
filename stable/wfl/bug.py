@@ -600,6 +600,17 @@ class WorkflowBug():
         else:
             s.bprops['issue'] = issue_key
 
+        # Track changes to messages.
+        date_message_prev = s.private_group_get("tracker", "last-message")
+        date_message_curr = str(s.lpbug.date_last_message)
+        abi_testing_msg = None
+        if date_message_prev != date_message_curr:
+            for message in s.lpbug.messages:
+                if message.subject == "ABI testing":
+                    abi_testing_msg = int(message.self_link.rsplit("/", 1)[-1])
+            s.group_set("comments", "abi-testing", abi_testing_msg)
+            s.private_group_set("tracker", "last-message", date_message_curr)
+
         # XXX: TRANSITION -- copy sru-review clamp over to new-review clamp if present.
         clamp = s.clamp('new-review')
         if clamp is None:
