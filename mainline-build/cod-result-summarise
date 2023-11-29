@@ -204,10 +204,10 @@ class Summary:
 
         params = self.summary
         params['reason'] = reason
-        params['url-path'] = os.path.relpath(os.path.abspath(self.directory), os.path.expanduser("~/public_html"))
-        params['url-summary'] = os.path.relpath(os.path.abspath(os.path.join(self.directory, os.path.pardir)), os.path.expanduser("~/public_html"))
+        params['url-path'] = os.path.relpath(os.path.abspath(self.directory), os.path.expanduser("~/website/"))
+        params['url-summary'] = os.path.relpath(os.path.abspath(os.path.join(self.directory, os.path.pardir)), os.path.expanduser("~/website/"))
         params['status-text'] = params['overall']
-        params['url-root'] = "http://kernel.ubuntu.com/~kernel-ppa"
+        params['url-root'] = "http://kernel.ubuntu.com"
         params['url-test'] = "{url-root}/{url-path}".format(**params).replace('#', '%23')
         params['url-summary'] = "{url-root}/{url-summary}".format(**params).replace('#', '%23')
         params['section-title'] = self.section.get('title', 'Unknown')
