@@ -2713,13 +2713,14 @@ class Package():
         retval = False
 
         bi = s.build_info
-        for pocket in s.__pockets_signed:
-            if pocket not in bi[pkg]:
-                continue
-            cdebug("checking for {} in {} is '{}'".format(pkg, pocket, bi[pkg][pocket]['status']))
-            if s.__pkg_in(pkg, pocket):
-                retval = True
-                break
+        if pkg in bi:
+            for pocket in s.__pockets_signed:
+                if pocket not in bi[pkg]:
+                    continue
+                cdebug("checking for {} in {} is '{}'".format(pkg, pocket, bi[pkg][pocket]['status']))
+                if s.__pkg_in(pkg, pocket):
+                    retval = True
+                    break
 
         cleave(s.__class__.__name__ + '.signed (%s)' % (retval))
         return retval
