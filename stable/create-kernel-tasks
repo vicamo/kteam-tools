@@ -550,7 +550,10 @@ Examples:
     #   - --series <series> [--source <source> [--source <source> [...]]]
     #   - --series <series> [--series <series> [...]]
     #   - --handle <series>:<source> [--handle <series>:<source> [...]]
-    ks = KernelSeries()
+    if args.devel:
+        ks = KernelSeries.tip()
+    else:
+        ks = KernelSeries.for_cycle(args.cycle)
     ks_source_list = []
     if len(args.handle) > 0:
         if args.devel or len(args.series) > 0 or len(args.source) > 0:
