@@ -21,21 +21,22 @@ from ktl.log import cerror
 from crl.handle import Handle, HandleError
 
 
-def pocket_order(val):
+def pocket_order(route, entry):
     """
     Return a sort order number based on the pocket name
     """
-    if "ppa:" in val:
-        return 5
-    if val.endswith("-proposed#2"):
-        return 4
-    if val.endswith("-proposed"):
-        return 3
-    if val.endswith("-updates"):
-        return 2
-    if val.endswith("-security"):
-        return 1
-    return 0
+    return {
+        "release": 10,
+        "security": 20,
+        "updates": 30,
+        "signing": 40,
+        "proposed": 50,
+        "as-proposed": 51,
+        "build": 60,
+        "build-private": 61,
+        "security-proposed": 70,
+        "security-build": 71,
+    }.get(route, 200) + 2 * entry
 
 
 def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
@@ -60,9 +61,11 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
         for destination in route:
             ppa, pocket = destination.reference, destination.pocket
             dest_n = destination.name
+            entry = destination.entry
+            dest_match = dest_n if "#" in dest_n else dest_n + "#1"
 
             if show_pocket:
-                if show_pocket not in (dest, dest_n):
+                if show_pocket not in (dest, dest_match):
                     # Skip it if a pocket was provided but the route doesn't match
                     continue
 
@@ -102,7 +105,7 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
                     pocket_name = "%s (ppa:%s)" % (series, dest_n)
 
                 # The basic data that we always display
-                route_data = [(package, pocket_order(pocket_name), pocket_name),
+                route_data = [(package, pocket_order(dest, entry), dest_n),
                               package, package_version, pocket_name, "source"]
 
                 if show_ext:
