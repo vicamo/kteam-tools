@@ -303,6 +303,7 @@ class PackageBuildRouteEntry:
                 cdebug("binary arch={} status={} binary_package_name={} binary_package_version={} component_name={}".format(arch_tag, binary.status, binary.binary_package_name, binary.binary_package_version, binary.component_name))
                 if binary.status == 'Pending':
                     status.add('PENDING')
+                    status_detail.append("{} {} pending".format(arch_tag, binary.binary_package_name))
                 elif binary.status  == 'Published':
                     status.add('FULLYBUILT')
                 elif self.bug.accept_present("superseded-binaries") and binary.status == "Superseded":
@@ -784,6 +785,7 @@ class PackageBuild:
             cdebug("binary arch={} status={} binary_package_name={} binary_package_version={} component_name={}".format(arch_tag, binary.status, binary.binary_package_name, binary.binary_package_version, binary.component_name))
             if binary.status == 'Pending':
                 status.add('PENDING')
+                status_detail.append("{} {} pending".format(arch_tag, binary.binary_package_name))
             elif binary.status  == 'Published':
                 status.add('FULLYBUILT')
             elif s.bug.accept_present("superseded-binaries") and binary.status == "Superseded":
