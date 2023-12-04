@@ -51,6 +51,10 @@ SRU_CYCLE_HEADER = '''# kernel SRU Cycle information file (YAML format)
 '''
 
 class SruCycleSpinEntry:
+
+    # Used to indicate that an item was not provided in the original data.
+    not_provided = object()
+
     def __init__(self, spin, data=False, sc=None):
         '''
         Instantiate a new SruCycleSpinEntry object.
@@ -95,6 +99,7 @@ class SruCycleSpinEntry:
         self._cutoff_date = data.get('cutoff-date', None)
         self._stream = data.get('stream')
         self._notes_link = data.get('notes-link')
+        self._previous_cycle = data.get('previous-cycle') or SruCycleSpinEntry.not_provided
 
     def __eq__(self, other):
         '''
@@ -161,6 +166,30 @@ class SruCycleSpinEntry:
     def attach(self, table):
         self._sc = table
         return self
+
+    @property
+    def previous_cycle(self):
+        if isinstance(self._previous_cycle, str):
+            # Handle delayed instantiation of explicit previous-cycle markers.
+            self._previous_cycle = self._sc.lookup_cycle(self._previous_cycle)
+
+        elif self._previous_cycle is SruCycleSpinEntry.not_provided:
+            # Find the previous cycle for this cycle by taking the one before
+            # it in the configuration.  d* cycles do not have a previous-cycle
+            # by default and must be specified explicitly.  When considering
+            # previous cycles for stable cycles ignore development cycles.
+            self._previous_cycle = None
+            if self.cycle[0] != "d":
+                pick_next = False
+                for cycle in self._sc.cycles:
+                    if cycle.name[0] == "d":
+                        continue
+                    if pick_next:
+                        self._previous_cycle = cycle
+                        break
+                    if cycle.cycle == self.cycle:
+                        pick_next = True
+        return self._previous_cycle
 
     def __str__(self):
         '''

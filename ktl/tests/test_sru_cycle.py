@@ -386,6 +386,41 @@ class TestSruCycleSpinEntry(TestSruCycleCore):
         with Replace('ktl.sru_cycle.datetime', test_datetime(2018, 2, 5, 0, 0)):
             self.assertEqual(spin.ready_to_release, False)
 
+    def test_previous_cycle(self):
+        data = {
+            'd2023.11.01': {
+                'previous-cycle': 'd2023.10.05',
+            },
+            '2023.10.30': {
+                'release-date': '2023-12-04',
+            },
+            'd2023.10.05': {},
+            's2023.10.02': {
+                'start-date': '2023-10-30',
+                'release-date': '2023-11-20',
+            },
+            '2023.10.02': {
+                'release-date': '2023-10-30',
+            },
+        }
+        sc = SruCycle(data=data)
+        for spin, expect in (
+            ("2023.10.30-1", "s2023.10.02"),
+            ("s2023.10.02-1", "2023.10.02"),
+            ("2023.10.02-1", None),
+            ('d2023.11.01-1', "d2023.10.05"),
+            ("d2023.10.05-1", None),
+        ):
+            with self.subTest(spin):
+                if expect is not None:
+                    expect = sc.lookup_cycle(expect)
+                    self.assertNotEqual(None, expect)
+                cycle = sc.lookup_spin(spin).previous_cycle
+                if expect is None:
+                    self.assertEqual(None, cycle)
+                else:
+                    self.assertEqual(expect.name, cycle.name)
+
 
 if __name__ == '__main__':
     unittest.main()
