@@ -63,6 +63,7 @@ files: >
     cranky/cmds.d/test-build |
     cranky/cmds.d/update-dependent |
     cranky/cmds.d/update-dependents |
+    cranky/cmds.d/update-dkms-versions |
     cranky/crl/.* |
     cranky/docs/.* |
     cranky/fixes.d/.* |

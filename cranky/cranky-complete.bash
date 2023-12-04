@@ -39,6 +39,7 @@ _cranky() {
 		"test-build -h --help -a --arch -c --commit -d --dry-run -f --fail -o --outdir -p --purge -t --target"
 		"update-dependent -h --help --ignore-abi-check"
 		"update-dependents -h --help --ignore-abi-check -r --rollback"
+		"update-dkms-versions -h --help -r --remote-repo -b --remote-branch -s --sru-cycle -x --debug"
 		"update-snap -h --help --dry-run -u --updates -t --no-tags"
 		"updateconfigs -h --help -c --clean"
 		"verify-release-ready -h --help -c --current -d --debug -v --verbose"
