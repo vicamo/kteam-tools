@@ -554,6 +554,9 @@ Examples:
         ks = KernelSeries.tip()
     else:
         ks = KernelSeries.for_cycle(args.cycle)
+        if ks is None:
+            cerror('{}: cycle not recognised'.format(args.cycle))
+            sys.exit(1)
     ks_source_list = []
     if len(args.handle) > 0:
         if args.devel or len(args.series) > 0 or len(args.source) > 0:
