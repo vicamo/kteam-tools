@@ -559,8 +559,8 @@ Examples:
             sys.exit(1)
     ks_source_list = []
     if len(args.handle) > 0:
-        if args.devel or len(args.series) > 0 or len(args.source) > 0:
-            cerror('The handle argument is incompatible with devel, series, and source')
+        if len(args.series) > 0 or len(args.source) > 0:
+            cerror('The handle argument is incompatible with series, and source')
             sys.exit(1)
         devel_set = False
         for handle in args.handle:
