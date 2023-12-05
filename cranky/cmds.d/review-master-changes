@@ -69,11 +69,11 @@ version2commit() {
 		exit 1
 	fi
 
-	# Get the commit message for the previous base version		
-	prev_commit_message=$(git rev-list --format=%s --max-count=1 FETCH_HEAD | tail +2)		
-	if [ -z "$prev_commit_message" ]; then		
-		echo "Failed to get commit message for tag \"$base_tag\""		
-		exit 1		
+	# Get the commit message for the previous base version
+	prev_commit_message=$(git rev-list --format=%s --max-count=1 FETCH_HEAD | tail +2)
+	if [ -z "$prev_commit_message" ]; then
+		echo "Failed to get commit message for tag \"$base_tag\""
+		exit 1
 	fi
 
 	# Find the previous commit ID in the current tree

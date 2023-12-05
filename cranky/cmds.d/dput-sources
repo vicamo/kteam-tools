@@ -129,7 +129,7 @@ and list the source packages that it wants to upload and wait for user
 confirmation before doing the actual sign and upload.
 
 Positional arguments:
-  DESTINATION  An upload destination as listed by cranky list-routing. 
+  DESTINATION  An upload destination as listed by cranky list-routing.
                Use auto to automatically determine the correct destination.
   HANDLE       Handle to a kernel source tree, either a path to a kernel
                source tree or a handle in <series>:<package> format. If not

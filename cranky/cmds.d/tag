@@ -6,7 +6,7 @@ function debug_log()
 }
 
 function usage()
-{  
+{
 	# Note: Arguments must match those in cranky tags
 	cat <<EOF
 Usage: ${P:-$(basename "$0")} [-h] [-f] [-v]
