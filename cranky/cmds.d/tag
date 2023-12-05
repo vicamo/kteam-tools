@@ -42,25 +42,19 @@ while [ "${#}" -gt 0 ] ; do
 	shift
 done
 
-if [ -f debian/debian.env ] ; then
-	# shellcheck disable=SC1091
-	. debian/debian.env
-	if [ -z "${DEBIAN:-}" ] ; then
-		echo "error: Can't find 'DEBIAN' variable in debian/debian.env" >&2
+case "$("${C}" shell-helper tree-type)" in
+	main)
+		# shellcheck disable=SC1091
+		. debian/debian.env
+		changelog_file=${DEBIAN}/changelog
+		;;
+	meta|signed|lrm)
+		changelog_file=debian/changelog
+		;;
+	*)
+		echo "This is not a dependent kernel package repo" >&2
 		exit 1
-	fi
-	debug_log "DEBIAN: $DEBIAN"
-
-	changelog_file="${DEBIAN}/changelog"
-
-elif [ -f update-version ] ; then
-	# This is a dependent package repo
-	changelog_file=debian/changelog
-
-else
-	echo "error: No debian/debian.env or update-version script found. Is this an Ubuntu kernel source tree?" >&2
-	exit 1
-fi
+esac
 
 debug_log "Changelog file: $changelog_file"
 
