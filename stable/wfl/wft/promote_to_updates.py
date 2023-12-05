@@ -200,6 +200,22 @@ class PromoteToUpdates(Promoter):
                 break
 
             cinfo('    All components are now in -updates', 'magenta')
+            if (
+                "-aws" in s.bug.name
+                or "-azure" in s.bug.name
+                or "-gcp" in s.bug.name
+                or "-ibm" in s.bug.name
+                or "-oracle" in s.bug.name
+            ):
+                s.bug.announce(
+                    "cloud-transition-updates",
+                    subject="[LP#{id}](https://launchpad.net/bugs/{id}) {cycle} {series}:{source} in updates".format(
+                        id=s.bug.lpbug.id,
+                        cycle=s.bug.sru_cycle,
+                        series=s.bug.series,
+                        source=s.bug.name,
+                    )
+                )
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
             retval = True
