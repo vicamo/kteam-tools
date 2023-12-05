@@ -352,14 +352,14 @@ sru cycle you're respining.
 $ cranky link-tb --sru-cycle <cycle>
 ```
 
-### dkms package update stage - `update-dkms-versions`
+### DKMS package update stage - `cranky update-dkms-versions`
 <!--cheatsheet-->
 ```
-$ ./update-dkms-versions
+$ cranky update-dkms-versions
 ```
 <!--/cheatsheet-->
 
-In bionic and newer, this updates the package versions in `debian/dkms-versions`
+In bionic and newer, this updates the package versions in `debian.<variant>/dkms-versions`
 to match the ones expected for the SRU cycle. By default this script will fetch
 the data from a git repository containing a database of the dkms versions to be
 used on each series for the given SRU cycle. The cycle date used is the one from
@@ -370,12 +370,6 @@ The git repository location and the SRU cycle date can be provided manually to
 the script via optional parameters. However, in the normal case a manual
 override should never be needed.
 
-**Note**: `update-version-dkms` used to be required only for primary kernels
-and kernels forward-ported to the development release. However, it has been
-deprecated in favor of `update-dkms-versions` which is safe and even expected to
-be run for all derivatives and backports as well. So always run this script to
-make sure the main package has the most up-to-date versions.
-
 In most cases there would be no change committed as the up-to-date versions
 should have been committed on the master kernel and picked-up by the derivative
 or backport on rebase. However, if there is any change, check that the version
@@ -384,7 +378,7 @@ looks suspicious, don't hesitate to ask the team if the changes are expected.
 
 Example:
 ```
-$ ./update-dkms-versions
+$ cranky update-dkms-versions
 ```
 
 ### Closing commit - `cranky close`
