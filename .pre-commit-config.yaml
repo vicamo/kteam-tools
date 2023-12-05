@@ -62,6 +62,7 @@ files: >
     cranky/cmds.d/tags |
     cranky/cmds.d/test-build |
     cranky/cmds.d/update-dependent |
+    cranky/cmds.d/update-dependent-version |
     cranky/cmds.d/update-dependents |
     cranky/cmds.d/update-dkms-versions |
     cranky/crl/.* |

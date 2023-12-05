@@ -1,0 +1,240 @@
+#!/bin/bash -eu
+#
+# Update a dependent package version (meta, signed, lrm)
+#
+
+C=${C:-cranky}
+
+function out()
+{
+	rc=${?}
+
+	if [ -f "${TMP_F}" ] ; then
+		rm -f "${TMP_F}"
+	fi
+
+	if [ ${rc} -ne 0 ] ; then
+		echo "Error: Script failed" >&2
+	fi
+
+	exit ${rc}
+}
+
+function update_file()
+{
+	local src=${1} dst=${2}
+
+	cp -p "$src" "$dst"
+	if ! git diff --exit-code -- "${dst}" >/dev/null ; then
+		git commit -s -m "UBUNTU: ${dst} -- update from main" -- "${dst}"
+	else
+		echo "${dst}: no changes from main"
+	fi
+}
+
+function usage()
+{
+	cat <<EOF
+Usage: ${C} update-dependent-version [-h] [--commit] [--no-update]
+       [--main-version VERSION] [MAIN_KERNEL_PATH]
+
+Update a dependent package version (meta, signed, lrm).
+
+Postional arguments:
+  MAIN_KERNEL_PATH        Path to the main kernel source tree. If not provided,
+                          determines the path automatically.
+
+Optional arguments:
+  -h, --help              Show this help text and exit.
+  --commit                Commit and tag the updated changelog.
+  --no-update             Do not update files from the main kernel source tree.
+  --main-version VERSION  Main kernel version to update to. If not provided,
+                          uses the latest version from the main kernel
+                          changelog.
+  --namespace NAME        Namespace (for lrm packages only).
+EOF
+}
+
+if ! [ -d debian ] ; then
+	echo "Not in a Debian package tree" >&2
+	exit 1
+fi
+
+if [ -x update-version ] ; then
+	echo "In-tree update-version script exists, you should use that" >&2
+	exit 1
+fi
+
+commit=:
+no_update=0
+main_version=
+namespace=
+main_path=
+
+while [ ${#} -gt 0 ] ; do
+	case "${1}" in
+		-h|--help)
+			usage
+			exit 2
+			;;
+		--commit)
+			commit=
+			;;
+		--no-update)
+			no_update=1
+			;;
+		--main-version|--master-version)
+			shift
+			main_version=${1}
+			no_update=1
+			;;
+		--namespace)
+			shift
+			namespace=${1}
+			;;
+		*)
+			if [ -n "${main_path}" ] ; then
+				echo "Unexpected argument: ${1}" >&2
+				exit 2
+			fi
+			main_path=${1}
+			;;
+	esac
+	shift
+done
+
+TMP_F=
+trap out EXIT INT TERM HUP
+
+# Check that we're in a dependent package tree
+pkg_type=$("${C}" shell-helper tree-type)
+case "${pkg_type}" in
+	meta|signed)
+		if [ -n "${namespace}" ] ; then
+			echo "--namespace is only valid for lrm packages" >&2
+			exit 2
+		fi
+		;;
+	lrm)
+		true
+		;;
+	*)
+		echo "Invalid package type: ${pkg_type}" >&2
+		exit 1
+		;;
+esac
+
+# Check that the repo is clean
+if [ -n "$(git status --porcelain)" ] ; then
+	echo "Repo is not clean" >&2
+	exit 1
+fi
+
+if [ -z "${main_version}" ] ; then
+	if [ -z "${main_path}" ] ; then
+		main_path=$("${C}" shell-helper tree-main-path)
+	fi
+
+	# Determine the main kernel package version
+	# shellcheck disable=SC1091
+	. "${main_path}"/debian/debian.env
+	main_debian=${main_path}/${DEBIAN}
+	main_version=$(dpkg-parsechangelog -l"${main_debian}"/changelog -SVersion)
+fi
+
+# Work out our current version taking into account closed sections
+series=$(dpkg-parsechangelog -SDistribution)
+if [ "${series}" = "UNRELEASED" ] ; then
+	series=$(dpkg-parsechangelog -o1 -c1 -SDistribution)
+	version=$(dpkg-parsechangelog -o1 -c1 -SVersion)
+	package=$(dpkg-parsechangelog -o1 -c1 -SSource)
+else
+	version=$(dpkg-parsechangelog -SVersion)
+	package=$(dpkg-parsechangelog -SSource)
+fi
+
+# Construct the tag prefix
+tag_prefix=${package}
+tag_prefix=${tag_prefix#linux-meta}
+tag_prefix=${tag_prefix#linux-signed}
+tag_prefix=${tag_prefix#linux-restricted-modules}
+tag_prefix=Ubuntu${tag_prefix}-
+
+# Verify that the correct tag exists
+tag=${tag_prefix}${version//~/_}
+tag_count=$(git for-each-ref refs/tags/"${tag}" | wc -l)
+if [ "${tag_count}" -ne 1 ] && [ -n "${namespace}" ] ; then
+	tag=${namespace}${tag}
+	tag_count=$(git for-each-ref refs/tags/"${tag}" | wc -l)
+fi
+if [ "${tag_count}" -ne 1 ] ; then
+	echo "Tag not found: ${tag}" >&2
+	exit 1
+fi
+
+# Update things from the main kernel source tree
+if [ ${no_update} -eq 0 ] ; then
+	case "${pkg_type}" in
+		meta)
+			update_file "${main_debian}"/dkms-versions debian/dkms-versions
+			;;
+		signed)
+			update_file "${main_debian}"/tracking-bug debian/tracking-bug
+			;;
+		lrm)
+			update_file "${main_debian}"/tracking-bug debian/tracking-bug
+			"${C}" update-dkms-versions
+			update_file "${main_path}"/debian/scripts/dkms-build debian/scripts/dkms-build
+			update_file	"${main_path}"/debian/scripts/dkms-build--nvidia-N debian/scripts/dkms-build--nvidia-N
+			update_file	"${main_path}"/debian/scripts/fix-filenames.c debian/scripts/fix-filenames.c
+			;;
+	esac
+fi
+
+# Get the new package version and create the new changelog entry
+new_version=$("${C}" shell-helper newrelease --parent-version "${main_version}" \
+              --package-type "${pkg_type}" "${version}")
+marker="__CHANGELOG_FRAGMENT_MARKER__"
+dch --newversion "${new_version}" "${marker}"
+
+# Create an empty changelog
+TMP_F=$(mktemp)
+
+# Record any ABI/version bump
+if [ "${pkg_type}" = meta ] && [ "${version//-/.}" = "${version}" ] ; then
+	# Old meta versioning scheme (no '-' in version)
+	abi=${version%.*}
+    main_abi_real=${main_version%.*}
+    main_abi=${main_abi_real//-/.}
+    if dpkg --compare-versions "${abi}" lt "${main_abi}" ; then
+        echo "Updated to ABI: ${main_abi}"
+        echo "  * Bump ABI ${main_abi_real}" >>"${TMP_F}"
+    fi
+else
+	if dpkg --compare-versions "${version}" lt "${main_version}" ; then
+		echo "Updated to version: ${main_version}"
+        echo "  * Main version: ${main_version}" >>"${TMP_F}"
+    fi
+fi
+
+# Format any existing commits
+count=$(git log --oneline "${tag}".. | wc -l)
+if [ "${count}" -gt 0 ] ; then
+	echo "" >>"${TMP_F}"
+	git log "${tag}".. | debian/scripts/misc/git-ubuntu-log >>"${TMP_F}"
+fi
+
+# Insert official changelog fragment
+sed -i -e '/^  \* '"${marker}"'/ {
+r '"${TMP_F}"'
+d
+}' debian/changelog
+
+# Close this changelog entry
+dch --distribution "${series}" --release ""
+
+# Emit final closing commands
+echo "git commit -s -m 'UBUNTU: ${tag_prefix}${new_version}' debian/changelog"
+${commit} git commit -s -m "UBUNTU: ${tag_prefix}${new_version}" debian/changelog
+echo "git tag -s -m '${tag_prefix}${new_version}' '${namespace}${tag_prefix}${new_version//~/_}'"
+${commit} git tag -s -m "${tag_prefix}${new_version}" "${namespace}${tag_prefix}${new_version//~/_}"

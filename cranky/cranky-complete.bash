@@ -38,6 +38,7 @@ _cranky() {
 		"tags -h --help -v --verbose -f --force"
 		"test-build -h --help -a --arch -c --commit -d --dry-run -f --fail -o --outdir -p --purge -t --target"
 		"update-dependent -h --help --ignore-abi-check"
+		"update-dependent-version -h --help --commit --no-update --main-version --namespace"
 		"update-dependents -h --help --ignore-abi-check -r --rollback"
 		"update-dkms-versions -h --help -r --remote-repo -b --remote-branch -s --sru-cycle -x --debug"
 		"update-snap -h --help --dry-run -u --updates -t --no-tags"
