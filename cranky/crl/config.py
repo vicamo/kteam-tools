@@ -9,8 +9,6 @@ import xdg
 
 class Config:
     def __init__(self, filename=None, data=None):
-        self.config = None
-
         filename = os.getenv("CRANKY_CONFIG_FILE", filename)
 
         if filename is not None and data is not None:
@@ -43,7 +41,8 @@ class Config:
 
         if data is not None:
             data = yaml.safe_load(data)
-        else:
+
+        if data is None:
             data = {}
 
         self.config = data
@@ -68,7 +67,7 @@ class Config:
         # fmt: on
 
     def lookup(self, element, default=None):
-        config = self.config
+        config = dict(self.config)
 
         element = element.split(".")
         while len(element) > 0:
