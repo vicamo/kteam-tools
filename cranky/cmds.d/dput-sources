@@ -39,7 +39,7 @@ function get_stream_from_tb()
 
 		read -r tracking_bug _ <"$DEBIAN/tracking-bug"
 		stream=$("$C" shell-helper read-swm-property "${tracking_bug}" --key built.route-entry)
-		
+
 		if [ -z "$stream" ] || [ "$stream" -eq "1" ]; then
 			stream="build"
 		else
@@ -95,7 +95,7 @@ function sign_src()
 		if [ "${resign}" -eq 1 ]; then
 			sign_opts+=("--re-sign")
 		fi
-		if [ ! -z "${maint_email}" ]; then
+		if [ -n "${maint_email}" ] ; then
 			sign_opts+=("-e${maint_email}")
 		fi
 
@@ -177,7 +177,7 @@ force=0
 dest=
 handle=
 maint_email=
-cycle=
+cycle=()
 
 while [ ${#} -gt 0 ] ; do
 	case "${1}" in
@@ -201,7 +201,7 @@ while [ ${#} -gt 0 ] ; do
 			;;
 		--cycle)
 			shift
-			cycle="$1"
+			cycle=("--cycle" "${1}")
 			;;
 		-*)
 			usage
@@ -237,7 +237,7 @@ if [ "${dest}" = "auto" ] ; then
 fi
 
 # Get the PPA for the given upload destination
-ppa=$("$C" list-routing ${cycle:+--cycle }${cycle} "${handle}" | awk '$1 == "'"${dest}"'" { print $3 }')
+ppa=$("$C" list-routing "${cycle[@]}" "${handle}" | awk '$1 == "'"${dest}"'" { print $3 }')
 if [ -z "${ppa}" ] ; then
 	echo "No PPA found for destination ${dest}" >&2
 	exit 1
@@ -246,7 +246,7 @@ fi
 echo "PPA: ${ppa}"
 
 # Get the source directories for the package set
-readarray -t srcs < <("$C" shell-helper source-packages-path ${cycle:+--cycle }${cycle} "${handle}")
+readarray -t srcs < <("$C" shell-helper source-packages-path "${cycle[@]}" "${handle}")
 if [ "${#srcs[@]}" -eq 0 ] ; then
 	exit 1
 fi
