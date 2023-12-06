@@ -160,9 +160,7 @@ class CycleRef:
             this_git = Git(tree.directory)
             if remote:
                 cnotice(f"Fetching tags from {remote} in {os.path.basename(tree.directory)}")
-                this_git(
-                    f"fetch {remote} 'refs/tags/{tag_prefix}:refs/tags/{tag_prefix}'"
-                )
+                this_git(f"fetch {remote} 'refs/tags/{tag_prefix}:refs/tags/{tag_prefix}'")
 
             #
             # Locate all tags from oldest to newest so latest respin is observed last
@@ -218,7 +216,9 @@ class CycleRef:
         try:
             # HACK the format option doesn't escape correctly so omit ' and replace space with |
             raw = git(
-                "for-each-ref --sort=creatordate --format=%(refname)|%(tag)|%(object) refs/swm/{}/*".format(handle_name),
+                "for-each-ref --sort=creatordate --format=%(refname)|%(tag)|%(object) refs/swm/{}/*".format(
+                    handle_name
+                ),
                 split="\n",
             )
         except CrankyException as ex:

@@ -4,7 +4,7 @@ import contextlib
 import os
 import sys
 
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "libs")))
 
 from ktl.kernel_series import KernelSeries
 from ktl.debian import Debian, DebianError
@@ -37,26 +37,29 @@ class HandleCore:
         self.name = "" if series is None or package is None else "{}:{}".format(series.codename, package.name)
 
         # TODO: Remove lookup of deprecated option package-path.base-path
-        self.base_path = os.path.expanduser(self.config.lookup('base-path',
-                                self.config.lookup('package-path.base-path', '')))   # noqa: E128
+        self.base_path = os.path.expanduser(
+            self.config.lookup("base-path", self.config.lookup("package-path.base-path", ""))
+        )  # noqa: E128
 
-        if self.base_path == '':
+        if self.base_path == "":
             # Bail out if base-path is not set
-            raise HandleError("No 'base-path' option found in your cranky config file. "
-                              "Check the config example in kteam-tools/cranky/docs/"
-                              "snip-cranky.yaml for more information.")
+            raise HandleError(
+                "No 'base-path' option found in your cranky config file. "
+                "Check the config example in kteam-tools/cranky/docs/"
+                "snip-cranky.yaml for more information."
+            )
 
     def lookup_config(self, key, default=None):
         """
         Lookup a config option and encode it if necessary
         """
         # TODO: Remove lookup of deprecated option package-path.base-path
-        if key == 'base-path' or key == 'package-path.base-path':
+        if key == "base-path" or key == "package-path.base-path":
             return self.base_path
 
         val = self.config.lookup(key, default=default)
 
-        if val and key.endswith('-path'):
+        if val and key.endswith("-path"):
             # It's a path so we need to encode it and make it absolute
             val = val.format(series=self.series.codename)
             return os.path.join(self.base_path, val)
@@ -64,38 +67,39 @@ class HandleCore:
         return val
 
     def encode_directory(self, package):
-        which = package.type if package.type else 'main'
-        which_suffix = '-' + package.type if package.type else ''
+        which = package.type if package.type else "main"
+        which_suffix = "-" + package.type if package.type else ""
 
-        for key in ("{series}--{source}--{package}",
-                    "{series}--{source}",
-                    "{series}",
-                    "{type}",
-                    "default"):
-            key = key.format(series=package.series.codename,
-                             source=package.source.name,
-                             package=package.name,
-                             type=which)
+        for key in ("{series}--{source}--{package}", "{series}--{source}", "{series}", "{type}", "default"):
+            key = key.format(
+                series=package.series.codename, source=package.source.name, package=package.name, type=which
+            )
 
-            package_path = self.config.lookup('package-path.' + key)
+            package_path = self.config.lookup("package-path." + key)
             if package_path:
                 break
         if package_path is None:
-            package_path = '{series}/{package}'
+            package_path = "{series}/{package}"
 
-        package_path = package_path.format(series=package.series.codename,
-                                           source=package.source.name,
-                                           package=package.name,
-                                           type=which,
-                                           type_suffix=which_suffix)
+        package_path = package_path.format(
+            series=package.series.codename,
+            source=package.source.name,
+            package=package.name,
+            type=which,
+            type_suffix=which_suffix,
+        )
 
-        if package_path.startswith('/') or package_path.startswith('~'):
-            print("The 'package-path' option in your cranky config file is "
-                  "an absolute path rather than a path relative to "
-                  "'base-path'. Fix that to get rid of this warning.",
-                  file=sys.stderr)
-            print("Check the config example in kteam-tools/cranky/docs/"
-                  "snip-cranky.yaml for more information.", file=sys.stderr)
+        if package_path.startswith("/") or package_path.startswith("~"):
+            print(
+                "The 'package-path' option in your cranky config file is "
+                "an absolute path rather than a path relative to "
+                "'base-path'. Fix that to get rid of this warning.",
+                file=sys.stderr,
+            )
+            print(
+                "Check the config example in kteam-tools/cranky/docs/" "snip-cranky.yaml for more information.",
+                file=sys.stderr,
+            )
             return os.path.expanduser(package_path)
 
         return os.path.join(self.base_path, package_path)
@@ -105,7 +109,7 @@ class HandleCore:
         paths = {}
         for package_entry in source.packages:
             path = self.encode_directory(package_entry)
-            paths[package_entry.type if package_entry.type else 'main'] = path
+            paths[package_entry.type if package_entry.type else "main"] = path
 
         # Remove the longest common prefix.
         prefix = os.path.commonprefix(list(paths.values()))
@@ -114,7 +118,7 @@ class HandleCore:
             paths[key] = paths[key][prefix_len:]
 
         # Build a list, longest suffix first.
-        longest = sorted(paths.values(), key=lambda p : -len(p))   # noqa: E203
+        longest = sorted(paths.values(), key=lambda p: -len(p))  # noqa: E203
 
         return (longest, paths)
 
@@ -126,15 +130,15 @@ class HandleCore:
             raise HandleError("{}: bad directory handle -- {}".format(directory, e))
 
         # Always use topmost entry for package name, even if unreleased
-        package = changelog[0]['package']
+        package = changelog[0]["package"]
 
-        if len(changelog) > 0 and changelog[0]['series'] == 'UNRELEASED':
+        if len(changelog) > 0 and changelog[0]["series"] == "UNRELEASED":
             changelog.pop(0)
 
         if len(changelog) == 0:
             raise HandleError("{}: Unable to identify directory handle".format(directory))
 
-        return (changelog[0]['series'], package)
+        return (changelog[0]["series"], package)
 
     @property
     def handle_name(self):
@@ -154,9 +158,8 @@ class HandleTree(HandleCore):
         directory = os.path.abspath(directory)
         if validate and os.path.exists(directory):
             (series_name, package_name) = self.identify_directory(directory)
-            if (series_name != series.codename or package_name != package.name):
-                raise HandleError("{}: tree inconsistent, is for {}:{}".format(
-                    directory, series_name, package_name))
+            if series_name != series.codename or package_name != package.name:
+                raise HandleError("{}: tree inconsistent, is for {}:{}".format(directory, series_name, package_name))
 
         self.directory = directory
 
@@ -190,13 +193,13 @@ class HandleTree(HandleCore):
         bits = []
         if cross_series:
             bits.append(primary_package.series.codename)
-        if cross_source and primary_package.source.name != 'linux':
-            bits.append(primary_package.source.name.replace('linux-', ''))
+        if cross_source and primary_package.source.name != "linux":
+            bits.append(primary_package.source.name.replace("linux-", ""))
         if cross_type and primary_package.type:
             bits.append(primary_package.type)
 
-        remote = '-'.join(bits)
-        return remote if remote != '' else 'origin'
+        remote = "-".join(bits)
+        return remote if remote != "" else "origin"
 
 
 class HandleSet(HandleCore):
@@ -213,11 +216,11 @@ class HandleSet(HandleCore):
             prefix = None
             directory = sample.directory
             for remove_entry in remove:
-                if remove_entry == '':
-                        prefix = directory
-                        break
+                if remove_entry == "":
+                    prefix = directory
+                    break
                 elif directory.endswith(remove_entry):
-                    prefix = directory[:-len(remove_entry)]
+                    prefix = directory[: -len(remove_entry)]
                     break
 
             if prefix is None:
@@ -230,9 +233,18 @@ class HandleSet(HandleCore):
                 # which does not have repository.
                 if package_entry.repo is None:
                     continue
-                directory = prefix + add[package_entry.type if package_entry.type else 'main']
-                self.trees.append(HandleTree(series, package_entry, source=source, directory=directory,
-                                             validate=validate, ks=self.ks, config=self.config))
+                directory = prefix + add[package_entry.type if package_entry.type else "main"]
+                self.trees.append(
+                    HandleTree(
+                        series,
+                        package_entry,
+                        source=source,
+                        directory=directory,
+                        validate=validate,
+                        ks=self.ks,
+                        config=self.config,
+                    )
+                )
 
         else:
             self.trees = []
@@ -241,8 +253,9 @@ class HandleSet(HandleCore):
                 # which does not have repository.
                 if package_entry.repo is None:
                     continue
-                self.trees.append(HandleTree(series, package_entry, source=source,
-                                             validate=validate, ks=self.ks, config=self.config))
+                self.trees.append(
+                    HandleTree(series, package_entry, source=source, validate=validate, ks=self.ks, config=self.config)
+                )
 
     def get_tree_by_package_type(self, package_type):
         """Returns HandleTree for the request package or None if not found"""
@@ -253,10 +266,11 @@ class HandleSet(HandleCore):
                 break
             # When package.type is None or an empty string that indicates 'main'
             # Support both options like the rest of the codebase.
-            if not tree.package.type and package_type in (None, '', 'main'):
+            if not tree.package.type and package_type in (None, "", "main"):
                 result = tree
                 break
         return result
+
 
 class Handle:
     def __init__(self, config=None):
@@ -284,17 +298,19 @@ class Handle:
                         with open(tracking_file) as tfd:
                             try:
                                 _, cycle_name = tfd.readline().strip().split()[0:2]
-                            except (ValueError) as e:
-                                raise HandleError("{}: expecting tracking id and cycle name -- {}".format(tracking_file,e))
+                            except ValueError as e:
+                                raise HandleError(
+                                    "{}: expecting tracking id and cycle name -- {}".format(tracking_file, e)
+                                )
                         break
 
         except (DebianError, GitError) as e:
             raise HandleError("{}: bad directory handle -- {}".format(directory, e))
 
         # Always use topmost entry for package name, even if unreleased
-        package = changelog[0]['package']
+        package = changelog[0]["package"]
 
-        if len(changelog) > 0 and changelog[0]['series'] == 'UNRELEASED':
+        if len(changelog) > 0 and changelog[0]["series"] == "UNRELEASED":
             changelog.pop(0)
 
         if len(changelog) == 0:
@@ -303,7 +319,7 @@ class Handle:
         if cycle_name is not None:
             cycle_name = cycle_name.rsplit("-", 1)[0]
 
-        return cycle_name, changelog[0]['series'], package
+        return cycle_name, changelog[0]["series"], package
 
     def lookup_package(self, package, validate=True):
         return HandleTree(package.series, package, validate=validate, ks=package._ks, config=self.config)
@@ -317,7 +333,7 @@ class Handle:
             directory = handle
 
         else:
-            bits = handle.split(':')
+            bits = handle.split(":")
             if len(bits) != 2:
                 raise HandleError("{}: handle format unknown".format(handle))
             series_name, package_name = bits
@@ -342,7 +358,11 @@ class Handle:
         if series is None:
             series = ks.lookup_series(series=series_name)
         if series is None:
-            raise HandleError("{}: handle directory contains series {} which is not known in cycle {}".format(handle, series_name, cycle))
+            raise HandleError(
+                "{}: handle directory contains series {} which is not known in cycle {}".format(
+                    handle, series_name, cycle
+                )
+            )
 
         for source_entry in series.sources:
             for package_entry in source_entry.packages:
@@ -354,15 +374,23 @@ class Handle:
                 break
 
         if package is None:
-            raise HandleError("{}: handle directory contains package {} which is not known in cycle {}".format(handle, package_name, cycle))
+            raise HandleError(
+                "{}: handle directory contains package {} which is not known in cycle {}".format(
+                    handle, package_name, cycle
+                )
+            )
 
-        return HandleTree(series, package, source=source, directory=directory, validate=validate, ks=ks, config=self.config)
+        return HandleTree(
+            series, package, source=source, directory=directory, validate=validate, ks=ks, config=self.config
+        )
 
     def lookup_set(self, handle, cycle=None, validate=True, ks=None):
         # A directory passed as a handle.
         if os.path.exists(handle):
             tree = self.lookup_tree(handle, cycle=cycle, validate=validate, ks=ks)
-            return HandleSet(handle, tree.series, tree.package.source, validate=validate, sample=tree, ks=ks, config=self.config)
+            return HandleSet(
+                handle, tree.series, tree.package.source, validate=validate, sample=tree, ks=ks, config=self.config
+            )
 
         cycle_name, series_name, source_name, directory = self.decode_handle(handle)
         if cycle is None:
