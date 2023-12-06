@@ -51,15 +51,25 @@ SRU_CYCLE_HEADER = '''# kernel SRU Cycle information file (YAML format)
 
 class SruCycleSpinEntry:
     def __init__(self, spin, data=False, sc=None):
+        '''
+        Instantiate a new SruCycleSpinEntry object.
+
+        spin (string): Either a spin or a cycle name (with or without "-X" suffix).
+            This is the dictionary key for the SruCycle class.
+        data (dict): Intended to pass in the dictionary representing the elements
+            of the cycle data. If nothing is supplied a rudimentary initialized
+            objects gets returned (name, cycle, known:False, hold:True).
+        sc (deprecated) only accepted for backwards compatibility.
+        '''
         cycle = spin.split('-')[0]
 
         self._name = spin
         self._cycle = cycle
-        self._sc = SruCycle() if sc is None else sc
-        if data is False:
-            data = self._sc._data.get(spin, False)
-        if data is False:
-            data = self._sc._data.get(cycle, False)
+        #self._sc = SruCycle() if sc is None else sc
+        #if data is False:
+        #    data = self._sc._data.get(spin, False)
+        #if data is False:
+        #    data = self._sc._data.get(cycle, False)
         self._known = data is not False
         if data is False:
             data = { 'hold': True, }
@@ -90,11 +100,17 @@ class SruCycleSpinEntry:
         self._notes_link = data.get('notes-link')
 
     def __eq__(self, other):
+        '''
+        Returns True if both objects are SruCycleSpinEntry with the same name.
+        '''
         if isinstance(self, other.__class__):
             return self.name == other.name
         return False
 
     def __ne__(self, other):
+        '''
+        Returns True if both sides are not considered to be the same.
+        '''
         return not self.__eq__(other)
 
     @property
@@ -146,6 +162,9 @@ class SruCycleSpinEntry:
         return self._notes_link
 
     def __str__(self):
+        '''
+        Returns a string which represents the data of the object in YAML form.
+        '''
         s = "'{}':\n".format(self.name)
         if self._hold:
             s += "    hold: {}\n".format(str(self._hold).lower())
@@ -182,7 +201,6 @@ class SruCycle:
     For the default local path the 'kernel-versions' repository must be checked out with that
     name in the same top level directory of kteam-tools.
     '''
-    _cfg  = None
     _data = None
 
     @classmethod
@@ -191,37 +209,36 @@ class SruCycle:
         Returns a sorting key for a given cycle name. The goal is to sort by date and
         for the same date have the SRU cycle name first, then the security cycle and
         finally the devel cycle last.
+        For multiple entries of the same cycles but with different spin numbers, the
+        spin number sorts those.
         '''
-        if name[:1].isalpha():
-            key = name[1:]
-            if name[:1] == "d":
-                key += "-3"
-            else:
-                key += "-2"
+        if '-' in name:
+            cycle, spin = name.split('-', 1)
         else:
-            key = name + "-1"
-        return key
+            cycle = name
+            spin  = '0'
 
-    @classmethod
-    def __load_once(cls, url):
-        if not cls._data:
-            response = urlopen(url)
-            data = response.read()
-            if not isinstance(data, str):
-                data = data.decode('utf-8')
-            cls._data = yaml.safe_load(data)
+        if name[:1].isalpha():
+            cycle = name[1:]
+            if name[:1] == "d":
+                pfx = 3
+            else:
+                pfx = 2
+        else:
+            pfx = 1
+        return (cycle, pfx, int(spin))
 
-    def __init__(self, data_source=None):
+    def __cached_lookup(self, key):
+        if isinstance(self._data[key], dict):
+            self._data[key] = SruCycleSpinEntry(key, data=self._data[key])
+        return self._data[key]
+
+    def __init__(self, data=None):
         '''
-        data_source (string): Optionally allows to override the source of data. Possible values:
-            default|remote[:<URL>]
-                Allows read-only access to the default remote URL.
-            local[:<path>]
-                Allows read-write access to a local file representation
-            direct:<string>
-                Allows to pass in yaml data directly. Since this is meant for testing
-                this is not available as a environment key.
-
+        data (string|dict()): Optionally allows to either pass in a URL override (string)
+            or a pre-filled dictionary which represents cycle data (this is intended for
+            testing).
+            The URL override takes priority over the definitions in the environment.
         '''
         # This used to be a Launchpad git raw URL but that was unreliable. The web URL is
         # updated every 2min and has a higher reliability.
@@ -229,34 +246,32 @@ class SruCycle:
 
         # The data source can be set from the environment but only if not directly done from
         # the command line.
-        if data_source is None:
-            data_source = os.getnenv('SRU_CYCLE_USE', None)
-
-            if data_source and data_source.startswith('direct:'):
-                raise ValueError('The direct: method is not allowed via environment!')
+        if data is None:
+            data = os.getenv('SRU_CYCLE_USE', None)
 
             # Deprecated mathod of overriding the data location
-            if data_source is None and os.getenv("USE_LOCAL_SRU_CYCLE_YAML", False):
+            if data is None and os.getenv("USE_LOCAL_SRU_CYCLE_YAML", False):
                 warn('Use of USE_LOCAL_SRU_CYCLE_YAML is deprecated, use SRU_CYCLE_USE=local instead.')
-                data_source='local'
+                data='local'
 
         _data = None
-        if data_source is not None:
-            if data_source == 'default' or data_source == 'remote':
-                pass
-            elif data_source.startswith('remote:'):
-                _url = data_source.split(':', 1)[1]
-            elif data_source == 'local':
-                _url = 'file://' + os.path.join(KERNEL_VERSIONS_DIR, 'sru-cycle.yaml')
-            elif data_source.startswith('local:'):
-                _url = 'file://' + data_source.split(':', 1)[1]
-            elif data_source.startswith('direct:'):
-                _data = data_source.split(':', 1)[1]
-                if not isinstance(_data, str):
-                    _data = _data.decode('utf-8')
-                self._url = 'direct:'
+        if data:
+            if isinstance(data, dict):
+                self._url = 'raw-data'
+                self._data = data.copy()
+            elif isinstance(data, str):
+                if data == 'default' or data == 'remote':
+                    pass
+                elif data.startswith('remote:'):
+                    _url = data.split(':', 1)[1]
+                elif data == 'local':
+                    _url = 'file://' + os.path.join(KERNEL_VERSIONS_DIR, 'sru-cycle.yaml')
+                elif data.startswith('local:'):
+                    _url = 'file://' + data.split(':', 1)[1]
+                else:
+                    raise ValueError('Invalid data provided!')
             else:
-                raise ValueError('{} is not a valid data source!'.format(data_source))
+                raise ValueError('{} is not a valid data source!'.format(data))
 
         if not self._data:
             self._url = _url
@@ -276,24 +291,60 @@ class SruCycle:
 
     @property
     def cycles(self):
-        return [SruCycleSpinEntry(cycle_key, cycle, sc=self)
-                for cycle_key, cycle in self._data.items()]
+        cl = []
+        for key in self._data.keys():
+            cl.append(self.__cached_lookup(key))
+        return cl
 
     def lookup_cycle(self, cycle=None, allow_missing=False):
+        '''
+        Search for the given cycle ([ds]YYYY.MM.DD). If there are multiple spins for
+        a cycle, the highest cycle data of the highest spin number gets returned.
+
+        cycle (string): name of the cycle to search
+        allow_missing (bool): if false the search will return None if not found, otherwise
+            a SruCycleSpinEntry() with just the name set will be returned.
+        '''
         if not cycle:
             raise ValueError("cycle required")
-        spin_entry = SruCycleSpinEntry(cycle, sc=self)
-        if allow_missing is False and spin_entry.known is False:
-            return None
-        return spin_entry
+        if '-' in cycle:
+            raise ValueError("cycle contains a spin number")
+
+        entry = None
+        for key in sorted(self._data.keys(), key=self.key_name, reverse=True):
+            if not key.startswith(cycle):
+                continue
+            entry = self.__cached_lookup(key)
+            break
+
+        if allow_missing is True and not entry:
+            entry = SruCycleSpinEntry(cycle)
+
+        return entry
 
     def lookup_spin(self, spin=None, allow_missing=False):
         if not spin:
             raise ValueError("spin required")
-        spin_entry = SruCycleSpinEntry(spin, sc=self)
-        if allow_missing is False and spin_entry.known is False:
-            return None
-        return spin_entry
+        if '-' not in spin:
+            raise ValueError("argument does not contain a spin number")
+
+        entry = None
+        cycle, spin_nr = spin.split('-')
+        for key in sorted(self._data.keys(), key=self.key_name, reverse=True):
+            if '-' in key:
+                if spin != key:
+                    continue
+            else:
+                if spin != key + '-1':
+                    continue
+
+            entry = self.__cached_lookup(key)
+            break
+
+        if allow_missing is True and not entry:
+            entry = SruCycleSpinEntry(spin)
+
+        return entry
 
     def add_cycle(self, cycle):
         '''
@@ -316,7 +367,8 @@ class SruCycle:
         '''
         s = SRU_CYCLE_HEADER
         for key in sorted(self._data.keys(), key=self.key_name, reverse=True):
-            s += "\n" + str(SruCycleSpinEntry(key, data=self._data[key], sc=self))
+            data = self.__cached_lookup(key)
+            s += "\n" + str(data)
         return s
 
 # vi:set ts=4 sw=4 expandtab:
