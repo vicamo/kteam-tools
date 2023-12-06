@@ -222,8 +222,8 @@ commands:
       Create a session for the given handle.
   map-session [<handle>]
       Emit the name of the required session if available.
-  run [<handle>] -- command
-      Run command under chroot.
+  run [-u <user>] [<handle>] -- command
+      Run command under chroot. Optionally specify user.
   destroy-session [<handle>]
       Destroy the session created for the handle.
 
@@ -257,6 +257,8 @@ EOF
 # MAIN:
 [ "$#" -lt 1 ] && usage
 cmd="$1"
+schroot_user=${USER}
+handle=""
 shift
 case "$cmd" in
 create-base|create-session|map-session|destroy-session)
@@ -269,15 +271,33 @@ create-base|create-session|map-session|destroy-session)
 	handle="$1"
 	;;
 run)
-	if [ "$1" = "--" ]; then
-		set - "$PWD" "$@"
-	fi
-	if [ "$2" != '--' ]; then
-		echo "Usage: $P $cmd [<handle>] -- <command ...>" 1>&2
+	while [ "$#" -gt 1 ]; do
+		case "$1" in
+			--)
+				break
+				;;
+			-u|--user)
+				shift
+				schroot_user="$1"
+				;;
+			*)
+				if [ -n "$handle" ]; then
+					echo "Usage: $P $cmd [-u <user>] [<handle>] -- <command ...>" 1>&2
+					exit 1
+				fi
+				handle="$1"
+				;;
+		esac
+		shift
+	done
+	if [ "$#" -eq 0 ] || [ "$1" != "--" ]; then
+		echo "Usage: $P $cmd [-u <user>] [<handle>] -- <command ...>" 1>&2
 		exit 1
 	fi
-	handle="$1"
-	shift 2
+	if [ -z "$handle" ]; then
+		handle="$PWD"
+	fi
+	shift
 	;;
 *)
 	usage
@@ -329,7 +349,7 @@ map-session)
 	;;
 run)
 	if session_chroot_available "$series" "$chroot_arch"; then
-		schroot -p -r -c "$RET" -- "$@"
+		schroot -u "$schroot_user" -p -r -c "$RET" -- "$@"
 	else
 		echo "$P: No chroot session available for $series:$src" 1>&2
 		echo "Use \"$P create-session\" to create one" 1>&2
