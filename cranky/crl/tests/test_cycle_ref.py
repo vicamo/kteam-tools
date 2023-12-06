@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import os
 import unittest
 from subprocess import getstatusoutput
@@ -267,3 +268,7 @@ class TestCycleRef(BaseCrankyTest):
             expect, _, _ = bug_contents[1][1].partition("-")
             self.assertEqual(actual[0].cycle, expect)
             self.context_git_is_clean()
+
+
+if __name__ == "__main__":
+    unittest.main()
