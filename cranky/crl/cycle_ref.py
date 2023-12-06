@@ -72,7 +72,7 @@ def read_cycle(git, tag):
         tracking_bug_path = f"{debian_dir}/tracking-bug"
         try:
             tracking_bug_contents = git(f"show {tag}:{tracking_bug_path}")
-        except:
+        except:  # noqa: E722 Do not use bare `except`
             # Older tags might not have a tracking-bug, ignore them
             pass
 

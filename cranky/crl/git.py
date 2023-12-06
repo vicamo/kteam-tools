@@ -265,7 +265,6 @@ class GitHandle:
         """
         repo_dir = self.directory
         repo_url = self.get_url()
-        codename = self.package.series.codename
 
         # Add the default mailing list address for sending patches
         if "canonical-kernel-esm" in repo_url:

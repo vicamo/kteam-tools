@@ -9,9 +9,9 @@ from subprocess import getstatusoutput
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "libs")))
 sys.path.append(os.pardir)
 
-from crl.config import Config
-from crl.handle import Handle, change_directory, HandleError
-from ktl.kernel_series import KernelSeries
+from crl.config import Config  # noqa: E402 Import not at top of file
+from crl.handle import Handle, change_directory, HandleError  # noqa: E402 Import not at top of file
+from ktl.kernel_series import KernelSeries  # noqa: E402 Import not at top of file
 
 
 class TestHandle(unittest.TestCase):
@@ -54,7 +54,7 @@ class TestHandle(unittest.TestCase):
                     linux-meta:
                         repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-xenial', 'master-next']
                         type: meta
-    """
+    """  # noqa: E501 Line too long
 
     path_config_yaml = """
     base-path:                      '/src'
@@ -345,7 +345,7 @@ class TestHandleDirectory(TestHandle):
         d.write(name + "/" + debian + "/changelog", data_changelog.encode("utf-8"))
         self.setUpRunCmd(git_path, "git add {}/changelog".format(debian))
 
-        self.setUpRunCmd(git_path, 'git commit -a -m "Initial"'.format(debian))
+        self.setUpRunCmd(git_path, 'git commit -a -m "Initial commit of {}"'.format(debian))
 
     def setUpSourceMeta(self, d, name, branch, series, package):
         git_path = d.path + "/" + name
@@ -634,7 +634,7 @@ class TestHandleTreeRemote(TestHandle):
 
         self.assertEqual("bionic-meta", hdl.remote)
 
-    def test_remote_one_bionic_meta(self):
+    def test_remote_one_bionic_raspi2(self):
         ks = KernelSeries(data=self.data_yaml)
         config = Config(data=self.path_config_one_yaml)
 

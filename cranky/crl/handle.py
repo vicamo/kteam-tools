@@ -4,11 +4,11 @@ import sys
 
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "libs")))
 
-from ktl.kernel_series import KernelSeries
-from ktl.debian import Debian, DebianError
-from ktl.git import GitError
+from ktl.kernel_series import KernelSeries  # noqa: E402 Import not at top of file
+from ktl.debian import Debian, DebianError  # noqa: E402 Import not at top of file
+from ktl.git import GitError  # noqa: E402 Import not at top of file
 
-from crl.config import Config
+from crl.config import Config  # noqa: E402 Import not at top of file
 
 
 class HandleError(ValueError):
