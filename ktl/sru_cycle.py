@@ -295,6 +295,19 @@ class SruCycle:
             return None
         return spin_entry
 
+    def add_cycle(self, cycle):
+        '''
+        Adds a new cycle to the current database. The cycle must not already exist.
+
+        cycle (SruCycleSpinEntry): new cycle entry to add
+
+        returns: nothing
+        raises:  ValueError if cycle already exists
+        '''
+        if self.lookup_cycle(cycle.name) is not None:
+            raise ValueError('Cycle {} already exists!'.format(cycle.name))
+        self._data.update(yaml.safe_load(str(cycle)))
+
     def __str__(self):
         '''
         Returns the YAML representation of sru-cycle.yaml as a string (including

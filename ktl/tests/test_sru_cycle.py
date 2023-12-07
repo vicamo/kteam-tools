@@ -61,6 +61,26 @@ class TestSruCycle(TestSruCycleCore):
 
         self.assertItemsEqual(cycle_names, self.data_cycle_names)
 
+    def test_add_cycle_duplicate(self):
+        sc = SruCycle(data_source='direct:' + self.data_yaml)
+        new_cycle = SruCycleSpinEntry('2018.06.11', data=None, sc=sc)
+
+        with self.assertRaises(ValueError):
+            sc.add_cycle(new_cycle)
+
+    def test_add_cycle_success(self):
+        sc = SruCycle(data_source='direct:' + self.data_yaml)
+        data = {
+            'release_date': '2019.01.28',
+            'stream': 1
+        }
+        new_cycle = SruCycleSpinEntry('2019.01.01', data=data, sc=sc)
+
+        sc.add_cycle(new_cycle)
+        cycle = sc.lookup_cycle(new_cycle.name)
+        self.assertEqual(new_cycle.name, cycle.name)
+        self.assertEqual(new_cycle.release_date, cycle.release_date)
+
 
 class TestSruCycleSpinEntry(TestSruCycleCore):
 
