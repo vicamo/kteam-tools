@@ -84,7 +84,7 @@ EOF
 
 require_orig="--source-option=-sp"
 current=0
-cycle=
+cycle=()
 handle=${PWD}
 declare -A build_opts=()
 
@@ -111,7 +111,7 @@ while [ ${#} -gt 0 ] ; do
 			;;
 		--cycle)
 			shift
-			cycle="$1"
+			cycle=("--cycle" "${1}")
 			;;
 		-*)
 			usage
@@ -131,7 +131,7 @@ done
 
 trap out EXIT INT TERM HUP
 
-sources=$("$C" shell-helper source-packages-path -t ${cycle:+--cycle }${cycle} "$handle")
+sources=$("$C" shell-helper source-packages-path -t "${cycle[@]}" "$handle")
 if [ -z "$sources" ] ; then
 	exit 1
 fi
@@ -147,7 +147,11 @@ while read -r source
 do
 	IFS=' ' read -r type path <<< "$source"
 	opts=""
-	[ ! -z ${build_opts[$type]+x} ] && opts="${build_opts[$type]}"
-	if [ "$type" = "main" ]; then opts="$opts $require_orig" ; fi
+	if [ -n "${build_opts[$type]:-}" ] ; then
+		opts=${build_opts[$type]}
+	fi
+	if [ "$type" = "main" ] ; then
+		opts="$opts $require_orig"
+	fi
 	build_src "$path" "$session" "$current" "$opts"
 done <<< "$sources"

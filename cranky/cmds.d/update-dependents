@@ -75,7 +75,7 @@ for path in "${package_paths[@]}"; do
 	) || rc=1;
 
 	if [[ $rc -ne 0 ]] ; then
-	
+
 		# Roll back all trees to their starting points
 		if [[ -n $rollback_on_error ]] ; then
 			echo "ERROR: Update failed, reverting all changes..." >&2

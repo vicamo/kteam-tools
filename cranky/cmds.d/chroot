@@ -127,7 +127,7 @@ session_chroot_create()
 		# the packages used during the sources build.
 		# The PPA used for ESM kernels currently doesn't have any extra
 		# dependency, so exclude trusty and xenial.
-		repo_pub_key=$(cat $(dirname "$C")/cmds.d/builder-extra.asc)
+		repo_pub_key=$(cat "$(dirname "$C")"/cmds.d/builder-extra.asc)
 		schroot -u root -r -c "$session" -- sh -c "echo '${repo_pub_key}' > /etc/apt/trusted.gpg.d/builder-extra.asc"
 		schroot -u root -r -c "$session" -- sh -c "echo 'deb http://ppa.launchpad.net/canonical-kernel-team/builder-extra/ubuntu ${series} main' > /etc/apt/sources.list.d/builder-extra.list"
 	fi
@@ -196,16 +196,16 @@ session_chroot_create()
 }
 
 chroot_update() {
-	local chroot="$1"
+	local chroot=${1}
+	local opts
 
-	local open
-	case "$chroot" in
-	session:*)	open="-r -c" ;;
-	*)		open="-c" ;;
+	opts=("-u" "root")
+	case "${chroot}" in
+		session:*) opts+=("-r") ;;
 	esac
 
-	schroot -u root $open "$chroot" -- apt-get update
-	schroot -u root $open "$chroot" -- apt-get -y dist-upgrade
+	schroot "${opts[@]}" -c "${chroot}" -- apt-get update
+	schroot "${opts[@]}" -c "${chroot}" -- apt-get -y dist-upgrade
 }
 
 usage()

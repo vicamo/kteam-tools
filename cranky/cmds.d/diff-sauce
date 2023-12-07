@@ -11,16 +11,20 @@
 # Print upstream tag given a specific Ubuntu tag
 get_upstream_tag() {
     local ubuntu_tag=$1
-    local pattern='^[^0-9]*([0-9]+\.[0-9]+).*$'
-    local version=$(echo "${ubuntu_tag}" | sed -E "s/^Ubuntu-(unstable-)?//; s/$pattern/\1/")
+    local pattern version
+
+    pattern='^[^0-9]*([0-9]+\.[0-9]+).*$'
+    version=$(echo "${ubuntu_tag}" | sed -E "s/^Ubuntu-(unstable-)?//; s/$pattern/\1/")
     echo "v${version}"
 }
 
 # Get the list of SAUCE patches applied to a specific Ubuntu tag
 get_sauce_commits() {
     local ubuntu_tag=$1
-    local upstream_tag=$(get_upstream_tag ${ubuntu_tag})
-    local commit_range=$(git tag --list --sort=-creatordate "${upstream_tag}*" --merged "${ubuntu_tag}" | head -n 1)"..${ubuntu_tag}"
+    local upstream_tag commit_range
+
+    upstream_tag=$(get_upstream_tag "${ubuntu_tag}")
+    commit_range=$(git tag --list --sort=-creatordate "${upstream_tag}*" --merged "${ubuntu_tag}" | head -n 1)..${ubuntu_tag}
     git log --oneline --format=%s "${commit_range}" | grep SAUCE
 }
 

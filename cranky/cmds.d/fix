@@ -24,6 +24,7 @@ EOM
 
 verbose=0
 cycle=
+cycle_opt=()
 
 while [ "$#" -gt 0 ] ; do
 	case "${1}" in
@@ -36,6 +37,7 @@ while [ "$#" -gt 0 ] ; do
 		--cycle)
 			shift
 			cycle="$1"
+			cycle_opt=("--cycle" "${1}")
 			;;
 		*)
 			echo "error: Unrecognized argument ${1}" >&2
@@ -71,7 +73,7 @@ if [ "$type" != 'main' ]; then
 	fi
 fi
 
-if ! variants=$("$C" shell-helper list-variants ${cycle:+--cycle }${cycle} .); then
+if ! variants=$("$C" shell-helper list-variants "${cycle_opt[@]}"); then
        echo "cranky shell-helper failed"
        exit 1
 fi
