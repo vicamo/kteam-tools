@@ -275,6 +275,24 @@ Properties: no-test-build
             raise AppError('Unable to commit new tracking bug number')
 
 
+    def update_bug(self, lpbug, tasks_by_name, update_tasks=True):
+        print(" -> %s" % self.title)
+
+        lpbug.title = self.title
+        lpbug.lp_save()
+
+        if update_tasks:
+            for task_name in tasks_by_name:
+                if 'prepare-package' not in task_name:
+                    continue
+                task = tasks_by_name[task_name].lp_task
+                if task.status == 'Invalid':
+                    continue
+                task.status = "In Progress"
+                task.assignee = self.launchpad.me
+                task.lp_save()
+
+
     # main
     #
     def main(self):
@@ -303,15 +321,13 @@ Properties: no-test-build
                 self.version = Debian.changelog(local=True)[0]['version']
             else:
                 self.version = self.args.version
-            print(" -> %s" % self.title)
 
             # If we were directed to a version then we will just use that version and write it to the bug.
             if self.args.version is not None:
                 if self.args.dry_run:
                     print("Dry Run -- no changes made")
                 else:
-                    lpbug.title = self.title
-                    lpbug.lp_save()
+                    self.update_bug(lpbug, tasks_by_name, update_tasks=False)
                 return 0
 
             self.check_rmadison()
@@ -339,18 +355,7 @@ Properties: no-test-build
             retval = 0
 
             if not self.args.cve:
-                lpbug.title = self.title
-                lpbug.lp_save()
-
-                for task_name in tasks_by_name:
-                    if 'prepare-package' not in task_name:
-                        continue
-                    task = tasks_by_name[task_name].lp_task
-                    if task.status == 'Invalid':
-                        continue
-                    task.status = "In Progress"
-                    task.assignee = self.launchpad.me
-                    task.lp_save()
+                self.update_bug(lpbug, tasks_by_name)
 
         except AppError as e:
             print("ERROR: " + str(e), file=sys.stderr)
