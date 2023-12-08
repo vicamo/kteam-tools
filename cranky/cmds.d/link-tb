@@ -167,6 +167,48 @@ class Tracking():
     def title(self):
         return "%s/%s: %s -proposed tracker" % (self.series, self.source, self.version)
 
+    def get_tb(self, sru_cycle=None):
+        found_tasks = []
+        for (bugid, title) in self.trackers(self.project_tracked, self.source).items():
+            # The title has an optional series/ prefix (will become manditory).
+            if (not title.startswith(self.source + ':') and
+                    not title.startswith(self.series + '/' + self.source + ':')):
+                continue
+            tasks_by_name = self.create_tasks_by_name_mapping(bugid, self.project_tracked)
+            found_tasks.append((bugid, tasks_by_name))
+
+        # Look through the list and see what we have -- pick out the open ones.
+        found = []
+        for (bugid, tasks_by_name) in found_tasks:
+            lpbug = self.launchpad.bugs[bugid]
+            # Ignore this bug if we cannot determine the series.
+            if '%s (Ubuntu %s)' % (self.source, self.series.title()) not in tasks_by_name and \
+                    self.series not in lpbug.tags:
+                continue
+            # Ignore this bug if it is not a 'debs' variant.
+            if ' -proposed tracker' not in lpbug.title:
+                continue
+            # Ignore this bug if it was created for tests
+            if 'kernel-release-tracking-bug-test' in lpbug.tags:
+                continue
+            if not self.args.re_run and '<version to be filled>' not in lpbug.title:
+                continue
+            if sru_cycle:
+                cycle = self.bug_to_sru_cycle(lpbug)
+                if sru_cycle not in (cycle, cycle.split('-')[0]):
+                    continue
+            found.append((bugid, tasks_by_name, lpbug))
+
+        if len(found) == 0:
+            raise AppError('Cannot find tracking bug matching package %s series %s' % (self.source, self.series))
+
+        if len(found) != 1:
+            for (bugid, tasks_by_name, lpbug) in found:
+                print("FOUND: LP: #{} ({}) {}".format(bugid, lpbug.title, self.bug_to_sru_cycle(lpbug)))
+            raise AppError('Multiple tracking bugs matching package %s series %s' % (self.source, self.series))
+
+        return found[0]
+
     # main
     #
     def main(self):
@@ -182,46 +224,7 @@ class Tracking():
                 raise AppError('--source and --version required')
             # print("{} {}".format(self.series, self.source))
 
-            found_tasks = []
-            for (bugid, title) in self.trackers(self.project_tracked, self.source).items():
-                # The title has an optional series/ prefix (will become manditory).
-                if (not title.startswith(self.source + ':') and
-                        not title.startswith(self.series + '/' + self.source + ':')):
-                    continue
-                tasks_by_name = self.create_tasks_by_name_mapping(bugid, self.project_tracked)
-                found_tasks.append((bugid, tasks_by_name))
-
-            # Look through the list and see what we have -- pick out the open ones.
-            found = []
-            for (bugid, tasks_by_name) in found_tasks:
-                lpbug = self.launchpad.bugs[bugid]
-                # Ignore this bug if we cannot determine the series.
-                if '%s (Ubuntu %s)' % (self.source, self.series.title()) not in tasks_by_name and \
-                        self.series not in lpbug.tags:
-                    continue
-                # Ignore this bug if it is not a 'debs' variant.
-                if ' -proposed tracker' not in lpbug.title:
-                    continue
-                # Ignore this bug if it was created for tests
-                if 'kernel-release-tracking-bug-test' in lpbug.tags:
-                    continue
-                if not self.args.re_run and '<version to be filled>' not in lpbug.title:
-                    continue
-                if self.args.sru_cycle:
-                    cycle = self.bug_to_sru_cycle(lpbug)
-                    if self.args.sru_cycle not in (cycle, cycle.split('-')[0]):
-                        continue
-                found.append((bugid, tasks_by_name, lpbug))
-
-            if len(found) == 0:
-                raise AppError('Cannot find tracking bug matching package %s series %s' % (self.source, self.series))
-
-            if len(found) != 1:
-                for (bugid, tasks_by_name, lpbug) in found:
-                    print("FOUND: LP: #{} ({}) {}".format(bugid, lpbug.title, self.bug_to_sru_cycle(lpbug)))
-                raise AppError('Multiple tracking bugs matching package %s series %s' % (self.source, self.series))
-
-            (bugid, tasks_by_name, lpbug) = found[0]
+            (bugid, tasks_by_name, lpbug) = self.get_tb(self.args.sru_cycle)
 
             print("LP: #{} ({}) {}".format(bugid, lpbug.title, self.bug_to_sru_cycle(lpbug)))
 
