@@ -1,0 +1,27 @@
+#!/bin/bash -eu
+# remove in-tree helper scripts at debian/scripts/helper/
+
+# shellcheck source=./cranky/fixes.d/lib.sh
+. "$(dirname "$0")/lib.sh"
+
+# Only applies to primary trees.
+case "$FIX_TYPE" in
+main)	;;
+*)	fix_verbose "not a main package"; exit 0 ;;
+esac
+
+if [ ! -d debian/scripts/ ] ; then
+	echo "${PWD} does not look like a kernel directory"
+	exit 1
+fi
+
+if ! [ -d debian/scripts/helpers ] ; then
+	exit 0
+fi
+
+helpers=(debian/scripts/helpers/*)
+rm -rf debian/scripts/helpers
+
+commit "UBUNTU: [Packaging] remove helper scripts" "${helpers[@]}"
+
+exit 0
