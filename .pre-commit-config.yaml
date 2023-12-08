@@ -43,7 +43,7 @@ repos:
 # This is a regular expression, not a glob
 files: >
   (?x)^(
-    cranky/annotations-tools/tests/.*\.py |
+    cranky/annotations-tools/.* |
     cranky/cmds.d/build-sources |
     cranky/cmds.d/chroot |
     cranky/cmds.d/cycles |
