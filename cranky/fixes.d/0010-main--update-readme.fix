@@ -24,7 +24,7 @@ if ! [ -f "$CONF" ]; then
         	fix_verbose "Skipping updating '$readme' on master kernel"
         	exit 0
 	fi
-else 
+else
 	# On a derivative kernel, check whether local modifications has already
 	# been made to the readme file. In this case skip updating it to prevent
 	# overwriting manual changes.
