@@ -209,6 +209,21 @@ class Tracking():
 
         return found[0]
 
+    def check_rmadison(self):
+        cmd = "%s/cranky rmadison" % os.path.join(os.path.dirname(__file__), "..")
+        retval, out = sh("%s %s:%s" % (cmd, self.series, self.source), quiet=True)
+        if retval != 0:
+            raise AppError('Error while checking currently released versions')
+
+        for line in out:
+            f = line.split(' | ')
+            if f[0].lstrip().rstrip() != self.source:
+                continue
+            pocket_name = f[2].lstrip().rstrip()
+            pocket_vers = f[1].lstrip().rstrip()
+            if pocket_vers == self.version:
+                raise AppError('Target version(%s) already in %s!' % (self.version, pocket_name))
+
     # main
     #
     def main(self):
@@ -248,19 +263,7 @@ class Tracking():
                     lpbug.lp_save()
                 return 0
 
-            cmd = "%s/cranky rmadison" % os.path.join(os.path.dirname(__file__), "..")
-            retval, out = sh("%s %s:%s" % (cmd, self.series, self.source), quiet=True)
-            if retval != 0:
-                raise AppError('Error while checking currently released versions')
-
-            for line in out:
-                f = line.split(' | ')
-                if f[0].lstrip().rstrip() != self.source:
-                    continue
-                pocket_name = f[2].lstrip().rstrip()
-                pocket_vers = f[1].lstrip().rstrip()
-                if pocket_vers == self.version:
-                    raise AppError('Target version(%s) already in %s!' % (self.version, pocket_name))
+            self.check_rmadison()
 
             if self.args.dry_run:
                 print("Dry Run -- no changes made")
