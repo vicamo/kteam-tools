@@ -33,6 +33,7 @@ _cranky() {
 		"review-master-changes -h --help"
 		"rmadison -h --help -a --show-all -e --show-extended -p --pocket release updates security proposed HANDLE"
 		"shell-helper -h handle-to-series-source series-codename package-name source-packages-path read-swm-property tree-type tree-main-path list-handles list-cycles list-variants config"
+		"startnewrelease -h --help"
 		"tag -h --help -v --verbose -f --force"
 		"tags -h --help -v --verbose -f --force"
 		"test-build -h --help -a --arch -c --commit -d --dry-run -f --fail -o --outdir -p --purge -t --target"

@@ -57,6 +57,7 @@ files: >
     cranky/cmds.d/push-review |
     cranky/cmds.d/reorder |
     cranky/cmds.d/review-master-changes |
+    cranky/cmds.d/startnewrelease |
     cranky/cmds.d/tag |
     cranky/cmds.d/tags |
     cranky/cmds.d/test-build |

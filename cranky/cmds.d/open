@@ -220,12 +220,8 @@ if [ -d "$DEBIAN/abi" ]; then
 	fi
 fi
 
-# Create the new changelog entry:
-run fakeroot debian/rules startnewrelease
-run git add "$DEBIAN/changelog"
-
-# Create the commit
-run git commit -s -F debian/commit-templates/newrelease
+# Create the new changelog entry and commit it
+run "${C}" startnewrelease --commit
 
 # Mimic maint-startnewrelease
 [ "$dry_run" -eq 0 ] && \
