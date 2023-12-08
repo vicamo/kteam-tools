@@ -88,11 +88,6 @@ done
 
 trap out EXIT INT TERM HUP
 
-# Trick shellcheck so it doesn't complain every time it's necessary to
-# use `run $CHROOT`. Use `chroot_run` instead.
-shopt -s expand_aliases
-alias chroot_run='run ${CHROOT:-}'
-
 # Check DEBEMAIL (used to create the new changelog stanza):
 DEBEMAIL="${DEBEMAIL:-}"
 CRANKY_MAILENFORCE="${CRANKY_MAILENFORCE:-@canonical.com\$}"
@@ -156,7 +151,7 @@ if [ -n "$BACKPORT_SUFFIX" ] || [ -n "$BACKPORT_NO_SUFFIX" ]; then
 	# The tree should be clean at this point, since that is enforced at
 	# the beginning of the script. Because of that, it's safe to git add
 	# "$DEBIAN/".
-	run env CHROOT="$CHROOT" "$update_from_master_script"
+	run "${C}" chroot run -- "$update_from_master_script"
 	run git add "$DEBIAN"
 	# Update configs after the necessary files were copied from
 	# the base kernel. It's not expected that `fdr updateconfigs`
@@ -165,7 +160,7 @@ if [ -n "$BACKPORT_SUFFIX" ] || [ -n "$BACKPORT_NO_SUFFIX" ]; then
 	# correct state. `fdr updateconfigs` should only change a few
 	# configuration options that depend on the userspace tooling
 	# version, such as gcc.
-	if ! chroot_run fakeroot debian/rules clean updateconfigs; then
+	if ! run "${C}" fdr clean updateconfigs; then
 		echo "Failed to update configs. Please review the previous" \
 		     "rebase operation and \"$update_from_master_script\"";
 		exit 1
@@ -179,7 +174,7 @@ fi
 # removes an ABI that matches the current version in the
 # changelog. Since `fdr startnewrelease` requires `fdr clean`, we need
 # to call it before getabis.
-chroot_run fakeroot debian/rules clean
+run "${C}" fdr clean
 
 # Update ABI
 if [ -d "$DEBIAN/abi" ]; then
