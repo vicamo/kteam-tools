@@ -17,14 +17,12 @@ def remove_flags_and_drop_lines(file_path):
 
     # Check if the file has the required headers
     lines = content.splitlines()
-    if (
-        len(lines) < 2
-        or lines[0].strip() != "# Menu: HEADER"
-        or lines[1].strip() != "# FORMAT: 4"
-    ):
+    if len(lines) < 2 or lines[0].strip() != "# Menu: HEADER" or lines[1].strip() != "# FORMAT: 4":
         print(f"ERROR: {file_path} doesn't have a valid header")
-        print("Fix the headers as explained here: " +
-              "https://docs.google.com/document/d/1NnGC2aknyy2TJWMsoYzhrZMr9rYMA09JQBEvC-LW_Lw/")
+        print(
+            "Fix the headers as explained here: "
+            + "https://docs.google.com/document/d/1NnGC2aknyy2TJWMsoYzhrZMr9rYMA09JQBEvC-LW_Lw/"
+        )
         sys.exit(1)
 
     # Remove unsupported annotations
