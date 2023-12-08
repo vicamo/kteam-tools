@@ -10,7 +10,10 @@ from ktl.debian                         import Debian, DebianError
 from ktl.kernel_series                  import KernelSeries
 from ktl.termcolor                      import colored
 from launchpadlib.launchpad             import Launchpad
+from crl.handle                         import Handle, HandleError
 import re
+import os.path
+import sys
 
 # AppError
 #
@@ -475,7 +478,8 @@ class VerifyReleaseReady():
         # with two dashes, has an email address and a date/time stamp.
         #
         cl = len(content)
-        error_text = 'The final lines of a new changelog block should be\n a single blank line, a "signature" line, and a final blank line.'
+        error_text = 'The final lines of a new changelog block should be\n a single blank line, ' \
+                      'a "signature" line, and a final blank line.'
 
         if content[cl - 4] == '': # Should NOT be a blank line
             s.status('final commit content [%d]' % ei, False)
@@ -550,10 +554,10 @@ class VerifyReleaseReady():
 
         s.verify_content()
 
-    # main
-    #
-    def main(s):
+    def verify_dir(s):
         try:
+            print(os.path.basename(os.getcwd()) + ":")
+
             # Check: Are we currently in a git repository?
             #
             if not Git.is_repo():
@@ -613,6 +617,22 @@ class VerifyReleaseReady():
         except GitError as e:
             eout(colored(e.msg, 'red'))
 
+    # main
+    #
+    def main(s):
+        if s.args.current:
+            s.verify_dir()
+        else:
+            try:
+                handle=Handle().lookup_set(os.getcwd())
+
+                for tree in handle.trees:
+                    os.chdir(tree.directory)
+                    s.verify_dir()
+
+            except HandleError as e:
+                eout(colored(sys.stderr, 'red'))
+
         return s.failed
 
 if __name__ == '__main__':
@@ -636,12 +656,21 @@ Examples:
         prog="cranky verify-release-ready",
     )
     parser.add_argument(
+        "-c",
+        "--current",
+        action='store_true',
+        default=False,
+        help='Only verify current package',
+    )
+    parser.add_argument(
+        "-d",
         "--debug",
         action='store_true',
         default=False,
         help='Print out a lot of messages about what is going on.',
     )
     parser.add_argument(
+        "-v",
         "--verbose",
         action='store_true',
         default=False,
