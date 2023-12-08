@@ -224,6 +224,57 @@ class Tracking():
             if pocket_vers == self.version:
                 raise AppError('Target version(%s) already in %s!' % (self.version, pocket_name))
 
+    def update_file(self, changelog, bugid, lpbug):
+
+        # Run the changelog looking for the CHANGELOG: template.
+        pre_insertchanges = False
+        stanza = 0
+        for line in changelog:
+            if len(line) > 0 and line[0] != ' ':
+                stanza += 1
+            if stanza == 2:
+                break
+
+            if line.startswith('  CHANGELOG: '):
+                pre_insertchanges = True
+
+        if not pre_insertchanges:
+            raise AppError("link-to-tracker should be run pre-insertchanges")
+
+        # Identify the debian directory.
+        debian = None
+        for debian_dir in Debian.debian_directories():
+            if os.path.exists(os.path.join(debian_dir, 'changelog')):
+                debian = debian_dir
+        if not debian:
+            raise AppError("no debian directory identified")
+
+        # Record the tacking bug number.
+        tracking = os.path.join(debian, 'tracking-bug')
+        with open(tracking, 'w') as f:
+            print(bugid, self.bug_to_sru_cycle(lpbug), file=f)
+
+        if self.args.cve:
+            bug_msg = "{} ({} (LP: #{}))".format(bugid, title, bugid)
+        else:
+            bug_msg = bugid
+
+        msg = """
+UBUNTU: link-to-tracker: update tracking bug
+
+BugLink: https://bugs.launchpad.net/bugs/{}
+Properties: no-test-build
+        """.strip().format(bug_msg)
+
+        retval, out = sh('git add %s' % (tracking), quiet=True)
+        if retval != 0:
+            raise AppError('Unable to add tracking bug number')
+
+        retval, out = sh('git commit -s -m "%s" %s' % (msg, tracking), quiet=True)
+        if retval != 0:
+            raise AppError('Unable to commit new tracking bug number')
+
+
     # main
     #
     def main(self):
@@ -283,53 +334,7 @@ class Tracking():
                         f.write(line)
 
             else:
-                # Run the changelog looking for the CHANGELOG: template.
-                pre_insertchanges = False
-                stanza = 0
-                for line in changelog:
-                    if len(line) > 0 and line[0] != ' ':
-                        stanza += 1
-                    if stanza == 2:
-                        break
-
-                    if line.startswith('  CHANGELOG: '):
-                        pre_insertchanges = True
-
-                if not pre_insertchanges:
-                    raise AppError("link-to-tracker should be run pre-insertchanges")
-
-                # Identify the debian directory.
-                debian = None
-                for debian_dir in Debian.debian_directories():
-                    if os.path.exists(os.path.join(debian_dir, 'changelog')):
-                        debian = debian_dir
-                if not debian:
-                    raise AppError("no debian directory identified")
-
-                # Record the tacking bug number.
-                tracking = os.path.join(debian, 'tracking-bug')
-                with open(tracking, 'w') as f:
-                    print(bugid, self.bug_to_sru_cycle(lpbug), file=f)
-
-                if self.args.cve:
-                    bug_msg = "{} ({} (LP: #{}))".format(bugid, self.title, bugid)
-                else:
-                    bug_msg = bugid
-
-                msg = """
-UBUNTU: link-to-tracker: update tracking bug
-
-BugLink: https://bugs.launchpad.net/bugs/{}
-Properties: no-test-build
-                """.strip().format(bug_msg)
-
-                retval, out = sh('git add %s' % (tracking), quiet=True)
-                if retval != 0:
-                    raise AppError('Unable to add tracking bug number')
-
-                retval, out = sh('git commit -s -m "%s" %s' % (msg, tracking), quiet=True)
-                if retval != 0:
-                    raise AppError('Unable to commit new tracking bug number')
+                self.update_file(changelog, bugid, lpbug)
 
             retval = 0
 
