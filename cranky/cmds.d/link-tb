@@ -171,18 +171,18 @@ class Tracking():
             # If no source is supplied use information from the current working
             # directory.
             if self.args.source is None:
-                target_package, target_series = self.repo_info
+                self.source, self.series = self.repo_info
             elif self.args.source is not None and self.args.version is not None:
-                target_series, target_package = self.args.source.split(':')
+                self.series, self.source = self.args.source.split(':')
             else:
                 raise AppError('--source and --version required')
-            # print("{} {}".format(target_series, target_package))
+            # print("{} {}".format(self.series, self.source))
 
             found_tasks = []
-            for (bugid, title) in self.trackers(self.project_tracked, target_package).items():
+            for (bugid, title) in self.trackers(self.project_tracked, self.source).items():
                 # The title has an optional series/ prefix (will become manditory).
-                if (not title.startswith(target_package + ':') and
-                        not title.startswith(target_series + '/' + target_package + ':')):
+                if (not title.startswith(self.source + ':') and
+                        not title.startswith(self.series + '/' + self.source + ':')):
                     continue
                 tasks_by_name = self.create_tasks_by_name_mapping(bugid, self.project_tracked)
                 found_tasks.append((bugid, tasks_by_name))
@@ -192,8 +192,8 @@ class Tracking():
             for (bugid, tasks_by_name) in found_tasks:
                 lpbug = self.launchpad.bugs[bugid]
                 # Ignore this bug if we cannot determine the series.
-                if '%s (Ubuntu %s)' % (target_package, target_series.title()) not in tasks_by_name and \
-                        target_series not in lpbug.tags:
+                if '%s (Ubuntu %s)' % (self.source, self.series.title()) not in tasks_by_name and \
+                        self.series not in lpbug.tags:
                     continue
                 # Ignore this bug if it is not a 'debs' variant.
                 if ' -proposed tracker' not in lpbug.title:
@@ -210,12 +210,12 @@ class Tracking():
                 found.append((bugid, tasks_by_name, lpbug))
 
             if len(found) == 0:
-                raise AppError('Cannot find tracking bug matching package %s series %s' % (target_package, target_series))
+                raise AppError('Cannot find tracking bug matching package %s series %s' % (self.source, self.series))
 
             if len(found) != 1:
                 for (bugid, tasks_by_name, lpbug) in found:
                     print("FOUND: LP: #{} ({}) {}".format(bugid, lpbug.title, self.bug_to_sru_cycle(lpbug)))
-                raise AppError('Multiple tracking bugs matching package %s series %s' % (target_package, target_series))
+                raise AppError('Multiple tracking bugs matching package %s series %s' % (self.source, self.series))
 
             (bugid, tasks_by_name, lpbug) = found[0]
 
@@ -227,10 +227,10 @@ class Tracking():
             # Pull the entire changelog file into a list
             #
             if self.args.version is None:
-                target_version = Debian.changelog(local=True)[0]['version']
+                self.version = Debian.changelog(local=True)[0]['version']
             else:
-                target_version = self.args.version
-            title = "%s/%s: %s -proposed tracker" % (target_series, target_package, target_version)
+                self.version = self.args.version
+            title = "%s/%s: %s -proposed tracker" % (self.series, self.source, self.version)
             print(" -> %s" % title)
 
             # If we were directed to a version then we will just use that version and write it to the bug.
@@ -243,18 +243,18 @@ class Tracking():
                 return 0
 
             cmd = "%s/cranky rmadison" % os.path.join(os.path.dirname(__file__), "..")
-            retval, out = sh("%s %s:%s" % (cmd, target_series, target_package), quiet=True)
+            retval, out = sh("%s %s:%s" % (cmd, self.series, self.source), quiet=True)
             if retval != 0:
                 raise AppError('Error while checking currently released versions')
 
             for line in out:
                 f = line.split(' | ')
-                if f[0].lstrip().rstrip() != target_package:
+                if f[0].lstrip().rstrip() != self.source:
                     continue
                 pocket_name = f[2].lstrip().rstrip()
                 pocket_vers = f[1].lstrip().rstrip()
-                if pocket_vers == target_version:
-                    raise AppError('Target version(%s) already in %s!' % (target_version, pocket_name))
+                if pocket_vers == self.version:
+                    raise AppError('Target version(%s) already in %s!' % (self.version, pocket_name))
 
             if self.args.dry_run:
                 print("Dry Run -- no changes made")
