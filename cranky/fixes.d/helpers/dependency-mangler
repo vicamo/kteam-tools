@@ -180,10 +180,10 @@ class ControlMangler:
         cf.load()
         cf_stanza = cf.stanza_lookup(stanza)
         if cf_stanza is None:
-            raise ControlMangerError("{}: stanza not found".format(stanza))
+            raise ControlManglerError("{}: stanza not found".format(stanza))
         cf_entry = cf_stanza.field_lookup(field)
         if cf_entry is None:
-            raise ControlMangerError("{}: field not found".format(field))
+            raise ControlManglerError("{}: field not found".format(field))
         cf_entry.insert_relation(entry)
         cf_entry.save()
         cf_stanza.save()
@@ -196,10 +196,10 @@ class ControlMangler:
         cf.load()
         cf_stanza = cf.stanza_lookup(stanza)
         if cf_stanza is None:
-            raise ControlMangerError("{}: stanza not found".format(stanza))
+            raise ControlManglerError("{}: stanza not found".format(stanza))
         cf_entry = cf_stanza.field_lookup(field)
         if cf_entry is None:
-            raise ControlMangerError("{}: field not found".format(field))
+            raise ControlManglerError("{}: field not found".format(field))
         cf_entry.remove_relation(entry)
         cf_entry.save()
         cf_stanza.save()

@@ -3,7 +3,6 @@
 # This script generates update.conf used by in-tree helper scripts used to
 # produce Ubuntu kernel commits.
 
-import glob
 import os
 import re
 import sys
@@ -11,8 +10,7 @@ import sys
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "libs")))
 
-from ktl.debian import Debian
-from ktl.shell import sh
+from ktl.debian import Debian  # noqa: E402 Import not at top of file
 
 cycle = None
 

@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 # update readme file
 
-# shellcheck disable=SC1090
+# shellcheck disable=SC1091
 . "$(dirname "$0")"/lib.sh
 
 # Only applies to primary trees.
@@ -55,8 +55,8 @@ else
 	fi
 
 	# Check for local changes
-	local_changes=$(git rev-list --max-count=1 ${local_base_search}..HEAD -- "$readme")
-	if [ ! -z "$local_changes" ]; then
+	local_changes=$(git rev-list --max-count=1 "${local_base_search}"..HEAD -- "$readme")
+	if [ -n "$local_changes" ]; then
 		fix_verbose "Skipping updating '$readme' with local changes"
 		exit 0
 	fi
