@@ -618,16 +618,35 @@ class VerifyReleaseReady():
 if __name__ == '__main__':
     # Command line argument setup and initial processing
     #
-    app_description = '''
-I'm a application skeleton, your job is to make me into something useful.
-    '''
-    app_epilog = '''
-examples:
-    Smokem --help
-    '''
-    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('--debug',        action='store_true', default=False, help='Print out a lot of messages about what is going on.')
-    parser.add_argument('--verbose',      action='store_true', default=False, help='Print out more an usual amount of information about what is happening.')
+    app_description = """
+Verify various parameters (eg. release/package names, ABI, git tags, LP bugs)
+of main and dependent kernel packages for release.
+"""
+
+    app_epilog = """
+Examples:
+  $ cranky verify-release-ready
+
+"""
+
+    parser = ArgumentParser(
+        description=app_description,
+        formatter_class=RawDescriptionHelpFormatter,
+        epilog=app_epilog,
+        prog="cranky verify-release-ready",
+    )
+    parser.add_argument(
+        "--debug",
+        action='store_true',
+        default=False,
+        help='Print out a lot of messages about what is going on.',
+    )
+    parser.add_argument(
+        "--verbose",
+        action='store_true',
+        default=False,
+        help='Print out more an usual amount of information about what is happening.',
+    )
     args = parser.parse_args()
 
     # If logging parameters were set on the command line, handle them
