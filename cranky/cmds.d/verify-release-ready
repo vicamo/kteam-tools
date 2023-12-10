@@ -44,6 +44,7 @@ class VerifyReleaseReady():
         s.lp_devel_series = s.lp_ubuntu.current_series
         # Instantiate a KernelSeries for package lookups.
         s.kernel_series = KernelSeries()
+        s.upstream = Debian.get_upstream()
 
     # Are we currently in a git repository?
     #
@@ -443,6 +444,10 @@ class VerifyReleaseReady():
                     s.status(subject, "warning")
                     return
 
+                # Check to make sure this commit message is properly formatted
+                # to include the upstream source for derivative kernels
+                s.verify_upstream_source(subject)
+
         s.status(msg, True)
 
     def verify_tracker_bug(s, bug):
@@ -517,6 +522,37 @@ class VerifyReleaseReady():
                 ei += 1
         else:
             s.status('final commit content', True)
+
+    def verify_upstream_source(s, subject):
+        # If there is no debian.<flavour>/upstream-* there is nothing to check
+        if not bool(s.upstream):
+            return
+
+        # Skip if this is the -generic kernel
+        if "upstream-stable" in s.upstream:
+            return
+
+        # Search for the commit with a matching subject, expect one back.
+        log = Git.log(num=1, grep=subject)
+
+        try:
+            commit = log['commits'][0]
+            sha1 = commit['sha1'][:12]
+        except (IndexError, KeyError):
+            eout(colored("Unable to find commit", 'red'))
+            return
+
+        # Check to make sure this isn't an UBUNTU commit
+        for line in commit['text']:
+            if line.find(subject) != -1:
+                if line.lstrip().startswith('UBUNTU:'):
+                    return
+
+        if 'upstream_sha1' in commit:
+            s.status('commit {0} has upstream source'.format(sha1), True)
+            return
+
+        s.status('commit {0} has upstream source'.format(sha1), False)
 
     def verify_linux_meta(s, cl0, cl1):
         cl0_build = cl0['upload-number']

@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 from ktl.utils                  import run_command, dump
-from re                         import compile
+from re                         import compile, escape
 import json
 
 class GitError(Exception):
@@ -22,6 +22,10 @@ class Git:
     ack_rc     = compile('^\s+Acked-by:\s+(.*)\s+<(.*)>$')
     subject_rc = compile("^UBUNTU: (Ubuntu-.*)$")
     tag_rc     = compile("^Ubuntu-([a-z][^-]*-){0-2}(.*)$")
+    source_rc = compile(
+            "\s*\[*\(*(?:cherry.*pick(?:ed)*|backport(?:ed)*)\sfrom\scommit\s([a-f0-9]+)\s*([^\s\]\)]*)\s*([^\s\]\)]*)"
+        )
+
     log_results = {}
 
     # is_repo
@@ -281,6 +285,14 @@ class Git:
                     results['text'].append(text)
                     break
 
+                m = cls.source_rc.match(text)
+                if m != None:
+                    results["upstream_sha1"] = m.group(1)
+                    if m.group(2):
+                        results["upstream_1"] = m.group(2)
+                    if m.group(3):
+                        results["upstream_2"] = m.group(3)
+
                 results['text'].append(text)
                 break
         return results
@@ -293,7 +305,7 @@ class Git:
     # dictionary is a list of commits indexed by the related buglink.
     #
     @classmethod
-    def log(cls, num=-1):
+    def log(cls, num=-1, grep=""):
         debug = False
         cls.log_results = {}
         cls.log_results['commits']       = []
@@ -302,6 +314,10 @@ class Git:
         log_cmd = "git log --pretty=medium --decorate=no"
         if num != -1:
             log_cmd = "%s -%d" % (log_cmd, num)
+        if grep != "":
+            # Escape all special characters, then unescape ()
+            log_cmd = '%s --grep "%s"' \
+                    % (log_cmd, escape(grep).replace("\(", "(").replace("\)", ")"))
         status, result = run_command(log_cmd, cls.debug)
         commit       = {}
         commit_text  = []

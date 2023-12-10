@@ -396,4 +396,51 @@ class Debian:
                 return status
         return 0
 
+    @classmethod
+    def parse_upstream(cls, upstream_contents):
+        upstream = {}
+        key = None
+        source = []
+
+        for line in upstream_contents:
+            if line.startswith("#"):
+                continue
+            if findall(r"^\[.*?\]", line):
+                # Add the previous key + source information
+                if key is not None and source is not []:
+                    upstream[key] = source
+
+                try:
+                    key = findall(r"\[.*?\]", line)[0].strip("[").strip("]")
+                except IndexError:
+                    key = None
+                    continue
+
+                continue
+            if key is not None:
+                if len(line.split("=", 1)) != 2:
+                    continue
+                source.append([line.split("=", 1)[0].strip(" "),
+                               line.split("=", 1)[1]])
+
+        if key is not None and source is not []:
+            upstream[key] = source
+        return upstream
+
+    @classmethod
+    def get_upstream(cls):
+        debian_dirs = cls.debian_directories()
+        upstream_source = {}
+        for debdir in debian_dirs:
+            upstreams = glob(debdir + "/upstream-*")
+            for upstream in upstreams:
+                try:
+                    upstream_contents = open(upstream, "r").read().split("\n")
+                    upstream_source = upstream_source | \
+                                      cls.parse_upstream(upstream_contents)
+                except (OSError, IOError):
+                    return None
+        return upstream_source
+
+
 # vi:set ts=4 sw=4 expandtab:
