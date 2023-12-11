@@ -53,6 +53,7 @@ files=(
 	annotations
 	kconfig/__init__.py
 	kconfig/annotations.py
+	kconfig/run.py
 )
 for f in "${files[@]}" ; do
 	script=debian/scripts/misc/${f}
