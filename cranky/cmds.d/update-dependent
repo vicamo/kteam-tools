@@ -8,10 +8,12 @@ function update_dependent()
 {
 	local ignore_abi_check="${1}"
 
-	if ! [ -d debian ] || ! [ -f update-version ] ; then
-		echo "This is not a dependent kernel package repo" >&2
-		return 1
-	fi
+	case "$("${C}" shell-helper tree-type)" in
+		meta|signed|lrm) ;;
+		*)
+			echo "This is not a dependent kernel package repo" >&2
+			return 1
+	esac
 
 	# Sanity check: The repo must be clean
 	if [ -n "$(git status --porcelain)" ] ; then
@@ -66,7 +68,12 @@ function update_dependent()
 	fi
 
 	# Update the changelog and capture stdout
-	readarray -t stdout < <(./update-version "${main_path}")
+	if [ -f update-version ] ; then
+		# Old trees might still have this, so use it
+		readarray -t stdout < <(./update-version "${main_path}")
+	else
+		readarray -t stdout < <("${C}" update-dependent-version "${main_path}")
+	fi
 
 	# Usually `update-version' will produce a changelog version without entries
 	# for a re-spin (new version with the same ABI). In that case, add a generic
