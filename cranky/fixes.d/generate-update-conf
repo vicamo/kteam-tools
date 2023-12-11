@@ -3,16 +3,14 @@
 # This script generates update.conf used by in-tree helper scripts used to
 # produce Ubuntu kernel commits.
 
-import glob
 import os
 import re
 import sys
 
 # Add ../libs to the Python search path
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "libs")))
 
-from ktl.debian import Debian
-from ktl.shell import sh
+from ktl.debian import Debian  # noqa: E402 Import not at top of file
 
 cycle = None
 
@@ -29,7 +27,7 @@ if parent_source is None:
     sys.exit(0)
 
 # Find the primary package for this source.
-for parent_package in parent_source.packages + [ None ]:
+for parent_package in parent_source.packages + [None]:
     if parent_package is None or parent_package.type is None:
         break
 if parent_package is None:
@@ -41,10 +39,10 @@ if parent_package.repo is None:
     sys.exit(0)
 
 # Emit the parental repository configuration.
-print('# WARNING: we do not create update.conf when we are not a')
-print('# derivative. Various cranky components make use of this.')
-print('# If we start unconditionally creating update.conf we need')
-print('# to fix at least cranky close and cranky rebase.')
+print("# WARNING: we do not create update.conf when we are not a")
+print("# derivative. Various cranky components make use of this.")
+print("# If we start unconditionally creating update.conf we need")
+print("# to fix at least cranky close and cranky rebase.")
 print("RELEASE_REPO=" + parent_package.repo.url)
 if parent_package.repo.branch:
     print("SOURCE_RELEASE_BRANCH=" + parent_package.repo.branch)
@@ -58,12 +56,11 @@ if parent_package.repo.branch:
 # We check the parent kernel's name and assume "debian.master" for
 # "linux" or "linux-NN.MM" or "linux-unstable" and "debian.BRANCH" for
 # "linux-BRANCH":
-parent_name=parent_source.name.split("-", 1) # ['linux', 'BRANCH']
-if (len(parent_name) <= 1 or re.match("\d+\.\d+$", parent_name[1]) or
-    parent_name[1] == "unstable"):
-    master_branch="master"
+parent_name = parent_source.name.split("-", 1)  # ['linux', 'BRANCH']
+if len(parent_name) <= 1 or re.match("\d+\.\d+$", parent_name[1]) or parent_name[1] == "unstable":
+    master_branch = "master"
 else:
-    master_branch=parent_name[1]
+    master_branch = parent_name[1]
 print("DEBIAN_MASTER=debian." + master_branch)
 
 # Dump the version suffix that should be used for backports. "fdr
@@ -81,17 +78,17 @@ print("DEBIAN_MASTER=debian." + master_branch)
 # Note that an empty suffix empty is represented by '--' such that
 # an empty variable still indicates the non-backport case.
 if source.backport:
-    series = int(source.series.name.replace('.', ''))
-    parent_series = int(parent_source.series.name.replace('.', ''))
+    series = int(source.series.name.replace(".", ""))
+    parent_series = int(parent_source.series.name.replace(".", ""))
     if series == parent_series:
         suffix = "--"
         # get lastversion and lastabi
         lastversion = Debian.changelog()[0]["version"]
-        lastabi = int(lastversion.split('-')[1].split('.')[0])
+        lastabi = int(lastversion.split("-")[1].split(".")[0])
         if "+fips" in lastversion:
-            suffix="+fips"
+            suffix = "+fips"
         elif lastabi > 1000:
-            suffix=""
+            suffix = ""
     elif series > parent_series:
         suffix = "+{series}"
     else:
