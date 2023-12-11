@@ -12,8 +12,8 @@ from signal import signal, SIGPIPE, SIG_DFL
 
 from kconfig.annotations import Annotation, KConfig
 from kconfig.utils import autodetect_annotations, arg_fail
+from kconfig.version import VERSION
 
-VERSION = '0.1'
 
 SKIP_CONFIGS = (
     # CONFIG_VERSION_SIGNATURE is dynamically set during the build
