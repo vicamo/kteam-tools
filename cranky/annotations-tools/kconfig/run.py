@@ -44,9 +44,7 @@ def make_parser():
     parser = argparse.ArgumentParser(
         description="Manage Ubuntu kernel .config and annotations",
     )
-    parser.add_argument(
-        "--version", "-v", action="version", version=f"%(prog)s {VERSION}"
-    )
+    parser.add_argument("--version", "-v", action="version", version=f"%(prog)s {VERSION}")
 
     parser.add_argument(
         "--file",
@@ -55,12 +53,8 @@ def make_parser():
         help="Pass annotations or .config file to be parsed",
     )
     parser.add_argument("--arch", "-a", action="store", help="Select architecture")
-    parser.add_argument(
-        "--flavour", "-l", action="store", help='Select flavour (default is "generic")'
-    )
-    parser.add_argument(
-        "--config", "-c", action="store", help="Select a specific config option"
-    )
+    parser.add_argument("--flavour", "-l", action="store", help='Select flavour (default is "generic")')
+    parser.add_argument("--config", "-c", action="store", help="Select a specific config option")
     parser.add_argument("--query", "-q", action="store_true", help="Query annotations")
     parser.add_argument(
         "--note",
@@ -85,9 +79,7 @@ def make_parser():
         help="Do not process included annotations (stop at the main file)",
     )
 
-    ga = parser.add_argument_group(title="Action").add_mutually_exclusive_group(
-        required=False
-    )
+    ga = parser.add_argument_group(title="Action").add_mutually_exclusive_group(required=False)
     ga.add_argument(
         "--write",
         "-w",
@@ -141,12 +133,8 @@ def export_result(data):
     out += "\n  },"
     print(out)
 
-    configs_with_note = {
-        key: value for key, value in data["config"].items() if "note" in value
-    }
-    configs_without_note = {
-        key: value for key, value in data["config"].items() if "note" not in value
-    }
+    configs_with_note = {key: value for key, value in data["config"].items() if "note" in value}
+    configs_without_note = {key: value for key, value in data["config"].items() if "note" not in value}
 
     # Dump configs, sorted alphabetically, showing items with a note first
     out = '  "config": {\n'
@@ -264,9 +252,7 @@ def do_import(args):
     if args.flavour is None:
         arg_fail(_ARGPARSER, "error: --flavour is required with --import")
     if args.config is not None:
-        arg_fail(
-            _ARGPARSER, "error: --config cannot be used with --import (try --update)"
-        )
+        arg_fail(_ARGPARSER, "error: --config cannot be used with --import (try --update)")
 
     # Merge with the current annotations
     a = Annotation(args.file)
@@ -329,9 +315,7 @@ def do_check(args):
     num = total - good
     if ret:
         if os.path.exists(".git"):
-            print(
-                f"check-config: {num} config options have been changed, review them with `git diff`"
-            )
+            print(f"check-config: {num} config options have been changed, review them with `git diff`")
         else:
             print(f"check-config: {num} config options have changed")
     else:

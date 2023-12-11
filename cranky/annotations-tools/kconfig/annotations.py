@@ -166,10 +166,10 @@ class Annotation(Config):
 
         # Return an error if architectures are not defined
         if not self.arch:
-            raise SyntaxError(f"ARCH not defined in annotations")
+            raise SyntaxError("ARCH not defined in annotations")
         # Return an error if flavours are not defined
         if not self.flavour:
-            raise SyntaxError(f"FLAVOUR not defined in annotations")
+            raise SyntaxError("FLAVOUR not defined in annotations")
 
         # Parse body
         self._parse_body(data)
@@ -207,9 +207,7 @@ class Annotation(Config):
                 self.config = {**self.config, **data["config"]}
             self.arch = list(set(self.arch) | set(data["attributes"]["arch"]))
             self.flavour = list(set(self.flavour) | set(data["attributes"]["flavour"]))
-            self.include_flavour = list(
-                set(self.include_flavour) | set(data["attributes"]["flavour"])
-            )
+            self.include_flavour = list(set(self.include_flavour) | set(data["attributes"]["flavour"]))
             self.flavour_dep = self.flavour_dep | data["attributes"]["flavour_dep"]
 
         # Handle recursive inclusions
@@ -224,7 +222,7 @@ class Annotation(Config):
         # format.
         try:
             self._legacy_parse(data)
-        except SyntaxError as e:
+        except SyntaxError:
             self._json_parse(data, is_included=False)
 
     def _remove_entry(self, config: str):
@@ -297,16 +295,12 @@ class Annotation(Config):
                 if "policy" in self.config[conf]:
                     # Add a TODO if a config with a note is changing and print
                     # a warning
-                    old_val = self.search_config(
-                        config=conf, arch=arch, flavour=flavour_arg
-                    )
+                    old_val = self.search_config(config=conf, arch=arch, flavour=flavour_arg)
                     if old_val:
                         old_val = old_val[conf]
                     if val != old_val and "note" in self.config[conf]:
                         self.config[conf]["note"] = "TODO: update note"
-                        print(
-                            f"WARNING: {conf} changed from {old_val} to {val}, updating note"
-                        )
+                        print(f"WARNING: {conf} changed from {old_val} to {val}, updating note")
                     self.config[conf]["policy"][flavour] = val
                 else:
                     self.config[conf]["policy"] = {flavour: val}
@@ -327,20 +321,14 @@ class Annotation(Config):
                     continue
                 arch = m.group(1)
                 if arch in self.config[conf]["policy"]:
-                    if (
-                        self.config[conf]["policy"][flavour]
-                        == self.config[conf]["policy"][arch]
-                    ):
+                    if self.config[conf]["policy"][flavour] == self.config[conf]["policy"][arch]:
                         del self.config[conf]["policy"][flavour]
                         continue
                 if flavour not in self.flavour_dep:
                     continue
                 generic = self.flavour_dep[flavour]
                 if generic in self.config[conf]["policy"]:
-                    if (
-                        self.config[conf]["policy"][flavour]
-                        == self.config[conf]["policy"][generic]
-                    ):
+                    if self.config[conf]["policy"][flavour] == self.config[conf]["policy"][generic]:
                         del self.config[conf]["policy"][flavour]
                         continue
             # Remove rules for flavours / arches that are not supported (not
@@ -432,9 +420,7 @@ class Annotation(Config):
                 old_val = tmp_a.config.get(conf)
                 if old_val and "policy" in old_val:
                     try:
-                        can_skip = (
-                            old_val["policy"] == old_val["policy"] | new_val["policy"]
-                        )
+                        can_skip = old_val["policy"] == old_val["policy"] | new_val["policy"]
                     except TypeError:
                         can_skip = old_val["policy"] == {
                             **old_val["policy"],
@@ -470,9 +456,7 @@ class Annotation(Config):
             tmp.flush()
             shutil.move(tmp.name, fname)
 
-    def search_config(
-        self, config: str = None, arch: str = None, flavour: str = None
-    ) -> dict:
+    def search_config(self, config: str = None, arch: str = None, flavour: str = None) -> dict:
         """Return config value of a specific config option or architecture"""
         if flavour is None:
             flavour = "generic"
