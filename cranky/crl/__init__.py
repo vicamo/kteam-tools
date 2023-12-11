@@ -4,8 +4,4 @@
 import os
 import sys
 
-sys.path.append(
-    os.path.realpath(
-        os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "libs")
-    )
-)
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "libs")))

@@ -7,7 +7,7 @@ lib_path = os.path.dirname(__file__)
 sys.path.append(os.path.realpath(os.path.join(lib_path, os.pardir)))
 
 # Add ../libs to the Python search path
-sys.path.append(os.path.realpath(os.path.join(lib_path, os.pardir, 'libs')))
+sys.path.append(os.path.realpath(os.path.join(lib_path, os.pardir, "libs")))
 
 try:
     from crl.handle import Handle, HandleError
@@ -21,23 +21,24 @@ class GitError(Exception):
     pass
 
 
-class GitDirectory():
+class GitDirectory:
     def __init__(self, directory):
         self.directory = directory
 
     def is_valid(self):
         if os.path.exists(self.directory):
-            if os.path.exists(os.path.join(self.directory, '.git')):
+            if os.path.exists(os.path.join(self.directory, ".git")):
                 return True
-            elif os.path.exists(os.path.join(self.directory, 'objects')):
+            elif os.path.exists(os.path.join(self.directory, "objects")):
                 return True
         return False
 
 
-class GitHandle():
-    '''
+class GitHandle:
+    """
     A handle to a single git repository.
-    '''
+    """
+
     def __init__(self, handle_tree):
         self.__ht = handle_tree
 
@@ -61,53 +62,51 @@ class GitHandle():
     def remote_branch(self):
         pkg = self.__ht.package
 
-        return pkg.repo.branch if pkg.repo.branch else 'master'
+        return pkg.repo.branch if pkg.repo.branch else "master"
 
     def is_valid(self):
-        '''
+        """
         Returns whether the embedded directory seems to be a valid git repository
-        '''
+        """
         return GitDirectory(self.directory).is_valid
 
     def is_clean(self):
         repo_dir = self.directory
 
-        if not os.path.exists(os.path.join(repo_dir, '.git')):
+        if not os.path.exists(os.path.join(repo_dir, ".git")):
             return True
         result = run(["git", "diff", "--quiet", "HEAD"], cwd=repo_dir)
 
         return result.returncode == 0
 
     def is_ancestor(self, old_sha1, new_sha1):
-        result = run(["git", "merge-base", "--is-ancestor", old_sha1, new_sha1],
-                     cwd=self.directory)
+        result = run(["git", "merge-base", "--is-ancestor", old_sha1, new_sha1], cwd=self.directory)
         return result.returncode == 0
 
     def lookup_ref(self, ref):
-        '''
+        """
         Return the commit id from a reference.
-        '''
+        """
         repo_dir = self.directory
 
-        result = run(["git", "for-each-ref", "--format", "%(objectname)", ref],
-                     cwd=repo_dir, stdout=PIPE)
+        result = run(["git", "for-each-ref", "--format", "%(objectname)", ref], cwd=repo_dir, stdout=PIPE)
         if result.returncode != 0:
             raise GitError("git for-each-ref failed rc={}".format(result.returncode))
 
-        sha1 = result.stdout.decode('utf-8').strip()
-        if sha1 == '':
+        sha1 = result.stdout.decode("utf-8").strip()
+        if sha1 == "":
             sha1 = None
 
         return sha1
 
     def get_cranky_branch_name(self, crd=None, cycle=None):
-        '''
+        """
         Return the local branch name which is used by cranky.
-        '''
-        pkg    = self.package
+        """
+        pkg = self.package
         remote = self.remote
-        prefix = 'cranky/'
-        suffix = ''
+        prefix = "cranky/"
+        suffix = ""
         if crd:
             prefix = "CRD-" + crd + "+"
         elif cycle:
@@ -115,19 +114,19 @@ class GitHandle():
 
         # Cranky branch is the real branch name if we are checking out against 'origin',
         # the derivative's source name otherwise.
-        branch_suffix = pkg.repo.branch if pkg.repo.branch else 'master'
-        if remote != 'origin':
-            branch_suffix = pkg.source.name.replace('linux-', '')
+        branch_suffix = pkg.repo.branch if pkg.repo.branch else "master"
+        if remote != "origin":
+            branch_suffix = pkg.source.name.replace("linux-", "")
 
         return prefix + branch_suffix + suffix
 
     def get_url(self):
-        '''
+        """
         Returns a suitable URL which allows checkout/push for the given package.
         For this the prefix might be changed from 'git://' to 'ssh+git://'.
         FIXME: Potentially something that belongs into kernel_series.py
-        '''
-        pkg  = self.package
+        """
+        pkg = self.package
         repo = pkg.repo
 
         # Private sources or sources under ESM have to be accessed via ssh
@@ -137,32 +136,32 @@ class GitHandle():
         #  [url "git+ssh://<user>@git.launchpad.net/"]
         #      insteadof = "git+ssh://git.launchpad.net"
         if pkg.source.private or pkg.series.esm:
-            repo_url = repo.url.replace('git://', 'git+ssh://', 1)
+            repo_url = repo.url.replace("git://", "git+ssh://", 1)
         else:
             repo_url = repo.url
 
         return repo_url
 
     def set_upstream(self, branch, remote):
-        cmd = [ "git", "config", "branch."+branch+".remote", remote ]
+        cmd = ["git", "config", "branch." + branch + ".remote", remote]
         result = run(cmd, cwd=self.directory)
         if result.returncode != 0:
             raise GitError("git config branch.<branch>.remote failed rc={}".format(result.returncode))
-        cmd = [ "git", "config", "branch."+branch+".pushRemote", remote ]
+        cmd = ["git", "config", "branch." + branch + ".pushRemote", remote]
         result = run(cmd, cwd=self.directory)
         if result.returncode != 0:
             raise GitError("git config branch.<branch>.pushRemote failed rc={}".format(result.returncode))
-        cmd = [ "git", "config", "branch."+branch+".merge", "refs/heads/"+branch ]
+        cmd = ["git", "config", "branch." + branch + ".merge", "refs/heads/" + branch]
         result = run(cmd, cwd=self.directory)
         if result.returncode != 0:
             raise GitError("git config branch.<branch>.merge failed rc={}".format(result.returncode))
 
     def remote_ref(self, remote, branch):
-        rmt_ref = 'refs/remotes/{}/{}'.format(remote, branch)
+        rmt_ref = "refs/remotes/{}/{}".format(remote, branch)
         return rmt_ref
 
     def checkout(self, rmt_ref, branch, cycle=None):
-        lcl_ref = 'refs/heads/{}'.format(branch)
+        lcl_ref = "refs/heads/{}".format(branch)
 
         # Get us onto the branch in question -- if it does not exists
         # git checkout -b branch remote/branch else
@@ -183,9 +182,9 @@ class GitHandle():
         if lcl_sha1 is not None and rmt_sha1 != lcl_sha1:
             # Backup via an explict reflog entry if this is not an ancestor.
             if not self.is_ancestor(lcl_sha1, rmt_sha1):
-                result = run(["git", "update-ref", "-m",
-                              "cranky checkout: previous tip", "HEAD", "HEAD"],
-                             cwd=self.directory)
+                result = run(
+                    ["git", "update-ref", "-m", "cranky checkout: previous tip", "HEAD", "HEAD"], cwd=self.directory
+                )
                 if result.returncode != 0:
                     raise GitError("unable to backup previous tip rc={}".format(result.returncode))
 
@@ -197,24 +196,26 @@ class GitHandle():
         # Validate whether the right branch is checked out.
         validate_hdl = Handle().lookup_tree(self.directory, cycle=cycle)
         if self.package != validate_hdl.package:
-            cwarn("Repository '{}' has the wrong package checked out {}:{}".format(
-                  self.directory, validate_hdl.package.series.codename,
-                  validate_hdl.package.name))
+            cwarn(
+                "Repository '{}' has the wrong package checked out {}:{}".format(
+                    self.directory, validate_hdl.package.series.codename, validate_hdl.package.name
+                )
+            )
 
     def clone(self, reference=None, dissociate=False, depth=None):
-        '''
+        """
         Clone the repository which the GitHandle represents.
         :param depth: Optional[int] git clone argument
             creates a shallow clone truncating to this many commits
-        '''
-        pkg  = self.__ht.package
+        """
+        pkg = self.__ht.package
         repo = pkg.repo
 
         if repo is None:
-            raise GitError('{} has no repository set'.format(pkg.name))
+            raise GitError("{} has no repository set".format(pkg.name))
 
-        remote   = self.__ht.remote
-        branch   = self.remote_branch
+        remote = self.__ht.remote
+        branch = self.remote_branch
         repo_dir = self.directory
         repo_url = self.get_url()
 
@@ -223,7 +224,7 @@ class GitHandle():
             if GitDirectory(reference).is_valid:
                 cmd.extend(["--reference", reference])
             else:
-                cwarn('Warning: {} is not a directory or git repo'.format(reference))
+                cwarn("Warning: {} is not a directory or git repo".format(reference))
         if depth:
             cmd.extend(["--depth", depth])
         cmd.extend([repo_url, repo_dir])
@@ -231,55 +232,49 @@ class GitHandle():
         cnotice('Cloning "{}" into {}'.format(pkg.name, repo_dir))
         result = run(cmd)
         if result.returncode != 0:
-            raise GitError('git clone failed (rc={})'.format(result.returncode))
+            raise GitError("git clone failed (rc={})".format(result.returncode))
 
     def update_remote(self, remote, repo_url, fetch=True):
         repo_dir = self.directory
 
-        result = run(["git", "config", "remote.{}.url".format(remote)],
-                     cwd=repo_dir, stdout=PIPE)
+        result = run(["git", "config", "remote.{}.url".format(remote)], cwd=repo_dir, stdout=PIPE)
         if result.returncode == 0:
-            current_url = result.stdout.decode('utf-8').strip()
+            current_url = result.stdout.decode("utf-8").strip()
             if current_url != repo_url:
                 cnotice("Updating remote {} in {} to {}".format(remote, os.path.basename(repo_dir), repo_url))
-                result = run(["git", "config", "remote.{}.url".format(remote),
-                              repo_url], cwd=repo_dir, stdout=PIPE)
+                result = run(["git", "config", "remote.{}.url".format(remote), repo_url], cwd=repo_dir, stdout=PIPE)
                 if result.returncode != 0:
-                    raise GitError("failed to update remote {} url to {} "
-                                   "rc={}".format(remote, repo_url, result.returncode))
+                    raise GitError(
+                        "failed to update remote {} url to {} " "rc={}".format(remote, repo_url, result.returncode)
+                    )
         else:
             cnotice("Adding remote {} in {}".format(remote, os.path.basename(repo_dir)))
             result = run(["git", "remote", "add", remote, repo_url], cwd=repo_dir)
             if result.returncode != 0:
-                raise GitError("failed to add remote {} "
-                               "rc={}".format(remote, result.returncode))
+                raise GitError("failed to add remote {} " "rc={}".format(remote, result.returncode))
 
         if fetch:
             cnotice("Fetching remote {} in {}".format(remote, os.path.basename(repo_dir)))
             result = run(["git", "fetch", remote], cwd=repo_dir)
             if result.returncode != 0:
-                raise GitError("failed to fetch remote {} "
-                               "rc={}".format(remote, result.returncode))
+                raise GitError("failed to fetch remote {} " "rc={}".format(remote, result.returncode))
 
     def configure(self):
-        '''
+        """
         Do some additional configuration on the GitHandle
-        '''
+        """
         repo_dir = self.directory
         repo_url = self.get_url()
-        codename = self.package.series.codename
 
         # Add the default mailing list address for sending patches
         if "canonical-kernel-esm" in repo_url:
             address = "canonical-kernel-esm@lists.canonical.com"
         else:
             address = "kernel-team@lists.ubuntu.com"
-        run(["git", "config", "--local", "sendemail.to", address],
-            cwd=repo_dir)
+        run(["git", "config", "--local", "sendemail.to", address], cwd=repo_dir)
 
         # Don't cc the patch author and signers, i.e., don't spam upstream
-        run(["git", "config", "--local", "sendemail.suppresscc", "all"],
-            cwd=repo_dir)
+        run(["git", "config", "--local", "sendemail.suppresscc", "all"], cwd=repo_dir)
 
         self.fetch_security(fetch=False)
         self.add_cbd()
@@ -293,8 +288,8 @@ class GitHandle():
         else:
             security_repo = "linux-{}-{}".format(pkg_type, codename)
 
-        security_url  = 'git+ssh://git.launchpad.net/~canonical-kernel-security-team/'
-        security_url += 'canonical-kernel-private/+git/{}'.format(security_repo)
+        security_url = "git+ssh://git.launchpad.net/~canonical-kernel-security-team/"
+        security_url += "canonical-kernel-private/+git/{}".format(security_repo)
 
         try:
             # Add the security repo without fetching it
@@ -308,19 +303,19 @@ class GitHandle():
         if pkg_type is None:
             result = run(["getent", "hosts", "cbd.kernel"], stdout=PIPE)
             if result.returncode == 0:
-                self.update_remote("cbd",
-                                   f"cbd.kernel:{codename}.git", False)
+                self.update_remote("cbd", f"cbd.kernel:{codename}.git", False)
 
 
-class GitHandleSet():
-    '''
+class GitHandleSet:
+    """
     A git based view onto a HandleSet. To be used as an accessor to git functionality
     for HandleSet()s and HandleTree()s.
-    '''
+    """
+
     def __init__(self, handle, cycle=None):
-        '''
+        """
         handle := <series>:<source>
-        '''
+        """
         # Might raise a HandleError:
         hdl = Handle()
         try:
@@ -335,23 +330,21 @@ class GitHandleSet():
         if derived_from is not None:
             meta_only = True
             for handle_tree in self.__hdlset.trees:
-                if handle_tree.package.type != 'meta':
+                if handle_tree.package.type != "meta":
                     meta_only = False
                     break
             if meta_only:
-                prime_handle = "{}:{}".format(derived_from.series.codename,
-                                              derived_from.name)
+                prime_handle = "{}:{}".format(derived_from.series.codename, derived_from.name)
                 prime_set = hdl.lookup_set(prime_handle, validate=False)
                 for handle in prime_set.trees:
-                    if handle.package.type != 'meta':
+                    if handle.package.type != "meta":
                         self.__hdlset.trees.append(handle)
 
         # If the trees already exist, we need to make sure they are clean otherwise
         # we may destroy work in progress.
         for handle_tree in self.__hdlset.trees:
             if not GitHandle(handle_tree).is_clean():
-                raise GitError("repo for {} is not clean, unable to update".format(
-                               handle_tree.name))
+                raise GitError("repo for {} is not clean, unable to update".format(handle_tree.name))
 
         # Transorm the handle_tree object of the handle_set into a set of GitHandle
         # objects.
@@ -372,8 +365,8 @@ class GitHandleSet():
         return self.__hdlset
 
     def __iter__(self):
-        '''
+        """
         Returns all GitHandle objects which are part of the GitHandleSet.
-        '''
+        """
         for gh in self.__ghs:
             yield gh

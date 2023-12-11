@@ -63,8 +63,8 @@ files: >
     cranky/cmds.d/test-build |
     cranky/cmds.d/update-dependent |
     cranky/cmds.d/update-dependents |
-    cranky/crl/config.py |
-    cranky/crl/tests/test_config.py |
+    cranky/crl/.* |
+    cranky/docs/.* |
     info/.*\.yaml |
     mainline-build/cod-mainline-dashboard |
     stable/24hrs-of-bugs

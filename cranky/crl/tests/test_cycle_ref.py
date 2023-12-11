@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import os
 import unittest
 from subprocess import getstatusoutput
@@ -25,12 +26,8 @@ class CrankyContext:
         self.tracking_bug_path = tracking_bug_path
         self.handle_config = handle_config
         ks = KernelSeries()
-        self.handle = Handle(config=handle_config).lookup_set(
-            handle_name, ks=ks, validate=False
-        )
-        self.repo = next(
-            iter([t for t in self.handle.trees if t.package.name == package_name]), None
-        )
+        self.handle = Handle(config=handle_config).lookup_set(handle_name, ks=ks, validate=False)
+        self.repo = next(iter([t for t in self.handle.trees if t.package.name == package_name]), None)
         if not self.repo:
             raise CrankyException("Main repo not found")
         self.git = Git(repo_directory=self.repo.directory)
@@ -63,28 +60,20 @@ class BaseCrankyTest(unittest.TestCase):
         debian = "debian.master"
         data_env = f"DEBIAN={debian}\n"
         d.makedir(os.path.join(git_path, "debian"))
-        d.write(
-            os.path.join(git_path, "debian", "debian.env"), data_env.encode("utf-8")
-        )
+        d.write(os.path.join(git_path, "debian", "debian.env"), data_env.encode("utf-8"))
         self.setup_run_cmd(git_path, "git add debian/debian.env")
 
         #
         # Create changelog
-        data_changelog = (
-            f"{package} (4.15.0-1.2) {series}; urgency=medium\n  * foo\n -- ME\n"
-        )
-        d.write(
-            os.path.join(git_path, debian, "changelog"), data_changelog.encode("utf-8")
-        )
+        data_changelog = f"{package} (4.15.0-1.2) {series}; urgency=medium\n  * foo\n -- ME\n"
+        d.write(os.path.join(git_path, debian, "changelog"), data_changelog.encode("utf-8"))
         self.setup_run_cmd(git_path, f"git add {debian}/changelog")
 
         #
         # Create tracking-bug
         tracking_bug_path = None
         if package != "linux-meta":
-            tracking_bug_path = os.path.join(
-                d.path, os.path.join(git_path, debian, "tracking-bug")
-            )
+            tracking_bug_path = os.path.join(d.path, os.path.join(git_path, debian, "tracking-bug"))
             d.write(tracking_bug_path, "".encode("utf-8"))
             self.setup_run_cmd(git_path, f"git add {debian}/tracking-bug")
 
@@ -117,7 +106,6 @@ class BaseCrankyTest(unittest.TestCase):
 
         tag_counter = 1
         for tb, cycle, dummy_commits in bug_contents:
-
             #
             # Emulate commits in between tags
             for _ in range(dummy_commits):
@@ -198,9 +186,7 @@ class TestCycleRef(BaseCrankyTest):
                 ("111111111", "2022.02.01-1", 6),
                 ("111111111", "2022.03.01-1", 9),
             )
-            context = self.setup_package_set(
-                d, "bionic", bug_contents, create_tags=False
-            )
+            context = self.setup_package_set(d, "bionic", bug_contents, create_tags=False)
             CycleRef.generate(context.handle)
 
             # Execute
@@ -220,9 +206,7 @@ class TestCycleRef(BaseCrankyTest):
                 ("111111111", "2022.02.01-1", 6),
                 ("111111111", "2022.03.01-1", 9),
             )
-            context = self.setup_package_set(
-                d, "bionic", bug_contents, create_tags=True
-            )
+            context = self.setup_package_set(d, "bionic", bug_contents, create_tags=True)
             CycleRef.generate(context.handle)
 
             # Execute
@@ -242,9 +226,7 @@ class TestCycleRef(BaseCrankyTest):
                 ("111111111", "2022.02.01-1", 6),
                 ("111111111", "2022.03.01-1", 9),
             )
-            context = self.setup_package_set(
-                d, "bionic", bug_contents, create_tags=True
-            )
+            context = self.setup_package_set(d, "bionic", bug_contents, create_tags=True)
             CycleRef.generate(context.handle)
 
             # Execute
@@ -270,9 +252,7 @@ class TestCycleRef(BaseCrankyTest):
                 ("111111111", "2022.02.01-1", 6),
                 ("111111111", "2022.03.01-1", 9),
             )
-            context = self.setup_package_set(
-                d, "bionic", bug_contents, create_tags=True
-            )
+            context = self.setup_package_set(d, "bionic", bug_contents, create_tags=True)
             CycleRef.generate(context.handle)
 
             # Execute
@@ -288,3 +268,7 @@ class TestCycleRef(BaseCrankyTest):
             expect, _, _ = bug_contents[1][1].partition("-")
             self.assertEqual(actual[0].cycle, expect)
             self.context_git_is_clean()
+
+
+if __name__ == "__main__":
+    unittest.main()
