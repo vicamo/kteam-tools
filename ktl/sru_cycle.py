@@ -65,11 +65,6 @@ class SruCycleSpinEntry:
 
         self._name = spin
         self._cycle = cycle
-        #self._sc = SruCycle() if sc is None else sc
-        #if data is False:
-        #    data = self._sc._data.get(spin, False)
-        #if data is False:
-        #    data = self._sc._data.get(cycle, False)
         self._known = data is not False
         if data is False:
             data = { 'hold': True, }
@@ -276,11 +271,17 @@ class SruCycle:
         if not self._data:
             self._url = _url
             if not _data:
-                response = urlopen(_url)
-                _data = response.read()
+                try:
+                    response = urlopen(_url)
+                    _data = response.read()
+                except:
+                    warn('Unable to open {}. Dataset will be empty!'.format(_url))
+                    _data = SRU_CYCLE_HEADER
             if not isinstance(_data, str):
                 _data = _data.decode('utf-8')
             self._data = yaml.safe_load(_data)
+            if not self._data:
+                self._data = {}
 
     @property
     def data_source(self):
@@ -298,8 +299,10 @@ class SruCycle:
 
     def lookup_cycle(self, cycle=None, allow_missing=False):
         '''
-        Search for the given cycle ([ds]YYYY.MM.DD). If there are multiple spins for
-        a cycle, the highest cycle data of the highest spin number gets returned.
+        Search for the given cycle ([ds]YYYY.MM.DD). Matches a cycle entry (without
+        spin number) first. If there is no cycle matching but spins with the same
+        cycle date, then the spin with the lowest number gets matched (assuming the
+        first spin has the broadest definitions.
 
         cycle (string): name of the cycle to search
         allow_missing (bool): if false the search will return None if not found, otherwise
@@ -311,7 +314,7 @@ class SruCycle:
             raise ValueError("cycle contains a spin number")
 
         entry = None
-        for key in sorted(self._data.keys(), key=self.key_name, reverse=True):
+        for key in sorted(self._data.keys(), key=self.key_name):
             if not key.startswith(cycle):
                 continue
             entry = self.__cached_lookup(key)
@@ -323,6 +326,15 @@ class SruCycle:
         return entry
 
     def lookup_spin(self, spin=None, allow_missing=False):
+        '''
+        Search for a given spin ([ds]YYYY.MM.DD-S) in the dataset. If there is no
+        spin found but a matching cycle without a spin number is, then that cycle
+        gets returned instead.
+
+        returns SruCycleSpinEntry() or None
+            When allow_missing is set to True and no matching entry is found, then
+            instead of None we return a minimally instantiated spin object.
+        '''
         if not spin:
             raise ValueError("spin required")
         if '-' not in spin:
@@ -335,7 +347,7 @@ class SruCycle:
                 if spin != key:
                     continue
             else:
-                if spin != key + '-1':
+                if cycle != key:
                     continue
 
             entry = self.__cached_lookup(key)
@@ -358,6 +370,27 @@ class SruCycle:
         if self.lookup_cycle(cycle.name) is not None:
             raise ValueError('Cycle {} already exists!'.format(cycle.name))
         self._data.update(yaml.safe_load(str(cycle)))
+
+    def delete_cycle(self, cycle):
+        '''
+        Deletes an existing cycle from the current database. If there is no cycle of
+        the given name, nothing will happen.
+        '''
+        if cycle in self._data:
+            del(self._data[cycle])
+
+    def write(self):
+        '''
+        Writes the current cycle info data back to a local: URL. Does nothing
+        for any other source.
+        '''
+        if not self._url.startswith('file://'):
+            return
+        with open(self._url[7:], 'wt') as f:
+            try:
+                f.write(str(self))
+            except:
+                warn('Could not write to {}'.format(self._url))
 
     def __str__(self):
         '''
