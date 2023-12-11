@@ -11,6 +11,8 @@ from ktl.kernel_series import KernelSeries
 from ktl.sru_cycle import SruCycle
 from ktl.tracking_bug2 import TrackingBugs, TrackingBugError
 
+from ktl.new_release import KernelVersion
+
 def tree_package_type(tree):
     ptype = tree.package.type
     return "main" if ptype is None else ptype
@@ -134,6 +136,12 @@ def read_swm_property(args):
         print(value)
 
 
+def newrelease(args):
+    kv = KernelVersion(args.version, args.parent_version)
+    kv.bump()
+    print(kv)
+
+
 if __name__ == "__main__":
     desc = """
 Helper program for getting cranky config and handle data from shell scripts.
@@ -210,14 +218,23 @@ Helper program for getting cranky config and handle data from shell scripts.
 
     subparser.set_defaults(func=package_name)
 
+    # newrelease subparser
+    subparser = subparsers.add_parser("newrelease",
+                                      help="Print the next version given the current version and an optional parent version.")
+    subparser.add_argument("version",
+                           help="Current package version.")
+    subparser.add_argument("-p", "--parent-version", default=None,
+                           help="Current parent kernel version.")
+    subparser.set_defaults(func=newrelease)
+
     # Add common subparser arguments
     for name, subparser in subparsers.choices.items():
         # These subcommands don't take a cycle argument
-        if name not in ["list-cycles", "read-swm-property", "package-name"]:
+        if name not in ["list-cycles", "read-swm-property", "package-name", "newrelease"]:
             subparser.add_argument("--cycle",
                                    help="sru cycle to use when looking up the source")
         # These subcommands don't require a 'handle' argument
-        if name not in ["list-handles", "list-cycles"]:
+        if name not in ["list-handles", "list-cycles", "newrelease"]:
             subparser.add_argument("handle", nargs='?', default=os.getcwd(),
                                    help="<series>:<package> handle, or path to source tree. "
                                    "If not provided, defaults to the current directory.")
