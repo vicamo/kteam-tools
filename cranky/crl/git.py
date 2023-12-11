@@ -198,10 +198,13 @@ class GitHandle:
         # git checkout -b branch remote/branch else
         # git checkout branch
         lcl_sha1 = self.lookup_ref(lcl_ref)
+        cmd = ["git", "checkout", "-q"]
         if lcl_sha1 is None:
-            cmd = ["git", "checkout", "-q", "-b", branch, rmt_ref]
+            if not rmt_ref.startswith("refs/heads/"):
+                cmd += ["--no-track"]
+            cmd += ["-b", branch, rmt_ref]
         else:
-            cmd = ["git", "checkout", "-q", branch]
+            cmd += [branch]
         result = run(cmd, cwd=self.directory)
         if result.returncode != 0:
             raise GitError("git checkout failed rc={}".format(result.returncode))
