@@ -10,6 +10,14 @@ import argparse
 import json
 from signal import signal, SIGPIPE, SIG_DFL
 
+try:
+    from argcomplete import autocomplete
+except ModuleNotFoundError:
+    # Allow to run this program also when argcomplete is not available
+    def autocomplete(_unused):
+        pass
+
+
 from kconfig.annotations import Annotation, KConfig
 from kconfig.utils import autodetect_annotations, arg_fail
 from kconfig.version import VERSION
@@ -227,6 +235,7 @@ def main():
     signal(SIGPIPE, SIG_DFL)
 
     # Main annotations program
+    autocomplete(_ARGPARSER)
     args = _ARGPARSER.parse_args()
 
     if args.file is None:
