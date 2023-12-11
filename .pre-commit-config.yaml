@@ -67,6 +67,8 @@ files: >
     cranky/docs/.* |
     cranky/fixes.d/.* |
     info/.*\.yaml |
+    ktl/new_release\.py |
+    ktl/tests/test_new_release\.py |
     mainline-build/cod-mainline-dashboard |
     stable/24hrs-of-bugs
   )$
