@@ -50,6 +50,14 @@ function update_dependent()
 	# shellcheck disable=SC2001
 	dep_abi_dash=$(echo "${dep_abi}" | sed -e 's,\.\([0-9]*\)$,-\1,')
 
+	# Sanity check: Main tree dkms-versions file location
+	if [ -f update-version ] && [ -f "${main_path}/${DEBIAN}"/dkms-versions ] ; then
+		echo
+		echo "The dkms-versions file of the main tree is in the new location but this dependent" >&2
+		echo "repo still has the update-version script. This needs to be fixed!" >&2
+		exit 1
+	fi
+
 	# Sanity check: The distros must match
 	if [ "${main_distro}" != "${dep_distro}" ] ; then
 		echo "Incorrect main package distro: ${main_distro} (!= ${dep_distro})" >&2
