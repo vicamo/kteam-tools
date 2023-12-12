@@ -11,14 +11,17 @@ from abc import abstractmethod
 from ast import literal_eval
 from os.path import dirname, abspath
 
+from kconfig.version import ANNOTATIONS_FORMAT_VERSION
+
 
 class Config:
-    def __init__(self, fname):
+    def __init__(self, fname, do_include=True):
         """
         Basic configuration file object
         """
         self.fname = fname
         self.config = {}
+        self.do_include = do_include
 
         raw_data = self._load(fname)
         self._parse(raw_data)
@@ -88,9 +91,10 @@ class Annotation(Config):
             if m:
                 if parent:
                     self.include.append(m.group(1))
-                include_fname = dirname(abspath(self.fname)) + "/" + m.group(1)
-                include_data = self._load(include_fname)
-                self._parse_body(include_data, parent=False)
+                if self.do_include:
+                    include_fname = dirname(abspath(self.fname)) + "/" + m.group(1)
+                    include_data = self._load(include_fname)
+                    self._parse_body(include_data, parent=False)
                 continue
 
             # Handle policy and note lines
@@ -109,7 +113,10 @@ class Annotation(Config):
                         try:
                             entry["policy"] |= literal_eval(m.group(1))
                         except TypeError:
-                            entry["policy"] = {**entry["policy"], **literal_eval(m.group(1))}
+                            entry["policy"] = {
+                                **entry["policy"],
+                                **literal_eval(m.group(1)),
+                            }
 
                     m = re.match(r".* note<(.*?)>", line)
                     if m:
@@ -127,7 +134,7 @@ class Annotation(Config):
             # Invalid line
             raise SyntaxError(f"invalid line: {line}")
 
-    def _parse(self, data: str):
+    def _legacy_parse(self, data: str):
         """
         Parse main annotations file, individual config options can be accessed
         via self.config[<CONFIG_OPTION>]
@@ -157,15 +164,66 @@ class Annotation(Config):
             else:
                 break
 
-        # Parse body (handle includes recursively)
+        # Return an error if architectures are not defined
+        if not self.arch:
+            raise SyntaxError("ARCH not defined in annotations")
+        # Return an error if flavours are not defined
+        if not self.flavour:
+            raise SyntaxError("FLAVOUR not defined in annotations")
+
+        # Parse body
         self._parse_body(data)
 
         # Sanity check: Verify that all FLAVOUR_DEP flavors are valid
-        for src, tgt in self.flavour_dep.items():
-            if src not in self.flavour:
-                raise SyntaxError(f"Invalid source flavour in FLAVOUR_DEP: {src}")
-            if tgt not in self.include_flavour:
-                raise SyntaxError(f"Invalid target flavour in FLAVOUR_DEP: {tgt}")
+        if self.do_include:
+            for src, tgt in self.flavour_dep.items():
+                if src not in self.flavour:
+                    raise SyntaxError(f"Invalid source flavour in FLAVOUR_DEP: {src}")
+                if tgt not in self.include_flavour:
+                    raise SyntaxError(f"Invalid target flavour in FLAVOUR_DEP: {tgt}")
+
+    def _json_parse(self, data, is_included=False):
+        data = json.loads(data)
+
+        # Check if version is supported
+        version = data["attributes"]["_version"]
+        if version > ANNOTATIONS_FORMAT_VERSION:
+            raise SyntaxError(f"annotations format version {version} not supported")
+
+        # Check for top-level annotations vs imported annotations
+        if not is_included:
+            self.config = data["config"]
+            self.arch = data["attributes"]["arch"]
+            self.flavour = data["attributes"]["flavour"]
+            self.flavour_dep = data["attributes"]["flavour_dep"]
+            self.include = data["attributes"]["include"]
+            self.include_flavour = []
+        else:
+            # We are procesing an imported annotations, so merge all the
+            # configs and attributes.
+            try:
+                self.config = data["config"] | self.config
+            except TypeError:
+                self.config = {**self.config, **data["config"]}
+            self.arch = list(set(self.arch) | set(data["attributes"]["arch"]))
+            self.flavour = list(set(self.flavour) | set(data["attributes"]["flavour"]))
+            self.include_flavour = list(set(self.include_flavour) | set(data["attributes"]["flavour"]))
+            self.flavour_dep = self.flavour_dep | data["attributes"]["flavour_dep"]
+
+        # Handle recursive inclusions
+        if self.do_include:
+            for f in data["attributes"]["include"]:
+                include_fname = dirname(abspath(self.fname)) + "/" + f
+                data = self._load(include_fname)
+                self._json_parse(data, is_included=True)
+
+    def _parse(self, data: str):
+        # Try to parse the legacy format first, otherwise use the new JSON
+        # format.
+        try:
+            self._legacy_parse(data)
+        except SyntaxError:
+            self._json_parse(data, is_included=False)
 
     def _remove_entry(self, config: str):
         if self.config[config]:
@@ -185,7 +243,14 @@ class Annotation(Config):
         else:
             self._remove_entry(config)
 
-    def set(self, config: str, arch: str = None, flavour: str = None, value: str = None, note: str = None):
+    def set(
+        self,
+        config: str,
+        arch: str = None,
+        flavour: str = None,
+        value: str = None,
+        note: str = None,
+    ):
         if value is not None:
             if config not in self.config:
                 self.config[config] = {"policy": {}}
@@ -210,7 +275,10 @@ class Annotation(Config):
             try:
                 configs |= self.search_config(arch=arch, flavour=flavour).keys()
             except TypeError:
-                configs = {**configs, **self.search_config(arch=arch, flavour=flavour).keys()}
+                configs = {
+                    **configs,
+                    **self.search_config(arch=arch, flavour=flavour).keys(),
+                }
 
         # Import configs from the Kconfig object into Annotations
         flavour_arg = flavour
@@ -354,7 +422,10 @@ class Annotation(Config):
                     try:
                         can_skip = old_val["policy"] == old_val["policy"] | new_val["policy"]
                     except TypeError:
-                        can_skip = old_val["policy"] == {**old_val["policy"], **new_val["policy"]}
+                        can_skip = old_val["policy"] == {
+                            **old_val["policy"],
+                            **new_val["policy"],
+                        }
                     if can_skip:
                         if "note" not in new_val:
                             continue
