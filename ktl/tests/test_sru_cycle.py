@@ -155,13 +155,13 @@ class TestSruCycleSpinEntry(TestSruCycleCore):
         spin1 = sc.lookup_spin('2018.02.03-1', allow_missing=True)
         self.assertEqual(spin1.cycle, '2018.02.03')
 
-    def test_lookup_spin_present_spin99(self):
+    def test_lookup_spin_absent_spin99(self):
         data = {
             '2018.01.02': {}
         }
         sc = SruCycle(data=data)
-        spin1 = sc.lookup_spin('2018.01.02-99')
-        self.assertEqual(spin1.cycle, '2018.01.02')
+        spin1 = sc.lookup_spin('2018.01.03-99')
+        self.assertIsNone(spin1)
 
     def test_lookup_cycle_present(self):
         data = {
