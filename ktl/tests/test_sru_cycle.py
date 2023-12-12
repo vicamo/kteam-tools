@@ -56,6 +56,28 @@ class TestSruCycle(TestSruCycleCore):
             count += 1
         self.assertEqual(count, 2)
 
+    def test_init_file_add_cycle(self):
+        cycle_name = '2023.10.30'
+        cycle_data = {
+            'release-date': '2023-12-04',
+            'stream': 1
+        }
+        with TempDirectory() as d:
+            d.write('sru-cycle.yaml',  self.data_yaml.encode('utf-8'))
+
+            url = 'local:' + d.getpath('sru-cycle.yaml')
+            sc1 = SruCycle(data=url)
+            sc1.add_cycle(SruCycleSpinEntry(cycle_name, data=cycle_data))
+            sc1.write()
+
+            sc2 = SruCycle(data=url)
+
+        count = 0
+        for cycle in sc2.cycles:
+            self.assertTrue(isinstance(cycle, SruCycleSpinEntry))
+            count += 1
+        self.assertEqual(count, 3)
+
     def test_lookup_cycle(self):
         sc = SruCycle(data=self.data_dict)
         cycle = sc.lookup_cycle('2018.05.21')
@@ -94,7 +116,9 @@ class TestSruCycleSpinEntry(TestSruCycleCore):
 
     def test_equal_true(self):
         data = {
-            '2018.01.02': {}
+            '2018.01.02': {},
+            '2018.01.02-1': {},
+            '2018.01.02-2': {},
         }
         sc = SruCycle(data=data)
         spin1 = sc.lookup_spin('2018.01.02-1')
@@ -133,7 +157,7 @@ class TestSruCycleSpinEntry(TestSruCycleCore):
 
     def test_lookup_spin_present_spin99(self):
         data = {
-            '2018.01.02': {}
+            '2018.01.02-99': {}
         }
         sc = SruCycle(data=data)
         spin1 = sc.lookup_spin('2018.01.02-99')
