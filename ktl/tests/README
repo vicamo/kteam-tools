@@ -1,0 +1,7 @@
+Depends: python3-testfixtures, python3-unittest2
+
+To run all tests:
+#> python3 -m unittest
+
+To run a single test:
+#> python3 -m unittest <test>
