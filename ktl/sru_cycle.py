@@ -8,6 +8,7 @@ except ImportError:
     from urllib2 import urlopen
     from urllib2 import HTTPError, URLError
 
+from copy           import copy
 from datetime       import datetime
 from warnings       import warn
 import os
@@ -357,9 +358,11 @@ class SruCycle:
         returns: nothing
         raises:  ValueError if cycle already exists
         '''
+        if not isinstance(cycle, SruCycleSpinEntry):
+            raise ValueError('cycle is not a SruCycleSpinEntry')
         if self.lookup_cycle(cycle.name) is not None:
             raise ValueError('Cycle {} already exists!'.format(cycle.name))
-        self._data.update(yaml.safe_load(str(cycle)))
+        self._data[cycle.name] = copy(cycle).attach(self)
 
     def delete_cycle(self, cycle):
         '''
