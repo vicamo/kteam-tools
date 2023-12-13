@@ -82,12 +82,28 @@ EOF
 	RET="$chroot"
 }
 
+session_chroot_name()
+{
+	# takes a series, arch, and optionally a which and prints the session naming scheme for it
+	local series="$1"
+	local arch="$2"
+	local which="$3"
+
+	if [ -n "${which}" ] ; then
+		echo "cranky--${series}-${arch}-${which}"
+	else
+		echo "cranky--${series}-${arch}"
+	fi
+}
+
 session_chroot_available()
 {
 	local series="$1"
 	local arch="$2"
+	local which="$3"
 
-	local session="session:cranky-$series-$arch"
+	local session
+	session="session:$(session_chroot_name "$series" "$arch" "$which")"
 
 	# Validate the session.
 	schroot --directory / -r -c "$session" /bin/true >/dev/null 2>&1 && {
@@ -104,11 +120,13 @@ session_chroot_create()
 	local series="$1"
 	local arch="$2"
 	local package="$3"
+	local which="$4"
 
-	local session="cranky-$series-$arch"
+	local session
+	session="$(session_chroot_name "$series" "$arch" "$which")"
 
 	if ! base_chroot_available "$series" "$arch"; then
-		echo "$P: base chroot not available -- run: $C chroot create-base \"$series:linux\""
+		echo "$P: base chroot not available -- run: $C chroot create-base \"$series\""
 		return 1
 	fi
 	local chroot="$RET"
@@ -217,16 +235,16 @@ usage()
 	cat <<EOF
 Usage: cranky chroot <commands> <args>...
 commands:
-  create-base [<series>|<handle>]
+  create-base [-w <which>] [<series>|<handle>]
       Create a base sbuilder chroot for the series of the handle package.
-  create-session [<series>|<handle>]
+  create-session [-w <which>] [<series>|<handle>]
       Create a session for the given handle.
-  map-session [<series>|<handle>]
+  map-session [-w <which>] [<series>|<handle>]
       Emit the name of the required session if available.
-  run [-u <user>] [<series>|<handle>] -- command
-      Run command under chroot. Optionally specify user.
-  destroy-session [<series>|<handle>]
+  destroy-session [-w <which>] [<series>|<handle>]
       Destroy the session created for the handle.
+  run [-u <user>] [-w <which>] [<series>|<handle>] -- command
+      Run command under chroot. Optionally specify user.
 
 Build either base chroots or chroot sessions appropriate for building
 sources or updating configurations.
@@ -238,6 +256,12 @@ positional arguments:
       specified the current working directory is used.
   series
       Kernel series. This is equivalent to the handle <series>:linux.
+
+optional arguments:
+  -w|--which <which>
+      String appended to the default session name.
+  -u|--user <user>
+      Run chroot as user <user>. Defaults to current user.
 
 Examples:
   $ cranky chroot create-base bionic:linux
@@ -252,6 +276,9 @@ Examples:
 
   $ cranky chroot destroy-session bionic:linux
       Destroy the specified chroot session.
+
+  $ cranky chroot create-session -w scratch bionic
+      Create a 'scratch' session for bionic:linux.
 EOF
 
 	exit 2
@@ -261,16 +288,26 @@ EOF
 [ "$#" -lt 1 ] && usage
 cmd="$1"
 schroot_user=${USER}
-handle=""
+handle=
+which=
 shift
 case "$cmd" in
 	create-base|create-session|map-session|destroy-session)
-		if [ "$#" -eq 0 ]; then
-			set - "$@" "$PWD"
-		elif [ "$#" -ne 1 ]; then
-			usage
-		fi
-		handle="$1"
+		while [ "$#" -gt 0 ]; do
+			case "$1" in
+				-w|--which)
+					shift
+					which="$1"
+					;;
+				*)
+					if [ -n "$handle" ] ; then
+						usage
+					fi
+					handle="$1"
+					;;
+			esac
+			shift
+		done
 		;;
 	run)
 		separator=0
@@ -285,6 +322,10 @@ case "$cmd" in
 					shift
 					schroot_user="$1"
 					;;
+				-w|--which)
+					shift
+					which="$1"
+					;;
 				*)
 					if [ -n "$handle" ]; then
 						usage
@@ -297,16 +338,15 @@ case "$cmd" in
 		if [ "$#" -eq 0 ] || [ "$separator" -eq 0 ]; then
 			usage
 		fi
-		if [ -z "$handle" ]; then
-			handle="$PWD"
-		fi
 		;;
 	*)
 		usage
 		;;
 esac
 
-if [ "${handle}" != "${PWD}" ] && [ "${handle/:/}" = "${handle}" ] ; then
+if [ -z "$handle" ]; then
+	handle="$PWD"
+elif [ "${handle/:/}" = "${handle}" ] ; then
 	# handle doesn't contain ':' so treat it as a series
 	handle=${handle}:linux
 fi
@@ -340,35 +380,35 @@ case "$cmd" in
 		fi
 		;;
 	create-session)
-		if session_chroot_available "$series" "$chroot_arch"; then
+		if session_chroot_available "$series" "$chroot_arch" "$which"; then
 			chroot_update "$RET"
 		else
-			session_chroot_create "$series" "$chroot_arch" "$src"
+			session_chroot_create "$series" "$chroot_arch" "$src" "$which"
 		fi
 		;;
 	map-session)
-		if session_chroot_available "$series" "$chroot_arch"; then
+		if session_chroot_available "$series" "$chroot_arch" "$which"; then
 			echo "$RET"
 		else
-			echo "$P: No chroot session available for $series:$src" 1>&2
+			echo "$P: No chroot session available for $series" 1>&2
 			echo "Use \"$P create-session\" to create one" 1>&2
 			exit 1
 		fi
 		;;
 	run)
-		if session_chroot_available "$series" "$chroot_arch"; then
+		if session_chroot_available "$series" "$chroot_arch" "$which"; then
 			schroot -u "$schroot_user" -p -r -c "$RET" -- "$@"
 		else
-			echo "$P: No chroot session available for $series:$src" 1>&2
+			echo "$P: No chroot session available for $series $which" 1>&2
 			echo "Use \"$P create-session\" to create one" 1>&2
 			exit 1
 		fi
 		;;
 	destroy-session)
-		if session_chroot_available "$series" "$chroot_arch"; then
+		if session_chroot_available "$series" "$chroot_arch" "$which"; then
 			schroot -e -c "$RET"
 		else
-			echo "$P: No chroot session available for $series:$src" 1>&2
+			echo "$P: No chroot session available for $series $which" 1>&2
 			exit 1
 		fi
 		;;
