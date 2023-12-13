@@ -28,6 +28,7 @@ class Cycle:
             else:
                 raise SRUBoardError('Unknown cycle prefix ({})'.format(name[0]))
             name = name[1:]
+        self.notes_link = None
 
         # sanity check the cycle date (must be on the right format and be a monday)
         date_re = re.compile("^\d\d\d\d\.\d\d\.\d\d$")
@@ -109,7 +110,9 @@ class SRUCreator:
             state = card.get('list', self.config['board']['default_list'])
             if state not in self.config['board']['lists']:
                 raise SRUBoardError("Undefined target state for '{}'({})".format(name, state))
-            board.add_issue(name, desc, state)
+            issue = board.add_issue(name, desc, state)
+            if name == "Cycle README":
+                self.cycle.notes_link = issue.key if issue else 'KSRU-0FAKE0'
 
         if dryrun:
             print("This was a dry-run - sprint {} was NOT created".format(board.sprint))
@@ -129,6 +132,8 @@ def update_cycle_info(cycle, dryrun=False):
         cycle_data['start-date'] = "{}".format(cycle.start_date.strftime('%Y-%m-%d'))
     cycle_data['release-date'] = "{}".format(cycle.release_date.strftime('%Y-%m-%d'))
     cycle_data['stream'] = 2 if cycle.security else 1
+    if cycle.notes_link:
+        cycle_data['notes-link'] = cycle.notes_link
 
     new_entry = SruCycleSpinEntry(cycle.name, cycle_data)
     sc = SruCycle(data='local')
@@ -190,9 +195,15 @@ Examples:
 
     try:
         cycle = Cycle(args.cycle)
+        # The board has to be populated before updating the cycle info but in order to catch
+        # the case of trying to add an existing cycle we neeed to check that before doing the
+        # board.
+        if SruCycle().lookup_cycle(cycle.name):
+            raise SRUBoardError('{} already present in cycle info!'.format(cycle.name))
+
+        SRUCreator(cycle).create(dryrun=args.dry_run)
         if not args.no_cycle_info:
             update_cycle_info(cycle, dryrun=args.dry_run)
-        SRUCreator(cycle).create(dryrun=args.dry_run)
     except SRUBoardError as e:
         retval = 1
         print('Error: {}'.format(e))
