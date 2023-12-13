@@ -41,7 +41,7 @@ _cranky() {
 		"update-dependents -h --help --ignore-abi-check -r --rollback"
 		"update-snap -h --help --dry-run -u --updates -t --no-tags"
 		"updateconfigs -h --help -c --clean"
-		"verify-release-ready -h --debug --verbose"
+		"verify-release-ready -h --help -c --current -d --debug -v --verbose"
 	)
 	if [ "$COMP_CWORD" -eq 1 ]; then
 		for cmd in "${cmds[@]}"; do

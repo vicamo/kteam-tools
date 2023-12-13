@@ -574,19 +574,13 @@ $ cranky rmadison xenial:linux-oracle
 ### Verify preparation
 <!--cheatsheet-->
 ```
-$ (cd linux-main && verify-release-ready)
-$ (cd linux-meta && verify-release-ready)
-$ (cd linux-signed && verify-release-ready)
-$ (cd linux-lrm && verify-release-ready)
+$ cranky verify-release-ready
 ```
 <!--/cheatsheet-->
 
-Perform one last sanity check on the git trees with `verify-release-ready` to
+Perform one last sanity check on the git trees with `cranky verify-release-ready` to
 catch many of the mistakes that will require changes before this kernel passes
 review.
-
-**Note** The `verify-release-ready` script is available in
-`kteam-tools/maintscripts`. Add it to your `PATH` for convenience.
 
 The `tag pushed: warning` is an expected warning as long as you do not have
 commit rights.
