@@ -9,6 +9,7 @@ import re
 
 from datetime      import datetime, timedelta
 from ktl.sruboard  import SRUBoard, SRUBoardError
+from ktl.sru_cycle import SruCycle, SruCycleSpinEntry
 from ktl.utils     import run_command
 
 
@@ -123,38 +124,26 @@ def update_cycle_info(cycle, dryrun=False):
     :param cycle: an object of type cycle
     :param dryrun: boolean to do a dry run of true
     """
-    file_name = '{}/../info/sru-cycle.yaml'.format(os.path.dirname(__file__))
-
-    new_entry = "\'{}\':".format(cycle.name)
+    cycle_data = {}
     if cycle.security:
-        new_entry += "\n    start-date: \'{}\'".format(cycle.start_date.strftime('%Y-%m-%d'))
-    new_entry += "\n    release-date: \'{}\'".format(cycle.release_date.strftime('%Y-%m-%d'))
-    if cycle.security:
-        new_entry += "\n    stream: 2"
-    else:
-        new_entry += "\n    stream: 1"
+        cycle_data['start-date'] = "{}".format(cycle.start_date.strftime('%Y-%m-%d'))
+    cycle_data['release-date'] = "{}".format(cycle.release_date.strftime('%Y-%m-%d'))
+    cycle_data['stream'] = 2 if cycle.security else 1
 
-    with open(file_name, "r") as f:
-        new_file = ""
-        entry_added = False
-        for line in f:
-            if not entry_added and line[0] != "#":
-                # this should be the first non commented line of the file
-                new_file += "\n{0}\n".format(new_entry)
-                entry_added = True
-            elif line.partition('\n')[0] == new_entry.partition('\n')[0]:
-                raise SRUBoardError('SRU cycle entry already present on the info file')
-            new_file += line
-    if not entry_added:
-        raise SRUBoardError('Could not find a place on the file for the new entry')
+    new_entry = SruCycleSpinEntry(cycle.name, cycle_data)
+    sc = SruCycle(data='local')
+    try:
+        sc.add_cycle(new_entry)
+    except ValueError:
+        raise SRUBoardError('SRU cycle entry already present on the info file')
 
+    file_name = sc.data_source.replace("file://", "")
     print("Adding following entry to {}".format(file_name))
     print("-----")
     print(new_entry)
     print("-----")
     if not dryrun:
-        with open(file_name, "w") as f:
-            f.write(new_file)
+        sc.write()
 
     # commit the file change
     if cycle.security:
