@@ -299,7 +299,7 @@ class SruCycle:
     @property
     def cycles(self):
         cl = []
-        for key in self._data.keys():
+        for key in sorted(self._data.keys(), key=self.key_name, reverse=True):
             cl.append(self.__cached_lookup(key))
         return cl
 
@@ -397,9 +397,8 @@ class SruCycle:
         changes.
         '''
         s = SRU_CYCLE_HEADER
-        for key in sorted(self._data.keys(), key=self.key_name, reverse=True):
-            data = self.__cached_lookup(key)
-            s += "\n" + str(data)
+        for cycle in self.cycles:
+            s += "\n" + str(cycle)
         return s
 
 # vi:set ts=4 sw=4 expandtab:
