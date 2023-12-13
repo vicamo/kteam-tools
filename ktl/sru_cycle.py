@@ -8,6 +8,7 @@ except ImportError:
     from urllib2 import urlopen
     from urllib2 import HTTPError, URLError
 
+from copy           import copy
 from datetime       import datetime
 from warnings       import warn
 import os
@@ -50,6 +51,7 @@ SRU_CYCLE_HEADER = '''# kernel SRU Cycle information file (YAML format)
 '''
 
 class SruCycleSpinEntry:
+
     def __init__(self, spin, data=False, sc=None):
         '''
         Instantiate a new SruCycleSpinEntry object.
@@ -63,6 +65,7 @@ class SruCycleSpinEntry:
         '''
         cycle = spin.split('-')[0]
 
+        self._sc = None
         self._name = spin
         self._cycle = cycle
         self._known = data is not False
@@ -93,6 +96,9 @@ class SruCycleSpinEntry:
         self._cutoff_date = data.get('cutoff-date', None)
         self._stream = data.get('stream')
         self._notes_link = data.get('notes-link')
+
+        self._previous_cycle = data.get('previous-cycle')
+        self._previous_cycle_explicit = self._previous_cycle is not None
 
     def __eq__(self, other):
         '''
@@ -156,6 +162,34 @@ class SruCycleSpinEntry:
     def notes_link(self):
         return self._notes_link
 
+    def attach(self, table):
+        self._sc = table
+        return self
+
+    @property
+    def previous_cycle(self):
+        if isinstance(self._previous_cycle, str):
+            # Handle delayed instantiation of explicit previous-cycle markers.
+            self._previous_cycle = self._sc.lookup_cycle(self._previous_cycle)
+
+        elif not self._previous_cycle_explicit:
+            # Find the previous cycle for this cycle by taking the one before
+            # it in the configuration.  d* cycles do not have a previous-cycle
+            # by default and must be specified explicitly.  When considering
+            # previous cycles for stable cycles ignore development cycles.
+            self._previous_cycle = None
+            if self.cycle[0] != "d":
+                pick_next = False
+                for cycle in self._sc.cycles:
+                    if cycle.name[0] == "d":
+                        continue
+                    if pick_next:
+                        self._previous_cycle = cycle
+                        break
+                    if cycle.cycle == self.cycle:
+                        pick_next = True
+        return self._previous_cycle
+
     def __str__(self):
         '''
         Returns a string which represents the data of the object in YAML form.
@@ -175,6 +209,8 @@ class SruCycleSpinEntry:
             s += "    stream: {}\n".format(self._stream)
         if self._complete:
             s += "    complete: {}\n".format(str(self._complete).lower())
+        if self._previous_cycle_explicit:
+            s += "    previous-cycle: {}\n".format(self.previous_cycle.name)
         return s
 
 
@@ -225,7 +261,7 @@ class SruCycle:
 
     def __cached_lookup(self, key):
         if isinstance(self._data[key], dict):
-            self._data[key] = SruCycleSpinEntry(key, data=self._data[key])
+            self._data[key] = SruCycleSpinEntry(key, data=self._data[key]).attach(self)
         return self._data[key]
 
     def __init__(self, data=None):
@@ -293,7 +329,7 @@ class SruCycle:
     @property
     def cycles(self):
         cl = []
-        for key in self._data.keys():
+        for key in sorted(self._data.keys(), key=self.key_name, reverse=True):
             cl.append(self.__cached_lookup(key))
         return cl
 
@@ -315,7 +351,7 @@ class SruCycle:
         if cycle in self._data:
             entry = self.__cached_lookup(cycle)
         elif allow_missing:
-            entry = SruCycleSpinEntry(cycle)
+            entry = SruCycleSpinEntry(cycle).attach(self)
         else:
             entry = None
 
@@ -342,7 +378,7 @@ class SruCycle:
         elif cycle in self._data:
             entry = self.__cached_lookup(cycle)
         elif allow_missing:
-            entry = SruCycleSpinEntry(spin)
+            entry = SruCycleSpinEntry(spin).attach(self)
         else:
             entry = None
 
@@ -357,9 +393,11 @@ class SruCycle:
         returns: nothing
         raises:  ValueError if cycle already exists
         '''
+        if not isinstance(cycle, SruCycleSpinEntry):
+            raise ValueError('cycle is not a SruCycleSpinEntry')
         if self.lookup_cycle(cycle.name) is not None:
             raise ValueError('Cycle {} already exists!'.format(cycle.name))
-        self._data.update(yaml.safe_load(str(cycle)))
+        self._data[cycle.name] = copy(cycle).attach(self)
 
     def delete_cycle(self, cycle):
         '''
@@ -389,9 +427,8 @@ class SruCycle:
         changes.
         '''
         s = SRU_CYCLE_HEADER
-        for key in sorted(self._data.keys(), key=self.key_name, reverse=True):
-            data = self.__cached_lookup(key)
-            s += "\n" + str(data)
+        for cycle in self.cycles:
+            s += "\n" + str(cycle)
         return s
 
 # vi:set ts=4 sw=4 expandtab:
