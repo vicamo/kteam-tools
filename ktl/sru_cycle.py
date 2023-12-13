@@ -64,6 +64,7 @@ class SruCycleSpinEntry:
         '''
         cycle = spin.split('-')[0]
 
+        self._sc = None
         self._name = spin
         self._cycle = cycle
         self._known = data is not False
@@ -157,6 +158,10 @@ class SruCycleSpinEntry:
     def notes_link(self):
         return self._notes_link
 
+    def attach(self, table):
+        self._sc = table
+        return self
+
     def __str__(self):
         '''
         Returns a string which represents the data of the object in YAML form.
@@ -226,7 +231,7 @@ class SruCycle:
 
     def __cached_lookup(self, key):
         if isinstance(self._data[key], dict):
-            self._data[key] = SruCycleSpinEntry(key, data=self._data[key])
+            self._data[key] = SruCycleSpinEntry(key, data=self._data[key]).attach(self)
         return self._data[key]
 
     def __init__(self, data=None):
@@ -316,7 +321,7 @@ class SruCycle:
         if cycle in self._data:
             entry = self.__cached_lookup(cycle)
         elif allow_missing:
-            entry = SruCycleSpinEntry(cycle)
+            entry = SruCycleSpinEntry(cycle).attach(self)
         else:
             entry = None
 
@@ -343,7 +348,7 @@ class SruCycle:
         elif cycle in self._data:
             entry = self.__cached_lookup(cycle)
         elif allow_missing:
-            entry = SruCycleSpinEntry(spin)
+            entry = SruCycleSpinEntry(spin).attach(self)
         else:
             entry = None
 

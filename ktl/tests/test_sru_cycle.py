@@ -93,7 +93,7 @@ class TestSruCycle(TestSruCycleCore):
 
     def test_add_cycle_duplicate(self):
         sc = SruCycle(data=self.data_dict)
-        new_cycle = SruCycleSpinEntry('2018.06.11', data=None, sc=sc)
+        new_cycle = SruCycleSpinEntry('2018.06.11', data=None)
 
         with self.assertRaises(ValueError):
             sc.add_cycle(new_cycle)
@@ -104,7 +104,7 @@ class TestSruCycle(TestSruCycleCore):
             'release_date': '2019.01.28',
             'stream': 1
         }
-        new_cycle = SruCycleSpinEntry('2019.01.01', data=data, sc=sc)
+        new_cycle = SruCycleSpinEntry('2019.01.01', data=data)
 
         sc.add_cycle(new_cycle)
         cycle = sc.lookup_cycle(new_cycle.name)
