@@ -46,7 +46,14 @@ class KernelVersion:
         self.version = version
         self.parent_version = parent_version
 
-    def bump(self):
+    def __eq__(self, other):
+        return self.version == other.version
+
+    def __str__(self):
+        return self.version
+
+    def _bump_main(self):
+        """Bump main package version"""
         try:
             upstream, debian = self.version.split("-")
             m = re.search(RE_ABI, debian)
@@ -74,8 +81,6 @@ class KernelVersion:
         except Exception:
             raise ValueError("Invalid version")
 
-    def __eq__(self, other):
-        return self.version == other.version
-
-    def __str__(self):
-        return self.version
+    def bump(self):
+        """Bump package version"""
+        self._bump_main()
