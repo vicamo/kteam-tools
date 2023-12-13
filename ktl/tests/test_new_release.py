@@ -75,3 +75,38 @@ class TestNewRelease(unittest.TestCase):
         f = KernelVersion("4.4.0-19")
         with self.assertRaises(ValueError):
             f.bump()
+
+    def test_lrm_lt(self):
+        # Test lrm version < parent version
+        a = KernelVersion("6.5.0-1.1", parent_version="6.5.0-2.2", package_type="lrm")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-2.2"))
+
+    def test_lrm_eq(self):
+        # Test lrm version == parent version
+        a = KernelVersion("6.5.0-2.2", parent_version="6.5.0-2.2", package_type="lrm")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-2.2+1"))
+
+    def test_lrm_gt(self):
+        # Test lrm version > parent version
+        a = KernelVersion("6.5.0-3.3+1", parent_version="6.5.0-3.3", package_type="lrm")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-3.3+2"))
+
+    def test_lrm_gt_bad1(self):
+        # Test bad lrm version > parent version
+        a = KernelVersion("6.5.0-4.4", parent_version="6.5.0-3.3", package_type="lrm")
+        with self.assertRaises(ValueError):
+            a.bump()
+
+    def test_lrm_gt_bad2(self):
+        # Test bad lrm version > parent version
+        a = KernelVersion("6.5.0-4.4+1", parent_version="6.5.0-3.3", package_type="lrm")
+        with self.assertRaises(ValueError):
+            a.bump()
+
+    def test_lrm_no_parent(self):
+        a = KernelVersion("6.5.0-2.2", package_type="lrm")
+        with self.assertRaises(ValueError):
+            a.bump()
