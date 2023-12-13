@@ -64,19 +64,19 @@ Read and follow the directions in [README.deploy](../../README.deploy).
 
 ### ~/.bashrc
 
-See "cranky/docs/snip-bashrc".
+See [cranky/docs/snip-bashrc](snip-bashrc).
 
 ### ~/.gitconfig
 
-See "cranky/docs/snip-gitconfig".
+See [cranky/docs/snip-gitconfig](snip-gitconfig).
 
 ### ~/.config/cranky/cranky.yaml
 
-See "cranky/docs/snip-cranky.yaml".
+See [cranky/docs/snip-cranky.yaml](snip-cranky.yaml).
 
 ### ~/.dput.cf
 
-See "cranky/docs/snip-dput.cf".
+See [cranky/docs/snip-dput.cf](snip-dput.cf).
 
 ### Add builders to /etc/hosts
 
