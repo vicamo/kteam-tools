@@ -299,10 +299,9 @@ class SruCycle:
 
     def lookup_cycle(self, cycle=None, allow_missing=False):
         '''
-        Search for the given cycle ([ds]YYYY.MM.DD). Matches a cycle entry (without
-        spin number) first. If there is no cycle matching but spins with the same
-        cycle date, then the spin with the lowest number gets matched (assuming the
-        first spin has the broadest definitions.
+        Search for the given cycle ([ds]YYYY.MM.DD). If there is none found it either
+        returns None or a minimally initialized SruCycleSpinEntry for the cycle date
+        (allow_missing=True).
 
         cycle (string): name of the cycle to search
         allow_missing (bool): if false the search will return None if not found, otherwise
@@ -313,15 +312,12 @@ class SruCycle:
         if '-' in cycle:
             raise ValueError("cycle contains a spin number")
 
-        entry = None
-        for key in sorted(self._data.keys(), key=self.key_name):
-            if not key.startswith(cycle):
-                continue
-            entry = self.__cached_lookup(key)
-            break
-
-        if allow_missing is True and not entry:
+        if cycle in self._data:
+            entry = self.__cached_lookup(cycle)
+        elif allow_missing:
             entry = SruCycleSpinEntry(cycle)
+        else:
+            entry = None
 
         return entry
 
@@ -340,21 +336,15 @@ class SruCycle:
         if '-' not in spin:
             raise ValueError("argument does not contain a spin number")
 
-        entry = None
         cycle, spin_nr = spin.split('-')
-        for key in sorted(self._data.keys(), key=self.key_name, reverse=True):
-            if '-' in key:
-                if spin != key:
-                    continue
-            else:
-                if cycle != key:
-                    continue
-
-            entry = self.__cached_lookup(key)
-            break
-
-        if allow_missing is True and not entry:
+        if spin in self._data:
+            entry = self.__cached_lookup(spin)
+        elif cycle in self._data:
+            entry = self.__cached_lookup(cycle)
+        elif allow_missing:
             entry = SruCycleSpinEntry(spin)
+        else:
+            entry = None
 
         return entry
 
