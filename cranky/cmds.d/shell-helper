@@ -137,7 +137,8 @@ def read_swm_property(args):
 
 
 def newrelease(args):
-    kv = KernelVersion(args.version, args.parent_version)
+    kv = KernelVersion(args.version, parent_version=args.parent_version,
+                       package_type=args.package_type)
     kv.bump()
     print(kv)
 
@@ -225,6 +226,8 @@ Helper program for getting cranky config and handle data from shell scripts.
                            help="Current package version.")
     subparser.add_argument("-p", "--parent-version", default=None,
                            help="Current parent kernel version.")
+    subparser.add_argument("-t", "--package-type", default=None,
+                           help="Current package type. If not provided, defaults to the main kernel package type.")
     subparser.set_defaults(func=newrelease)
 
     # Add common subparser arguments
