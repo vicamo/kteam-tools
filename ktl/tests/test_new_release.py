@@ -110,3 +110,13 @@ class TestNewRelease(unittest.TestCase):
         a = KernelVersion("6.5.0-2.2", package_type="lrm")
         with self.assertRaises(ValueError):
             a.bump()
+
+    def test_meta_old_lt_abi(self):
+        a = KernelVersion("6.5.0.2.4", parent_version="6.5.0-3.6", package_type="meta")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0.3.5"))
+
+    def test_meta_old_eq_abi(self):
+        a = KernelVersion("6.5.0.5.9", parent_version="6.5.0-5.6", package_type="meta")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0.5.10"))

@@ -20,13 +20,23 @@
 #     not match, the new version is the parent version plust the EXTRA part with
 #     its last digits reset to 1.
 #
-#  For linux-restricted-modules (aka LRM) and linux-signed package versions:
+#  For linux-restricted-modules (aka LRM), linux-signed and linux-meta (see
+#  WARNING below) package versions:
 #
 #   If the current package version is:
 #    1) less than the parent version, use the parent version.
 #    2) equal to the parent version, use the parent version with a '+1' suffix.
 #    3) greater than the parent version, use the current version and bump the
 #       suffix by one.
+#
+#  WARNING:
+#   Starting with Noble, linux-meta packages use the same versioning rules as
+#   LRM and linux-signed packages as desribed above. Before Noble, linux-meta
+#   package versions are native versions (no '-') and follow these rules:
+#    1) If the current ABI if less than the parent ABI, use the parent ABI and
+#       append the bumped current upload number.
+#    2) If the current ABI is equal to the parent ABI, simply bump the upload
+#       number.
 #
 #  NOTE: The point of the library is to be simple, not to validate the versions.
 #   So, this does not currently:
@@ -94,8 +104,8 @@ class KernelVersion:
         except Exception:
             raise ValueError("Invalid version")
 
-    def _bump_lrm_signed(self):
-        """Bump lrm or signed package version"""
+    def _bump_lrm_signed_meta(self):
+        """Bump lrm, signed or meta package version"""
         if not self.parent_version:
             raise ValueError("Invalid parent version: {}".format(self.parent_version))
 
@@ -117,11 +127,30 @@ class KernelVersion:
                 raise ValueError("Invalid version: {}".format(self.version))
             self.version = "{}+{}".format(self.parent_version, int(X) + 1)
 
+    def _bump_meta_old(self):
+        """Bump old meta package version (pre Noble)"""
+        if not self.parent_version:
+            raise ValueError("Invalid parent version: {}".format(self.parent_version))
+
+        comps = self.version.split(".", 4)
+        parent_comps = self.parent_version.replace("-", ".").split(".")
+
+        # Use the parent's ABI and append the bumped current package upload number
+        # We deliberately don't do any checking so that we get a hard failure if
+        # the version is unexpected
+        parent_abi = ".".join(parent_comps[0:4])
+        self.version = "{}.{}".format(parent_abi, int(comps[-1]) + 1)
+
     def bump(self):
         """Bump package version"""
         if self.package_type == "main":
             self._bump_main()
         elif self.package_type in ("lrm", "signed"):
-            self._bump_lrm_signed()
+            self._bump_lrm_signed_meta()
+        elif self.package_type == "meta":
+            if "-" in self.version:
+                self._bump_lrm_signed_meta()
+            else:
+                self._bump_meta_old()
         else:
             raise ValueError("Invalid package type: {}".format(self.package_type))
