@@ -58,7 +58,8 @@ class TestNewRelease(unittest.TestCase):
         # Parent version is not validated, extra part may start with anything
         # but a digit, and is appended to the parent version.
         c = KernelVersion("50-20.3000U2", "42+answer")
-        c.bump()
+        with self.assertRaises(ValueError):
+            c.bump()
         self.assertEqual(c, KernelVersion("42+answerU1"))
 
         # Extra part must end with a digit
@@ -75,3 +76,48 @@ class TestNewRelease(unittest.TestCase):
         f = KernelVersion("4.4.0-19")
         with self.assertRaises(ValueError):
             f.bump()
+
+    def test_lrm_lt(self):
+        # Test lrm version < parent version
+        a = KernelVersion("6.5.0-1.1", parent_version="6.5.0-2.2", package_type="lrm")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-2.2"))
+
+    def test_lrm_eq(self):
+        # Test lrm version == parent version
+        a = KernelVersion("6.5.0-2.2", parent_version="6.5.0-2.2", package_type="lrm")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-2.2+1"))
+
+    def test_lrm_gt(self):
+        # Test lrm version > parent version
+        a = KernelVersion("6.5.0-3.3+1", parent_version="6.5.0-3.3", package_type="lrm")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-3.3+2"))
+
+    def test_lrm_gt_bad1(self):
+        # Test bad lrm version > parent version
+        a = KernelVersion("6.5.0-4.4", parent_version="6.5.0-3.3", package_type="lrm")
+        with self.assertRaises(ValueError):
+            a.bump()
+
+    def test_lrm_gt_bad2(self):
+        # Test bad lrm version > parent version
+        a = KernelVersion("6.5.0-4.4+1", parent_version="6.5.0-3.3", package_type="lrm")
+        with self.assertRaises(ValueError):
+            a.bump()
+
+    def test_lrm_no_parent(self):
+        a = KernelVersion("6.5.0-2.2", package_type="lrm")
+        with self.assertRaises(ValueError):
+            a.bump()
+
+    def test_meta_old_lt_abi(self):
+        a = KernelVersion("6.5.0.2.4", parent_version="6.5.0-3.6", package_type="meta")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0.3.5"))
+
+    def test_meta_old_eq_abi(self):
+        a = KernelVersion("6.5.0.5.9", parent_version="6.5.0-5.6", package_type="meta")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0.5.10"))
