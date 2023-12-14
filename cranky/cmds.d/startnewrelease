@@ -24,7 +24,8 @@ Usage: ${C} startnewrelease [-c] [-h]
 Create an opening changelog entry.
 
 Optional arguments:
-  -c, --commit  Commit the modified changelog.
+  -c, --commit  Commit the modified changelog along with any other staged
+                files.
   -h, --help    Show this help text and exit.
 EOF
 }
@@ -80,7 +81,8 @@ sed -i 's/^.*__STARTNEWRELEASE__.*/  CHANGELOG: Do not edit directly. Autogenera
   CHANGELOG: Use the insertchanges target to create the final log./' "${DEBIAN}"/changelog
 
 if [ ${commit} -eq 1 ] ; then
+	git add "${DEBIAN}"/changelog
 	git commit -s -m "UBUNTU: Start new release
 
-Ignore: yes" -- "${DEBIAN}"/changelog
+Ignore: yes"
 fi
