@@ -20,9 +20,9 @@
 #     not match, the new version is the parent version plust the EXTRA part with
 #     its last digits reset to 1.
 #
-#  For linux-restricted-modules (aka LRM) package versions:
+#  For linux-restricted-modules (aka LRM) and linux-signed package versions:
 #
-#   If the current LRM version is:
+#   If the current package version is:
 #    1) less than the parent version, use the parent version.
 #    2) equal to the parent version, use the parent version with a '+1' suffix.
 #    3) greater than the parent version, use the current version and bump the
@@ -94,8 +94,8 @@ class KernelVersion:
         except Exception:
             raise ValueError("Invalid version")
 
-    def _bump_lrm(self):
-        """Bump lrm package version"""
+    def _bump_lrm_signed(self):
+        """Bump lrm or signed package version"""
         if not self.parent_version:
             raise ValueError("Invalid parent version: {}".format(self.parent_version))
 
@@ -108,7 +108,7 @@ class KernelVersion:
             self.version = "{}+1".format(self.parent_version)
         else:
             # version > parent_version
-            # In this case, it is expected that the LRM version has a '+X' suffix and
+            # In this case, it is expected that the package version has a '+X' suffix and
             # the base version without the suffix is identical to the parent version
             if "+" not in self.version:
                 raise ValueError("Invalid version: {}".format(self.version))
@@ -121,7 +121,7 @@ class KernelVersion:
         """Bump package version"""
         if self.package_type == "main":
             self._bump_main()
-        elif self.package_type == "lrm":
-            self._bump_lrm()
+        elif self.package_type in ("lrm", "signed"):
+            self._bump_lrm_signed()
         else:
             raise ValueError("Invalid package type: {}".format(self.package_type))
