@@ -143,6 +143,7 @@ class KernelVersion:
 
     def bump(self):
         """Bump package version"""
+        prev_version = self.version
         if self.package_type == "main":
             self._bump_main()
         elif self.package_type in ("lrm", "signed"):
@@ -154,3 +155,7 @@ class KernelVersion:
                 self._bump_meta_old()
         else:
             raise ValueError("Invalid package type: {}".format(self.package_type))
+
+        # Sanity check: The new version needs to be greater
+        if apt_pkg.version_compare(prev_version, self.version) >= 0:
+            raise ValueError("Version bump failure")

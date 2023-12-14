@@ -58,7 +58,8 @@ class TestNewRelease(unittest.TestCase):
         # Parent version is not validated, extra part may start with anything
         # but a digit, and is appended to the parent version.
         c = KernelVersion("50-20.3000U2", "42+answer")
-        c.bump()
+        with self.assertRaises(ValueError):
+            c.bump()
         self.assertEqual(c, KernelVersion("42+answerU1"))
 
         # Extra part must end with a digit
