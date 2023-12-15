@@ -62,42 +62,59 @@ Read and follow the directions in [README.deploy](../../README.deploy).
 
 ## Environment setup
 
+Create your own version of each of these environment setup files. Copy the
+contents for each file from the given snip file and make necessary edits.
+
 ### ~/.bashrc
 
-See "cranky/docs/snip-bashrc".
+See [cranky/docs/snip-bashrc](snip-bashrc).
+
+This file should be placed in your .bashrc file or wherever your main
+shell is sourced from. The main things to note here are DEBEMAIL and
+DEBFULLNAME that are used by debian packaging tools to fill out your
+name and address, make sure these are properly filled out. The next
+important part is mainly setting up the paths to cranky tools in
+kteam-tools that we will reference often and we will want to have
+auto-completed.
 
 ### ~/.gitconfig
 
-See "cranky/docs/snip-gitconfig".
+See [cranky/docs/snip-gitconfig](snip-gitconfig).
+
+Here we will want to replace all of the fields specified that would need
+either your launchpad ID or other information. These are used by git
+to access and push/pull git repositories.
 
 ### ~/.config/cranky/cranky.yaml
 
-See "cranky/docs/snip-cranky.yaml".
+See [cranky/docs/snip-cranky.yaml](snip-cranky.yaml).
+
+This is the yaml file that cranky tools will reference for where to find
+your kernel source trees and how kernel source directories will be
+named. If you want your trees to be placed somewhere else this is where
+you would change them so that cranky tools are aware of them.
 
 ### ~/.dput.cf
 
-See "cranky/docs/snip-dput.cf".
+See [cranky/docs/snip-dput.cf](snip-dput.cf).
 
-### Add builders to /etc/hosts
-
-This is the current list of builders which can be used for test-builds and
-pushing cranks for review.
-
-* 10.246.72.16  gloin       gloin.kernel
-* 10.246.72.52  kathleen    kathleen.buildd
-* 10.246.75.167 sita        sita.kernel sita.maas
-
-There is no DNS to resolve the names of our builders, so add them to the hosts file.
-
-```
-printf "10.246.72.16 gloin\n10.246.75.167 sita\n10.246.72.52 kathleen\n" | sudo tee -a /etc/hosts
-```
+The main purpose of this is to give dput (the main command for uploading
+source package to repositories) configuration options for what to do and
+which file transfer protocol to use when uploading. We on the kernel
+team don't upload directly to the Ubuntu archive, but instead upload to
+ppas that build those packages which are then copied to the archive.
+Setting the default_host_main=UNKNOWN prevents accidentally uploading to
+the archive.
 
 ## Get cranky tools
 
-Clone the Kernel Team Tools git repository (yes, by now you've cloned
-kteam-tools already, otherwise you wouldn't be reading this document :-):
+Clone the Kernel Team Tools git repository, our main repo where the 
+kernel team keeps tools and where tools in the cranky process are pulled 
+from. (yes, by now you've cloned kteam-tools already, otherwise you 
+wouldn't be reading this document :-):
 ```
 cd $HOME/canonical
 git clone lps:~canonical-kernel/+git/kteam-tools
 ```
+This references the ``lps:`` prefix in your .gitconfig file that should 
+be able to properly ssh and clone into kteam-tools.

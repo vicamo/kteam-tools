@@ -1,3 +1,11 @@
 [DEFAULT]
 # Prevent accidential uploads to the main Ubuntu archive
 default_host_main = UNKNOWN
+
+[ubuntu]
+method = sftp
+login = [lp-id]
+
+[ppa]
+method = sftp
+login = [lp-id]
