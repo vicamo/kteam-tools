@@ -62,6 +62,9 @@ Read and follow the directions in [README.deploy](../../README.deploy).
 
 ## Environment setup
 
+Create your own version of each of these environment setup files. Copy the
+contents for each file from the given snip file and make necessary edits.
+
 ### ~/.bashrc
 
 See [cranky/docs/snip-bashrc](snip-bashrc).
@@ -105,11 +108,13 @@ the archive.
 
 ## Get cranky tools
 
-Clone the Kernel Team Tools git repository, our main repo where the kernel
-team keeps tools and where tools in the cranky process are pulled from. (yes, by now you've cloned
-kteam-tools already, otherwise you wouldn't be reading this document :-):
+Clone the Kernel Team Tools git repository, our main repo where the 
+kernel team keeps tools and where tools in the cranky process are pulled 
+from. (yes, by now you've cloned kteam-tools already, otherwise you 
+wouldn't be reading this document :-):
 ```
 cd $HOME/canonical
 git clone lps:~canonical-kernel/+git/kteam-tools
 ```
-This references the ``lps:`` prefix in your .gitconfig file that should be able to properly ssh and clone into kteam-tools.
+This references the ``lps:`` prefix in your .gitconfig file that should 
+be able to properly ssh and clone into kteam-tools.
