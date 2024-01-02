@@ -429,7 +429,7 @@ class MonitorStatusSwmStatus:
                     #print("APW", bug_id, bug_data['refresh-time'], "READY")
                     changed.add(('shank', bug_id))
 
-            sru_cycle = self.sc.lookup_cycle(bug_data.get('cycle'))
+            sru_cycle = self.sc.lookup_spin(bug_data.get('cycle'))
             cycle_complete = sru_cycle is not None and sru_cycle.complete
             tracker_complete = bug_data.get('task', {}).get('kernel-sru-workflow', {}).get('status', 'Invalid') == 'Fix Committed'
             scanned = bug_data.get('manager', {}).get('time-scanned')
