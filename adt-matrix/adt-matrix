@@ -899,7 +899,7 @@ class AutoPackageTest(object):
         # Unicode for ↻
         retry_symbol = "&#x21bb;"
 
-        triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
+        triggers = [trigger.replace('/', '%2F').replace('+', '%2B') for trigger in self.triggers]
         if must_disable_acpi(self.meta, arch):
             # Add the magic trigger that disables QEMU ACPI
             triggers.append('qemu-efi-noacpi%2F0')
