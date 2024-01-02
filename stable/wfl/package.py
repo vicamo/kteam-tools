@@ -976,14 +976,14 @@ class Package():
         # we are going to default to.
         stream = s.bug.built_in
         if stream is None:
-            sru_cycle = s.bug.sc.lookup_cycle(s.bug.sru_cycle)
+            sru_cycle = s.bug.sc.lookup_spin(s.bug.sru_spin_name)
             if sru_cycle is not None and sru_cycle.stream is not None:
                 stream = sru_cycle.stream
                 cinfo("APW: STREAM2 -- no stream set, set to {}".format(int(stream)))
                 s.bug.built_in = stream
                 s.bug.flag_assign('stream-from-cycle', True)
             else:
-                cinfo("APW: STREAM2 -- no stream set, cannot set for {}".format(s.bug.sru_cycle))
+                cinfo("APW: STREAM2 -- no stream set, cannot set for {}".format(s.bug.sru_spin_name))
         else:
             cinfo("APW: STREAM2 -- stream already present {}".format(stream))
 
@@ -2867,7 +2867,7 @@ class Package():
         target_trackers = s.bug.target_trackers
         #cinfo("older_tracker_in_ppa: {}".format(target_trackers))
 
-        my_cycle_key = s.cycle_key(s.bug.sru_cycle)
+        my_cycle_key = s.cycle_key(s.bug.sru_spin_name)
         my_id = str(s.bug.lpbug.id)
         for tracker_nr, tracker_data in target_trackers:
             # If we find ourselves then we have considered everything "older".
@@ -2980,7 +2980,7 @@ class Package():
         target_trackers = s.bug.target_trackers
         #cinfo("older_tracker_in_ppa: {}".format(target_trackers))
 
-        my_cycle_key = s.cycle_key(s.bug.sru_cycle)
+        my_cycle_key = s.cycle_key(s.bug.sru_spin_name)
         my_id = str(s.bug.lpbug.id)
         for tracker_nr, tracker_data in target_trackers:
             # If we find ourselves then we have considered everything "older".
@@ -3191,7 +3191,7 @@ class Package():
 
         # Add the kernel-sru-cycle identifier to the message
         #
-        msg['sru-cycle'] = s.bug.sru_cycle
+        msg['sru-cycle'] = s.bug.sru_spin_name
 
         if ppa:
             routing = s.pocket_route('build')

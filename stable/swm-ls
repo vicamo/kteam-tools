@@ -121,6 +121,7 @@ if __name__ == '__main__':
                     'stream':           bug_data.get('built', {}).get('route-entry', '-'),
                     'occupancy':        bug_data.get('occupancy', []),
                     }
+                print(bug_id)
                 results.append((generate_sort(entry), entry))
 
         if args.phase is True or args.show_occupancy:

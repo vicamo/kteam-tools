@@ -137,7 +137,7 @@ class PreparePackage(TaskHandler):
                 subject="@{owner} [LP#{id}](https://launchpad.net/bugs/{id}) {cycle} {series}:{source} crankable".format(
                     owner=s.bug.owner,
                     id=s.task.bug.lpbug.id,
-                    cycle=s.task.bug.sru_cycle,
+                    cycle=s.task.bug.sru_spin_name,
                     series=s.task.bug.series,
                     source=s.task.bug.name,
                 ),

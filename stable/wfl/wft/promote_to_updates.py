@@ -211,7 +211,7 @@ class PromoteToUpdates(Promoter):
                     "cloud-transition-updates",
                     subject="[LP#{id}](https://launchpad.net/bugs/{id}) {cycle} {series}:{source} in updates".format(
                         id=s.bug.lpbug.id,
-                        cycle=s.bug.sru_cycle,
+                        cycle=s.bug.sru_spin_name,
                         series=s.bug.series,
                         source=s.bug.name,
                     )

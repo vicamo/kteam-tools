@@ -190,7 +190,7 @@ class RegressionTesting(TaskHandler):
                 s.bug.flag_assign('proposed-testing-requested', True)
 
             try:
-                result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'sru')
+                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, s.bug.name, s.bug.version, 'sru')
                 task_status = {
                         None: 'Triaged',
                         'noprov': 'Incomplete',
@@ -211,7 +211,7 @@ class RegressionTesting(TaskHandler):
                 raise WorkflowBugTaskError(str(e))
             s.bug.monitor_add({
                 "type": "regression-testing",
-                #"cycle": s.bug.sru_cycle,
+                #"cycle": s.bug.sru_spin_name,
                 #"series": s.bug.series,
                 #"source": s.bug.name,
                 #"version": s.bug.version,
@@ -318,7 +318,7 @@ class BootTesting(TaskHandler):
                 s.bug.flag_assign('boot-testing-requested', True)
 
             try:
-                result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'boot')
+                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, s.bug.name, s.bug.version, 'boot')
                 task_status = {
                         None: 'Triaged',
                         'noprov': 'Incomplete',
@@ -339,7 +339,7 @@ class BootTesting(TaskHandler):
                 raise WorkflowBugTaskError(str(e))
             s.bug.monitor_add({
                 "type": "regression-testing",
-                #"cycle": s.bug.sru_cycle,
+                #"cycle": s.bug.sru_spin_name,
                 #"series": s.bug.series,
                 #"source": s.bug.name,
                 #"version": s.bug.version,

@@ -105,6 +105,7 @@ class WorkflowBug():
         s.stage = None
         s.is_development_series = False
         s._master_bug = False
+        s._sru_spin_name = False
         s._sru_spin = False
         s.is_valid = True
         s._target_trackers = None
@@ -164,7 +165,7 @@ class WorkflowBug():
             return
 
         s.is_development_series = s.source.series.development
-        s.is_development = s.source.development or s.sru_cycle[0] == 'd'
+        s.is_development = s.source.development or s.sru_spin_name[0] == 'd'
 
         # If we have no version after instantiation of the variant,
         # this is not generally crankable.
@@ -984,7 +985,7 @@ class WorkflowBug():
             status['stage'] = s.stage
 
         try:
-            status['cycle'] = s.sru_cycle
+            status['cycle'] = s.sru_spin_name
             status['series'] = s.series
             status['source'] = s.name
             status['package'] = s.name # XXX: legacy
@@ -1053,7 +1054,7 @@ class WorkflowBug():
 
         # Consider if we are in a closed cycle and ready for final
         # closure.
-        sru_cycle = s.sc.lookup_cycle(s.sru_cycle)
+        sru_cycle = s.sc.lookup_spin(s.sru_spin_name)
         cycle_complete = sru_cycle is not None and sru_cycle.complete
         if not cycle_complete:
             return
@@ -1352,26 +1353,24 @@ class WorkflowBug():
     @property
     def sru_spin(s):
         if s._sru_spin is False:
-            spin = None
-            for t in s.tags:
-                if t.startswith('kernel-sru-cycle-'):
-                    spin = t.replace('kernel-sru-cycle-', '')
+            spin = s.sru_spin_name
             if spin is not None:
                 spin = s.sc.lookup_spin(spin, allow_missing=True)
             s._sru_spin = spin
 
         return s._sru_spin
 
-    # sru_cycle
+    # sru_spin_name
     #
     @property
-    def sru_cycle(s):
-        spin = s.sru_spin
-        if spin is not None:
-            spin = spin.name
-        else:
-            spin = '1962.11.02-00'
-        return spin
+    def sru_spin_name(s):
+        if s._sru_spin_name is False:
+            spin = None
+            for t in s.tags:
+                if t.startswith('kernel-sru-cycle-'):
+                    spin = t.replace('kernel-sru-cycle-', '')
+            s._sru_spin_name = spin
+        return s._sru_spin_name
 
     def send_email(s, subject, body, to):
         from .bugmail import BugMail
