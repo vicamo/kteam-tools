@@ -106,11 +106,21 @@ session_chroot_available()
 	session="session:$(session_chroot_name "$series" "$arch" "$which")"
 
 	# Validate the session.
-	schroot --directory / -r -c "$session" /bin/true >/dev/null 2>&1 && {
+	if schroot --directory / -r -c "$session" /bin/true >/dev/null 2>&1 ; then
 		#echo "II: $session session available"
 		RET="$session"
 		return 0
-	}
+	fi
+
+	# Look for old sessions
+	for session in "session:cranky-$series-$arch-"{sources,configs}; do
+		if schroot --directory / -r -c "$session" /bin/true >/dev/null 2>&1 ; then
+			echo "DEPRECATION WARNING: Using old session: ${session}" >&2
+			RET="$session"
+			return 0
+		fi
+	done
+
 	RET=""
 	return 1
 }
@@ -279,6 +289,20 @@ Examples:
 
   $ cranky chroot create-session -w scratch bionic
       Create a 'scratch' session for bionic:linux.
+
+DEPRECATION NOTE:
+  Previous versions of cranky chroot took a <sources|configs> option to
+  differentiate session types but it was never fully implemented. This is
+  now deprecated and warnings are emitted accordingly. It is encouraged
+  to switch to the new method of session creation where different sessions
+  can be created using the --which option.
+
+  Delete the old session(s). Run the command multiple times until all
+  sessions are destroyed:
+  $ cranky chroot destroy-session <handle>
+
+  Create the new session:
+  $ cranky chroot create-session <handle>
 EOF
 
 	exit 2
@@ -287,10 +311,12 @@ EOF
 # MAIN:
 [ "$#" -lt 1 ] && usage
 cmd="$1"
+shift
+
 schroot_user=${USER}
 handle=
 which=
-shift
+
 case "$cmd" in
 	create-base|create-session|map-session|destroy-session)
 		while [ "$#" -gt 0 ]; do
@@ -298,6 +324,9 @@ case "$cmd" in
 				-w|--which)
 					shift
 					which="$1"
+					;;
+				sources|configs)
+					echo "DEPRECATION WARNING: Session type is no longer supported, ignoring it..." >&2
 					;;
 				*)
 					if [ -n "$handle" ] ; then
@@ -395,20 +424,20 @@ case "$cmd" in
 			exit 1
 		fi
 		;;
+	destroy-session)
+		if session_chroot_available "$series" "$chroot_arch" "$which"; then
+			schroot -e -c "$RET"
+		else
+			echo "$P: No chroot session available for $series $which" 1>&2
+			exit 1
+		fi
+		;;
 	run)
 		if session_chroot_available "$series" "$chroot_arch" "$which"; then
 			schroot -u "$schroot_user" -p -r -c "$RET" -- "$@"
 		else
 			echo "$P: No chroot session available for $series $which" 1>&2
 			echo "Use \"$P create-session\" to create one" 1>&2
-			exit 1
-		fi
-		;;
-	destroy-session)
-		if session_chroot_available "$series" "$chroot_arch" "$which"; then
-			schroot -e -c "$RET"
-		else
-			echo "$P: No chroot session available for $series $which" 1>&2
 			exit 1
 		fi
 		;;
