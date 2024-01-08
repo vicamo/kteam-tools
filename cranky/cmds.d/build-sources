@@ -136,9 +136,9 @@ if [ -z "$sources" ] ; then
 	exit 1
 fi
 
-session=$("$C" chroot map-session sources "$handle")
+session=$("$C" chroot map-session "$handle")
 if [ -z "$session" ] ; then
-	echo "$P: sources session not available -- run: $C chroot create-session sources \"$handle\"" >&2
+	echo "$P: sources session not available -- run: $C chroot create-session \"$handle\"" >&2
 	exit 1
 fi
 

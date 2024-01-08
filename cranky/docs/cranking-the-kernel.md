@@ -27,7 +27,7 @@ engineers should feel free to make change/update this document in kteam-tools.
 <!--cheatsheet-->
 ```
 $ cranky chroot create-base RELEASE:linux
-$ cranky chroot create-session configs RELEASE:linux
+$ cranky chroot create-session RELEASE:linux
 ```
 <!--/cheatsheet-->
 
@@ -60,7 +60,7 @@ chroot environment for the kernel to build (as documented in
 Example:
 ```
 $ cranky chroot create-base xenial:linux
-$ cranky chroot create-session configs xenial:linux
+$ cranky chroot create-session xenial:linux
 ```
 
 After your chroot environment is initialized, you only need to update your
@@ -69,7 +69,7 @@ create-session`.
 
 Example:
 ```
-$ cranky chroot create-session configs xenial:linux
+$ cranky chroot create-session xenial:linux
 ```
 
 Note that `create-base` is not required for updating a chroot. It is only
@@ -83,7 +83,7 @@ corresponding chroot from your system.
 First remove the session created by `cranky chroot`:
 
 ```
-$ cranky chroot destroy-session configs RELEASE:linux
+$ cranky chroot destroy-session RELEASE:linux
 ```
 
 Then find the directory listed in the schroot configuration file under
@@ -95,7 +95,7 @@ Finally, remove the file `/etc/schroot/chroot.d/sbuild-RELEASE-amd64`.
 Example:
 
 ```
-$ cranky chroot destroy-session configs groovy:linux
+$ cranky chroot destroy-session groovy:linux
 
 $ grep directory= /etc/schroot/chroot.d/sbuild-groovy-amd64
 directory=/var/lib/schroot/chroots/groovy-amd64

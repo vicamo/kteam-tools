@@ -82,20 +82,45 @@ EOF
 	RET="$chroot"
 }
 
+session_chroot_name()
+{
+	# takes a series, arch, and optionally a which and prints the session naming scheme for it
+	local series="$1"
+	local arch="$2"
+	local which="$3"
+
+	if [ -n "${which}" ] ; then
+		echo "cranky--${series}-${arch}-${which}"
+	else
+		echo "cranky--${series}-${arch}"
+	fi
+}
+
 session_chroot_available()
 {
 	local series="$1"
 	local arch="$2"
 	local which="$3"
 
-	local session="session:cranky-$series-$arch-$which"
+	local session
+	session="session:$(session_chroot_name "$series" "$arch" "$which")"
 
 	# Validate the session.
-	schroot --directory / -r -c "$session" /bin/true >/dev/null 2>&1 && {
+	if schroot --directory / -r -c "$session" /bin/true >/dev/null 2>&1 ; then
 		#echo "II: $session session available"
 		RET="$session"
 		return 0
-	}
+	fi
+
+	# Look for old sessions
+	for session in "session:cranky-$series-$arch-"{sources,configs}; do
+		if schroot --directory / -r -c "$session" /bin/true >/dev/null 2>&1 ; then
+			echo "DEPRECATION WARNING: Using old session: ${session}" >&2
+			RET="$session"
+			return 0
+		fi
+	done
+
 	RET=""
 	return 1
 }
@@ -107,10 +132,11 @@ session_chroot_create()
 	local package="$3"
 	local which="$4"
 
-	local session="cranky-$series-$arch-$which"
+	local session
+	session="$(session_chroot_name "$series" "$arch" "$which")"
 
 	if ! base_chroot_available "$series" "$arch"; then
-		echo "$P: base chroot not available -- run: $C chroot create-base \"$series:linux\""
+		echo "$P: base chroot not available -- run: $C chroot create-base \"$series\""
 		return 1
 	fi
 	local chroot="$RET"
@@ -127,7 +153,7 @@ session_chroot_create()
 		# the packages used during the sources build.
 		# The PPA used for ESM kernels currently doesn't have any extra
 		# dependency, so exclude trusty and xenial.
-		repo_pub_key=$(cat "$(dirname "$C")"/cmds.d/builder-extra.asc)
+		repo_pub_key=$(cat "$(dirname "$C")"/gpg.d/builder-extra.asc)
 		schroot -u root -r -c "$session" -- sh -c "echo '${repo_pub_key}' > /etc/apt/trusted.gpg.d/builder-extra.asc"
 		schroot -u root -r -c "$session" -- sh -c "echo 'deb http://ppa.launchpad.net/canonical-kernel-team/builder-extra/ubuntu ${series} main' > /etc/apt/sources.list.d/builder-extra.list"
 	fi
@@ -200,7 +226,8 @@ session_chroot_create()
 	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install clang libelf-dev llvm libfuse-dev
 }
 
-chroot_update() {
+chroot_update()
+{
 	local chroot=${1}
 	local opts
 
@@ -218,16 +245,16 @@ usage()
 	cat <<EOF
 Usage: cranky chroot <commands> <args>...
 commands:
-  create-base [<handle>]
+  create-base [-w <which>] [<series>|<handle>]
       Create a base sbuilder chroot for the series of the handle package.
-  create-session configs|sources [<handle>]
-      Create a session for the requested purpose.
-  map-session configs|sources [<handle>]
+  create-session [-w <which>] [<series>|<handle>]
+      Create a session for the given handle.
+  map-session [-w <which>] [<series>|<handle>]
       Emit the name of the required session if available.
-  run [<handle>] -- command
-      Run command under chroot.
-  destroy-session configs|sources [<handle>]
-      Destroy the session created for the specified purpose.
+  destroy-session [-w <which>] [<series>|<handle>]
+      Destroy the session created for the handle.
+  run [-u <user>] [-w <which>] [<series>|<handle>] -- command
+      Run command under chroot. Optionally specify user.
 
 Build either base chroots or chroot sessions appropriate for building
 sources or updating configurations.
@@ -237,20 +264,45 @@ positional arguments:
       Handle to a kernel source tree, either a path to a kernel
       source tree or a handle in <series>:<package> format. If not
       specified the current working directory is used.
+  series
+      Kernel series. This is equivalent to the handle <series>:linux.
+
+optional arguments:
+  -w|--which <which>
+      String appended to the default session name.
+  -u|--user <user>
+      Run chroot as user <user>. Defaults to current user.
 
 Examples:
   $ cranky chroot create-base bionic:linux
       Build a clean sbuilder chroot for use in bionic build etc.
 
-  $ cranky chroot create-session configs bionic:linux
+  $ cranky chroot create-session bionic:linux
       Build a chroot session with the appropriate build-depends and cross compilers
-      to allow update of configurations for bionic:linux.
+      to build sources and update configurations for bionic:linux.
 
   $ cranky chroot run bionic:linux -- cranky close
       Run cranky close under the chroot session.
 
-  $ cranky chroot destroy-session configs bionic:linux
+  $ cranky chroot destroy-session bionic:linux
       Destroy the specified chroot session.
+
+  $ cranky chroot create-session -w scratch bionic
+      Create a 'scratch' session for bionic:linux.
+
+DEPRECATION NOTE:
+  Previous versions of cranky chroot took a <sources|configs> option to
+  differentiate session types but it was never fully implemented. This is
+  now deprecated and warnings are emitted accordingly. It is encouraged
+  to switch to the new method of session creation where different sessions
+  can be created using the --which option.
+
+  Delete the old session(s). Run the command multiple times until all
+  sessions are destroyed:
+  $ cranky chroot destroy-session <handle>
+
+  Create the new session:
+  $ cranky chroot create-session <handle>
 EOF
 
 	exit 2
@@ -260,60 +312,73 @@ EOF
 [ "$#" -lt 1 ] && usage
 cmd="$1"
 shift
+
+schroot_user=${USER}
+handle=
+which=
+
 case "$cmd" in
-create-base)
-	if [ "$#" -eq 0 ]; then
-		set - "$@" "$PWD"
-	elif [ "$#" -ne 1 ]; then
-		echo "Usage: $P $cmd [<handle>]" 1>&2
-		exit 1
-	fi
-	session=
-	handle="$1"
-	;;
-create-session|map-session|destroy-session)
-	if [ "$#" -eq 1 ]; then
-		set - "$@" "$PWD"
-	elif [ "$#" -ne 2 ]; then
-		echo "Usage: $P $cmd <sources|configs> [<handle>]" 1>&2
-		exit 1
-	fi
-	session="$1"
-	handle="$2"
-	case "$session" in
-	sources|configs)	;;
-	*)
-		echo "$P $cmd: $session -- invalid session requested (sources or configs)" 1>&2
-		exit 1
+	create-base|create-session|map-session|destroy-session)
+		while [ "$#" -gt 0 ]; do
+			case "$1" in
+				-w|--which)
+					shift
+					which="$1"
+					;;
+				sources|configs)
+					echo "DEPRECATION WARNING: Session type is no longer supported, ignoring it..." >&2
+					;;
+				*)
+					if [ -n "$handle" ] ; then
+						usage
+					fi
+					handle="$1"
+					;;
+			esac
+			shift
+		done
 		;;
-	esac
-	;;
-run)
-	if [ "$1" = "--" ]; then
-		set - "$PWD" "$@"
-	fi
-	if [ "$2" != '--' ]; then
-		echo "Usage: $P $cmd [<handle>] -- <command ...>" 1>&2
-		exit 1
-	fi
-	session="configs" # XXX: this likely should be its own session type.
-	handle="$1"
-	shift 2
-	;;
-*)
-	usage
-	;;
+	run)
+		separator=0
+		while [ "$#" -gt 0 ]; do
+			case "$1" in
+				--)
+					shift
+					separator=1
+					break
+					;;
+				-u|--user)
+					shift
+					schroot_user="$1"
+					;;
+				-w|--which)
+					shift
+					which="$1"
+					;;
+				*)
+					if [ -n "$handle" ]; then
+						usage
+					fi
+					handle="$1"
+					;;
+			esac
+			shift
+		done
+		if [ "$#" -eq 0 ] || [ "$separator" -eq 0 ]; then
+			usage
+		fi
+		;;
+	*)
+		usage
+		;;
 esac
 
-# NOTE: we require the user to tell us which session type they are needing
-#       but in the short term we are assuming we can make do with just the
-#       one shared session.  If that should change, then we already have
-#       the user supplying the required information so at least the UI will
-#       not change underneath them.  Map all the known sessions to a shared
-#       session.
-case "$session" in
-sources|configs)	session="sources" ;;
-esac
+if [ -z "$handle" ]; then
+	handle="$PWD"
+elif [ "${handle/:/}" = "${handle}" ] ; then
+	# handle doesn't contain ':' so treat it as a series
+	handle=${handle}:linux
+fi
 
 series_source=$("$C" shell-helper handle-to-series-source "$handle")
 if [ "$series_source" = "" ]; then
@@ -322,9 +387,10 @@ if [ "$series_source" = "" ]; then
 fi
 series=${series_source% *}
 src=${series_source#* }
+
 # NOTE: currently all trees are assume to be able to be built in the
 #       linux package.
-src='linux'
+src="linux"
 
 # precise chroots don't get updates anymore, use trusty instead
 if [ "$series" = "precise" ]; then
@@ -335,44 +401,44 @@ OUT_SESSION=
 trap out INT TERM EXIT HUP
 
 case "$cmd" in
-create-base)
-	if base_chroot_available "$series" "$chroot_arch"; then
-		chroot_update "$RET"
-	else
-		base_chroot_create "$series" "$chroot_arch"
-	fi
-	;;
-create-session)
-	if session_chroot_available "$series" "$chroot_arch" "$session"; then
-		chroot_update "$RET"
-	else
-		session_chroot_create "$series" "$chroot_arch" "$src" "$session"
-	fi
-	;;
-map-session)
-	if session_chroot_available "$series" "$chroot_arch" "$session"; then
-		echo "$RET"
-	else
-		echo "$P: No chroot session available for $series:$src" 1>&2
-		echo "Use \"$P create-session\" to create one" 1>&2
-		exit 1
-	fi
-	;;
-run)
-	if session_chroot_available "$series" "$chroot_arch" "$session"; then
-		schroot -p -r -c "$RET" -- "$@"
-	else
-		echo "$P: No chroot session available for $series:$src" 1>&2
-		echo "Use \"$P create-session\" to create one" 1>&2
-		exit 1
-	fi
-	;;
-destroy-session)
-	if session_chroot_available "$series" "$chroot_arch" "$session"; then
-		schroot -e -c "$RET"
-	else
-		echo "$P: No chroot session available for $series:$src" 1>&2
-		exit 1
-	fi
-	;;
+	create-base)
+		if base_chroot_available "$series" "$chroot_arch"; then
+			chroot_update "$RET"
+		else
+			base_chroot_create "$series" "$chroot_arch"
+		fi
+		;;
+	create-session)
+		if session_chroot_available "$series" "$chroot_arch" "$which"; then
+			chroot_update "$RET"
+		else
+			session_chroot_create "$series" "$chroot_arch" "$src" "$which"
+		fi
+		;;
+	map-session)
+		if session_chroot_available "$series" "$chroot_arch" "$which"; then
+			echo "$RET"
+		else
+			echo "$P: No chroot session available for $series" 1>&2
+			echo "Use \"$P create-session\" to create one" 1>&2
+			exit 1
+		fi
+		;;
+	destroy-session)
+		if session_chroot_available "$series" "$chroot_arch" "$which"; then
+			schroot -e -c "$RET"
+		else
+			echo "$P: No chroot session available for $series $which" 1>&2
+			exit 1
+		fi
+		;;
+	run)
+		if session_chroot_available "$series" "$chroot_arch" "$which"; then
+			schroot -u "$schroot_user" -p -r -c "$RET" -- "$@"
+		else
+			echo "$P: No chroot session available for $series $which" 1>&2
+			echo "Use \"$P create-session\" to create one" 1>&2
+			exit 1
+		fi
+		;;
 esac
