@@ -902,14 +902,23 @@ if __name__ == '__main__':
         cmd_before = perf_counter()
         ss = factory.ss
         swm_work = SwmWork(config="~/.kernel-swm-worker.yaml")
+        barrier = False
         for cmd, tracker in changed:
-            print("QUEUE: {} {}".format(cmd, tracker))
+            if cmd == 'instantiate':
+                print("QUEUE #1: {} {}".format(cmd, tracker))
+                swm_work.send_instantiate(tracker)
+                barrier = True
+        if barrier:
+            swm_work.send_barrier()
+        barrier = False
+        for cmd, tracker in changed:
             if cmd == 'shank':
+                print("QUEUE #2: {} {}".format(cmd, tracker))
                 scanned = ss.trackers.get(tracker,{}).get('manager', {}).get('time-scanned')
                 swm_work.send_shank(tracker, scanned=scanned)
-            elif cmd == 'instantiate':
-                swm_work.send_instantiate(tracker)
-        swm_work.send_barrier()
+                barrier = True
+        if barrier:
+            swm_work.send_barrier()
         cmd_after = perf_counter()
         print("COMMAND COMPLETE time={} wall={}".format(cmd_after - cmd_before, time()))
 
