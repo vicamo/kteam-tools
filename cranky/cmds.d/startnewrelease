@@ -65,7 +65,7 @@ fi
 prev_ver=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SVersion)
 
 opts=("${prev_ver}")
-if [ -n "${DEBIAN_MASTER}" ] ; then
+if [ -d "${DEBIAN_MASTER}" ] ; then
     parent_ver=$(dpkg-parsechangelog -l"${DEBIAN_MASTER}"/changelog -SVersion)
     opts+=("-p" "${parent_ver}")
 fi
