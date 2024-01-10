@@ -375,6 +375,9 @@ esac
 
 if [ -z "$handle" ]; then
 	handle="$PWD"
+elif [ -e "$handle" ]; then
+	# Handle is a directory, use it as it is.
+	:
 elif [ "${handle/:/}" = "${handle}" ] ; then
 	# handle doesn't contain ':' so treat it as a series
 	handle=${handle}:linux
