@@ -295,7 +295,6 @@ def add_misc(repo_set):
             + grants("refs/heads/master", people_core, push=True)
             + grants("refs/heads/master", people_tools, push=True)
             + grants("refs/heads/master", people_gitea, push=True)
-            + grants("refs/heads/*/*", people_gitea, force=True)
             + grants("refs/heads/master", people_kernel_bot, force=True)
         ],
         [
@@ -312,7 +311,6 @@ def add_misc(repo_set):
             + grants("refs/heads/*", people_core, force=True)
             + grants("refs/heads/*", people_tools, force=True)
             + grants("refs/heads/*", people_gitea, force=True)
-            + grants("refs/heads/*/*", people_gitea, force=True)
             + grants("refs/heads/*", people_kernel_bot, force=True)
         ],
         [
@@ -351,7 +349,6 @@ def add_misc(repo_set):
             + grants("refs/heads/main", people_core, push=True)
             + grants("refs/heads/main", people_tools, push=True)
             + grants("refs/heads/main", people_gitea, force=True)
-            + grants("refs/heads/*/*", people_gitea, force=True)
         ],
     ]:
         print("misc: {}".format(os.path.basename(repo_path)))
