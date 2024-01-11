@@ -324,6 +324,7 @@ def add_misc(repo_set):
             + grants("refs/heads/*", admins_core, force=True)
             + grants("refs/heads/*", people_core, force=True)
             + grants("refs/heads/*", people_tools, force=True)
+            + grants("refs/heads/main", people_gitea, force=True)
         ],
         [
             "~ubuntu-kernel/ubuntu/+source/linux-firmware",
