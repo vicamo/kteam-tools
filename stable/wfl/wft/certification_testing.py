@@ -1,5 +1,7 @@
-
+from wfl.bug                                    import WorkflowBugTaskError
+from wfl.context                                import ctx
 from wfl.log                                    import center, cleave, cdebug, cwarn, cinfo
+from wfl.test_observer                          import TestObserverResults, TestObserverError
 from .base                                      import TaskHandler
 
 class CertificationTesting(TaskHandler):
@@ -19,6 +21,7 @@ class CertificationTesting(TaskHandler):
         s.jumper['Incomplete']    = s._status_check
         s.jumper['Opinion']       = s._status_check
         s.jumper['Fix Committed'] = s._status_check
+        s.jumper['Fix Released']  = s._status_check
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -54,6 +57,41 @@ class CertificationTesting(TaskHandler):
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
 
+    def match_result(self, data, source):
+        sources = [package.name for package in source.packages]
+
+        # XXX: recover the meta package name from the name field; "." is
+        # mapped to "_".
+        meta = data.get("name", "??").replace("_", ".")
+
+        cinfo("  meta={}".format(meta))
+
+        # We will assume this is published in the "stage".
+        pocket = data.get("stage", "proposed")
+        route = source.routing.lookup_route(pocket)
+        cinfo("  route={}".format(route))
+
+        for dest in route.entries:
+            cinfo("    dest={} name={} reference={} pocket={}".format(dest, dest.name, dest.reference, dest.pocket))
+
+            archive = ctx.lp.archives.getByReference(reference=dest.reference)
+            binaries = archive.getPublishedBinaries(
+                order_by_date=True,
+                exact_match=True,
+                binary_name=meta,
+                version=data.get("version"),
+            )
+
+            if len(binaries) == 0:
+                continue
+
+            binary = binaries[0]
+            cinfo(" {} ?? {}".format(binary.source_package_name, sources))
+            if binary.source_package_name in sources:
+                return True
+            break
+        return False
+
     # _status_check
     #
     def _status_check(s):
@@ -83,6 +121,45 @@ class CertificationTesting(TaskHandler):
             if s.task.status != 'Fix Released':
                 s.task.status = 'Fix Released'
                 retval = True
+
+        else:
+            try:
+                observer = TestObserverResults()
+                result = None
+                existing = s.bug.group_get("test-observer", "proposed")
+                if existing is not None:
+                    result = observer.lookup_result(existing)
+                    cinfo("TO direct result={}".format(result))
+                else:
+                    results = observer.lookup_results(
+                        "deb",
+                        series=s.bug.source.series.codename,
+                        stage="proposed",
+                        version=s.bug.debs.package_version_exact("meta")
+                    )
+                    cinfo("TO results={}".format(results))
+                    for current in results:
+                        if s.match_result(current, s.bug.source):
+                            cinfo("TO deb match result={}".format(current))
+                            s.bug.group_set("test-observer", "proposed", current.get("id"))
+                            result = current
+                            break
+                if result is not None:
+                    status = result.get("status", "UNKNOWN")
+                    tstatus = {
+                        "UNDECIDED": "In Progress",
+                        "APPROVED": "Fix Released",
+                    }.get(status, "Incomplete")
+                    cinfo("TO deb result-status={} task-status={}".format(status, tstatus))
+                    if s.task.status != tstatus:
+                        s.task.status = tstatus
+                        retval = True
+            except TestObserverError as e:
+                #s.bug.monitor_add({
+                #    "type": "regression-testing",
+                #    "op": "sru",
+                #    "status": '--broken--'})
+                raise WorkflowBugTaskError(str(e))
 
         if s.task.status == 'Fix Released':
             pass

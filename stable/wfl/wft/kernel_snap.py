@@ -1,8 +1,10 @@
 from datetime                                   import datetime, timedelta, timezone
 
+from wfl.bug                                    import WorkflowBugTaskError
 from wfl.git_tag                                import GitTagsSnap, GitTagError
 from wfl.log                                    import center, cleave, cinfo, cerror, cdebug, centerleave
 from wfl.snap                                   import SnapStoreError
+from wfl.test_observer                          import TestObserverResults, TestObserverError
 from wfl.errors                                 import WorkflowCrankError
 from .base                                      import TaskHandler
 
@@ -873,6 +875,7 @@ class SnapCertificationTesting(KernelSnapBase):
         s.jumper['In Progress']   = s._status_check
         s.jumper['Incomplete']    = s._status_check
         s.jumper['Fix Committed'] = s._status_check
+        s.jumper['Fix Released']  = s._status_check
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -920,6 +923,36 @@ class SnapCertificationTesting(KernelSnapBase):
             if s.task.status != 'Fix Released':
                 s.task.status = 'Fix Released'
                 retval = True
+
+        else:
+            try:
+                observer = TestObserverResults()
+                # XXX: WTF are the parameters????
+                results = observer.lookup_results("snap", name=s.bug.snap.name, stage="beta", version=s.bug.version)
+                cinfo("TO snap results={}".format(results))
+                if s.is_v2:
+                    request = s.bug.group_get("snap-prepare", "beta")
+                    revisions = s.bug.snap.revisions_request(request)
+                    cinfo("TO revisions={}".format(revisions))
+
+                    for result in results:
+                        if result.get(":revisions") == revisions:
+                            status = result.get("status", "UNKNOWN")
+                            tstatus = {
+                                "UNDECIDED": "In Progress",
+                                "APPROVED": "Fix Released",
+                            }.get(status, "Incomplete")
+                            cinfo("TO snap match result-status={} task-status={}".format(status, tstatus))
+                            if s.task.status != tstatus:
+                                s.task.status = tstatus
+                                retval = True
+                            break
+            except TestObserverError as e:
+                #s.bug.monitor_add({
+                #    "type": "regression-testing",
+                #    "op": "sru",
+                #    "status": '--broken--'})
+                raise WorkflowBugTaskError(str(e))
 
         if s.task.status == 'Fix Released':
             pass
