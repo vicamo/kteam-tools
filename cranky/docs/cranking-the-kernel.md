@@ -605,7 +605,7 @@ Example:
 
 ```
 $ cd ..
-$ cranky pull-sources linux-oracle:xenial --latest
+$ cranky pull-sources xenial:linux-oracle --latest
 $ cd -
 ```
 
