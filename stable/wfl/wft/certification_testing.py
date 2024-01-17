@@ -1,3 +1,4 @@
+from datetime                                   import datetime, timezone
 from wfl.bug                                    import WorkflowBugTaskError
 from wfl.context                                import ctx
 from wfl.log                                    import center, cleave, cdebug, cwarn, cinfo
@@ -123,9 +124,9 @@ class CertificationTesting(TaskHandler):
                 retval = True
 
         else:
+            result = None
             try:
                 observer = TestObserverResults()
-                result = None
                 existing = s.bug.group_get("test-observer", "proposed")
                 if existing is not None:
                     result = observer.lookup_result(existing)
@@ -135,7 +136,7 @@ class CertificationTesting(TaskHandler):
                         "deb",
                         series=s.bug.source.series.codename,
                         stage="proposed",
-                        version=s.bug.debs.package_version_exact("meta")
+                        version=s.bug.debs.package_version_exact("meta"),
                     )
                     cinfo("TO results={}".format(results))
                     for current in results:
@@ -155,11 +156,23 @@ class CertificationTesting(TaskHandler):
                         s.task.status = tstatus
                         retval = True
             except TestObserverError as e:
-                #s.bug.monitor_add({
-                #    "type": "regression-testing",
-                #    "op": "sru",
-                #    "status": '--broken--'})
+                s.bug.refresh_at(
+                    datetime.now(timezone.utc) + timedelta(minutes=30),
+                    "polling due to test-observer failure",
+                )
                 raise WorkflowBugTaskError(str(e))
+
+            if result:
+                s.bug.monitor_add({
+                    "type": "test-observer",
+                    "id": result.get("id"),
+                    "status": result.get("status"),
+                })
+            else:
+                s.bug.refresh_at(
+                    datetime.now(timezone.utc) + timedelta(minutes=30),
+                    "polling waiting for initial status",
+                )
 
         if s.task.status == 'Fix Released':
             pass

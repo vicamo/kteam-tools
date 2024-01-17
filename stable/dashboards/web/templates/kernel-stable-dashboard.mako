@@ -398,6 +398,14 @@ for bid in sorted(swm_trackers):
     sn = b.get('series') or 'unknown'
 
     abi_testing = b.get('comments', {}).get('abi-testing')
+    for pocket, prefix in (
+        ('proposed', '/debs/'),
+        ('beta', '/snaps/'),
+    ):
+        ct_testing = b.get('test-observer', {}).get(pocket)
+        if ct_testing is not None:
+            ct_testing = prefix + str(ct_testing)
+            break
 
     if cycle not in cadence:
         cadence[cycle] = {}
@@ -411,6 +419,8 @@ for bid in sorted(swm_trackers):
     attrs['at:'] = 'http://kernel.ubuntu.com/adt-matrix/{}-{}.html'.format(sn, package.replace('linux', 'linux-meta'))
     if abi_testing is not None:
         attrs['At:'] = 'https://bugs.launchpad.net/kernel-sru-workflow/+bug/{}/comments/{}'.format(bid, abi_testing)
+    if ct_testing is not None:
+        attrs['ct:'] = 'https://test-observer.canonical.com/#{}'.format(ct_testing)
     attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html#{}--{}'.format(sn, package)
     attrs['rt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html#{}:{}:{}:sru'.format(cycle, sn, package, urllib.parse.quote_plus(version))
     attrs['bt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html#{}:{}:{}:boot'.format(cycle, sn, package, urllib.parse.quote_plus(version))

@@ -925,34 +925,64 @@ class SnapCertificationTesting(KernelSnapBase):
                 retval = True
 
         else:
+            result = None
             try:
                 observer = TestObserverResults()
-                # XXX: WTF are the parameters????
-                results = observer.lookup_results("snap", name=s.bug.snap.name, stage="beta", version=s.bug.version)
-                cinfo("TO snap results={}".format(results))
-                if s.is_v2:
-                    request = s.bug.group_get("snap-prepare", "beta")
-                    revisions = s.bug.snap.revisions_request(request)
-                    cinfo("TO revisions={}".format(revisions))
+                existing = s.bug.group_get("test-observer", "edge")
+                if existing is not None:
+                    result = observer.lookup_result(existing)
+                    cinfo("TO direct result={}".format(result))
+                else:
+                    results = observer.lookup_results(
+                        "snap",
+                        name=s.bug.snap.name,
+                        stage="beta",
+                        version=s.bug.version,
+                    )
+                    cinfo("TO snap results={}".format(results))
+                    if s.is_v2:
+                        request = s.bug.group_get("snap-prepare", "beta")
+                        revisions = s.bug.snap.revisions_request(request)
+                        cinfo("TO revisions={}".format(revisions))
 
-                    for result in results:
-                        if result.get(":revisions") == revisions:
-                            status = result.get("status", "UNKNOWN")
-                            tstatus = {
-                                "UNDECIDED": "In Progress",
-                                "APPROVED": "Fix Released",
-                            }.get(status, "Incomplete")
-                            cinfo("TO snap match result-status={} task-status={}".format(status, tstatus))
-                            if s.task.status != tstatus:
-                                s.task.status = tstatus
-                                retval = True
-                            break
+                        for current in results:
+                            if current.get(":revisions") == revisions:
+                                cinfo("TO snap match result={}".format(current))
+                                s.bug.group_set("test-observer", "beta", current.get("id"))
+                                result = current
+                                break
+                    elif len(results) == 1:
+                        result = results[0]
+                        cinfo("TO snap first match result={}".format(result))
+                        s.bug.group_set("test-observer", "beta", result.get("id"))
+                if result is not None:
+                    status = result.get("status", "UNKNOWN")
+                    tstatus = {
+                        "UNDECIDED": "In Progress",
+                        "APPROVED": "Fix Released",
+                    }.get(status, "Incomplete")
+                    cinfo("TO snap match result-status={} task-status={}".format(status, tstatus))
+                    if s.task.status != tstatus:
+                        s.task.status = tstatus
+                        retval = True
             except TestObserverError as e:
-                #s.bug.monitor_add({
-                #    "type": "regression-testing",
-                #    "op": "sru",
-                #    "status": '--broken--'})
+                s.bug.refresh_at(
+                    datetime.now(timezone.utc) + timedelta(minutes=30),
+                    "polling due to test-observer failure",
+                )
                 raise WorkflowBugTaskError(str(e))
+
+            if result:
+                s.bug.monitor_add({
+                    "type": "test-observer",
+                    "id": result.get("id"),
+                    "status": result.get("status"),
+                })
+            else:
+                s.bug.refresh_at(
+                    datetime.now(timezone.utc) + timedelta(minutes=30),
+                    "polling waiting for initial status",
+                )
 
         if s.task.status == 'Fix Released':
             pass
