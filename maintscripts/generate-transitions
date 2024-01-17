@@ -53,7 +53,11 @@ def main():
         ),
         file=args.output,
     )
+    section="oldlibs"
     for pkg in deb822.Packages.iter_paragraphs(args.input):
+        if "Source" in pkg.keys():
+            if "non-free" in pkg["Section"]:
+                section="non-free/" + section
         if "Package" not in pkg.keys():
             continue
         to_pkg = re.sub(args.pattern, args.replace, pkg["Package"])
@@ -64,10 +68,11 @@ def main():
             {
                 "Package": pkg["Package"],
                 "Architecture": pkg["Architecture"],
-                "Section": "oldlibs",
+                "Section": section,
+                "Multi-Arch": pkg.get("Multi-Arch", "no"),
                 "Depends": to_pkg,
                 "Description": pkg["Description"].splitlines()[0]
-                + " (dummy transitional package)\n Transitional package for upgrades. This package can be safely removed.",
+                + " (transitional package)\n Transitional package for upgrades. This package can be safely removed.",
             }
         )
         print(newpkg, file=args.output)
