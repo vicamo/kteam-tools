@@ -770,6 +770,18 @@ class SnapDebs:
 
         return good, partial, broken
 
+    @centerleave
+    def revisions_request(self, request):
+        request = self.recover_request_v2(request)
+
+        # Identify expected revisions.
+        revisions = {}
+        if request is not None:
+            for build in request.builds:
+                revisions[build.arch_tag] = build.store_upload_revision
+                cinfo("is_in_risks_request: arch={} revision={}".format(build.arch_tag, build.store_upload_revision))
+        return revisions
+
     def update_version(self, risk, version):
         # Usage: $0 <tracker> <repo-url> <repo-branch> <build-branch> <version>
 
