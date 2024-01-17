@@ -1,4 +1,4 @@
-from datetime                                   import datetime, timezone
+from datetime                                   import datetime, timedelta, timezone
 from wfl.bug                                    import WorkflowBugTaskError
 from wfl.context                                import ctx
 from wfl.log                                    import center, cleave, cdebug, cwarn, cinfo
@@ -66,6 +66,11 @@ class CertificationTesting(TaskHandler):
         meta = data.get("name", "??").replace("_", ".")
 
         cinfo("  meta={}".format(meta))
+
+        # XXX: some records seem to be named for the main kernel?!?
+        if meta == self.bug.name:
+            cinfo("  meta={} matches overall source name".format(meta))
+            return True
 
         # We will assume this is published in the "stage".
         pocket = data.get("stage", "proposed")

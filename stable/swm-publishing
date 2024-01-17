@@ -35,6 +35,7 @@ from wfl.launchpad import LaunchpadDirect
 from wfl.snap import SnapStore, SnapStoreError
 from wfl.wft.regression_testing import RegressionTestingResults, RegressionTestingResultsError
 from wfl.wft.automated_testing import AutomatedTestingResults, AutomatedTestingResultsError
+from wfl.test_observer import TestObserverResults, TestObserverError
 from wfl.work import SwmWork
 
 
@@ -515,6 +516,21 @@ class MonitorSwmStatusMonitor:
         print("automated_testing: existing={} current={} change={}".format(existing, current, existing != current))
         return existing != current
 
+    def test_observer(self, bug_id, bug_data, monitor):
+        to_id = monitor.get('id')
+        existing = monitor.get('status')
+
+        try:
+                observer = TestObserverResults()
+                result = observer.lookup_result(to_id)
+        except TestObserverResultsError as e:
+            print("test_observer: data not available ({}) change={}".format(str(e), False))
+            return False
+
+        current = result.get("status")
+        print("test_observer: existing={} current={} change={}".format(existing, current, existing != current))
+        return existing != current
+
     def snap_publishing(self, bug_id, bug_data, monitor):
         series = bug_data.get('series')
         source = bug_data.get('source')
@@ -689,6 +705,7 @@ class MonitorSwmStatusMonitor:
                 handler = {
                     'regression-testing':   self.regression_testing,
                     'automated-testing':    self.automated_testing,
+                    'test-observer':        self.test_observer,
                     'snap-publishing':      self.snap_publishing,
                     'launchpad-source':     self.launchpad_source,
                     'launchpad-nobuilds':   self.launchpad_nobuilds,
