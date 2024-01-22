@@ -18,6 +18,7 @@ class CertificationTesting(TaskHandler):
 
         s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._status_check
+        s.jumper['Triaged']       = s._status_check
         s.jumper['In Progress']   = s._status_check
         s.jumper['Incomplete']    = s._status_check
         s.jumper['Opinion']       = s._status_check
@@ -80,7 +81,7 @@ class CertificationTesting(TaskHandler):
         for dest in route.entries:
             cinfo("    dest={} name={} reference={} pocket={}".format(dest, dest.name, dest.reference, dest.pocket))
 
-            archive = ctx.lp.archives.getByReference(reference=dest.reference)
+            archive = self.lp.archives.getByReference(reference=dest.reference)
             binaries = archive.getPublishedBinaries(
                 order_by_date=True,
                 exact_match=True,
@@ -153,9 +154,15 @@ class CertificationTesting(TaskHandler):
                 if result is not None:
                     status = result.get("status", "UNKNOWN")
                     tstatus = {
-                        "UNDECIDED": "In Progress",
+                        "UNDECIDED": "Triaged",
                         "APPROVED": "Fix Released",
                     }.get(status, "Incomplete")
+                    assignee = (result.get("assignee") or {}).get("launchpad_handle")
+                    if status == "UNDECIDED" and assignee is not None:
+                        tstatus = "In Progress"
+                    if s.task.assignee is None or s.task.assignee.name != assignee:
+                        lp_assignee = s.lp.people[assignee] if assignee is not None else s.lp.people["canonical-hw-cert"]
+                        s.task.assignee = lp_assignee
                     cinfo("TO deb result-status={} task-status={}".format(status, tstatus))
                     if s.task.status != tstatus:
                         s.task.status = tstatus
@@ -172,6 +179,7 @@ class CertificationTesting(TaskHandler):
                     "type": "test-observer",
                     "id": result.get("id"),
                     "status": result.get("status"),
+                    "assignee": (result.get("assignee") or {}).get("launchpad_handle"),
                 })
             else:
                 s.bug.refresh_at(

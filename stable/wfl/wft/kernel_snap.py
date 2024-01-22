@@ -872,6 +872,7 @@ class SnapCertificationTesting(KernelSnapBase):
 
         s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._status_check
+        s.jumper['Triaged']       = s._status_check
         s.jumper['In Progress']   = s._status_check
         s.jumper['Incomplete']    = s._status_check
         s.jumper['Fix Committed'] = s._status_check
@@ -958,9 +959,16 @@ class SnapCertificationTesting(KernelSnapBase):
                 if result is not None:
                     status = result.get("status", "UNKNOWN")
                     tstatus = {
-                        "UNDECIDED": "In Progress",
+                        "UNDECIDED": "Triaged",
                         "APPROVED": "Fix Released",
                     }.get(status, "Incomplete")
+                    assignee = (result.get("assignee") or {}).get("launchpad_handle")
+                    if status == "UNDECIDED" and assignee is not None:
+                        tstatus = "In Progress"
+                    # Assign the task if we have an owner and move it if the status has changed.
+                    if s.task.assignee is None or s.task.assignee.name != assignee:
+                        lp_assignee = s.lp.people[assignee] if assignee is not None else s.lp.people["canonical-hw-cert"]
+                        s.task.assignee = lp_assignee
                     cinfo("TO snap match result-status={} task-status={}".format(status, tstatus))
                     if s.task.status != tstatus:
                         s.task.status = tstatus
@@ -977,6 +985,7 @@ class SnapCertificationTesting(KernelSnapBase):
                     "type": "test-observer",
                     "id": result.get("id"),
                     "status": result.get("status"),
+                    "assignee": (result.get("assignee") or {}).get("launchpad_handle"),
                 })
             else:
                 s.bug.refresh_at(
