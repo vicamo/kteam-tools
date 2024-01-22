@@ -518,7 +518,8 @@ class MonitorSwmStatusMonitor:
 
     def test_observer(self, bug_id, bug_data, monitor):
         to_id = monitor.get('id')
-        existing = monitor.get('status')
+        existing_status = monitor.get('status')
+        existing_assignee = monitor.get('assignee')
 
         try:
                 observer = TestObserverResults()
@@ -527,9 +528,12 @@ class MonitorSwmStatusMonitor:
             print("test_observer: data not available ({}) change={}".format(str(e), False))
             return False
 
-        current = result.get("status")
-        print("test_observer: existing={} current={} change={}".format(existing, current, existing != current))
-        return existing != current
+        current_status = result.get("status")
+        current_assignee = (result.get('assignee') or {}).get('launchpad_handle')
+        change = existing_status != current_status or existing_assignee != current_assignee
+        print("test_observer: existing_status={} current_status={} existing_assignee={} current_assignee={} change={}".format(
+            existing_status, current_status, existing_assignee, current_assignee, change))
+        return change
 
     def snap_publishing(self, bug_id, bug_data, monitor):
         series = bug_data.get('series')
