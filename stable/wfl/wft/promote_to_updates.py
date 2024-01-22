@@ -77,7 +77,9 @@ class PromoteToUpdates(Promoter):
                 break
 
             if s.bug.debs.older_tracker_in_proposed_any and not s.bug.manual_unblock("earlier-spin"):
-               s.task.reason = 'Stalled -- tracker for earlier spin active in Proposed'
+               # This is more serious if the cycle is actually ready to release.
+               severity = "Stalled" if s._cycle_ready() else "Holding"
+               s.task.reason = severity + ' -- waiting for earlier spin to move to Updates'
                break
 
             if s._kernel_block():
