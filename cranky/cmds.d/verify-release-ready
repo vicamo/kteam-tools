@@ -667,7 +667,7 @@ class VerifyReleaseReady():
                     s.verify_dir()
 
             except HandleError as e:
-                eout(colored(sys.stderr, 'red'))
+                eout(colored(e, 'red'))
 
         return s.failed
 
