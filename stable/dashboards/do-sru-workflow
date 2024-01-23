@@ -32,7 +32,9 @@ cp -p "data/kernel-sru-workflow.json" "data/kernel-sru-workflow.json.new"
 time "$scripts/cbd" --db="data/kernel-sru-workflow.json.new"
 rc="$?"
 if [ "$rc" -eq 0 ]; then
+	# kernel-sru-workflow.json
 	mv -f "data/kernel-sru-workflow.json.new"  "data/kernel-sru-workflow.json"
+	ln -sf "../data/kernel-sru-workflow.json" "kernel-sru-workflow/kernel-sru-workflow.json"
 
 	# kernel-sru-workflow.html
 	echo "Rebuild kernel-sru-workflow.html ..."
