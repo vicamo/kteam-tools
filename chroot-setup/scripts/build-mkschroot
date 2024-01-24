@@ -235,10 +235,15 @@ mantic)
 	ADDPKG="$ADDPKG rustc-1.68 rust-1.68-src rustfmt-1.68 bindgen-0.56 clang-15 llvm-15 libclang1-15"
 	;;
 esac
+case "$SUITE" in
+noble)
+	ADDPKG="$ADDPKG rustc rust-src rustfmt bindgen-0.65 clang-17 llvm-17 libclang1-17"
+	;;
+esac
 
 # Always needed for selftests, available in all suites, not declared
 # as a default build-dep
-ADDPKG="$ADDPKG clang libelf-dev llvm libfuse-dev"
+ADDPKG="$ADDPKG clang libelf-dev llvm lld libfuse-dev"
 
 case $SUITE in
 *)	_SUITE=$SUITE ;;
