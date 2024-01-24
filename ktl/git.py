@@ -23,7 +23,7 @@ class Git:
     subject_rc = compile("^UBUNTU: (Ubuntu-.*)$")
     tag_rc     = compile("^Ubuntu-([a-z][^-]*-){0-2}(.*)$")
     source_rc = compile(
-            "\s*\[*\(*(?:cherry.*pick(?:ed)*|backport(?:ed)*)\sfrom\scommit\s([a-f0-9]+)\s*([^\s\]\)]*)\s*([^\s\]\)]*)"
+            "\s*\[*\(*(?:cherry picked|backported|forward ported)\sfrom\scommit\s([a-f0-9]+)\s*([^\s\]\)]*)\s*([^\s\]\)]*)"
         )
 
     log_results = {}
