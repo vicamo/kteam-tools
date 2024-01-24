@@ -315,9 +315,9 @@ class Git:
         if num != -1:
             log_cmd = "%s -%d" % (log_cmd, num)
         if grep != "":
-            # Escape all special characters, then unescape ()
-            log_cmd = '%s --grep "%s"' \
-                    % (log_cmd, escape(grep).replace("\(", "(").replace("\)", ")"))
+            # Escape all special characters, explicitly including ", then unescape ()
+            grep = escape(grep).replace('"', '\\"').replace("\(", "(").replace("\)", ")")
+            log_cmd = '%s --grep "%s"' % (log_cmd, grep)
         status, result = run_command(log_cmd, cls.debug)
         commit       = {}
         commit_text  = []
