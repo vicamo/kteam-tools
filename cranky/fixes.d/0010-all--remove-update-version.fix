@@ -1,0 +1,27 @@
+#!/bin/bash -eu
+# remove update-version and update-dkms-versions scripts from dependent trees
+
+# shellcheck source=./cranky/fixes.d/lib.sh
+. "$(dirname "$0")"/lib.sh
+
+if [ "${FIX_TYPE}" = "main" ] ; then
+	# Nothing to do for the main tree
+	exit 0
+fi
+
+if [ -f "${FIX_MAIN_PATH}"/update-dkms-versions ] ; then
+	# The main tree still has the update-dkms-versions script, so the
+	# dependents still need the update-version and update-dkms-versions
+	# scripts
+	exit 0
+fi
+
+if [ -f update-version ] ; then
+	rm -f update-version
+	commit "UBUNTU: [Packaging] remove update-version script" update-version
+fi
+
+if [ -f update-dkms-versions ] ; then
+	rm -f update-dkms-versions
+	commit "UBUNTU: [Packaging] remove update-dkms-versions script" update-dkms-versions
+fi

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ! [ -f update-dkms-versions ] ; then
+	# The script is gone from the tree, so nothing to do
+	exit 0
+fi
+
 # shellcheck source=./cranky/fixes.d/lib.sh
 . "$(dirname "$0")"/lib.sh
 
