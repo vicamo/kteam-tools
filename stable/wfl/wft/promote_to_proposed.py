@@ -57,14 +57,6 @@ class PromoteFromTo(Promoter):
             retval = True
             break
 
-        # Identify the packages which are incomplete -- first step.
-        for pocket in s.pockets_watch:
-            delta = s.bug.debs.delta_src_dst(s.pocket_src, pocket)
-            # If everything which is not fully published is in the pocket
-            # this is the pocket for us.
-            if s.bug.debs.delta_in_pocket(delta, pocket):
-                break
-
         while not retval:
             task_src_ready = True
             for task_src in s.task_srcs:
@@ -74,6 +66,14 @@ class PromoteFromTo(Promoter):
                 task_src_ready = False
             if not task_src_ready:
                 break
+
+            # Identify the packages which are incomplete -- first step.
+            for pocket in s.pockets_watch:
+                delta = s.bug.debs.delta_src_dst(s.pocket_src, pocket)
+                # If everything which is not fully published is in the pocket
+                # this is the pocket for us.
+                if s.bug.debs.delta_in_pocket(delta, pocket):
+                    break
 
             if not s.bug.debs.delta_in_pocket(delta, s.pocket_dest):
                 break
@@ -137,8 +137,10 @@ class PromoteFromTo(Promoter):
                 s.task.reason = 'Stalled -- cycle on hold'
                 break
 
-            # Record what is missing as we move to Confirmed.
-            s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
+            # Record what is missing as we move to Confirmed.  This is everything
+            # we will need to move at any stage of the (potentially) multi-step
+            # copy.
+            s.bug.debs.delta_record('promote-to-proposed', 'ppa', 'Proposed')
             s.bug.clamp_assign('promote-to-proposed', s.bug.debs.prepare_id)
 
             # If this was pre-approved and things are ready, then move it to in-progress
@@ -415,7 +417,7 @@ class PromoteToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteToProposed, s).__init__(lp, task, bug)
 
-        s.task_srcs = [':prepare-packages', 'signing-signoff', 'boot-testing', 'sru-review']
+        s.task_srcs = [':prepare-packages', 'signing-signoff', 'boot-testing', 'sru-review'] # XXX: 'new-review'
         s.pocket_src = 'ppa'
         s.pockets_clear = []
         s.pockets_watch = []

@@ -38,8 +38,7 @@ class SourceReview(TaskHandler):
                 break
 
             # Record the delta between the build ppa and whatever follows.
-            delta = s.bug.debs.delta_src_dst('ppa', s.bug.debs.pocket_after('ppa'))
-            s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
+            s.bug.debs.delta_record('promote-to-proposed', 'ppa', 'Proposed')
 
             # For pre-approval we reviewed against the sru-review proffered
             # stamp, so copy that over; and then move directly to approved.

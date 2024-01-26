@@ -134,7 +134,7 @@ class PromoteToRelease(Promoter):
             #
             if not s.bug.debs.packages_released:
                 # Confirm the packages remain available to copy.
-                if not s.bug.debs.all_built_and_in_pocket('Proposed'):
+                if not s.bug.debs.all_built_in_src_dst('Proposed', 'Release'):
                     s.task.reason = 'Alert -- packages no longer available'
                     if s.task.status != 'Incomplete':
                         s.task.status = 'Incomplete'
