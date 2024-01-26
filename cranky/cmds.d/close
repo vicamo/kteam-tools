@@ -120,7 +120,7 @@ fi
 # Skip inserting parent source entries if this is not a rebase tree.
 if [ ! -f "$DEBIAN/etc/update.conf" ]; then
 	skip_master_entries=1
-elif [ "$DEBIAN_MASTER" != "" -a ! -d "$DEBIAN_MASTER" ]; then
+elif [ "$DEBIAN_MASTER" != "" ] && [ ! -d "$DEBIAN_MASTER" ]; then
 	skip_master_entries=1
 fi
 if [ $skip_master_entries == 0 ]; then
@@ -146,7 +146,7 @@ if [ $skip_master_entries == 0 ]; then
 		done
 	fi
 
-	master_version=$(dpkg-parsechangelog -l${DEBIAN_MASTER}/changelog -SVersion)
+	master_version=$(dpkg-parsechangelog -l"${DEBIAN_MASTER}"/changelog -SVersion)
 	if ! [ "$master_version" ]; then
 		echo "Failed to retrieve current master version from changelog: $DEBIAN/changelog"
 		exit 1
