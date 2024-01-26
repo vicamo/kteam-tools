@@ -9,7 +9,8 @@ import yaml
 
 from  debian.debian_support             import version_compare
 
-from lazr.restfulclient.errors          import NotFound, Unauthorized
+from lazr.restfulclient.errors          import NotFound, Unauthorized, ServerError
+from httplib2.socks                     import HTTPError
 
 from ktl.msgq                           import MsgQueue, MsgQueueCkct
 from ktl.utils                          import date_to_string, dump
@@ -18,7 +19,7 @@ from .check_component                   import CheckComponent
 from .context                           import ctx
 from .errors                            import ShankError, ErrorExit, WorkflowCrankError
 from .git_tag                           import GitTag, GitTagError
-from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo
+from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo, centerleave
 
 # PackageError
 #
@@ -37,6 +38,483 @@ class SeriesLookupFailure(ShankError):
     Thrown when the series lookup throws a KeyError exception.
     '''
     pass
+
+
+# PackageBuildRouteEntry
+#
+class PackageBuildRouteEntry:
+    """
+    Represents a package-build on a specified source package
+    route-entry.
+
+    This object represents all infomation related to both the
+    top-level Debian source package for the `package` and the
+    related Debian binary binary-packages including the current
+    Launchpad build stati where relevant.
+
+    :ivar bug:
+        the associated WorkflowBug (or None)
+    :ivar series:
+        the Ubuntu distribution series codename for this build
+    :ivar dependent:
+        the package-type for this build
+    :ivar route_name:
+        the human visible name for this route entry
+    :ivar route_entry:
+        the human visible offset for this route entry
+    :ivar archive:
+        the Launchpad archive object for this route entry
+    :ivar pocket:
+        the Launchpad pocket name this route entry
+    :ivar package:
+        the source package name for this build
+    """
+
+    def __init__(self, series, dependent, route_name, route_entry, archive, pocket, package, bug=None):
+        """
+        :param series:
+            the Ubuntu distribution series codename for this build
+        :param dependent:
+            the package-type for this build
+        :param route_name:
+            the human visible name for route entry
+        :param route_entry:
+            the human visible offset for this route entry
+        :param archive:
+            the Launchpad archive object for this route entry
+        :param pocket:
+            the Launchpad pocket name this route entry
+        :param package:
+            the source package name for this build
+        """
+        self.bug = bug
+        self.series = series
+        self.dependent = dependent
+        self.route_name = route_name
+        self.route_entry = route_entry
+        self.archive = archive
+        self.pocket = pocket
+        self.package = package
+
+        self.route_name_entry = "{}#{}".format(self.route_name, self.route_entry)
+
+        self._source = False
+        self._binary_analysis = False
+
+        self.monitors = []
+
+    def monitor_add(self, monitor):
+        self.monitors.append(monitor)
+
+    @property
+    def reference(self):
+        """the archive reference for this route entry"""
+        return self.archive.reference
+
+    @property
+    def source(self):
+        """the Launchpad source package object"""
+        if self._source is False:
+            cdebug("SOURCE {} {} {}".format(self.dependent, self.route_name_entry, self.package))
+            srcs = self.archive.getPublishedSources(
+                order_by_date=True,
+                exact_match=True,
+                distro_series=self.series,
+                source_name=self.package,
+                pocket=self.pocket,
+            )
+            # Only consider positive states as present.
+            if len(srcs) > 0 and srcs[0].status in ("Pending", "Published"):
+                src = srcs[0]
+            else:
+                src = None
+            self._source = src
+
+            # Generate a monitor record for this source.
+            monitor = {
+                "type": "launchpad-source",
+                "reference": self.archive.reference,
+                "pocket": self.pocket,
+                #"series": s.series,
+                "package": self.package,
+                "last-scanned": self.bug.tracker_instantiated, # XXX: can we fill this in at conversion?
+            }
+            if src:
+                monitor['status'] = src.status
+                monitor['lp-api'] = src.self_link
+            self.monitor_add(monitor)
+        return self._source
+
+    @property
+    def version(self):
+        """the Launchpad source package version"""
+        src = self.source
+        return src.source_package_version if src is not None else None
+
+    @property
+    def changes_url(self):
+        """the Launchpad source package changes URL"""
+        src = self.source
+        return src.changesFileUrl() if src is not None else None
+
+    @property
+    def creator(self):
+        """the Launchpad source package creator"""
+        src = self.source
+        return src.package_creator if src is not None else None
+
+    @property
+    def signer(self):
+        """the Launchpad source package signer"""
+        src = self.source
+        return src.package_signer if src is not None else None
+
+    @property
+    def binary_analysis(self):
+        source = self.source
+        if self._binary_analysis is False and source is None:
+            self._binary_analysis = {}
+
+        elif self._binary_analysis is False:
+            cdebug("BINARY {} {} {}".format(self.dependent, self.route_name_entry, self.package))
+            published = source.date_published
+            latest_build = source.date_published
+            status = set()
+            status.add('UNKNOWN')
+
+            status_detail = []
+
+            cdebug("source status={}".format(source.status))
+            if source.status == "Pending":
+                status.add('PENDING')
+            elif source.status == "Published":
+                status.add('FULLYBUILT')
+            else:
+                # Anything else is broken.
+                #  Superseded
+                #  Deleted
+                #  Obsolete
+                status.add('FAILEDTOBUILD')
+
+            arch_build = set()
+            arch_complete = set()
+            builds = source.getBuilds()
+            if len(builds) == 0:
+                self.monitor_add({
+                        'type': 'launchpad-nobuilds',
+                        'reference': archive.reference,
+                        'pocket': self.pocket,
+                        #'status': source.status,
+                        'lp-api': source.self_link,
+                        'last-scanned': self.bug.tracker_instantiated}) # XXX: can we fill this in at conversion?
+            for build in builds:
+                buildstate = build.buildstate
+                ##print(build, build.buildstate, build.datebuilt)
+                cdebug("build arch={} status={}".format(build.arch_tag, buildstate))
+                if build.buildstate in (
+                        'Needs building',
+                        'Currently building',
+                        'Uploading build'):
+                    status.add('BUILDING')
+
+                elif buildstate == 'Dependency wait':
+                    status.add('DEPWAIT')
+
+                elif buildstate == 'Successfully built':
+                    status.add('FULLYBUILT')
+                    arch_complete.add(build.arch_tag)
+
+                else:
+                    # Anything else is a failure, currently:
+                    #  Build for superseded Source
+                    #  Failed to build
+                    #  Chroot problem
+                    #  Failed to upload
+                    #  Cancelling build
+                    #  Cancelled build
+                    status.add('FAILEDTOBUILD')
+
+                if build.buildstate in (
+                        'Failed to build',
+                        'Needs building',
+                        'Currently building',
+                        'Uploading build',
+                        'Dependency wait'):
+                    self.monitor_add({
+                            'type': 'launchpad-build',
+                            'reference': self.reference,
+                            'pocket': self.pocket,
+                            'status': buildstate,
+                            'lp-api': build.self_link,
+                            'last-scanned': self.bug.tracker_instantiated}) # XXX: (as above)
+
+                #if buildstate != 'Successfully built':
+                #    # XXX: do we use the maintenance records any more ?
+                #    self.bug.maintenance_add({
+                #        'type': 'deb-build',
+                #        'target': self.bug.target,
+                #        'detail': {
+                #            'state': buildstate,
+                #            'type': self.dependent,
+                #            'package': build.source_package_name,
+                #            'url': build.web_link,
+                #            'lp-api': build.self_link,
+                #            'log': build.build_log_url,
+                #        }})
+
+                # Accumulate the latest build completion.
+                if build.datebuilt is not None and (latest_build is None or latest_build < build.datebuilt):
+                    latest_build = build.datebuilt
+
+                # Accumulate the architectures we are meant to build for.
+                arch_build.add(build.arch_tag)
+
+            one_per_build = set()
+            arch_published = set()
+            # Grab all the binaries, including those superseded so we can tell if
+            # we have been dominated away.
+            binaries_all = source.getPublishedBinaries(active_binaries_only=False)
+
+            # NOTE: that this set may contain more than record for a binary if that
+            # binary has been republished to change components, or if it was simply
+            # deleted and reinstated.  The records are guarenteed to be in reverse
+            # date order within an arch/package combination.  Pick just the first one
+            # for each combination.
+            binaries = []
+            binaries_seen = set()
+            for binary in binaries_all:
+                arch_tag = binary.distro_arch_series_link.split('/')[-1] if binary.architecture_specific else 'all'
+                binary_key = (binary.distro_arch_series_link, binary.binary_package_name)
+                if binary_key in binaries_seen:
+                    cdebug("binary-duplicate arch={} status={} binary_package_name={} binary_package_version={} component_name={}".format(arch_tag, binary.status, binary.binary_package_name, binary.binary_package_version, binary.component_name))
+                    continue
+                binaries.append(binary)
+                binaries_seen.add(binary_key)
+
+            # Run the relevant binary records and make sure they are all live publications.
+            for binary in binaries:
+                ##print(binary, binary.status, binary.date_published)
+                arch_tag = binary.distro_arch_series_link.split('/')[-1] if binary.architecture_specific else 'all'
+                cdebug("binary arch={} status={} binary_package_name={} binary_package_version={} component_name={}".format(arch_tag, binary.status, binary.binary_package_name, binary.binary_package_version, binary.component_name))
+                if binary.status == 'Pending':
+                    status.add('PENDING')
+                elif binary.status  == 'Published':
+                    status.add('FULLYBUILT')
+                elif self.bug.accept_present("superseded-binaries") and binary.status == "Superseded":
+                    cdebug("binary arch={} status={} binary_package_name={} binary_package_version={} component_name={} binary superseded accepted".format(arch_tag, binary.status, binary.binary_package_name, binary.binary_package_version, binary.component_name))
+                    status.add('FULLYBUILT')
+                elif binary.status == "Superseded":
+                    status.add('SUPERSEDED')
+                    status_detail.append("{} {} superceded".format(arch_tag, binary.binary_package_name))
+                else:
+                    # Anything else is broken.
+                    #  Superseded
+                    #  Deleted
+                    #  Obsolete
+                    cinfo("binary arch={} status={} binary_package_name={} binary_package_version={} component_name={}".format(arch_tag, binary.status, binary.binary_package_name, binary.binary_package_version, binary.component_name))
+                    status.add('FAILEDTOBUILD')
+
+                if binary.status == 'Pending' and binary.build_link not in one_per_build:
+                    one_per_build.add(binary.build_link)
+                    self.monitor_add({
+                            'type': 'launchpad-binary',
+                            'reference': self.reference,
+                            'pocket': self.pocket,
+                            'status': binary.status,
+                            'lp-api': binary.self_link,
+                            'last-scanned': self.bug.tracker_instantiated}) # XXX: (as above)
+
+                # Accumulate the latest publication time.
+                if published is None or (binary.date_published is not None and
+                        published < binary.date_published):
+                    published = binary.date_published
+
+                # Accumulate the architectures we have publications for.
+                if binary.architecture_specific:
+                    arch_published.add(binary.distro_arch_series_link.split('/')[-1])
+
+            # Ensure we have publications in every architecture for which we have a build.
+            # In the case of a copy (with binaries) of a package we may have more published
+            # architectures than we have builds.  If we have architecuture builds which are not
+            # published check the publications to see if they are missing because they are in
+            # the uploads or approval queues.
+            if not arch_build.issubset(arch_published):
+                cinfo("build/published missmatch arch_build={} arch_published={}".format(arch_build, arch_published))
+                if arch_build == arch_complete:
+                    uploads = source.distro_series.getPackageUploads(exact_match=True,
+                            archive=self.archive, pocket=self.pocket, name=source.source_package_name,
+                            version=source.source_package_version)
+                    queued = False
+                    for upload in uploads:
+                        if upload.status == 'Rejected':
+                            status.add('FAILEDTOBUILD')
+                        elif upload.status != 'Done':
+                            if upload.status in ('New', 'Unapproved', 'Accepted'):
+                                queued = True
+                            cinfo("upload not complete status={}".format(upload.status))
+                            self.monitor_add({
+                                    'type': 'launchpad-upload',
+                                    'reference': self.reference,
+                                    'pocket': self.pocket,
+                                    'status': upload.status,
+                                    'lp-api': upload.self_link,
+                                    'last-scanned': self.bug.tracker_instantiated}) # XXX: (as above)
+                    if queued:
+                        status.add('QUEUED')
+                    else:
+                        status.add('PENDING')
+
+                else:
+                    status.add('BUILDING')
+
+            # Pick out the stati in a severity order.
+            for state in ('FAILEDTOBUILD', 'SUPERSEDED', 'DEPWAIT', 'BUILDING', 'QUEUED', 'PENDING', 'FULLYBUILT', 'UNKNOWN'):
+                if state in status:
+                    break
+
+            if published is not None:
+                published = published.replace(tzinfo=None)
+            if latest_build is not None:
+                latest_build = latest_build.replace(tzinfo=None)
+
+            self._binary_analysis = {
+                "published": published,
+                "latest_build": latest_build,
+                "status": state,
+                "status_detail": status_detail,
+            }
+
+        return self._binary_analysis
+
+    @property
+    def published(self):
+        """the most recent publication source and binary timestamp"""
+        return self.binary_analysis.get("published")
+
+    @property
+    def latest_build(self):
+        """the most recent build completion timestamp"""
+        return self.binary_analysis.get("latest_build")
+
+    # XXX: legacy interface.
+    most_recent_build = latest_build
+
+    @property
+    def status(self):
+        """the overall status of this build"""
+        return self.binary_analysis.get("status")
+
+    @property
+    def status_detail(self):
+        """the overall status details of this build"""
+        return self.binary_analysis.get("status_detail")
+
+
+# PackageBuildRoute
+#
+class PackageBuildRoute:
+    """
+    Represents a package build (source and binaries) on a specified source
+    package route (proposed etc).
+
+    :ivar bug:
+        the associated WorkflowBug (or None)
+    :ivar series:
+        the Ubuntu distribution series codename for this build
+    :ivar dependent:
+        the package-type for this build
+    :ivar route_name:
+        the human visible name for this route
+    :ivar routing:
+        the routing (reference, pocket) pairs list for this route
+    :ivar package:
+        the source package name for this buidl
+    :ivar stream_route:
+        a boolean indicating whether this is route is affected by streaming
+    """
+
+    def __init__(self, series, dependent, route_name, routing, package, bug=None):
+        """
+        :param series:
+            the Ubuntu distribution series codename for this build
+        :param dependent:
+            the package-type for this build
+        :param route_name:
+            the human visible name for the route (e.g. proposed)
+        :param routing:
+            a list of (reference, pocket) pairs representing the archive
+            which make up this pocket
+        :param package:
+            the source package name for this build
+        """
+        self.bug = bug
+        self.series = series
+        self.dependent = dependent
+        self.route_name = route_name
+        self.routing = routing
+        self.package = package
+
+        self.stream_route = self.route_name in ('ppa', 'Proposed', 'as-proposed') or self.route_name.startswith('build')
+
+        self._publications = False
+
+    @property
+    def publications(self):
+        """
+        Lazily instantiated list of publications in each route element
+
+        :return:
+            List of publications one per route element
+        """
+        cdebug("PUBLICATIONS {} {} {}".format(self.dependent, self.route_name, self.package))
+
+        if self._publications is False:
+            publications = []
+            archive_num = 0
+            for archive, pocket in self.routing:
+                archive_num += 1
+                if archive is None:
+                    route_name_entry = "{}#{}".format(self.route_name, archive_num)
+                    raise WorkflowCrankError("Routing table entry {} invalid".format(route_name_entry))
+                publications.append(PackageBuildRouteEntry(self.series, self.dependent, self.route_name, archive_num, archive, pocket, self.package, bug=self.bug))
+
+            self._publications = publications
+        return self._publications
+
+    def publications_match(self, limit_stream=None):
+        """
+        Return the publications in this route appropriate for ``limit_stream``
+        if present.
+
+        :param limit_stream:
+            optional stream number to select from the route
+        :return:
+            list of ``PackageBuildRouteEntry`` objects representing selected
+            builds
+        """
+        archive_only = limit_stream if self.stream_route else None
+        return [pub for pub in self.publications if archive_only is None or pub.route_entry == archive_only]
+
+    def version_match(self, exact=None, prefix=None, limit_stream=None):
+        """
+        Return the publications in this route which match the supplied criteria.
+
+        :param exact:
+            requests an exact version match
+        :param prefix:
+            requests a version prefix match
+        :param limit_stream:
+            requests consideration of entries in that stream
+        :return:
+            ``PackageBuildRouteEntry`` for the matching build
+            ``None`` if no match is found
+        """
+        for pub in self.publications_match(limit_stream=limit_stream):
+            if exact is not None and pub.version == exact:
+                return pub
+            if prefix is not None and pub.version is not None and pub.version.startswith(prefix):
+                return pub
+        return None
 
 
 # PackageBuild
@@ -479,6 +957,7 @@ class Package():
             raise PackageError('Unable to check package builds for this bug: the package/series combination is invalid')
 
         s._cache = None
+        s._builds = None
         s._version_tried = {}
 
         s._monitor_debs = []
@@ -710,6 +1189,7 @@ class Package():
         center('Sources::__determine_build_status')
 
         s._cache = {}
+        s._builds = {}
 
         cinfo('')
         cinfo('Build Status:', 'cyan')
@@ -745,6 +1225,7 @@ class Package():
             cinfo("{} {} abi={} sloppy={}".format(s.pkgs[dep], version, abi, sloppy))
 
             s._cache[dep] = {}
+            s._builds[dep] = {}
             if not s.bug.is_development_series:
                 cdebug('Stable Package', 'cyan')
                 cdebug('')
@@ -766,10 +1247,31 @@ class Package():
                     continue
 
                 s._cache[dep][pocket] = PackageBuild(s.bug, s.distro_series, dep, pocket_from, s._routing[pocket_from], s.pkgs[dep], version, abi, sloppy)
+                s._builds[dep][pocket] = PackageBuildRoute(s.distro_series, dep, pocket_from, s._routing[pocket_from], s.pkgs[dep], bug=s.bug)
                 if pocket == scan_pockets[0]:
                     s._cache[dep]['ppa'] = s._cache[dep][pocket]
+                    s._builds[dep]['ppa'] = s._builds[dep][pocket]
                 #cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
             Clog.indent -= 4
+
+        # Scan across the build locations and dertermine if we see an upload in an appropriate
+        # version.  Use this to set the built_in if we don't have one.
+        for pkg in s.pkgs:
+            package_published = s.builds[pkg]["ppa"].version_match(exact=s.bug.version, limit_stream=s.built_in)
+            if package_published is None:
+                if pkg == "lbm":
+                    version_sloppy = s.bug.kernel + "-" + s.bug.abi + "."
+                elif pkg in ("meta", "ports-meta"):
+                    version_sloppy = s.bug.kernel + "." + s.bug.abi + "."
+                else:
+                    version_sloppy = s.bug.version + "+"
+                package_published = s.builds[pkg]["ppa"].version_match(prefix=version_sloppy, limit_stream=s.built_in)
+            if package_published is not None:
+                cinfo("APW: NEW package_version found {} in {} ({}#{})".format(package_published.version, package_published.reference, package_published.route_name, package_published.route_entry))
+                cinfo("APW: NEW package_version monitors={}".format(package_published.monitors))
+                if s.bug.bprops.get("versions", {}).get(pkg) is None and s.ancillary_package_for(pkg) is None:
+                    cinfo("APW: NEW package_version found {} in {} ({}#{}) -- setting".format(package_published.version, package_published.reference, package_published.route_name, package_published.route_entry))
+                    s.bug.bprops.setdefault('versions', {})[pkg] = package_published.version
 
         #cdebug('')
         #cdebug('The Cache:', 'cyan')
@@ -830,6 +1332,14 @@ class Package():
         if s._cache is None:
             s.__determine_build_status()
         return s._cache
+
+    # builds
+    #
+    @property
+    def builds(self):
+        if self._builds is None:
+            self.__determine_build_status()
+        return self._builds
 
     # built_set
     #
@@ -1482,6 +1992,32 @@ class Package():
         cleave('Packages::signer')
         return retval
 
+    def changes_data(self, url):
+        """
+        Return the changes file contents located at ``url``.
+
+        :param url:
+            the URL from which we should fetch the changes file
+        :return:
+            list of changes file lines
+            ``None`` no changes file was found at ``url``
+        :raises:
+            ``WorkflowCrankError`` on librarian errors
+        """
+        try:
+            changes = self.lp._browser.get(url)
+            return changes.decode('utf-8').rstrip().split('\n')
+        except NotFound:
+            pass
+        except Unauthorized:
+            pass
+        except ServerError:
+            raise WorkflowCrankError("launchpad librarian unavailable")
+        except HTTPError as e:
+            if e.args[0] != 403:
+                raise WorkflowCrankError("launchpad librarian unavailable ({})".format(e.args[0]))
+        return None
+
     # bugs
     #
     @property
@@ -1507,21 +2043,96 @@ class Package():
 
                 # If we managed to find a changes file then we can extract the list.
                 if changes_url is not None:
-                    changes_url = changes_url.replace('https://launchpad.net/', 'https://api.launchpad.net/devel/')
-                    try:
-                        changes = self.lp._browser.get(changes_url)
-                        bugs = []
-                        for line in changes.decode('utf-8').rstrip().split('\n'):
-                            if line.startswith('Launchpad-Bugs-Fixed:'):
-                                bugs = line.split(' ')[1:]
-                    except NotFound:
-                        pass
-                    except Unauthorized:
+                    changes_data = self.changes_data(changes_url)
+                    if changes_data is None:
                         continue
+                    for line in changes_data:
+                        if line.startswith('Launchpad-Bugs-Fixed:'):
+                            bugs = line.split(' ')[1:]
                     break
 
         cleave(self.__class__.__name__ + '.bugs {}'.format(bugs))
         return bugs
+
+    # prerequisite_packages
+    #
+    @centerleave
+    def prerequisite_packages(self):
+        """
+        Return a list of failed prerequisite debian packages.
+
+        :returns:
+            list of errors for any known prerequisite package which is not
+            in the -updates pocket, an empty list indicates success
+        """
+        prereq_re = re.compile(r"^ *(\S+) +\(= +(\S+)\) *$")
+
+        # If we have no version, we can have no build, if we have no build we 
+        # do not know what bugs we have.
+        if self.version is None:
+            return None
+
+        # Find an upload record for the lrm package.
+        pkg = 'lrm'
+        prereqs = []
+        for pocket in self.__pockets_uploaded:
+            package_version = self.package_version_exact(pkg)
+            if package_version is None:
+                continue
+            build_route = self.builds.get(pkg, {}).get(pocket)
+            if build_route is None:
+                continue
+            build_route_entry = build_route.version_match(exact=package_version, limit_stream=self.bug.built_in)
+            if build_route_entry is None:
+                continue
+            changes_url = build_route_entry.changes_url
+            if changes_url is None:
+                continue
+
+            cdebug("PREREQ-PKGS: CHANGES: url={}".format(changes_url))
+            changes_data = self.changes_data(changes_url)
+            if changes_data is None:
+                continue
+
+            #cdebug("PREREQ-PKGS: CHANGES: data={}".format(changes_data))
+            prereq_data = None
+            for line in changes_data:
+                if line.startswith("Ubuntu-Nvidia-Dependencies:"):
+                    prereq_data = ""
+                    continue
+                if prereq_data is None:
+                    continue
+                if line[0] != " ":
+                    break
+                prereq_data = prereq_data + line.rstrip()
+            cdebug("PREREQ-PKGS: CHANGES: prereq={}".format(prereq_data))
+            for prereq in prereq_data.split(","):
+                match = prereq_re.match(prereq)
+                if not match:
+                    continue
+                prereqs.append((match.group(1), match.group(2)))
+
+        if self.bug.is_development_series:
+            pocket = 'Release'
+        else:
+            pocket = 'Updates'
+        failures = []
+        for package, version in prereqs:
+            build_route = PackageBuildRoute(self.distro_series, "adhoc", pocket, self._routing[pocket], package, bug=self.bug)
+            if build_route is None:
+                failures.append("{}/{} no {} route".format(package, version, pocket))
+                cinfo("{}/{} package has no {} route".format(package, version, pocket))
+                continue
+            build_route_entry = build_route.version_match(exact=version, limit_stream=self.bug.built_in)
+            #built_route_entry = build_route.version_match() # ANY
+            #cinfo("{}/{} package found version={}".format(package, built_route_entry, version))
+            if build_route_entry is None:
+                failures.append("{}/{} package not found in {} route".format(package, version, pocket))
+                cinfo("{}/{} package not found in {} route".format(package, version, pocket))
+                continue
+            cinfo("{}/{} package found as expected".format(package, version))
+
+        return failures
 
     # packages_released
     #

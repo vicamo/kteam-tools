@@ -211,6 +211,12 @@ class Promoter(TaskHandler):
                     'polling for nvidia objects {}'.format(' '.join(missing)))
                 retval = False
 
+        missing = s.bug.debs.prerequisite_packages()
+        cinfo("PREREQ-PACKAGES missing={}".format(missing))
+        if len(missing):
+            s.bug.reasons['prerequisite-packages'] = "Pending -- packages not released -- {}".format(' '.join(missing))
+            retval = False
+
         cleave(s.__class__.__name__ + '._prerequisites_released (%s)' % retval)
         return retval
 
