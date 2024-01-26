@@ -593,45 +593,116 @@ class Package():
 
         return version
 
-    # ancillary_package_for
-    #
-    def ancillary_package_for(self, pkg):
-        if pkg in ('lrg', 'lrs'):
-            return 'lrm'
-        return None
+    def ancillary_package_for(self, ptype):
+        """
+        Returns the package-type of the package for which ``ptype`` is an
+        ancillary, if any.  That is the package which owns ``ptype``.
 
-    # signing_package_for
-    #
-    def signing_package_for(self, pkg):
-        return {
-                'lrs': 'lrm',
-                'signed': 'main',
-            }.get(pkg)
+        :param ptype:
+            package-type of the package to examine.
+        :return:
+            package-type of our owning package.
+            ``None`` if ``ptype`` is not an ancillary.
+        """
+        pkg = self.source.lookup_package(type=ptype)
+        if pkg is None:
+            return None
+        owner = pkg.ancillary_for
+        if owner is None:
+            return None
+        return owner.type or "main"
 
-    # feeder_package_for
-    #
-    def feeder_package_for(self, pkg):
-        return {
-                'signed': 'main',
-                'lrm': 'main',
-                'lrg': 'lrm',
-                'lrs': 'lrg',
-                'meta': 'main',
-            }.get(pkg)
+    def signing_package_for(self, ptype):
+        """
+        Returns the package-type of the package for which ``ptype`` is a signing
+        consumer, if any.  That is the package which produces the signable material
+        which ``ptype`` consumes.
 
-    # feeder_key
-    #
-    def feeder_key(self, pkg):
+        :param ptype:
+            package-type of the package to examine.
+        :return:
+            package-type of our signing producer.
+            ``None`` if ``ptype`` is not a signing consumer.
+        """
+        pkg = self.source.lookup_package(type=ptype)
+        if pkg is None:
+            return None
+        signing = pkg.signing_from
+        if signing is None:
+            return None
+        return signing.type or "main"
+
+    def generate_package_for(self, ptype):
+        """
+        Returns the package-type of the package for which ``ptype`` is a signing
+        producer, if any.  That is the package which consumes the signable material
+        which ``ptype`` produces.
+
+        :param ptype:
+            package-type of the package to examine.
+        :return:
+            package-type of our signing consumer.
+            ``None`` if ``ptype`` is not a signing producer.
+        """
+        pkg = self.source.lookup_package(type=ptype)
+        if pkg is None:
+            return None
+        generate = pkg.signing_to
+        if generate is None:
+            return None
+        return generate.type or "main"
+
+    def prereq_package_for(self, ptype):
+        """
+        Returns the package-type of the package which ``ptype`` follows in
+        the build sequence, if any.
+
+        :param ptype:
+            package-type of the package to examine.
+        :return:
+            package-type of our prereq package.
+            ``None`` if ``ptype`` is a top-level package.
+        """
+        pkg = self.source.lookup_package(type=ptype)
+        if pkg is None:
+            return None
+        prereq = pkg.depends
+        if prereq is None:
+            return None
+        return prereq.type or "main"
+
+    def prereq_key(self, ptype):
+        """
+        Returns a sorting key representing the order in which packages are
+        built.  This is determined from the prereq chain.
+
+        :param ptype:
+            package-type of the package to generate the key.
+        :return:
+            list of package-types for our entire prereq chain, top to bottom.
+        """
+        pkg = ptype
         key = []
         while pkg is not None:
             key.insert(0, pkg)
-            pkg = self.feeder_package_for(pkg)
+            pkg = self.prereq_package_for(pkg)
         return key
 
-    # adjunct_package
-    #
-    def adjunct_package(self, pkg):
-        return self.ancillary_package_for(pkg) == 'lrm'
+    def adjunct_package(self, ptype):
+        """
+        Returns a boolean indicating if ``ptype`` is an adjunct package.  That is
+        an embargoed package which should only be expressed in private archives.
+        For example the linux-restricted-generate packages.
+
+        :param ptype:
+            package-type of the package to examine.
+        :return:
+            boolean indicating if ``ptype`` is an adjunct package
+        """
+        pkg = self.source.lookup_package(type=ptype)
+        if pkg is None:
+            return None
+        return pkg.adjunct
 
     # __determine_build_status
     #
@@ -826,7 +897,7 @@ class Package():
     def dependent_packages_for_pocket(self, pocket):
         pkgs = []
         for pkg in self.build_info:
-            if pkg == 'lrg' and pocket not in ('ppa', 'build-private', 'Signing'):
+            if self.generate_package_for(pkg) is not None and pocket not in ('ppa', 'build-private', 'Signing'):
                 continue
             pkgs.append(pkg)
         cdebug("dependent_packages_for_pocket({})={}".format(pocket, pkgs))
@@ -1237,9 +1308,9 @@ class Package():
         packages = s.dependent_packages_for_pocket(pocket)
         return s.delta_failures_in_pocket(packages, pocket, ignore_all_missing)
 
-    def __feeder_completed(s, feeder, pocket):
-        published = s.srcs[feeder].get(pocket, {}).get('published')
-        built = s.srcs[feeder].get(pocket, {}).get('most_recent_build')
+    def __prereq_completed(s, prereq, pocket):
+        published = s.srcs[prereq].get(pocket, {}).get('published')
+        built = s.srcs[prereq].get(pocket, {}).get('most_recent_build')
         if published is None:
             return built
         if built is None:
@@ -1264,7 +1335,7 @@ class Package():
                 wait_status = 'depwait' if status == 'DEPWAIT' else 'failwait'
 
                 # Check if we failed without a log, if so, hit retry regardless
-                # or any feeder existance.
+                # or any prereq existance.
                 if status == 'FAILEDTOBUILD':
                     # If we successfully retried it then we should report it as
                     # building.
@@ -1274,40 +1345,40 @@ class Package():
 
                 # Look up the dependancy chain looking for something which
                 # can be retried.
-                active_feeder = pkg
+                active_prereq = pkg
                 while True:
-                    previous_feeder = active_feeder
-                    active_feeder = s.feeder_package_for(active_feeder)
-                    if active_feeder is None:
+                    previous_prereq = active_prereq
+                    active_prereq = s.prereq_package_for(active_prereq)
+                    if active_prereq is None:
                         break
-                    active_feeder_state = s.srcs.get(active_feeder, {}).get(pocket, {}).get('status')
-                    if active_feeder_state not in ('DEPWAIT', 'FAILEDTOBUILD'):
+                    active_prereq_state = s.srcs.get(active_prereq, {}).get(pocket, {}).get('status')
+                    if active_prereq_state not in ('DEPWAIT', 'FAILEDTOBUILD'):
                        break
 
                 # If there is nothing above us doing anything.  Then our status
                 # is real.
-                if active_feeder is None:
+                if active_prereq is None:
                     failures.setdefault(real_status, []).append(pkg)
                     continue
 
-                # If the active feeder is incomplete then we should continue
+                # If the active prereq is incomplete then we should continue
                 # waiting for it.
-                if active_feeder_state != 'FULLYBUILT':
+                if active_prereq_state != 'FULLYBUILT':
                     failures.setdefault(wait_status, []).append(pkg)
                     continue
 
-                # Work out if the previous_feeder is retryable.
-                previous_feeder_completed = s.__feeder_completed(previous_feeder, pocket)
-                active_feeder_completed = s.__feeder_completed(active_feeder, pocket)
-                cinfo("completions {} => {} {} -> {} {}".format(pkg, previous_feeder_completed, previous_feeder, active_feeder, active_feeder_completed))
-                previous_feeder_retry = (
-                        previous_feeder_completed is not None and
-                        active_feeder_completed is not None and
-                        previous_feeder_completed - timedelta(hours=2) <= active_feeder_completed)
+                # Work out if the previous_prereq is retryable.
+                previous_prereq_completed = s.__prereq_completed(previous_prereq, pocket)
+                active_prereq_completed = s.__prereq_completed(active_prereq, pocket)
+                cinfo("completions {} => {} {} -> {} {}".format(pkg, previous_prereq_completed, previous_prereq, active_prereq, active_prereq_completed))
+                previous_prereq_retry = (
+                        previous_prereq_completed is not None and
+                        active_prereq_completed is not None and
+                        previous_prereq_completed - timedelta(hours=2) <= active_prereq_completed)
 
-                # If the previous_feeder is actually us and can be retried
+                # If the previous_prereq is actually us and can be retried
                 # actually attempt it.
-                if previous_feeder_retry and previous_feeder == pkg:
+                if previous_prereq_retry and previous_prereq == pkg:
                     # If the retry fails this requirs a manual retry,
                     # mark us and annotate the maintenance record.
                     if not s.attempt_retry(pkg):
@@ -1321,9 +1392,9 @@ class Package():
                     # Otherwise we made progress, so no mark is needed.
                     continue
 
-                # If the previous_feeder can be retried, assume it will
+                # If the previous_prereq can be retried, assume it will
                 # elsewhere in the pass.  Mark ourselves as waiting.
-                if previous_feeder_retry:
+                if previous_prereq_retry:
                     failures.setdefault(wait_status, []).append(pkg)
 
                 # Otherwise we are genuinely broken.
@@ -1362,9 +1433,9 @@ class Package():
                 type_state[member] = state_text
         bits = []
         #for state, members in sorted(summary.items()):
-        #    members = sorted(members, key=self.feeder_key)
+        #    members = sorted(members, key=self.prereq_key)
         #    bits.append(','.join(members) + ':' + state)
-        for member in sorted(type_state, key=self.feeder_key):
+        for member in sorted(type_state, key=self.prereq_key):
             bits.append("{}:{}".format(member, type_state[member]))
         cdebug("failures_to_text: {} -> {}".format(summary, bits))
         return ' '.join(bits)
