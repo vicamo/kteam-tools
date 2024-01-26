@@ -1,0 +1,62 @@
+#!/bin/bash
+
+if [ "$#" != 1 ]; then
+	echo "Usage: $0 <out>" 1>&2
+	exit 1
+fi
+out="$1"
+cd "$out" || exit 1
+
+here=$(dirname $(readlink -f "$0"))
+stable="$here/.."
+web="$here/../../web"
+scripts="$web/scripts"
+
+echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): starting"
+
+mkdir -p data
+
+for out in sru-report sru-versions 1-day-new
+do
+	mkdir -p "$out"
+	ln -sfT $(realpath --relative-to "$out" "$web/css") "$out/css"
+	ln -sfT $(realpath --relative-to "$out" "$web/img") "$out/img"
+done
+
+# sru-data.json
+echo "Rebuild sru-data.json ..."
+time "$stable/sru-report" --archive-versions --cache data/sru-data.cache >data/sru-data.json.new
+rc="$?"
+if [ "$rc" -eq 0 ]; then
+	mv data/sru-data.json.new data/sru-data.json
+
+	# sru-report.html
+	echo "Rebuild sru-report.html ..."
+	"$scripts/sru2html" data/sru-data.json >"sru-report/sru-report.html.new"
+	mv -f "sru-report/sru-report.html.new" "sru-report/sru-report.html"
+
+	# versions.html
+	"$scripts/versions2html" data/sru-data.json >"sru-versions/sru-versions.html.new"
+	mv -f "sru-versions/sru-versions.html.new" "sru-versions/sru-versions.html"
+
+else
+	echo "ERROR: failed to rebuild sru-data.json" 1>&2
+fi
+
+# 1-day-window.json
+echo "Rebuild 1-day-window.json ..."
+time "$scripts/collect-window-data" --window=1 --db=data/1-day-window.json.new --title="24 Hours of New Bugs"
+rc="$?"
+if [ "$rc" -eq 0 ]; then
+	mv data/1-day-window.json.new data/1-day-window.json
+
+	# 1-day-new.html
+	echo "Rebuild 1-day-new.html ..."
+	"$scripts/mk-regressions-report" --sru=data/sru-data.json data/1-day-window.json >1-day-new/1-day-new.html.new
+	mv -f 1-day-new/1-day-new.html.new 1-day-new/1-day-new.html
+
+else
+	echo "ERROR: failed to rebuild 1-day-window.json" 1>&2
+fi
+
+echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): complete"
