@@ -77,7 +77,7 @@ shift $((OPTIND - 1))
 IS_REBASE_KERNEL=true
 if [ ! -f "$DEBIAN/etc/update.conf" ]; then
         IS_REBASE_KERNEL=false
-elif [ "$DEBIAN_MASTER" != "" -a ! -d "$DEBIAN_MASTER" ]; then
+elif [ "$DEBIAN_MASTER" != "" ] && [ ! -d "$DEBIAN_MASTER" ]; then
         IS_REBASE_KERNEL=false
 fi
 if ! $IS_REBASE_KERNEL && [ -z "$OWN" ]; then
