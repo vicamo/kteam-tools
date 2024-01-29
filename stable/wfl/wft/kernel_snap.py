@@ -929,11 +929,12 @@ class SnapCertificationTesting(KernelSnapBase):
             result = None
             try:
                 observer = TestObserverResults()
+                result = None
                 existing = s.bug.group_get("test-observer", "edge")
                 if existing is not None:
                     result = observer.lookup_result(existing)
                     cinfo("TO direct result={}".format(result))
-                else:
+                if result is None:
                     results = observer.lookup_results(
                         "snap",
                         name=s.bug.snap.name,
