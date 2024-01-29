@@ -528,6 +528,10 @@ class MonitorSwmStatusMonitor:
             print("test_observer: data not available ({}) change={}".format(str(e), False))
             return False
 
+        # If the artifact is no longer known, assume it has changed.
+        if result is None:
+            return True
+
         current_status = result.get("status")
         current_assignee = (result.get('assignee') or {}).get('launchpad_handle')
         change = existing_status != current_status or existing_assignee != current_assignee
