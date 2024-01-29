@@ -13,7 +13,6 @@ from launchpadlib.launchpad             import Launchpad
 from crl.handle                         import Handle, HandleError
 import re
 import os.path
-import sys
 
 # AppError
 #
@@ -236,7 +235,7 @@ class VerifyReleaseReady():
                     (junk, tracker_id) = line.split('#')
                     (tracker_id,junk) = tracker_id.split(')')
                     tracker_id = int(tracker_id)
-                except:
+                except:  # noqa (E722 Do not use bare `except`)
                     tracker_id = 'warning'
                 s.status('conformant release tracking bug line', tracker_id)
                 if tracker_id == 'warning':
@@ -266,7 +265,7 @@ class VerifyReleaseReady():
                             (master_tracker_id, junk) = master_tracker_id.split(')')
                             master_tracker_id = int(master_tracker_id)
                             found_tracker = True
-                        except:
+                        except:  # noqa (E722 Do not use bare `except`)
                             break
                         break
 
@@ -383,7 +382,7 @@ class VerifyReleaseReady():
             # Error on private or invalid bugs
             try:
                 lp_bug = s.lp.bugs[bug]
-            except:
+            except:  # noqa (E722 Do not use bare `except`)
                 s.status('LP: #%s: invalid/private bug number' % bug, False)
                 continue
 
