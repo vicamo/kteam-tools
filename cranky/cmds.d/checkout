@@ -9,14 +9,13 @@ import os
 import sys
 import datetime
 
-from ktl.kernel_series import KernelSeries
-from ktl.log import cdebug, cerror, cnotice, Clog
+from ktl.log import cerror, cnotice, Clog
 
 from crl.git import GitHandleSet, GitError
 from crl.config import Config
-from crl.cycle_ref import CycleRef, Git
+from crl.cycle_ref import CycleRef
 from crl.exceptions import CrankyException
-from crl.handle import Handle, HandleError
+from crl.handle import HandleError
 
 
 def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=None, nc=False, cycle=None):
@@ -90,7 +89,7 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
             try:
                 security_ref = gh.remote_ref('security', branch)
                 gh.checkout(security_ref, branch, cycle)
-            except:
+            except:  # noqa (E722 Do not use bare `except`)
                 gh.checkout(rmt_ref, branch, cycle)
         else:
             gh.checkout(rmt_ref, branch, cycle)
@@ -105,7 +104,8 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
     # Print the summary
     cnotice("Summary:")
     for s in summary:
-        cnotice("  Repo '{name}' in directory '{dir}' (branch '{branch}' remote '{remote}' remote-branch '{remote-branch}')".format(**s))
+        cnotice("  Repo '{name}' in directory '{dir}' (branch '{branch}' "
+                "remote '{remote}' remote-branch '{remote-branch}')".format(**s))
 
 
 def expanduser(path):
