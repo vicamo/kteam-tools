@@ -19,32 +19,33 @@ def tree_package_type(tree):
     return "main" if ptype is None else ptype
 
 
-def handle_to_series_source(args):
+def handle_lookup(lookup, handle, **kwargs):
     try:
-        handle = Handle().lookup_set(args.handle, cycle=args.cycle, validate=False)
+        if lookup == "set":
+            handle = Handle().lookup_set(handle, **kwargs)
+        elif lookup == "tree":
+            handle = Handle().lookup_tree(handle, **kwargs)
+        else:
+            print("Invalid lookup type: {}".format(lookup), file=sys.stderr)
+            sys.exit(1)
     except HandleError as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)
+    return handle
 
+
+def handle_to_series_source(args):
+    handle = handle_lookup("set", args.handle, cycle=args.cycle, validate=False)
     print(handle.series.codename, handle.source.name)
 
 
 def series_codename(args):
-    try:
-        handle = Handle().lookup_set(args.handle, cycle=args.cycle)
-    except HandleError as e:
-        print(str(e), file=sys.stderr)
-        sys.exit(1)
-
+    handle = handle_lookup("set", args.handle, cycle=args.cycle)
     print(handle.series.codename)
 
 
 def source_packages_path(args):
-    try:
-        handle = Handle().lookup_set(args.handle, cycle=args.cycle)
-    except HandleError as e:
-        print(str(e), file=sys.stderr)
-        sys.exit(1)
+    handle = handle_lookup("set", args.handle, cycle=args.cycle)
     for tree in handle.trees:
         if args.type:
             type = tree_package_type(tree)
@@ -53,20 +54,12 @@ def source_packages_path(args):
 
 
 def tree_type(args):
-    try:
-        tree = Handle().lookup_tree(args.handle, cycle=args.cycle)
-    except HandleError as e:
-        print(str(e), file=sys.stderr)
-        sys.exit(1)
+    tree = handle_lookup("tree", args.handle, cycle=args.cycle)
     print(tree_package_type(tree))
 
 
 def tree_main_path(args):
-    try:
-        handle = Handle().lookup_set(args.handle, cycle=args.cycle)
-    except HandleError as e:
-        print(str(e), file=sys.stderr)
-        sys.exit(1)
+    handle = handle_lookup("set", args.handle, cycle=args.cycle)
     for tree in handle.trees:
         ptype = tree.package.type
         if ptype in (None, "main"):
@@ -91,11 +84,7 @@ def list_cycles(args):
 
 
 def list_variants(args):
-    try:
-        handle = Handle().lookup_set(args.handle, cycle=args.cycle, validate=False)
-    except HandleError as e:
-        print(str(e), file=sys.stderr)
-        sys.exit(1)
+    handle = handle_lookup("set", args.handle, cycle=args.cycle, validate=False)
     if handle.source.variants is not None:
         for variant in handle.source.variants:
             print(variant)
@@ -104,21 +93,13 @@ def list_variants(args):
 
 
 def config(args):
-    try:
-        handle = Handle().lookup_set(args.handle, cycle=args.cycle, validate=False)
-    except HandleError as e:
-        print(str(e), file=sys.stderr)
-        sys.exit(1)
+    handle = handle_lookup("set", args.handle, cycle=args.cycle, validate=False)
     print(handle.lookup_config(args.key, ""))
 
 
 def package_name(args):
-    try:
-        handle = Handle().lookup_set(args.handle, validate=False)
-        tree = Handle().lookup_tree(args.handle)
-    except HandleError as e:
-        print(str(e), file=sys.stderr)
-        sys.exit(1)
+    handle = handle_lookup("set", args.handle, validate=False)
+    tree = handle_lookup("tree", args.handle)
     tree_type = tree_package_type(tree)
     short_source = handle.source.name.replace("linux-", "")
     if tree_type == "main":
