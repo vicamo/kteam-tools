@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 #
 
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, INFO, DEBUG
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from logging import basicConfig, INFO, DEBUG
 
-from ktl.utils                          import stdo, eout, run_command
-from ktl.git                            import Git, GitError
-from ktl.debian                         import Debian, DebianError
-from ktl.kernel_series                  import KernelSeries
-from ktl.termcolor                      import colored
-from launchpadlib.launchpad             import Launchpad
-from crl.handle                         import Handle, HandleError
+from ktl.utils import stdo, eout, run_command
+from ktl.git import Git, GitError
+from ktl.debian import Debian, DebianError
+from ktl.kernel_series import KernelSeries
+from ktl.termcolor import colored
+from launchpadlib.launchpad import Launchpad
+from crl.handle import Handle, HandleError
 import re
 import os.path
+
 
 # AppError
 #
@@ -21,25 +22,25 @@ import os.path
 class AppError(Exception):
     # __init__
     #
-    def __init__(s, error=''):
+    def __init__(s, error=""):
         s.msg = error
 
 
 # VerifyReleaseReady
 #
-class VerifyReleaseReady():
+class VerifyReleaseReady:
     # __init__
     #
     def __init__(s, args):
         s.args = args
         s.defaults = {}
-        s.defaults['verbose'] = False
+        s.defaults["verbose"] = False
         s.passed = 0
         s.failed = 0
         s.delimiter = 60
         # add launchpadlib support
-        s.lp = Launchpad.login_anonymously(s.__class__.__name__, 'production')
-        s.lp_ubuntu = s.lp.distributions['ubuntu']
+        s.lp = Launchpad.login_anonymously(s.__class__.__name__, "production")
+        s.lp_ubuntu = s.lp.distributions["ubuntu"]
         s.lp_devel_series = s.lp_ubuntu.current_series
         # Instantiate a KernelSeries for package lookups.
         s.kernel_series = KernelSeries()
@@ -50,7 +51,7 @@ class VerifyReleaseReady():
     def is_repo(s):
         retval = True
         if not Git.is_repo():
-            raise AppError('This script can only be run from within a git repository.')
+            raise AppError("This script can only be run from within a git repository.")
         return retval
 
     # Print colorized status line
@@ -64,72 +65,77 @@ class VerifyReleaseReady():
         if indent <= 0:
             indent = 0
 
-        stdo('%s' % (' ' * indent) + msg + ': ')
+        stdo("%s" % (" " * indent) + msg + ": ")
         if flag:
             s.passed += 1
-            if flag == 'warning':
-                stdo(colored('warning\n', 'yellow'))
+            if flag == "warning":
+                stdo(colored("warning\n", "yellow"))
             else:
-                stdo(colored('pass\n', 'green'))
+                stdo(colored("pass\n", "green"))
         else:
             s.failed += 1
-            stdo(colored('fail\n', 'red'))
+            stdo(colored("fail\n", "red"))
 
     def verbose(s, msg):
         if s.args.verbose:
-            stdo(colored(msg + '\n', 'blue'))
+            stdo(colored(msg + "\n", "blue"))
 
     def verify_linux(s, cl0, cl1):
-        if '-' not in cl0['version']:
+        if "-" not in cl0["version"]:
             raise AppError("The version string is not well formed (missing '-').")
 
-        (cl0_version, abi_build) = cl0['version'].split('-')  # Current version line
-        cl0_abi   = cl0['ABI']
-        cl0_build = cl0['upload-number']
+        (cl0_version, abi_build) = cl0["version"].split("-")  # Current version line
+        cl0_abi = cl0["ABI"]
+        cl0_build = cl0["upload-number"]
 
-        (cl1_version, abi_build) = cl1['version'].split('-')  # Previous version line
-        cl1_abi   = cl1['ABI']
-        cl1_build = cl1['upload-number']
+        (cl1_version, abi_build) = cl1["version"].split("-")  # Previous version line
+        cl1_abi = cl1["ABI"]
+        cl1_build = cl1["upload-number"]
 
         # Verify the version information in the changelog
         #
         while True:
             # Check: That the release information is correct.
             #
-            msg = 'release (%s)' % (cl0['release'])
-            series = s.kernel_series.lookup_series(codename=cl0['release'])
+            msg = "release (%s)" % (cl0["release"])
+            series = s.kernel_series.lookup_series(codename=cl0["release"])
             if not series:
                 s.status(msg, False)
-                s.verbose("invalid series specified '%s'" % (cl0['release'],))
+                s.verbose("invalid series specified '%s'" % (cl0["release"],))
             else:
                 s.status(msg, True)
 
-            msg = 'package (%s)' % (cl0['package'])
+            msg = "package (%s)" % (cl0["package"])
             source = None
             if series:
-                source = series.lookup_source(cl0['package'])
+                source = series.lookup_source(cl0["package"])
                 if not source:
                     s.status(msg, False)
-                    s.verbose("invalid source specified '%s' not found in series '%s'" % (cl0['package'], cl0['release']))
+                    s.verbose(
+                        "invalid source specified '%s' not found in series '%s'" % (cl0["package"], cl0["release"])
+                    )
                 else:
                     s.status(msg, True)
 
-            msg = 'version (%s)' % (cl0['version'])
+            msg = "version (%s)" % (cl0["version"])
             if source:
                 found = False
                 for version in source.versions:
-                    if cl0['version'].startswith(version + '-'):
+                    if cl0["version"].startswith(version + "-"):
                         found = True
                         break
                 if not found:
                     s.status(msg, False)
-                    s.verbose("invalid version specified '%s' not found in series '%s' source '%s'" % (cl0['version'], cl0['package'], cl0['release']))
+                    s.verbose(
+                        "invalid version specified '%s' not found in series '%s' source '%s'"
+                        % (cl0["version"], cl0["package"], cl0["release"])
+                    )
                 else:
                     s.status(msg, True)
 
             # Check: Make sure the ABI is *always* incremented
             #
-            msg = 'ABI bump (%d)' % (int(cl0_abi))
+            msg = "ABI bump (%d)" % (int(cl0_abi))
             if int(cl0_abi) <= int(cl1_abi):
                 s.status(msg, False)
                 s.verbose("No ABI bump: %d <= %d" % (int(cl0_abi), int(cl1_abi)))
@@ -138,7 +144,7 @@ class VerifyReleaseReady():
 
             # Check: Make sure the current version is correctly incremented from the previous one.
             #
-            msg = 'build number (%d)' % (int(cl1_build) + 1)
+            msg = "build number (%d)" % (int(cl1_build) + 1)
             if int(cl0_build) != int(cl1_build) + 1:
                 s.status(msg, "warning")
                 s.verbose("expected %d but got: %d" % (int(cl1_build), int(cl0_build)))
@@ -146,8 +152,8 @@ class VerifyReleaseReady():
                 s.status(msg, True)
 
             # Check: Make sure that the abi directory has the previous version
-            v = cl1['version']
-            msg = 'previous abi present (%s)' % (v)
+            v = cl1["version"]
+            msg = "previous abi present (%s)" % (v)
             abi = Debian.abi()
             if v not in abi:
                 s.status(msg, False)
@@ -170,22 +176,22 @@ class VerifyReleaseReady():
                 else:
                     allModOverridden = False
             if noneAbiOverridden is False:
-                msg = 'ABI override is present'
+                msg = "ABI override is present"
                 s.status(msg, True)
                 if allAbiOverridden is False:
-                    msg = 'Not all arches have ABI overridden'
+                    msg = "Not all arches have ABI overridden"
                     s.status(msg, False)
-            if (noneModOverridden is False):
-                msg = 'Module override is present'
+            if noneModOverridden is False:
+                msg = "Module override is present"
                 s.status(msg, True)
                 if allModOverridden is False:
-                    msg = 'Not all arches have Module overridden'
+                    msg = "Not all arches have Module overridden"
                     s.status(msg, False)
             if allAbiOverridden != allModOverridden:
-                msg = 'Both ABI and Module override must be present'
+                msg = "Both ABI and Module override must be present"
                 s.status(msg, False)
             for emptyFile in empty:
-                msg = 'Empty override file: %s' % emptyFile
+                msg = "Empty override file: %s" % emptyFile
                 s.status(msg, False)
 
             break
@@ -194,75 +200,74 @@ class VerifyReleaseReady():
 
         # Check: Make sure the commit of the version is the correct text.
         #
-        log = Git.log(num=1) # Only interested in the last commit
+        log = Git.log(num=1)  # Only interested in the last commit
 
         commit = []
-        for line in log['commits'][0]['text']:
+        for line in log["commits"][0]["text"]:
             line = line.strip()
-            if line != '':
-                if 'Signed-off-by' not in line:
+            if line != "":
+                if "Signed-off-by" not in line:
                     commit.append(line)
 
-        version = '%s-%s.%s' % (cl0['linux-version'], cl0['ABI'], cl0['upload-number'])
+        version = "%s-%s.%s" % (cl0["linux-version"], cl0["ABI"], cl0["upload-number"])
 
         (closed, expected_re) = s.verify_closing_commit(cl0, commit, version)
 
         # Construct the expected tag, and verify that it matches the
         # latest commit tag
         #
-        tag_prefix = cl0['package']
-        v = cl0['version']
-        pkg_prefixes = ['linux', '-meta', '-signed',
-                        '-restricted-modules', '-backports-modules-3.2.0']
+        tag_prefix = cl0["package"]
+        v = cl0["version"]
+        pkg_prefixes = ["linux", "-meta", "-signed", "-restricted-modules", "-backports-modules-3.2.0"]
         for prefix in pkg_prefixes:
             if tag_prefix.startswith(prefix):
-                tag_prefix = tag_prefix.replace(prefix, '', 1)
-        expect_tag = "Ubuntu%s-%s" % (tag_prefix, v.replace('~', '_'))
+                tag_prefix = tag_prefix.replace(prefix, "", 1)
+        expect_tag = "Ubuntu%s-%s" % (tag_prefix, v.replace("~", "_"))
         s.verify_tag(log, expect_tag)
 
         # Look to see if a tracking bug has been added to the changelog
         #
         found_tracker = False
-        for index, line in enumerate(changelog[0]['content']):
-            if '-proposed tracker' in line:
+        for index, line in enumerate(changelog[0]["content"]):
+            if "-proposed tracker" in line:
                 found_tracker = True
                 # Concatenate next line if possible split content
-                if (index + 1 != len(changelog[0]['content'])):
-                    line2 = changelog[0]['content'][index + 1]
-                    if (line2.startswith("    ")):
+                if index + 1 != len(changelog[0]["content"]):
+                    line2 = changelog[0]["content"][index + 1]
+                    if line2.startswith("    "):
                         line += line2
                 try:
-                    (junk, tracker_id) = line.split('#')
-                    (tracker_id,junk) = tracker_id.split(')')
+                    (junk, tracker_id) = line.split("#")
+                    (tracker_id, junk) = tracker_id.split(")")
                     tracker_id = int(tracker_id)
                 except:  # noqa (E722 Do not use bare `except`)
-                    tracker_id = 'warning'
-                s.status('conformant release tracking bug line', tracker_id)
-                if tracker_id == 'warning':
-                    stdo(colored('\t%s\n' % line, 'yellow'))
+                    tracker_id = "warning"
+                s.status("conformant release tracking bug line", tracker_id)
+                if tracker_id == "warning":
+                    stdo(colored("\t%s\n" % line, "yellow"))
                 break
-        s.status('release tracking bug', found_tracker)
+        s.status("release tracking bug", found_tracker)
 
         # If we are on a topic branch make sure we are not re-using the same tracking
         # bug from as the master branch. (The master and master-next branches can have
         # the same tracking bug #)
         #
-        if found_tracker and tracker_id != 'warning':
+        if found_tracker and tracker_id != "warning":
             branch = Git.current_branch()
-            if branch not in ['master', 'master-next'] and not branch.endswith('-next'):
+            if branch not in ["master", "master-next"] and not branch.endswith("-next"):
                 master_changelog = Debian.master_changelog()
                 found_tracker = False
-                master_tracker_id = 'NOT-FOUND'
-                for index, line in enumerate(master_changelog[0]['content']):
-                    if '-proposed tracker' in line:
+                master_tracker_id = "NOT-FOUND"
+                for index, line in enumerate(master_changelog[0]["content"]):
+                    if "-proposed tracker" in line:
                         # Concatenate next line if possible split content
-                        if (index + 1 != len(master_changelog[0]['content'])):
-                            line2 = master_changelog[0]['content'][index + 1]
-                            if (line2.startswith("    ")):
+                        if index + 1 != len(master_changelog[0]["content"]):
+                            line2 = master_changelog[0]["content"][index + 1]
+                            if line2.startswith("    "):
                                 line += line2
                         try:
-                            (junk, master_tracker_id) = line.split('#')
-                            (master_tracker_id, junk) = master_tracker_id.split(')')
+                            (junk, master_tracker_id) = line.split("#")
+                            (master_tracker_id, junk) = master_tracker_id.split(")")
                             master_tracker_id = int(master_tracker_id)
                             found_tracker = True
                         except:  # noqa (E722 Do not use bare `except`)
@@ -271,9 +276,9 @@ class VerifyReleaseReady():
 
                 if found_tracker:
                     unique_tracker = tracker_id != master_tracker_id
-                    s.status('unique release tracking bug', unique_tracker)
+                    s.status("unique release tracking bug", unique_tracker)
                 else:
-                    s.status('master release tracking bug found', 'warning')
+                    s.status("master release tracking bug found", "warning")
 
         # Verify that the changelog entry contains no "Miscellaneous" entries
         s.verify_changelog_nomisc()
@@ -294,11 +299,10 @@ class VerifyReleaseReady():
         #         last commit matches the tag
         #
         closed = True
-        expected = '^UBUNTU: (Ubuntu[-\S]*-(%s|%s))$' % \
-                   (version, cl0['version'].replace('+', '\+'))
+        expected = "^UBUNTU: (Ubuntu[-\S]*-(%s|%s))$" % (version, cl0["version"].replace("+", "\+"))
         m = re.match(expected, commit[0])
-        msg = 'closing release commit'
-        if len(commit) != 1:        # There should only be a single line in the commit
+        msg = "closing release commit"
+        if len(commit) != 1:  # There should only be a single line in the commit
             s.status(msg, False)
             s.verbose("too many lines of text")
             closed = False
@@ -306,7 +310,7 @@ class VerifyReleaseReady():
             s.status(msg, False)
             s.verbose("expected '%s', got '%s'" % (expected, commit[0]))
         else:
-            expected = m.group(1) # This should be the tag text
+            expected = m.group(1)  # This should be the tag text
             s.status(msg, True)
 
         return closed, expected
@@ -319,13 +323,13 @@ class VerifyReleaseReady():
         #
         tag_found = False
         # '~' are illegal characters in tags, and shall be replaced by an '_'
-        expected = expected.replace('~', '_')
-        msg = 'correct tag (%s)' % expected
-        s.verbose('closing commit sha1: %s' % log['commits'][0]['sha1'])
+        expected = expected.replace("~", "_")
+        msg = "correct tag (%s)" % expected
+        s.verbose("closing commit sha1: %s" % log["commits"][0]["sha1"])
         try:
-            tags = Git.describe(exact_match=log['commits'][0]['sha1'])
+            tags = Git.describe(exact_match=log["commits"][0]["sha1"])
         except GitError as e:
-            eout(colored(e.msg, 'red'))
+            eout(colored(e.msg, "red"))
             tags = {}
         for tag in tags:
             if tag == expected:
@@ -333,48 +337,47 @@ class VerifyReleaseReady():
                 tag_found = True
                 break
         if not tag_found:
-            s.status(msg, False) # the specified commit.
+            s.status(msg, False)  # the specified commit.
             s.verbose("unable to find any tag that matched (%s) on the last commit " % (expected))
         else:
             # Verify tag has been pushed!
-            msg = 'tag pushed'
+            msg = "tag pushed"
             try:
                 branch = Git.remote()
-                status, result = run_command(
-                    "git ls-remote --tags %s %s" % (branch, expected))
+                status, result = run_command("git ls-remote --tags %s %s" % (branch, expected))
                 if status == 0 and expected in result[0]:
                     s.status(msg, True)
                 else:
-                    s.status(msg, 'warning')
+                    s.status(msg, "warning")
                 # Verify tag signature
-                msg = 'tag signed'
+                msg = "tag signed"
                 status, result = run_command("git tag -v %s" % expected)
                 if status == 0:
                     s.status(msg, True)
                 else:
-                    s.status(msg, 'warning')
+                    s.status(msg, "warning")
             except GitError as e:
-                eout(colored(e.msg, 'red'))
+                eout(colored(e.msg, "red"))
 
     def verify_changelog_nomisc(s):
         # Verify that no "Miscellaneous {upstream,Ubuntu,whatever} changes"
         # entries were inserted by debian/scripts/misc/git-ubuntu-log
         msg = 'no "Miscellaneous" entries'
         changelog = Debian.changelog()
-        content = changelog[0]['own-content']
+        content = changelog[0]["own-content"]
         for line in content:
             m = re.match("\* Miscellaneous .* changes$", line.strip())
             if m:
                 s.status(msg, False)
-                stdo(colored('\t\t' + line + '\n', 'red'))
+                stdo(colored("\t\t" + line + "\n", "red"))
                 return
         s.status(msg, True)
 
     def verify_changelog_bugs(s):
         changelog = Debian.changelog()
-        changelog_bugs = changelog[0]['own-bugs']
-        changelog_series = changelog[0]['series']
-        changelog_source_package = changelog[0]['package']
+        changelog_bugs = changelog[0]["own-bugs"]
+        changelog_series = changelog[0]["series"]
+        changelog_source_package = changelog[0]["package"]
 
         tracker = None
 
@@ -383,16 +386,16 @@ class VerifyReleaseReady():
             try:
                 lp_bug = s.lp.bugs[bug]
             except:  # noqa (E722 Do not use bare `except`)
-                s.status('LP: #%s: invalid/private bug number' % bug, False)
+                s.status("LP: #%s: invalid/private bug number" % bug, False)
                 continue
 
             # Ignore kernel-release-tracking-bug's
-            if 'kernel-release-tracking-bug' in lp_bug.tags:
+            if "kernel-release-tracking-bug" in lp_bug.tags:
                 tracker = lp_bug
                 continue
 
             # Ignore LP: #1786013 (Packaging resync)
-            if bug == '1786013':
+            if bug == "1786013":
                 continue
 
             # check bug tasks, is series/package/status correct?
@@ -405,29 +408,30 @@ class VerifyReleaseReady():
                 if changelog_source_package in task_display_name:
                     is_targeted_to_package = True
                     # if the display name contains the series, or we are devel continue
-                    if (changelog_series in task_display_name) or \
-                       (changelog_series == s.lp_devel_series.displayname.lower()):
+                    if (changelog_series in task_display_name) or (
+                        changelog_series == s.lp_devel_series.displayname.lower()
+                    ):
                         is_targeted_to_series = True
                         # if we are on a devel or series targeted task check status of that task
-                        if task.status == 'Fix Committed':
+                        if task.status == "Fix Committed":
                             is_fix_committed = True
 
             # display status based on results
             if not is_targeted_to_package:
-                s.status('LP: #%s is not package %s' % (bug, changelog_source_package), False)
+                s.status("LP: #%s is not package %s" % (bug, changelog_source_package), False)
             if not is_targeted_to_series:
-                s.status('LP: #%s is not series %s' % (bug, changelog_series), 'warning')
+                s.status("LP: #%s is not series %s" % (bug, changelog_series), "warning")
             if not is_fix_committed:
-                s.status('LP: #%s is not fix committed' % bug, 'warning')
+                s.status("LP: #%s is not fix committed" % bug, "warning")
 
         return tracker
 
     def verify_changelog_commits(s):
         # Verify possible issues with the commit subjects added to
         # the changelog.
-        msg = 'changelog commits subject'
+        msg = "changelog commits subject"
         changelog = Debian.changelog()
-        content = changelog[0]['own-content']
+        content = changelog[0]["own-content"]
         for line in content:
             # The commit subject comes after the LP bug title and
             # begins with '    - <subject>'
@@ -437,8 +441,7 @@ class VerifyReleaseReady():
                 # Consider normal not starting with '[PATCH]'
                 # or not having a special char as the first char
                 # other than '[{/<_'
-                if subject.startswith('[PATCH]') or \
-                   not re.match("[a-zA-Z0-9\[{/<_]", subject):
+                if subject.startswith("[PATCH]") or not re.match("[a-zA-Z0-9\[{/<_]", subject):
                     s.status(msg, "warning")
                     s.status(subject, "warning")
                     return
@@ -451,30 +454,30 @@ class VerifyReleaseReady():
 
     def verify_tracker_bug(s, bug):
         if bug is None:
-            s.status('No tracker bug found', 'warning')
+            s.status("No tracker bug found", "warning")
             return
-        s.status('Tracker bug found', bug.id)
+        s.status("Tracker bug found", bug.id)
 
     def verify_content(s):
         changelog = Debian.changelog()
-        content = changelog[0]['content']
+        content = changelog[0]["content"]
 
         # It's important that there be a single blank line at the beginning of
         # the content. (after the package/version/pocket line)
         #
         ei = 1
         et = []
-        error_text = 'There should be one and only one blank line following the package/version/pocket line.'
+        error_text = "There should be one and only one blank line following the package/version/pocket line."
 
         test = content[0].strip()
-        if test != '':                              # Should be a blank line
-            s.status('content [%d]' % ei, False)
+        if test != "":  # Should be a blank line
+            s.status("content [%d]" % ei, False)
             ei += 1
             et.append(error_text)
 
         test = content[1].strip()
-        if test == '':       # Should not be a blank line
-            s.status('content [%d]' % ei, False)
+        if test == "":  # Should not be a blank line
+            s.status("content [%d]" % ei, False)
             ei += 1
             et.append(error_text)
 
@@ -482,45 +485,47 @@ class VerifyReleaseReady():
         # with two dashes, has an email address and a date/time stamp.
         #
         cl = len(content)
-        error_text = 'The final lines of a new changelog block should be\n a single blank line, ' \
-                      'a "signature" line, and a final blank line.'
+        error_text = (
+            "The final lines of a new changelog block should be\n a single blank line, "
+            'a "signature" line, and a final blank line.'
+        )
 
-        if content[cl - 4] == '': # Should NOT be a blank line
-            s.status('final commit content [%d]' % ei, False)
+        if content[cl - 4] == "":  # Should NOT be a blank line
+            s.status("final commit content [%d]" % ei, False)
             ei += 1
             et.append(error_text)
 
-        if content[cl - 3] != '': # Should be a blank line
-            s.status('final commit content [%d]' % ei, False)
+        if content[cl - 3] != "":  # Should be a blank line
+            s.status("final commit content [%d]" % ei, False)
             ei += 1
             et.append(error_text)
 
         # Should be the "signature" line
-        m = re.match('^ -- (.*) <(.*)@(.*)> .*$', content[cl - 2])
+        m = re.match("^ -- (.*) <(.*)@(.*)> .*$", content[cl - 2])
         if m:
-            if 'canonical.com' not in m.group(3):
+            if "canonical.com" not in m.group(3):
                 error_text = "The email address on the signature line does not contain 'canonical.com'."
-                s.status('final commit content [%d]' % ei, False)
+                s.status("final commit content [%d]" % ei, False)
                 ei += 1
                 et.append(error_text)
         else:
             error_text = "Failed to parse the signature line."
             et.append(error_text)
-            s.status('final commit content [%d]' % ei, False)
+            s.status("final commit content [%d]" % ei, False)
             ei += 1
 
-        if content[cl - 1] != '': # Should be a blank line
-            s.status('final commit content [%d]' % ei, False)
+        if content[cl - 1] != "":  # Should be a blank line
+            s.status("final commit content [%d]" % ei, False)
             et.append(error_text)
 
         if et != []:
-            print(' ')
+            print(" ")
             ei = 1
             for e in et:
-                print(' [%d] %s' % (ei, e))
+                print(" [%d] %s" % (ei, e))
                 ei += 1
         else:
-            s.status('final commit content', True)
+            s.status("final commit content", True)
 
     def verify_upstream_source(s, subject):
         # If there is no debian.<flavour>/upstream-* there is nothing to check
@@ -535,33 +540,33 @@ class VerifyReleaseReady():
         log = Git.log(num=1, grep=subject)
 
         try:
-            commit = log['commits'][0]
-            sha1 = commit['sha1'][:12]
+            commit = log["commits"][0]
+            sha1 = commit["sha1"][:12]
         except (IndexError, KeyError):
-            eout(colored("Unable to find commit", 'red'))
+            eout(colored("Unable to find commit", "red"))
             return
 
         # Check to make sure this isn't an UBUNTU commit
-        for line in commit['text']:
+        for line in commit["text"]:
             if line.find(subject) != -1:
-                if line.lstrip().startswith('UBUNTU:'):
+                if line.lstrip().startswith("UBUNTU:"):
                     return
 
-        if 'upstream_sha1' in commit:
-            s.status('commit {0} has upstream source'.format(sha1), True)
+        if "upstream_sha1" in commit:
+            s.status("commit {0} has upstream source".format(sha1), True)
             return
 
-        s.status('commit {0} has upstream source'.format(sha1), False)
+        s.status("commit {0} has upstream source".format(sha1), False)
 
     def verify_linux_meta(s, cl0, cl1):
-        cl0_build = cl0['upload-number']
+        cl0_build = cl0["upload-number"]
 
-        cl1_build = cl1['upload-number']
+        cl1_build = cl1["upload-number"]
 
         while True:
             # Check: Make sure the current version is correctly incremented from the previous one.
             #
-            msg = 'build number (%d)' % (int(cl1_build) + 1)
+            msg = "build number (%d)" % (int(cl1_build) + 1)
             if int(cl0_build) != int(cl1_build) + 1:
                 s.status(msg, False)
                 s.verbose("expected %d but got: %d" % (int(cl1_build) + 1, int(cl0_build)))
@@ -572,16 +577,16 @@ class VerifyReleaseReady():
 
         # Check: Make sure the commit of the version is the correct text.
         #
-        log = Git.log(num=1) # Only interested in the last commit
+        log = Git.log(num=1)  # Only interested in the last commit
 
         commit = []
-        for line in log['commits'][0]['text']:
+        for line in log["commits"][0]["text"]:
             line = line.strip()
-            if line != '':
-                if 'Signed-off-by' not in line:
+            if line != "":
+                if "Signed-off-by" not in line:
                     commit.append(line)
 
-        version = '%s.%s.%s' % (cl0['linux-version'], cl0['ABI'], cl0['upload-number'])
+        version = "%s.%s.%s" % (cl0["linux-version"], cl0["ABI"], cl0["upload-number"])
         (closed, expected) = s.verify_closing_commit(cl0, commit, version)
 
         if closed:
@@ -596,44 +601,44 @@ class VerifyReleaseReady():
             # Check: Are we currently in a git repository?
             #
             if not Git.is_repo():
-                raise AppError('This script can only be run from within a git repository.')
-            s.status('is valid git repo', True)
+                raise AppError("This script can only be run from within a git repository.")
+            s.status("is valid git repo", True)
 
             branch = Git.current_branch()
-            s.verbose('%15s : %s' % ('branch', branch))
+            s.verbose("%15s : %s" % ("branch", branch))
 
             changelog = Debian.changelog()
 
             cl0 = changelog[0]
             if s.args.verbose:
-                s.verbose('\n')
-                s.verbose('New version information:')
+                s.verbose("\n")
+                s.verbose("New version information:")
                 for k in cl0:
-                    s.verbose('%15s : %s' % (k, cl0[k]))
+                    s.verbose("%15s : %s" % (k, cl0[k]))
 
             cl1 = changelog[1]
             if s.args.verbose:
-                s.verbose('\n')
-                s.verbose('Previous version information:')
+                s.verbose("\n")
+                s.verbose("Previous version information:")
                 for k in cl1:
-                    s.verbose('%15s : %s' % (k, cl1[k]))
+                    s.verbose("%15s : %s" % (k, cl1[k]))
 
             package_type = False
-            series = s.kernel_series.lookup_series(codename=cl0['release'])
+            series = s.kernel_series.lookup_series(codename=cl0["release"])
             if series is not None:
                 for source in series.sources:
                     for package in source.packages:
-                        if package.name == cl0['package']:
+                        if package.name == cl0["package"]:
                             package_type = package.type
             if package_type is None:
                 s.verify_linux(cl0, cl1)
             elif package_type is not False:
                 s.verify_linux_meta(cl0, cl1)
             else:
-                stdo(colored('Unrecognised package: %s\n' % cl0['package'], 'yellow'))
-                stdo(colored('    Trying non-kernel package verification...\n', 'yellow'))
+                stdo(colored("Unrecognised package: %s\n" % cl0["package"], "yellow"))
+                stdo(colored("    Trying non-kernel package verification...\n", "yellow"))
                 s.verify_linux_meta(cl0, cl1)
-                stdo(colored('    Trying kernel package verification...\n', 'yellow'))
+                stdo(colored("    Trying kernel package verification...\n", "yellow"))
                 s.verify_linux(cl0, cl1)
 
         # Handle the user presses <ctrl-C>.
@@ -644,13 +649,13 @@ class VerifyReleaseReady():
         # Handle all application errors
         #
         except AppError as e:
-            eout(colored(e.msg, 'red'))
+            eout(colored(e.msg, "red"))
 
         except DebianError as e:
-            eout(colored(e.msg, 'red'))
+            eout(colored(e.msg, "red"))
 
         except GitError as e:
-            eout(colored(e.msg, 'red'))
+            eout(colored(e.msg, "red"))
 
     # main
     #
@@ -659,18 +664,19 @@ class VerifyReleaseReady():
             s.verify_dir()
         else:
             try:
-                handle=Handle().lookup_set(os.getcwd())
+                handle = Handle().lookup_set(os.getcwd())
 
                 for tree in handle.trees:
                     os.chdir(tree.directory)
                     s.verify_dir()
 
             except HandleError as e:
-                eout(colored(e, 'red'))
+                eout(colored(e, "red"))
 
         return s.failed
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Command line argument setup and initial processing
     #
     app_description = """
@@ -693,23 +699,23 @@ Examples:
     parser.add_argument(
         "-c",
         "--current",
-        action='store_true',
+        action="store_true",
         default=False,
-        help='Only verify current package',
+        help="Only verify current package",
     )
     parser.add_argument(
         "-d",
         "--debug",
-        action='store_true',
+        action="store_true",
         default=False,
-        help='Print out a lot of messages about what is going on.',
+        help="Print out a lot of messages about what is going on.",
     )
     parser.add_argument(
         "-v",
         "--verbose",
-        action='store_true',
+        action="store_true",
         default=False,
-        help='Print out more an usual amount of information about what is happening.',
+        help="Print out more an usual amount of information about what is happening.",
     )
     args = parser.parse_args()
 

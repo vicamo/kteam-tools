@@ -69,8 +69,7 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
                     # Skip it if a pocket was provided but the route doesn't match
                     continue
 
-            elif ((dest not in ("release", "security", "updates", "proposed") and
-                   not show_all)):
+            elif dest not in ("release", "security", "updates", "proposed") and not show_all:
                 # This is a non-standard PPA and we didn't ask for it, so
                 # skip it
                 continue
@@ -81,12 +80,14 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
                 continue
 
             for package in sorted(packages):
-                lp_sources = lp_archive.getPublishedSources(source_name=package,
-                                                            distro_series=lp_series,
-                                                            pocket=pocket,
-                                                            exact_match=True,
-                                                            order_by_date=True,
-                                                            status="Published")
+                lp_sources = lp_archive.getPublishedSources(
+                    source_name=package,
+                    distro_series=lp_series,
+                    pocket=pocket,
+                    exact_match=True,
+                    order_by_date=True,
+                    status="Published",
+                )
                 if not lp_sources:
                     # Nothing found in this PPA/pocket
                     continue
@@ -105,8 +106,13 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
                     pocket_name = "%s (ppa:%s)" % (series, dest_n)
 
                 # The basic data that we always display
-                route_data = [(package, pocket_order(dest, entry), dest_n),
-                              package, package_version, pocket_name, "source"]
+                route_data = [
+                    (package, pocket_order(dest, entry), dest_n),
+                    package,
+                    package_version,
+                    pocket_name,
+                    "source",
+                ]
 
                 if show_ext:
                     # Pull additional (non-rmadison) data from launchpad
@@ -125,13 +131,12 @@ def print_table(data, show_ext=False, script=False):
     if script:
         # Dump all the data without formatting it into a fancy table
         for row in data:
-            print(' '.join(row))
+            print(" ".join(row))
         return
 
     # Add a header if we show extended info
     if show_ext:
-        data.insert(0, ["Name", "Version", "Pocket/PPA", "Type",
-                        "Date Published"])
+        data.insert(0, ["Name", "Version", "Pocket/PPA", "Type", "Date Published"])
 
     # Determine the max width of each column
     widths = [len(max(col, key=len)) for col in zip(*data)]
@@ -142,7 +147,7 @@ def print_table(data, show_ext=False, script=False):
 
     # Print the formatted data
     for row in data:
-        print('|'.join((" {:%d} " % w).format(r) for w, r in zip(widths, row)))
+        print("|".join((" {:%d} " % w).format(r) for w, r in zip(widths, row)))
 
 
 if __name__ == "__main__":
@@ -174,40 +179,51 @@ Examples:
       linux-aws kernel packages from the -updates pocket.
 """
 
-    parser = argparse.ArgumentParser(description=desc,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     epilog=epilog, prog="cranky rmadison")
-    parser.add_argument("handle", nargs='?', help="A kernel package handle "
-                        "in the form of <series>:<source>. If not specified, "
-                        "the information is retrieved from the current git "
-                        "repo.")
-    parser.add_argument("-a", "--show-all", action="store_true",
-                        help="Show source package information from all "
-                        "routing destinations.")
-    parser.add_argument("-e", "--show-extended", action="store_true",
-                        help="Show extendend source package information in "
-                        "addition to the standard rmadison data")
-    parser.add_argument("-s", "--script", action="store_true",
-                        help="Dump the data in a format suitable for "
-                        "subsequent consumption by a script, i.e., don't "
-                        "render a fancy table")
-    parser.add_argument('-p', '--pocket',
-                        help='Only show source package information from the '
-                        'provided pocket.')
-    parser.add_argument("--cycle",
-                        help="sru cycle to use when looking up the source")
+    parser = argparse.ArgumentParser(
+        description=desc, formatter_class=argparse.RawDescriptionHelpFormatter, epilog=epilog, prog="cranky rmadison"
+    )
+    parser.add_argument(
+        "handle",
+        nargs="?",
+        help="A kernel package handle "
+        "in the form of <series>:<source>. If not specified, "
+        "the information is retrieved from the current git "
+        "repo.",
+    )
+    parser.add_argument(
+        "-a",
+        "--show-all",
+        action="store_true",
+        help="Show source package information from all " "routing destinations.",
+    )
+    parser.add_argument(
+        "-e",
+        "--show-extended",
+        action="store_true",
+        help="Show extendend source package information in " "addition to the standard rmadison data",
+    )
+    parser.add_argument(
+        "-s",
+        "--script",
+        action="store_true",
+        help="Dump the data in a format suitable for "
+        "subsequent consumption by a script, i.e., don't "
+        "render a fancy table",
+    )
+    parser.add_argument("-p", "--pocket", help="Only show source package information from the " "provided pocket.")
+    parser.add_argument("--cycle", help="sru cycle to use when looking up the source")
     args = parser.parse_args()
 
     try:
-        handle_set = Handle().lookup_set(args.handle if args.handle else
-                                         os.getcwd(), cycle=args.cycle, validate=False)
+        handle_set = Handle().lookup_set(args.handle if args.handle else os.getcwd(), cycle=args.cycle, validate=False)
     except HandleError as e:
         cerror(e)
         sys.exit(1)
 
     # Query the Launchpsd PPAs for the packages referenced by the provided
     # handle and print the result in an 'rmadison'-like table
-    print_table(rmadison_lp(handle_set, show_all=args.show_all,
-                            show_ext=args.show_extended,
-                            show_pocket=args.pocket),
-                show_ext=args.show_extended, script=args.script)
+    print_table(
+        rmadison_lp(handle_set, show_all=args.show_all, show_ext=args.show_extended, show_pocket=args.pocket),
+        show_ext=args.show_extended,
+        script=args.script,
+    )

@@ -12,19 +12,21 @@ from ktl.swm_status import SwmStatus
 
 from crl.handle import Handle, HandleError
 
+
 class SnapcraftDataError(Exception):
     pass
 
-class SnapcraftData():
+
+class SnapcraftData:
     def __init__(self, snapname):
         # Check that we're logged in
-        rc, output = run_command('snapcraft whoami')
+        rc, output = run_command("snapcraft whoami")
         if rc != 0:
             raise SnapcraftDataError('You need to log in first by running "snapcraft login"')
 
-        rc, output = run_command('snapcraft status {}'.format(snapname))
+        rc, output = run_command("snapcraft status {}".format(snapname))
         if rc != 0:
-            raise SnapcraftDataError('Failed to obtain snapcraft status (output: {})'.format(output))
+            raise SnapcraftDataError("Failed to obtain snapcraft status (output: {})".format(output))
         self.__arch_start = None
         self.__chan_start = None
         self.__vers_start = None
@@ -36,53 +38,52 @@ class SnapcraftData():
         track = None
         arch = None
         for line in output:
-            if line.startswith('Track'):
+            if line.startswith("Track"):
                 # This is the header get the spacing from here
-                self.__arch_start = line.index('Arch')
-                self.__chan_start = line.index('Channel')
-                self.__vers_start = line.index('Version')
-                self.__revi_start = line.index('Revision')
+                self.__arch_start = line.index("Arch")
+                self.__chan_start = line.index("Channel")
+                self.__vers_start = line.index("Version")
+                self.__revi_start = line.index("Revision")
                 # Sometimes there is 'Expires at', sometimes there is not...
                 try:
-                    self.__expi_start = line.index('Expires')
+                    self.__expi_start = line.index("Expires")
                 except ValueError:
                     self.__expi_start = len(line)
                 self.__init_done = True
             else:
                 if not self.__init_done:
-                    raise SnapcraftDataError('Failed to setup input format')
-                f = line[0:self.__arch_start].rstrip()
+                    raise SnapcraftDataError("Failed to setup input format")
+                f = line[0 : self.__arch_start].rstrip()
                 if f != "":
                     track = f
-                f = line[self.__arch_start:self.__chan_start].rstrip()
+                f = line[self.__arch_start : self.__chan_start].rstrip()
                 if f != "":
                     arch = f
                 if track is None or arch is None:
-                    raise SnapcraftDataError('Failed to parse snapcraft data')
-                channel = line[self.__chan_start:self.__vers_start].rstrip()
-                version = line[self.__vers_start:self.__revi_start].rstrip()
-                rev = line[self.__revi_start:self.__expi_start].rstrip()
-                if track == 'latest':
+                    raise SnapcraftDataError("Failed to parse snapcraft data")
+                channel = line[self.__chan_start : self.__vers_start].rstrip()
+                version = line[self.__vers_start : self.__revi_start].rstrip()
+                rev = line[self.__revi_start : self.__expi_start].rstrip()
+                if track == "latest":
                     trkchn = channel
                 else:
-                    trkchn = '{}/{}'.format(track, channel)
+                    trkchn = "{}/{}".format(track, channel)
 
                 self.data.setdefault(arch, {})
                 self.data[arch].setdefault(trkchn, {})
                 self.data[arch][trkchn] = (version, rev)
 
 
-if __name__ == '__main__':
-
-    desc = '''
+if __name__ == "__main__":
+    desc = """
 This command is for promoting snaps which have been produced already
 into their next destination channels (as determines by the workflow).
 For some kernel snaps this may also be a required step for some edge
 and beta channels if automatic uploads cannot cover all combinations
 of tracks.
-'''
+"""
 
-    epilog = '''
+    epilog = """
 Example: cranky promote-snap bionic:linux-raspi2:pi-kernel
 
   This will execute all promotions needed for the pi-kernel
@@ -97,59 +98,60 @@ Example: cranky promote-snap pi-kernel
   This will deduce the series and source names from the current
   working directory and then execute all promotions as detailed
   in the previous example.
-'''
+"""
 
     formatter = argparse.RawDescriptionHelpFormatter
-    parser = argparse.ArgumentParser(description=desc, epilog=epilog,
-                                     formatter_class=formatter,
-                                     prog="cranky promote-snap")
-    parser.add_argument('--dry-run', action='store_true', default=False,
-                        help='do not make any changes, just show what would be done')
-    parser.add_argument('--debug', action='store_true', default=False,
-                        help='output debug level logs')
-    parser.add_argument('snap_handles', metavar='[<series>:<source name>:]<snap name>',
-                        nargs='+', type=str,
-                        help='specification of the snap to be promoted. If ' +
-                        '<series>:<source name> is not provided, deduces it ' +
-                        'from the current working directory.')
-    parser.add_argument("--cycle",
-                        help="sru cycle to use when looking up the source")
+    parser = argparse.ArgumentParser(
+        description=desc, epilog=epilog, formatter_class=formatter, prog="cranky promote-snap"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", default=False, help="do not make any changes, just show what would be done"
+    )
+    parser.add_argument("--debug", action="store_true", default=False, help="output debug level logs")
+    parser.add_argument(
+        "snap_handles",
+        metavar="[<series>:<source name>:]<snap name>",
+        nargs="+",
+        type=str,
+        help="specification of the snap to be promoted. If "
+        + "<series>:<source name> is not provided, deduces it "
+        + "from the current working directory.",
+    )
+    parser.add_argument("--cycle", help="sru cycle to use when looking up the source")
     args = parser.parse_args()
 
     Clog.color = True
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG,
-                            format='%(levelname)s - %(message)s')
+        logging.basicConfig(level=logging.DEBUG, format="%(levelname)s - %(message)s")
         Clog.dbg = True
     else:
-        logging.basicConfig(level=logging.INFO, format='%(message)s')
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     # Handle the old format and prepend 'series:source' if necessary
     series_source = None
     snap_handles = []
     for handle in args.snap_handles:
-        handle = handle.replace('/', ':')
+        handle = handle.replace("/", ":")
 
         # Tracking bug number.
         if handle.isnumeric():
             pass
-        elif ':' not in handle:
+        elif ":" not in handle:
             # Snap name only, prepend 'series:source' to the handle
             if not series_source:
-                if os.path.exists('kernel-info.yaml'):
-                    with open('kernel-info.yaml', encoding='utf-8') as fh:
+                if os.path.exists("kernel-info.yaml"):
+                    with open("kernel-info.yaml", encoding="utf-8") as fh:
                         ki = yaml.safe_load(fh)
-                    series_source = '{}:{}'.format(ki['series'], ki['source'])
+                    series_source = "{}:{}".format(ki["series"], ki["source"])
                 else:
                     try:
                         handle_set = Handle().lookup_set(os.getcwd(), cycle=args.cycle, validate=False)
                     except HandleError as e:
                         cerror(e)
                         sys.exit(1)
-                    series_source = '{}:{}'.format(handle_set.series.codename,
-                                                   handle_set.source.name)
-                cinfo('# Use source handle: {}'.format(series_source))
-            handle = series_source + ':' + handle
+                    series_source = "{}:{}".format(handle_set.series.codename, handle_set.source.name)
+                cinfo("# Use source handle: {}".format(series_source))
+            handle = series_source + ":" + handle
         snap_handles.append(handle)
 
     # Some basic verification on the provided handles and fill with snapcraft data
@@ -158,13 +160,13 @@ Example: cranky promote-snap pi-kernel
     for sh in snap_handles:
         if sh.isnumeric():
             if sh not in status.trackers:
-                cerror('{} tracker is not known'.format(sh))
+                cerror("{} tracker is not known".format(sh))
                 sys.exit(1)
             snapname = status.trackers[sh].get("snap-name")
         else:
-            part = sh.split(':')
+            part = sh.split(":")
             if len(part) != 3:
-                cerror('{} is not in *:*:* format!'.format(sh))
+                cerror("{} is not in *:*:* format!".format(sh))
                 sys.exit(1)
             snapname = part[2]
         try:
@@ -196,29 +198,29 @@ Example: cranky promote-snap pi-kernel
     # Walk through the snap candidates and collect the ones we specified
     todo = {}
     for bug_id, series, source, snapname, destination in snaps:
-        snaphandle = '{}:{}:{}'.format(series, source, snapname)
+        snaphandle = "{}:{}:{}".format(series, source, snapname)
         if bug_id not in snap_handles and snaphandle not in snap_handles:
             continue
         for dst in destination.split():
             # arch=<arch>:channel=<channel>/<risk>:rev=<revision>
             snapvars = {}
-            for subpart in dst.split(':'):
-                name, value = subpart.split('=')
+            for subpart in dst.split(":"):
+                name, value = subpart.split("=")
                 snapvars[name] = value
-            arch = snapvars['arch']
-            channel = snapvars['channel']
+            arch = snapvars["arch"]
+            channel = snapvars["channel"]
             # If this is on the latest/ track drop the prefix.
-            if channel.startswith('latest/'):
-                channel = channel.split('/', 1)[1]
-            if 'rev' not in snapvars:
-                cerror('# {}/{} needs to be produced'.format(snapname, channel))
+            if channel.startswith("latest/"):
+                channel = channel.split("/", 1)[1]
+            if "rev" not in snapvars:
+                cerror("# {}/{} needs to be produced".format(snapname, channel))
                 continue
-            rev = snapvars['rev']
-            if rev == 'None':
-                cerror('# {}/{} needs to be produced'.format(snapname, channel))
+            rev = snapvars["rev"]
+            if rev == "None":
+                cerror("# {}/{} needs to be produced".format(snapname, channel))
                 continue
             if scd[snapname].data[arch].get(channel, [None, None])[1] == rev:
-                cinfo('# {}: {}(rev={}) already on {}'.format(arch, snapname, rev, channel))
+                cinfo("# {}: {}(rev={}) already on {}".format(arch, snapname, rev, channel))
                 continue
             todo.setdefault(snapname, {})
             todo[snapname].setdefault(arch, {})
@@ -226,16 +228,16 @@ Example: cranky promote-snap pi-kernel
             todo[snapname][arch][rev].append(channel)
 
     if len(todo) == 0:
-        cerror('Nothing to do!')
+        cerror("Nothing to do!")
         sys.exit(2)
 
     for snapname, arches in todo.items():
         for arch, revs in arches.items():
             for rev, channels in revs.items():
-                chanlist = ','.join(channels)
-                cmd = 'snapcraft release {} {} {}'.format(snapname, rev, chanlist)
+                chanlist = ",".join(channels)
+                cmd = "snapcraft release {} {} {}".format(snapname, rev, chanlist)
                 if args.dry_run:
-                    cinfo('DRYRUN: ' + cmd)
+                    cinfo("DRYRUN: " + cmd)
                 else:
                     rc, output = run_command(cmd)
                     if rc != 0:
