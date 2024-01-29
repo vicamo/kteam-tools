@@ -17,7 +17,6 @@ import sys
 from crl.handle import Handle, HandleError
 from ktl.kernel_series import KernelSeries
 from ktl.log import cdebug, cerror
-from ktl.kernel_series import KernelSeries
 
 
 class SourceCollection:
