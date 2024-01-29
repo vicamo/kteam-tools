@@ -142,7 +142,7 @@ class RepoSource:
 
 if __name__ == "__main__":
     desc = """
-Query the kernel-series.yaml database for a list of kernels and their package's repo urls and 
+Query the kernel-series.yaml database for a list of kernels and their package's repo urls and
 the name of its main branch.
 """
 
@@ -219,7 +219,7 @@ Examples:
 
     # If no explicit base/derivative selection, show all.
     if not args.base_sources and not args.derivative_sources:
-        args.base_sources = args.derivative_sources = True;
+        args.base_sources = args.derivative_sources = True
 
     level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(level=level, format="%(message)s")
