@@ -33,7 +33,7 @@ class UpdateSnap():
         try:
             with open(self.scy_file_name, 'r') as scy_file:
                 self.scy = yaml.safe_load(scy_file)
-        except:
+        except:  # noqa (E722 Do not use bare `except`)
             cerror("ERROR: Could not open and parse file {}".format(self.scy_file_name))
             sys.exit(1)
 
@@ -41,7 +41,7 @@ class UpdateSnap():
         try:
             with open(self.krn_file_name, 'r') as krn_file:
                 self.krn = yaml.safe_load(krn_file)
-        except:
+        except:  # noqa (E722 Do not use bare `except`)
             # As long as snapcraft.yaml still contains a version key, we use the old
             # format and it is acceptable to fail.
             if 'version' not in self.scy.keys():
