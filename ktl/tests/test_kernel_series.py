@@ -1752,7 +1752,7 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
         source = series.lookup_source('linux')
         package = source.lookup_package('linux-meta')
 
-        self.assertEqual(package.type, None)
+        self.assertEqual(package.type, "main")
 
     def test_repo_present(self):
         data = """
