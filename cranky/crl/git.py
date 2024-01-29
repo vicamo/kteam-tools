@@ -220,7 +220,7 @@ class GitHandle:
         repo_url = self.get_url()
 
         cmd = ["git", "clone", "--origin", remote, "--branch", branch]
-        if pkg.type is None and reference is not None:
+        if pkg.type == "main" and reference is not None:
             if GitDirectory(reference).is_valid:
                 cmd.extend(["--reference", reference])
             else:
@@ -283,7 +283,7 @@ class GitHandle:
         pkg_type = self.package.type
         codename = self.package.series.codename
         # Add a remote for the (private) security repo
-        if pkg_type is None:
+        if pkg_type == "main":
             security_repo = "linux-{}".format(codename)
         else:
             security_repo = "linux-{}-{}".format(pkg_type, codename)
@@ -300,7 +300,7 @@ class GitHandle:
     def add_cbd(self):
         pkg_type = self.package.type
         codename = self.package.series.codename
-        if pkg_type is None:
+        if pkg_type == "main":
             result = run(["getent", "hosts", "cbd.kernel"], stdout=PIPE)
             if result.returncode == 0:
                 self.update_remote("cbd", f"cbd.kernel:{codename}.git", False)

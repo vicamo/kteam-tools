@@ -630,7 +630,7 @@ class VerifyReleaseReady:
                     for package in source.packages:
                         if package.name == cl0["package"]:
                             package_type = package.type
-            if package_type is None:
+            if package_type == "main":
                 s.verify_linux(cl0, cl1)
             elif package_type is not False:
                 s.verify_linux_meta(cl0, cl1)
