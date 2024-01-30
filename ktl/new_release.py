@@ -63,6 +63,9 @@ RE_ABI = re.compile("(\d+)\.(\d+)(.*)")
 # .*NUM
 RE_EXTRA = re.compile("(.*[^\d])(\d+)")
 
+# .*[~+]NUM.NUM.NUM
+RE_OLD_BP_FP_VERSION = re.compile(r"^.*[~+]\d{2}\.\d{2}\.\d+$")
+
 
 class KernelVersion:
     def __init__(self, version, parent_version=None, package_type=None):
@@ -137,6 +140,20 @@ class KernelVersion:
         """Bump old meta package version (pre Noble)"""
         if not self.parent_version:
             raise ValueError("Invalid parent version: {}".format(self.parent_version))
+
+        if RE_OLD_BP_FP_VERSION.match(self.parent_version):
+            # Backport (~yy.mm.X) or forwardport (+yy.mm.X) package
+            # Bump the last digit (X) if the base version (everything before the last '.')
+            # is equal to the parent's base, otherwise use the parent's base and reset the
+            # last digit to 1.
+            base, X = self.version.rsplit(".", 1)
+            parent_base = self.parent_version.replace("-", ".").rsplit(".", 1)[0]
+            if base == parent_base:
+                X = int(X) + 1
+            else:
+                X = 1
+            self.version = "{}.{}".format(parent_base, X)
+            return
 
         comps = self.version.split(".", 4)
         parent_comps = self.parent_version.replace("-", ".").split(".")

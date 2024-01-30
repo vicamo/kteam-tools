@@ -132,3 +132,25 @@ class TestNewRelease(unittest.TestCase):
         a = KernelVersion("6.5.0.5.9", parent_version="6.5.0-5.6", package_type="meta")
         a.bump()
         self.assertEqual(a, KernelVersion("6.5.0.5.10"))
+
+    def test_meta_bp_fp_same_base(self):
+        # Test backport meta version with same main package base version
+        a = KernelVersion("6.5.0.9.9.1~22.04.1", parent_version="6.5.0-9.9.1~22.04.4", package_type="meta")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0.9.9.1~22.04.2"))
+
+        # Test forwardport meta version with same main package base version
+        b = KernelVersion("5.15.0.9.9+22.10.2", parent_version="5.15.0-9.9+22.10.4", package_type="meta")
+        b.bump()
+        self.assertEqual(b, KernelVersion("5.15.0.9.9+22.10.3"))
+
+    def test_meta_bp_fp_new_base(self):
+        # Test backport meta version with new main package base version
+        a = KernelVersion("6.5.0.9.9.9~22.04.2", parent_version="6.5.0-10.10.3~22.04.5", package_type="meta")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0.10.10.3~22.04.1"))
+
+        # Test forwardport meta version with new main package base version
+        b = KernelVersion("5.15.0.9.9+22.10.1", parent_version="5.15.0-11.12+22.10.1", package_type="meta")
+        b.bump()
+        self.assertEqual(b, KernelVersion("5.15.0.11.12+22.10.1"))
