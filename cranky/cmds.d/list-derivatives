@@ -20,7 +20,7 @@ from ktl.log import cdebug, cerror
 
 class SourceTree:
     def __init__(self):
-        self._ks      = None
+        self._ks = None
         self.treedata = dict()
 
     def add_source(self, ks_source, filters=[]):
@@ -28,26 +28,26 @@ class SourceTree:
         key_source = ks_source.name
 
         if self._ks is None:
-            self._ks      = ks_source._ks
+            self._ks = ks_source._ks
         series_branch = self.treedata.setdefault(key_series, dict())
         if key_source in series_branch:
             return
 
         series_branch.setdefault(key_source, ks_source)
 
-        cdebug('Add[{}, {}]'.format(key_series, key_source))
+        cdebug("Add[{}, {}]".format(key_series, key_source))
         while self.expand_tree(filters=filters):
             pass
 
     def __repr__(self):
-        text = ''
+        text = ""
         for series_name in sorted(self.treedata.keys(), reverse=True):
             cs = None
             for source_name in sorted(self.treedata[series_name]):
                 ks_source = self.treedata[series_name][source_name]
                 if cs is None:
                     cs = ks_source.series.codename
-                text += '* {}/{}\n'.format(cs, source_name)
+                text += "* {}/{}\n".format(cs, source_name)
         return text.rstrip()
 
     def expand_tree(self, filters=[]):
@@ -68,19 +68,19 @@ class SourceTree:
                 series_branch = self.treedata.setdefault(ks_source.series.name, dict())
                 if ks_source.name in series_branch:
                     continue
-                if 'lrm' in filters:
+                if "lrm" in filters:
                     for pkg in ks_source.packages:
-                        if pkg.type == 'lrm':
+                        if pkg.type == "lrm":
                             break
                     else:
                         continue
-                if 'signed' in filters:
+                if "signed" in filters:
                     for pkg in ks_source.packages:
-                        if pkg.type == 'signed':
+                        if pkg.type == "signed":
                             break
                     else:
                         continue
-                cdebug('Grow[{}, {}]'.format(ks_source.series.name, ks_source.name))
+                cdebug("Grow[{}, {}]".format(ks_source.series.name, ks_source.name))
                 series_branch.setdefault(ks_source.name, ks_source)
                 grown = True
 
@@ -112,21 +112,36 @@ Examples:
       List the derivatives for the specified kernel directory.
 """
 
-    parser = argparse.ArgumentParser(description=desc,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     epilog=epilog,
-                                     prog="cranky list-derivatives")
-    parser.add_argument("handle", nargs='*', metavar="<handle>",
-                        help="Handle to a kernel source "
-                        "tree, either a path to a kernel source tree or a "
-                        "handle in <series>:<package> format. If not given "
-                        "the current working directory is used.")
-    parser.add_argument("-v", "--verbose", action="store_true",
-                        help="Increase verbosity.")
-    parser.add_argument("--has-lrm", dest="filters", action="append_const", const="lrm",
-                        help="Limit derivatives to those which provide a LRM package.")
-    parser.add_argument("--has-signed", dest="filters", action="append_const", const="signed",
-                        help="Limit derivatives to those which provide a signed package.")
+    parser = argparse.ArgumentParser(
+        description=desc,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=epilog,
+        prog="cranky list-derivatives",
+    )
+    parser.add_argument(
+        "handle",
+        nargs="*",
+        metavar="<handle>",
+        help="Handle to a kernel source "
+        "tree, either a path to a kernel source tree or a "
+        "handle in <series>:<package> format. If not given "
+        "the current working directory is used.",
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Increase verbosity.")
+    parser.add_argument(
+        "--has-lrm",
+        dest="filters",
+        action="append_const",
+        const="lrm",
+        help="Limit derivatives to those which provide a LRM package.",
+    )
+    parser.add_argument(
+        "--has-signed",
+        dest="filters",
+        action="append_const",
+        const="signed",
+        help="Limit derivatives to those which provide a signed package.",
+    )
     parser.add_argument("--cycle", help="sru cycle to use when looking up the source.")
 
     args = parser.parse_args()

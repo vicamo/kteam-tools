@@ -47,9 +47,7 @@ class SimplePackage:
         url = repo.url
         if not git_url:
             url = SimplePackage.git_to_web(url, repo.branch)
-        return "{} {} {} {}".format(
-            self._entry.series.codename, self.package_type, url, repo.branch
-        )
+        return "{} {} {} {}".format(self._entry.series.codename, self.package_type, url, repo.branch)
 
     @staticmethod
     def git_to_web(url, branch):
@@ -86,8 +84,7 @@ class RepoSource:
         self._handle_names = handle_names
         self._include_types = include_types
 
-    def list_packages(self, supported_sources_only=False,
-                      base_sources=True, derivative_sources=True):
+    def list_packages(self, supported_sources_only=False, base_sources=True, derivative_sources=True):
         """Returns a list of SimpleRepo for these handle names and package types
         :return: list(SimplePackage)
         """
@@ -96,14 +93,14 @@ class RepoSource:
 
         handles = self._handle_names
         if not handles:
-            cdebug(
-                "no handles specified, all repos matching include_types will be shown"
-            )
+            cdebug("no handles specified, all repos matching include_types will be shown")
             for series in self._ks.series:
                 for source in series.sources:
-                    if (supported_sources_only and not source.supported) or \
-                       (not base_sources and source.derived_from is None) or \
-                       (not derivative_sources and source.derived_from is not None):
+                    if (
+                        (supported_sources_only and not source.supported)
+                        or (not base_sources and source.derived_from is None)
+                        or (not derivative_sources and source.derived_from is not None)
+                    ):
                         continue
                     handle = "{}:{}".format(series.codename, source.name)
                     handles.append(handle)
@@ -117,9 +114,11 @@ class RepoSource:
             except HandleError as e:
                 cerror(e)
                 sys.exit(1)
-            if (supported_sources_only and not handle.source.supported) or \
-               (not base_sources and handle.source.derived_from is None) or \
-               (not derivative_sources and handle.source.derived_from is not None):
+            if (
+                (supported_sources_only and not handle.source.supported)
+                or (not base_sources and handle.source.derived_from is None)
+                or (not derivative_sources and handle.source.derived_from is not None)
+            ):
                 continue
             for tree in handle.trees:
                 package = SimplePackage(tree.package)
@@ -142,7 +141,7 @@ class RepoSource:
 
 if __name__ == "__main__":
     desc = """
-Query the kernel-series.yaml database for a list of kernels and their package's repo urls and 
+Query the kernel-series.yaml database for a list of kernels and their package's repo urls and
 the name of its main branch.
 """
 
@@ -193,23 +192,13 @@ Examples:
         action="store_true",
         help="Print repo urls as git clone urls instead of web urls",
     )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Increase verbosity")
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Increase verbosity"
+        "--supported-sources", action="store_true", help='Show only repositories from "supported" sources'
     )
+    parser.add_argument("--base-sources", action="store_true", help="Show repositories part of base sources")
     parser.add_argument(
-        "--supported-sources",
-        action="store_true",
-        help='Show only repositories from "supported" sources'
-    )
-    parser.add_argument(
-        "--base-sources",
-        action="store_true",
-        help="Show repositories part of base sources"
-    )
-    parser.add_argument(
-        "--derivative-sources",
-        action="store_true",
-        help="Show repositories part of derivative sources"
+        "--derivative-sources", action="store_true", help="Show repositories part of derivative sources"
     )
     parser.add_argument(
         "--cycle",
@@ -219,7 +208,7 @@ Examples:
 
     # If no explicit base/derivative selection, show all.
     if not args.base_sources and not args.derivative_sources:
-        args.base_sources = args.derivative_sources = True;
+        args.base_sources = args.derivative_sources = True
 
     level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(level=level, format="%(message)s")
@@ -234,7 +223,7 @@ Examples:
     repos = repo_source.list_packages(
         supported_sources_only=args.supported_sources,
         base_sources=args.base_sources,
-        derivative_sources=args.derivative_sources
+        derivative_sources=args.derivative_sources,
     )
     if not repos:
         cnotice("no repositories matched the query (check help)")

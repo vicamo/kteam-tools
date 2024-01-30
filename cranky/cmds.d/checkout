@@ -9,14 +9,13 @@ import os
 import sys
 import datetime
 
-from ktl.kernel_series import KernelSeries
-from ktl.log import cdebug, cerror, cnotice, Clog
+from ktl.log import cerror, cnotice, Clog
 
 from crl.git import GitHandleSet, GitError
 from crl.config import Config
-from crl.cycle_ref import CycleRef, Git
+from crl.cycle_ref import CycleRef
 from crl.exceptions import CrankyException
-from crl.handle import Handle, HandleError
+from crl.handle import HandleError
 
 
 def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=None, nc=False, cycle=None):
@@ -42,7 +41,7 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
             os.makedirs(os.path.dirname(repo_dir))
 
         # Update an existing repo or otherwise clone it
-        if os.path.exists(os.path.join(repo_dir, '.git')):
+        if os.path.exists(os.path.join(repo_dir, ".git")):
             gh.update_remote(gh.remote, gh.get_url())
         else:
             gh.clone(reference, dissociate, depth)
@@ -67,11 +66,11 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
 
     is_rebuilt = False
     for gh in ghs:
-        pkg        = gh.package
-        remote     = gh.remote
+        pkg = gh.package
+        remote = gh.remote
         rmt_branch = gh.remote_branch
-        branch     = gh.get_cranky_branch_name(crd=(crd and crd.isoformat()), cycle=cycle)
-        rmt_ref    = gh.remote_ref(remote, rmt_branch)
+        branch = gh.get_cranky_branch_name(crd=(crd and crd.isoformat()), cycle=cycle)
+        rmt_ref = gh.remote_ref(remote, rmt_branch)
 
         if cycle:
             # Generate operates on the entire set so we only
@@ -88,24 +87,28 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
 
         if crd:
             try:
-                security_ref = gh.remote_ref('security', branch)
+                security_ref = gh.remote_ref("security", branch)
                 gh.checkout(security_ref, branch, cycle)
-            except:
+            except:  # noqa (E722 Do not use bare `except`)
                 gh.checkout(rmt_ref, branch, cycle)
         else:
             gh.checkout(rmt_ref, branch, cycle)
 
         if crd:
-            gh.set_upstream(branch, 'security')
+            gh.set_upstream(branch, "security")
 
         # Add info for the summary
-        summary.append({"name": pkg.name, "dir": gh.directory, "remote": remote,
-                        "branch": branch, "remote-branch": rmt_branch})
+        summary.append(
+            {"name": pkg.name, "dir": gh.directory, "remote": remote, "branch": branch, "remote-branch": rmt_branch}
+        )
 
     # Print the summary
     cnotice("Summary:")
     for s in summary:
-        cnotice("  Repo '{name}' in directory '{dir}' (branch '{branch}' remote '{remote}' remote-branch '{remote-branch}')".format(**s))
+        cnotice(
+            "  Repo '{name}' in directory '{dir}' (branch '{branch}' "
+            "remote '{remote}' remote-branch '{remote-branch}')".format(**s)
+        )
 
 
 def expanduser(path):
@@ -114,16 +117,16 @@ def expanduser(path):
     return path
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     # Get the config options from file
     config = Config()
-    if config.lookup('clone', None) is not None:
+    if config.lookup("clone", None) is not None:
         cerror("Deprecated 'clone' section found in the cranky config file.")
         cerror("You need to remove it or rename it to 'checkout'.")
         sys.exit(1)
-    config_cmd = config.lookup('checkout', {})
+    config_cmd = config.lookup("checkout", {})
 
     desc = """
 Checkout the repos (typically 'linux', 'linux-meta', and 'linux-signed') that
@@ -200,9 +203,9 @@ Borrow the objects from the referenced local repository only to reduce network
 traffic. This is a git clone option, check 'git help clone' for more details.
 """
 
-    help_nc = '''No Colour. By default the debug output that is printed comes out in
+    help_nc = """No Colour. By default the debug output that is printed comes out in
 multiple colours to help with the debugging. This option disables that.
-'''
+"""
 
     help_depth = """
 Perform a shallow clone with --depth <int>
@@ -222,28 +225,15 @@ Example:
 """
 
     formatter = argparse.RawDescriptionHelpFormatter
-    parser = argparse.ArgumentParser(description=desc,
-                                     formatter_class=formatter,
-                                     epilog=epilog,
-                                     prog="cranky checkout")
+    parser = argparse.ArgumentParser(description=desc, formatter_class=formatter, epilog=epilog, prog="cranky checkout")
     parser.add_argument("handle", help=help_handle)
-    parser.add_argument("-r", "--reference",
-                        default=expanduser(config_cmd.get('reference', None)),
-                        help=help_reference)
-    parser.add_argument("-d", "--dissociate", action="store_true",
-                        default=config_cmd.get('dissociate', False),
-                        help=help_dissociate)
-    parser.add_argument("--depth",
-                        default=None,
-                        help=help_depth)
-    parser.add_argument("-C", "--crd",
-                        default=None,
-                        type=datetime.date.fromisoformat,
-                        help=help_crd)
-    parser.add_argument('--nc',
-                        action='store_true',
-                        default=False,
-                        help=help_nc)
+    parser.add_argument("-r", "--reference", default=expanduser(config_cmd.get("reference", None)), help=help_reference)
+    parser.add_argument(
+        "-d", "--dissociate", action="store_true", default=config_cmd.get("dissociate", False), help=help_dissociate
+    )
+    parser.add_argument("--depth", default=None, help=help_depth)
+    parser.add_argument("-C", "--crd", default=None, type=datetime.date.fromisoformat, help=help_crd)
+    parser.add_argument("--nc", action="store_true", default=False, help=help_nc)
     parser.add_argument("--cycle", help=help_cycle)
 
     try:

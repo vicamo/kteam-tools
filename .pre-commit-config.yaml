@@ -44,30 +44,7 @@ repos:
 files: >
   (?x)^(
     cranky/annotations-tools/.* |
-    cranky/cmds.d/build-sources |
-    cranky/cmds.d/chroot |
-    cranky/cmds.d/close |
-    cranky/cmds.d/cycles |
-    cranky/cmds.d/diff-sauce |
-    cranky/cmds.d/dput-sources |
-    cranky/cmds.d/fdr |
-    cranky/cmds.d/fix |
-    cranky/cmds.d/helper-wrapper |
-    cranky/cmds.d/open |
-    cranky/cmds.d/pull-source |
-    cranky/cmds.d/pull-sources |
-    cranky/cmds.d/push-review |
-    cranky/cmds.d/rebase |
-    cranky/cmds.d/reorder |
-    cranky/cmds.d/review-master-changes |
-    cranky/cmds.d/startnewrelease |
-    cranky/cmds.d/tag |
-    cranky/cmds.d/tags |
-    cranky/cmds.d/test-build |
-    cranky/cmds.d/update-dependent |
-    cranky/cmds.d/update-dependent-version |
-    cranky/cmds.d/update-dependents |
-    cranky/cmds.d/update-dkms-versions |
+    cranky/cmds.d/.* |
     cranky/crl/.* |
     cranky/docs/.* |
     cranky/fixes.d/.* |

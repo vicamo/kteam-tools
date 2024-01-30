@@ -13,9 +13,11 @@ from ktl.tracking_bug2 import TrackingBugs, TrackingBugError
 
 from ktl.new_release import KernelVersion
 
+
 def tree_package_type(tree):
     ptype = tree.package.type
     return "main" if ptype is None else ptype
+
 
 def handle_to_series_source(args):
     try:
@@ -26,6 +28,7 @@ def handle_to_series_source(args):
 
     print(handle.series.codename, handle.source.name)
 
+
 def series_codename(args):
     try:
         handle = Handle().lookup_set(args.handle, cycle=args.cycle)
@@ -34,6 +37,7 @@ def series_codename(args):
         sys.exit(1)
 
     print(handle.series.codename)
+
 
 def source_packages_path(args):
     try:
@@ -44,8 +48,9 @@ def source_packages_path(args):
     for tree in handle.trees:
         if args.type:
             type = tree_package_type(tree)
-            print("%s " % (type), end='')
+            print("%s " % (type), end="")
         print(tree.directory)
+
 
 def tree_type(args):
     try:
@@ -54,6 +59,7 @@ def tree_type(args):
         print(str(e), file=sys.stderr)
         sys.exit(1)
     print(tree_package_type(tree))
+
 
 def tree_main_path(args):
     try:
@@ -67,6 +73,7 @@ def tree_main_path(args):
             print(tree.directory)
             break
 
+
 def list_handles(args):
     ks = KernelSeries.for_cycle(args.cycle)
     for series in KernelSeries(ks=ks).series:
@@ -77,9 +84,11 @@ def list_handles(args):
                 continue
             print("{}:{}".format(series.codename, source.name))
 
+
 def list_cycles(args):
     for cycle in SruCycle().cycles:
         print(cycle.name)
+
 
 def list_variants(args):
     try:
@@ -91,7 +100,8 @@ def list_variants(args):
         for variant in handle.source.variants:
             print(variant)
     else:
-        print('--')
+        print("--")
+
 
 def config(args):
     try:
@@ -99,7 +109,7 @@ def config(args):
     except HandleError as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)
-    print(handle.lookup_config(args.key, ''))
+    print(handle.lookup_config(args.key, ""))
 
 
 def package_name(args):
@@ -110,14 +120,18 @@ def package_name(args):
         print(str(e), file=sys.stderr)
         sys.exit(1)
     tree_type = tree_package_type(tree)
-    short_source = handle.source.name.replace('linux-', '')
+    short_source = handle.source.name.replace("linux-", "")
     if tree_type == "main":
         package_prefix = "linux"
     else:
-        package_prefix = "linux-" + \
-            tree_type.replace('lrm', 'restricted-modules')
-    package_pattern = package_prefix + "-" + short_source + "_" + \
-        args.tag.replace("Ubuntu-" + short_source + "-", "").replace("_", "~")
+        package_prefix = "linux-" + tree_type.replace("lrm", "restricted-modules")
+    package_pattern = (
+        package_prefix
+        + "-"
+        + short_source
+        + "_"
+        + args.tag.replace("Ubuntu-" + short_source + "-", "").replace("_", "~")
+    )
     print(package_pattern)
 
 
@@ -137,8 +151,7 @@ def read_swm_property(args):
 
 
 def newrelease(args):
-    kv = KernelVersion(args.version, parent_version=args.parent_version,
-                       package_type=args.package_type)
+    kv = KernelVersion(args.version, parent_version=args.parent_version, package_type=args.package_type)
     kv.bump()
     print(kv)
 
@@ -147,100 +160,99 @@ if __name__ == "__main__":
     desc = """
 Helper program for getting cranky config and handle data from shell scripts.
 """
-    parser = argparse.ArgumentParser(description=desc,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     prog="cranky shell-helper")
+    parser = argparse.ArgumentParser(
+        description=desc, formatter_class=argparse.RawDescriptionHelpFormatter, prog="cranky shell-helper"
+    )
     subparsers = parser.add_subparsers(help="commands", dest="command")
     subparsers.required = True
 
     # handle-to-series-source subparser
-    subparser = subparsers.add_parser("handle-to-series-source",
-                                      help="Print series codename and source name for the given handle")
+    subparser = subparsers.add_parser(
+        "handle-to-series-source", help="Print series codename and source name for the given handle"
+    )
     subparser.set_defaults(func=handle_to_series_source)
 
     # series-codename subparser
-    subparser = subparsers.add_parser("series-codename",
-                                      help="Print series codename for the given handle")
+    subparser = subparsers.add_parser("series-codename", help="Print series codename for the given handle")
     subparser.set_defaults(func=series_codename)
 
     # source-packages-path subparser
-    subparser = subparsers.add_parser("source-packages-path",
-                                      help="Print source packages' paths")
-    subparser.add_argument("-t", "--type", action="store_true", default=False,
-                           help="Also print package type.")
+    subparser = subparsers.add_parser("source-packages-path", help="Print source packages' paths")
+    subparser.add_argument("-t", "--type", action="store_true", default=False, help="Also print package type.")
     subparser.set_defaults(func=source_packages_path)
 
     # tree-type subparser
-    subparser = subparsers.add_parser("tree-type",
-                                      help="tree-type: dump source tree type")
+    subparser = subparsers.add_parser("tree-type", help="tree-type: dump source tree type")
     subparser.set_defaults(func=tree_type)
 
     # tree-main-path subparser
-    subparser = subparsers.add_parser("tree-main-path",
-                                      help="tree-main-path: dump source tree main tree path")
+    subparser = subparsers.add_parser("tree-main-path", help="tree-main-path: dump source tree main tree path")
     subparser.set_defaults(func=tree_main_path)
 
     # list-handles subparser
-    subparser = subparsers.add_parser("list-handles",
-                                      help="Print the list of supported handles")
+    subparser = subparsers.add_parser("list-handles", help="Print the list of supported handles")
     subparser.set_defaults(func=list_handles)
 
     # list-cycles subparser
-    subparser = subparsers.add_parser("list-cycles",
-                                      help="Print the list of known SRU cycles")
+    subparser = subparsers.add_parser("list-cycles", help="Print the list of known SRU cycles")
     subparser.set_defaults(func=list_cycles)
 
     # list variants subparser
-    subparser = subparsers.add_parser("list-variants",
-                                      help="Print variants for the given handle")
+    subparser = subparsers.add_parser("list-variants", help="Print variants for the given handle")
     subparser.set_defaults(func=list_variants)
 
     # config subparser
-    subparser = subparsers.add_parser("config",
-                                      help="Print a config option")
-    subparser.add_argument("key",
-                           help="The key name of the config option, in the form of <key>[.<key>].")
+    subparser = subparsers.add_parser("config", help="Print a config option")
+    subparser.add_argument("key", help="The key name of the config option, in the form of <key>[.<key>].")
     subparser.set_defaults(func=config)
 
     # read-swm-property subparser
-    subparser = subparsers.add_parser("read-swm-property",
-                                      help="Read one or more SWM properties from a tracking bug")
-    subparser.add_argument("bug_id",
-                           help="The bug if for a kernel crank tracking bug")
-    subparser.add_argument("-k", "--key", nargs="+", action="extend", required=True,
-                           help="The SWM property key to read in the form of <key>[.<key>]. May be repeated.")
+    subparser = subparsers.add_parser("read-swm-property", help="Read one or more SWM properties from a tracking bug")
+    subparser.add_argument("bug_id", help="The bug if for a kernel crank tracking bug")
+    subparser.add_argument(
+        "-k",
+        "--key",
+        nargs="+",
+        action="extend",
+        required=True,
+        help="The SWM property key to read in the form of <key>[.<key>]. May be repeated.",
+    )
     subparser.set_defaults(func=read_swm_property)
 
     # package-name subparser
-    subparser = subparsers.add_parser("package-name",
-                                      help="Print the package name expected.")
-    subparser.add_argument("-t", "--tag", required=True,
-                           help="The tag originating the package.")
+    subparser = subparsers.add_parser("package-name", help="Print the package name expected.")
+    subparser.add_argument("-t", "--tag", required=True, help="The tag originating the package.")
 
     subparser.set_defaults(func=package_name)
 
     # newrelease subparser
-    subparser = subparsers.add_parser("newrelease",
-                                      help="Print the next version given the current version and an optional parent version.")
-    subparser.add_argument("version",
-                           help="Current package version.")
-    subparser.add_argument("-p", "--parent-version", default=None,
-                           help="Current parent kernel version.")
-    subparser.add_argument("-t", "--package-type", default=None,
-                           help="Current package type. If not provided, defaults to the main kernel package type.")
+    subparser = subparsers.add_parser(
+        "newrelease", help="Print the next version given the current version and an optional parent version."
+    )
+    subparser.add_argument("version", help="Current package version.")
+    subparser.add_argument("-p", "--parent-version", default=None, help="Current parent kernel version.")
+    subparser.add_argument(
+        "-t",
+        "--package-type",
+        default=None,
+        help="Current package type. If not provided, defaults to the main kernel package type.",
+    )
     subparser.set_defaults(func=newrelease)
 
     # Add common subparser arguments
     for name, subparser in subparsers.choices.items():
         # These subcommands don't take a cycle argument
         if name not in ["list-cycles", "read-swm-property", "package-name", "newrelease"]:
-            subparser.add_argument("--cycle",
-                                   help="sru cycle to use when looking up the source")
+            subparser.add_argument("--cycle", help="sru cycle to use when looking up the source")
         # These subcommands don't require a 'handle' argument
         if name not in ["list-handles", "list-cycles", "newrelease"]:
-            subparser.add_argument("handle", nargs='?', default=os.getcwd(),
-                                   help="<series>:<package> handle, or path to source tree. "
-                                   "If not provided, defaults to the current directory.")
+            subparser.add_argument(
+                "handle",
+                nargs="?",
+                default=os.getcwd(),
+                help="<series>:<package> handle, or path to source tree. "
+                "If not provided, defaults to the current directory.",
+            )
 
     args = parser.parse_args()
     args.func(args)

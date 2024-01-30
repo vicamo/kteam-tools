@@ -29,8 +29,7 @@ def print_table(routing):
     for route in routing.routes:
         for i, destination in enumerate(route):
             archive, pocket = destination.reference, destination.pocket
-            table.append([destination.name, archive,
-                          "-" if archive.startswith("ppa:") else pocket])
+            table.append([destination.name, archive, "-" if archive.startswith("ppa:") else pocket])
 
     # Determine the max width of each column
     widths = [len(max(col, key=len)) for col in zip(*table)]
@@ -40,7 +39,7 @@ def print_table(routing):
 
     # Print the formatted data
     for row in table:
-        print('|'.join((" {:%d} " % w).format(r) for w, r in zip(widths, row)))
+        print("|".join((" {:%d} " % w).format(r) for w, r in zip(widths, row)))
 
 
 if __name__ == "__main__":
@@ -60,17 +59,22 @@ Examples:
       Print the routing information for the specified kernel directory.
 """
 
-    parser = argparse.ArgumentParser(description=desc, formatter_class=
-                                     argparse.RawDescriptionHelpFormatter,
-                                     epilog=epilog, prog="cranky list-routing")
-    parser.add_argument("handle", nargs='?', help="Handle to a kernel source "
-                        "tree, either a path to a kernel source tree or a "
-                        "handle in <series>:<package> format. If not given "
-                        "the current working directory is used.")
-    parser.add_argument("-v", "--verbose", action="store_true",
-                        help="Increase verbosity.")
-    parser.add_argument("--cycle",
-                        help="sru cycle to use when looking up the source.")
+    parser = argparse.ArgumentParser(
+        description=desc,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=epilog,
+        prog="cranky list-routing",
+    )
+    parser.add_argument(
+        "handle",
+        nargs="?",
+        help="Handle to a kernel source "
+        "tree, either a path to a kernel source tree or a "
+        "handle in <series>:<package> format. If not given "
+        "the current working directory is used.",
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Increase verbosity.")
+    parser.add_argument("--cycle", help="sru cycle to use when looking up the source.")
     args = parser.parse_args()
 
     # Setup the logger
@@ -78,13 +82,11 @@ Examples:
     logging.basicConfig(level=level, format="%(message)s")
 
     try:
-        handle = Handle().lookup_set(args.handle if args.handle else
-                                     os.getcwd(), cycle=args.cycle, validate=False)
+        handle = Handle().lookup_set(args.handle if args.handle else os.getcwd(), cycle=args.cycle, validate=False)
     except HandleError as e:
         cerror(e)
         sys.exit(1)
 
     # Print the data
-    cdebug("Routing information for '%s:%s':" % (handle.series.codename,
-                                                 handle.source.name))
+    cdebug("Routing information for '%s:%s':" % (handle.series.codename, handle.source.name))
     print_table(handle.source.routing)

@@ -17,7 +17,6 @@ import sys
 from crl.handle import Handle, HandleError
 from ktl.kernel_series import KernelSeries
 from ktl.log import cdebug, cerror
-from ktl.kernel_series import KernelSeries
 
 
 class SourceCollection:
@@ -29,14 +28,14 @@ class SourceCollection:
         self.data = dict()
 
     def __normalized_source_name(self, source_name):
-        if '-' in source_name:
-            (part1, tmp) = source_name.rsplit('-', 1)
-            if '.' in tmp:
-                (mv, sv) = tmp.rsplit('.', 1)
+        if "-" in source_name:
+            (part1, tmp) = source_name.rsplit("-", 1)
+            if "." in tmp:
+                (mv, sv) = tmp.rsplit(".", 1)
                 try:
-                    part1 += '-{:03n}.{:03n}'.format(int(mv), int(sv))
+                    part1 += "-{:03n}.{:03n}".format(int(mv), int(sv))
                 except ValueError:
-                    part1 += '-' + tmp
+                    part1 += "-" + tmp
             source_name = part1
 
         return source_name
@@ -51,7 +50,7 @@ class SourceCollection:
         if key_source in series_branch:
             return
 
-        cn     = ks_source.series.codename
+        cn = ks_source.series.codename
         wanted = False
         if ks_source.supported:
             if ks_source.series.supported and not ks_source.series.esm:
@@ -63,17 +62,17 @@ class SourceCollection:
                 if ks_source.derived_from is not None:
                     ks_origin = ks_source.derived_from.series
                     if ks_origin.supported and not ks_origin.esm:
-                        cdebug('Included by parent: {}:{}'.format(cn, key_source))
+                        cdebug("Included by parent: {}:{}".format(cn, key_source))
                         wanted = True
-                if 'esm' in filters:
-                    cdebug('Included by ESM: {}:{}'.format(cn, key_source))
+                if "esm" in filters:
+                    cdebug("Included by ESM: {}:{}".format(cn, key_source))
                     wanted = True
-        elif ks_source.development and 'devel' in filters:
-            cdebug('Included by devel: {}:{}'.format(cn, key_source))
+        elif ks_source.development and "devel" in filters:
+            cdebug("Included by devel: {}:{}".format(cn, key_source))
             wanted = True
 
         if wanted:
-            cdebug('Add[{}:{}]'.format(cn, key_source))
+            cdebug("Add[{}:{}]".format(cn, key_source))
             series_branch.setdefault(key_source, ks_source)
 
     def list_by_owners(self):
@@ -88,12 +87,12 @@ class SourceCollection:
                 else:
                     byowner[owner_key].append(ks_source)
         for owner_name in sorted(byowner):
-            print('* {}({})'.format(owner_name, len(byowner[owner_name])))
+            print("* {}({})".format(owner_name, len(byowner[owner_name])))
             for ks_source in byowner[owner_name]:
-                print('  - {}:{}'.format(ks_source.series.codename, ks_source.name))
+                print("  - {}:{}".format(ks_source.series.codename, ks_source.name))
 
     def __repr__(self):
-        text = ''
+        text = ""
         for series_name in sorted(self.data.keys(), reverse=True):
             cs = None
             for source_name in sorted(self.data[series_name], key=self.__normalized_source_name):
@@ -104,7 +103,7 @@ class SourceCollection:
                     on = " (UNASSIGNED)"
                 else:
                     on = " (" + ks_source.owner + ")"
-                text += '* {}:{}{}\n'.format(cs, source_name, on)
+                text += "* {}:{}{}\n".format(cs, source_name, on)
         return text.rstrip()
 
 
@@ -134,25 +133,37 @@ Examples:
 
 """
 
-    parser = argparse.ArgumentParser(description=desc,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     epilog=epilog,
-                                     prog="cranky list-owners")
-    parser.add_argument("handle", nargs='*', metavar="<handle>",
-                        help="Handle to a kernel source "
-                        "tree, either a path to a kernel source tree or a "
-                        "handle in <series>:<package> format. If not given "
-                        "all supported kernel sources are selected.")
-    parser.add_argument("-v", "--verbose", action="store_true",
-                        help="Increase verbosity.")
-    parser.add_argument("--include-esm", dest="filters", action="append_const", const="esm",
-                        help="Also include kernel sources which are in ESM.")
-    parser.add_argument("--include-devel", dest="filters", action="append_const", const="devel",
-                        help="Also include kernel sources which are under development.")
-    parser.add_argument("--by-owner", action="store_true",
-                        help="Change the output to list owners and their kernel sources.")
-    parser.add_argument("--cycle",
-                        help="sru cycle to use when looking up the source.")
+    parser = argparse.ArgumentParser(
+        description=desc, formatter_class=argparse.RawDescriptionHelpFormatter, epilog=epilog, prog="cranky list-owners"
+    )
+    parser.add_argument(
+        "handle",
+        nargs="*",
+        metavar="<handle>",
+        help="Handle to a kernel source "
+        "tree, either a path to a kernel source tree or a "
+        "handle in <series>:<package> format. If not given "
+        "all supported kernel sources are selected.",
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Increase verbosity.")
+    parser.add_argument(
+        "--include-esm",
+        dest="filters",
+        action="append_const",
+        const="esm",
+        help="Also include kernel sources which are in ESM.",
+    )
+    parser.add_argument(
+        "--include-devel",
+        dest="filters",
+        action="append_const",
+        const="devel",
+        help="Also include kernel sources which are under development.",
+    )
+    parser.add_argument(
+        "--by-owner", action="store_true", help="Change the output to list owners and their kernel sources."
+    )
+    parser.add_argument("--cycle", help="sru cycle to use when looking up the source.")
     args = parser.parse_args()
 
     # Setup the logger
@@ -162,7 +173,7 @@ Examples:
     if args.filters is None:
         args.filters = []
 
-    ks      = KernelSeries()
+    ks = KernelSeries()
     sources = SourceCollection(ks=ks)
     if len(args.handle) > 0:
         for h in args.handle:
