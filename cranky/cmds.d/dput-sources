@@ -22,11 +22,11 @@ function out()
 function get_stream_from_tb()
 {
 	(
-		local dir=$1
-		# If the user gave us a handle, locate the tree so we can read the tracking-bug
-		if [ -z "${dir##*:*}" ] ; then
-			dir=$("$C" shell-helper tree-main-path "${handle}")
-		fi
+		local handle=$1
+		local dir
+
+		# Get the directory of the main tree
+		dir=$("$C" shell-helper tree-main-path "${handle}")
 
 		cd "$dir" || exit 1
 
