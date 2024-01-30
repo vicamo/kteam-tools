@@ -44,6 +44,19 @@ class TestNewRelease(unittest.TestCase):
         a.bump()
         self.assertEqual(a, b)
 
+    def test_hwe_parent(self):
+        # focal:linux-riscv-5.15 works like that
+        a = KernelVersion("5.15.0-1040.42~20.04.2", "5.15.0-90.91")
+        b = KernelVersion("5.15.0-1041.43~20.04.1")
+        a.bump()
+        self.assertEqual(a, b)
+
+        # when hwe-5.19 became the new parent, it worked like that
+        a = KernelVersion("5.19.0-1040.42~20.04.2", "5.19.0-50.51~20.04.1")
+        b = KernelVersion("5.19.0-1041.43~20.04.1")
+        a.bump()
+        self.assertEqual(a, b)
+
     def test_invalid(self):
         # Library does not validate upstream version
         a = KernelVersion("50-20.3000")
@@ -55,12 +68,10 @@ class TestNewRelease(unittest.TestCase):
         b.bump()
         self.assertEqual(b, KernelVersion("50-21.3001"))
 
-        # Parent version is not validated, extra part may start with anything
-        # but a digit, and is appended to the parent version.
+        # If parent version is lower than version, it is ignored
         c = KernelVersion("50-20.3000U2", "42+answer")
-        with self.assertRaises(ValueError):
-            c.bump()
-        self.assertEqual(c, KernelVersion("42+answerU1"))
+        c.bump()
+        self.assertEqual(c, KernelVersion("50-21.3001U1"))
 
         # Extra part must end with a digit
         d = KernelVersion("50-20.3000U")

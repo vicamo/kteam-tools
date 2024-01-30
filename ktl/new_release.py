@@ -19,6 +19,8 @@
 #     the given version without the EXTRA part, then 3 is followed. If it does
 #     not match, the new version is the parent version plust the EXTRA part with
 #     its last digits reset to 1.
+#  6) EXCEPTION: when parent version is lower than the given version, ABI and
+#     UPLOAD are incremented and EXTRA last digit is reset to 1.
 #
 #  For linux-restricted-modules (aka LRM), linux-signed and linux-meta (see
 #  WARNING below) package versions:
@@ -98,9 +100,13 @@ class KernelVersion:
                     extra_digit = 1
                 extra = "{}{}".format(extra_prefix, extra_digit)
                 if self.parent_version:
-                    self.version = "{}{}".format(self.parent_version, extra)
-                else:
-                    self.version = "{}-{}.{}{}".format(upstream, abi, upload, extra)
+                    if apt_pkg.version_compare(self.version, self.parent_version) <= 0:
+                        self.version = "{}{}".format(self.parent_version, extra)
+                        return
+                    else:
+                        abi = int(abi) + 1
+                        upload = int(upload) + 1
+                self.version = "{}-{}.{}{}".format(upstream, abi, upload, extra)
         except Exception:
             raise ValueError("Invalid version")
 
