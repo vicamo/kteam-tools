@@ -155,10 +155,15 @@ def update_cycle_info(cycle, dryrun=False):
         commit_subject = "security-cycle: Add {} cycle info".format(cycle.name)
     else:
         commit_subject = "sru-cycle: Add {} cycle info".format(cycle.name)
+    dn   = os.path.dirname(file_name)
+    fn   = os.path.basename(file_name)
+    cmd  = "cd {0} && ".format(dn)
+    cmd += "git commit -sm '{0}' {1}".format(commit_subject, fn)
     if not dryrun:
-        cmd = "git commit -sm '{0}' {1}".format(commit_subject, file_name)
+        print("Committing changes to {0}".format(fn))
         run_command(cmd)
-    print("Added commit '{0}' to {1}".format(commit_subject, file_name))
+    else:
+        print("DRY: {0}".format(cmd))
 
 
 if __name__ == '__main__':
