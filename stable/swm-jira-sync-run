@@ -16,5 +16,12 @@ else
 	(cd kernel-users && git pull)
 fi
 
+# Ensure we have a copy of kernel-versions.
+if [ ! -d "kernel-versions" ]; then
+	git clone ssh+git://ubuntu-kernel-bot@git.launchpad.net/~canonical-kernel/+git/kernel-versions
+else
+	(cd kernel-versions && git pull)
+fi
+
 set -o pipefail
 "$here/swm-jira-sync" "$@" 2>&1 | tee -a "$HOME/logs/swm-jira-sync.log"
