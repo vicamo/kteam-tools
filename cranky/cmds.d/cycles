@@ -33,6 +33,8 @@ def list_cycles(
     **kwargs,
 ):
     """List cycle references for the specified handle and package"""
+    if package is None:
+        package = "main"
     tree = Handle().lookup_set(handle, cycle=cycle, validate=False).get_tree_by_package_type(package)
     if not tree:
         raise CrankyException("No package type '{}' found in {}".format(package, handle))

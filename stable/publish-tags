@@ -257,8 +257,8 @@ class GitRefsPackage(object):
         # Work out where we will find refs for this package.
         urls = [package.repo.url]
 
-        type_prefix = '-' + package.type if package.type not in (None, 'main') else ''
-        security = 'git://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/linux{}-{}'.format(type_prefix, package.series.codename)
+        type_suffix = '' if package.type == 'main' else '-' + package.type
+        security = 'git://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/linux{}-{}'.format(type_suffix, package.series.codename)
         if include_security:
             urls.append(security)
 
@@ -319,7 +319,7 @@ class GitRefsPackage(object):
         return None
 
     def local_ref(self, ref):
-        local_type = self.package.type if self.package.type is not None else 'main'
+        local_type = self.package.type
         local_bits = ref.split('/')
         local_bits = local_bits[0:2] + [self.package.source.series.codename, self.package.name, local_type] + local_bits[2:]
         local_ref = '/'.join(local_bits)
@@ -432,7 +432,7 @@ def publish_tags(targets, include_security=False, create_pkg_repos=False, dry_ru
 
         refs = GitRefsPackage(package, source, include_security=include_security, dryrun=dry_run)
 
-        if package.type in (None, 'main') and '-uc20' not in source.name and '-uc22' not in source.name: # XXX
+        if package.type == 'main' and '-uc20' not in source.name and '-uc22' not in source.name: # XXX
             # Sync all of our mainline tags.
             package_versions = package.source.versions
             if package_versions is None:
@@ -488,7 +488,7 @@ def publish_tags(targets, include_security=False, create_pkg_repos=False, dry_ru
         # Sync the 'master' branch -- released version tag
         branches_to = [(branch, False)]
         if branch.endswith('-next'):
-            force = package.type in (None, 'main') and package.source.name != 'linux'
+            force = package.type == 'main' and package.source.name != 'linux'
             branches_to.append((branch[:-5], force))
 
         for branch_base, force in branches_to:

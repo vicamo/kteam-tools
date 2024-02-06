@@ -31,11 +31,8 @@ class SimplePackage:
     @property
     def package_type(self):
         """Returns type of this package.
-        A type of None is interpreted as the 'main' package
         :return: str
         """
-        if self._entry.type is None:
-            return "main"
         return self._entry.type
 
     def format_link(self, git_url=False):

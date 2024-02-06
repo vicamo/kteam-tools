@@ -63,7 +63,7 @@ elif mode == 'repositories':
                 if '~ubuntu-kernel' not in url and '~canonical-kernel' not in url:
                     continue
 
-                type = '-' + package.type if package.type is not None else ''
+                type = '' if package.type == 'main' else '-' + package.type
                 name = form.format(
                     series=series.codename,
                     variant=variant,
@@ -74,5 +74,5 @@ elif mode == 'repositories':
                     pacakge=package.name,
                     name=name,
                     url=url,
-                    which=package.type if package.type is not None else "main",
+                    which=package.type,
                     ))

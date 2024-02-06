@@ -28,7 +28,7 @@ if parent_source is None:
 
 # Find the primary package for this source.
 for parent_package in parent_source.packages + [None]:
-    if parent_package is None or parent_package.type is None:
+    if parent_package is None or parent_package.type == "main":
         break
 if parent_package is None:
     print("  parent package has no main package?!?", file=sys.stderr)

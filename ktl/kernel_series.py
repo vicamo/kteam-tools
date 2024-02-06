@@ -343,7 +343,7 @@ class KernelPackageEntry:
 
     @property
     def type(self):
-        return self._data.get('type', None)
+        return self._data.get('type', "main")
 
     def _type_to_package(self, ptype):
         if ptype is None:
@@ -480,7 +480,7 @@ class KernelSourceEntry:
             return None
         if type is not None:
             for package in self.packages:
-                if package.type == type or (type == 'main' and package.type is None):
+                if package.type == type:
                     return package
             return None
         if package_key is None or package_key not in packages:
