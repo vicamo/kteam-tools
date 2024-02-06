@@ -942,13 +942,18 @@ class SnapCertificationTesting(KernelSnapBase):
                         version=s.bug.version,
                     )
                     cinfo("TO snap results={}".format(results))
+                    revisions = None
                     if s.is_v2:
                         request = s.bug.group_get("snap-prepare", "beta")
                         revisions = s.bug.snap.revisions_request(request)
                         cinfo("TO revisions={}".format(revisions))
 
                         for current in results:
-                            if current.get(":revisions") == revisions:
+                            superset = True
+                            for arch, revision in (current.get(":revisions") or {}).items():
+                                if revision != revisions.get(arch):
+                                    superset = False
+                            if superset:
                                 cinfo("TO snap match result={}".format(current))
                                 s.bug.group_set("test-observer", "beta", current.get("id"))
                                 result = current
@@ -966,6 +971,12 @@ class SnapCertificationTesting(KernelSnapBase):
                     assignee = (result.get("assignee") or {}).get("launchpad_handle")
                     if status == "UNDECIDED" and assignee is not None:
                         tstatus = "In Progress"
+
+                    # If we have a missmatch on the architectures then move to failure...
+                    if revisions is not None and revisions != result.get(":revisions"):
+                        cinfo("TO snap match missmatched architectures {} expected {}".format(result.get(":revisions"), revisions))
+                        s.bug.reasons['test-observer'] = "Stalled -- Warning testing missing architectures"
+
                     # Assign the task if we have an owner and move it if the status has changed.
                     if s.task.assignee is None or s.task.assignee.name != assignee:
                         lp_assignee = s.lp.people[assignee] if assignee is not None else s.lp.people["canonical-hw-cert"]
