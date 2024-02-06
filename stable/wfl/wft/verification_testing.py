@@ -101,8 +101,10 @@ class VerificationTesting(TaskHandler):
         cdebug("SPAM-V sru_bugs {} {}".format(len(sru_bugs), sru_bugs))
 
         # If we have a parent tracker then we ask for its list of bugs and subtract those from ours
+        master_key = None
         master_bug = self.bug.master_bug
         if master_bug is not None:
+            master_key = master_bug.series + '-' + master_bug.name
             master_bugs = master_bug.debs.bugs
             if master_bugs is None:
                 master_bugs = []
@@ -124,9 +126,9 @@ class VerificationTesting(TaskHandler):
                 spammed_v1 = 'kernel-spammed-{}-{}'.format(self.bug.series, self.bug.name)
                 spammed_v2 = spammed_v1 + "-v2"
                 if spammed_v1 in lp_bug.tags:
-                    key = self.bug.series
+                    bug_key = self.bug.series
                 else:
-                    key = self.bug.series + "-" + self.bug.name
+                    bug_key = self.bug.series + "-" + self.bug.name
 
                 state = 'missing'
                 if   'kernel-tracking-bug'              in lp_bug.tags: state = 'release-tracker'
@@ -139,12 +141,18 @@ class VerificationTesting(TaskHandler):
 
                 # By making these checks separately and after the previous ones, we
                 # can add the correct state for tracking bugs.
-                #
-                if 'verification-failed-%s' % key       in lp_bug.tags: state = 'failed'
-                elif 'verification-reverted-%s' % key   in lp_bug.tags: state = 'reverted'
-                elif 'verification-done-%s'   % key     in lp_bug.tags: state = 'verified'
-                elif 'verification-needed-%s' % key     in lp_bug.tags: state = 'needed'
-                #elif 'verification-done'                in lp_bug.tags: state = 'verified'
+                for key in (bug_key, master_key):
+                    if key is None:
+                        continue
+                    if 'verification-failed-%s' % key       in lp_bug.tags: state = 'failed'
+                    elif 'verification-reverted-%s' % key   in lp_bug.tags: state = 'reverted'
+                    elif 'verification-done-%s'   % key     in lp_bug.tags: state = 'verified'
+                    elif 'verification-needed-%s' % key     in lp_bug.tags: state = 'needed'
+                    #elif 'verification-done'                in lp_bug.tags: state = 'verified'
+
+                    cdebug("SPAM-V bug={} state={} for={}".format(bug, state, key))
+                    if state not in ("needed", "missing"):
+                        break
 
                 if spammed_v1 not in lp_bug.tags and spammed_v2 not in lp_bug.tags:
                     spam = True
