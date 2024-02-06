@@ -8,6 +8,7 @@ except ImportError:
     from urllib2 import urlopen
 
 import argparse
+import json
 import os
 import re
 import sys
@@ -51,6 +52,16 @@ def key_to_title(key):
         end = 3
     return ':'.join(key[1:end]) + ' #' + key[0]
 
+def read_cranky_rotation_reviewers(cycle):
+    result = {}
+    try:
+        filename = os.path.join('kernel-versions', cycle, 'info/reviewers.json')
+        with open(filename, "r") as file:
+            result = json.load(file)
+    except Exception as e:
+        print("Reading from reviewers file failed for cycle {}".format(cycle))
+
+    return result
 
 if __name__ == '__main__':
 
@@ -66,6 +77,13 @@ if __name__ == '__main__':
                 jira_id = None
             jira_id_cache[email] = jira_id
         return jira_id_cache[email]
+
+    def users_find_email_by_name(users, name):
+        for _, extra_info in users.items():
+            if extra_info["name"] == name:
+                return extra_info["email"]
+
+        return None
 
     parser = argparse.ArgumentParser(description='SWM JIRA card syncer')
     args = parser.parse_args()
@@ -161,6 +179,8 @@ if __name__ == '__main__':
     issuelink_want = {}
 
     for cycle in sorted(cycles):
+        cranky_rotation_reviewers = read_cranky_rotation_reviewers(cycle)
+
         print("Cycle:", cycle)
         trackers = cycle_trackers.get(cycle, {})
         print("  SWM Trackers:", len(trackers))
@@ -182,6 +202,7 @@ if __name__ == '__main__':
         jira_summary_detail = {}
         chunk_offset = 0
         chunk_size = 50
+        cycle_owner = None
         while True:
             issues = jira.search_issues('project="{}" and sprint={}'.format(project_key, jira_cycle.id), startAt=chunk_offset, maxResults=chunk_size)
             chunk_offset += chunk_size
@@ -216,6 +237,10 @@ if __name__ == '__main__':
                         jira_issues[key].delete()
                     jira_issues[key] = issue
                     continue
+                
+                if 'Cycle Lead' in summary:
+                    cycle_owner = issue.fields.assignee
+                    continue
 
                 if summary == 'Cycle Status':
                     jira_cycle_status_key = issue.key
@@ -241,6 +266,7 @@ if __name__ == '__main__':
         #print(trackers)
         #print(jira_issues.keys())
         print("  JIRA Issues:", len(jira_issues))
+        print("Cycle lead: ", cycle_owner)
 
         for key in sorted(set(list(trackers.keys()) + list(jira_issues.keys()))):
             sys.stdout.flush()
@@ -487,6 +513,20 @@ if __name__ == '__main__':
                     #    target_state = 'Kernel Not Ready'
 
                 elif starting_state == 'Kernel Peer Review':
+                    summary = issue.fields.summary
+                    if 'Crank' in summary:
+                        kernel = summary.split()[1] #Crank <kernel> #<sprint>
+                        if kernel in cranky_rotation_reviewers.keys():
+                            reviewer_email = users[cranky_rotation_reviewers[kernel]].get('email')
+                        else:
+                            # Find the cycle lead and assign it to it
+                            reviewer_email = users_find_email_by_name(users, cycle_owner)
+                        reviewer_jira_id = email_to_jira_id(reviewer_email)
+                        if reviewer_jira_id is not None:
+                            jira.assign_issue(issue, reviewer_email)
+                        else:
+                            print("ASSIGN:", issue, reviewer_email, "FAILED")
+
                     review_want.add(tracker_id)
 
                 #print("SYNC ISSUE", issue, starting_state, target_state)
