@@ -676,6 +676,10 @@ class TrackingBug(object):
                 s.__bug.tags.remove(tag)
 
         for task in s.__bug.tasks:
+            # Leave the signing tasks alone, we are not allowed to change those.
+            if 'canonical-signing-jobs' in task.bug_target_display_name:
+                continue
+            cdebug('Invalidate task "{}"'.format(task.bug_target_display_name))
             task.status = 'Invalid'
         cleave(s.__class__.__name__ + '.invalidate')
 
