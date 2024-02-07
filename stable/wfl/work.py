@@ -12,6 +12,13 @@ from wfl.secrets import Secrets
 
 class SwmWorkCmds:
 
+    _group = None
+
+    def group_id(self, rotate=False):
+        if self._group is None or rotate:
+            self._group = uuid.uuid4().hex
+        return self._group
+
     def send_admin_quit(self, name, priority=None):
         if priority is None:
             priority = 6
@@ -27,6 +34,7 @@ class SwmWorkCmds:
             "tracker": tracker,
             "scanned": str(scanned),
             "id": uuid.uuid4().hex,
+            "group": self.group_id(),
         }
         key = "swm.{}".format(payload["type"])
         self.mq.publish(key, payload, priority=priority)
@@ -38,6 +46,7 @@ class SwmWorkCmds:
             "type": "instantiate",
             "tracker": tracker,
             "id": uuid.uuid4().hex,
+            "group": self.group_id(),
         }
         key = "swm.{}".format(payload["type"])
         self.mq.publish(key, payload, priority=priority)
@@ -55,11 +64,7 @@ class SwmWorkCmds:
         self.mq.publish(key, payload)
 
     def send_barrier(self, priority=None):
-        if priority is None:
-            priority = 4
-        payload = {"type": "barrier"}
-        key = "swm.{}".format(payload["type"])
-        self.mq.publish(key, payload, priority=priority)
+        self.group_id(rotate=True)
 
 
 class SwmWork(SwmWorkCmds):
