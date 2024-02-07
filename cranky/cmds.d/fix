@@ -1,8 +1,21 @@
-#!/bin/bash
+#!/bin/bash -eu
 #
 # cranky fix -- identify the current repository and attempt to apply fixes to
 #               it against the primary copies of repositories.
 #
+
+function out()
+{
+	local rc=${?}
+
+	trap - EXIT INT TERM HUP
+
+	if [ ${rc} -ne 0 ] ; then
+		echo "Script failed" >&2
+	fi
+
+	exit "${rc}"
+}
 
 function usage()
 {
@@ -46,6 +59,8 @@ while [ "$#" -gt 0 ] ; do
 	esac
 	shift
 done
+
+trap out EXIT INT TERM HUP
 
 # Locate the debian directory taking into accout debian.env if present.
 debian="debian"
