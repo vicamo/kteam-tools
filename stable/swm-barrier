@@ -22,6 +22,7 @@ class SwmBarrierGroup:
     def __init__(self):
         self.want = set()
         self.seen = set()
+        self.open = False
 
     @property
     def nascent(self):
@@ -46,13 +47,13 @@ class SwmBarrierGroup:
         if self.nascent:
             return "GROUP<nascent>"
         else:
-            return "GROUP<wants={} sees={} complete={}>".format(len(self.want), len(self.seen), self.complete)
+            return "GROUP<wants={} sees={} open={} complete={}>".format(len(self.want), len(self.seen), self.open, self.complete)
 
     def __repr__(self):
         if self.nascent:
             return "GROUP<nascent>"
         else:
-            return "GROUP<wants={} sees={} complete={}>".format(len(self.want), len(self.seen), self.complete)
+            return "GROUP<wants={} sees={} open={} complete={}>".format(len(self.want), len(self.seen), self.open, self.complete)
 
 
 class SwmBarrier(SwmWorkCmds):
@@ -68,7 +69,23 @@ class SwmBarrier(SwmWorkCmds):
         self.direct = self.queue + '--' + self.args.name
 
         # Wanted, Seen per group.
-        self.groups = [SwmBarrierGroup()]
+        self.groups = []
+        self._open = None
+
+    # open
+    #
+    @property
+    def open(self):
+        if self._open in self.groups:
+            return self._open
+        return None
+    @open.setter
+    def open(self, group):
+        if self._open is not None:
+            self._open.open = False
+        self._open = group
+        if self._open is not None:
+            self._open.open = True
 
     # _announce
     #
@@ -104,6 +121,11 @@ class SwmBarrier(SwmWorkCmds):
                 self.mq.listen_stop()
 
             elif what == 'shank':
+                if self.open is None:
+                    new_group = SwmBarrierGroup()
+                    self.groups.append(new_group)
+                    self.open = new_group
+
                 shank_id = payload.get('id')
                 self.groups[-1].add(shank_id)
                 self.log.info("groups={}".format(self.groups))
@@ -118,7 +140,8 @@ class SwmBarrier(SwmWorkCmds):
                     self.log.info("skipping id={}".format(shank_id))
 
             elif what == 'barrier':
-                self.groups.append(SwmBarrierGroup())
+                # Close out the existing group.
+                self.open = None
 
         except Exception as e:
             self.log.error("announcement failed: {}".format(str(e)))
@@ -129,9 +152,6 @@ class SwmBarrier(SwmWorkCmds):
 
         groups = []
         for group in self.groups:
-            if group.nascent:
-                groups.append(group)
-                continue
             self.log.info("{}".format(group))
             if group.complete:
                 self.log.info("FLAGGING DEPENDANTS")
@@ -142,7 +162,6 @@ class SwmBarrier(SwmWorkCmds):
 
         if len(self.groups) == 0:
             self.log.info("QUEUE EMPTY")
-            self.groups = [SwmBarrierGroup()]
             request_dependants = True
 
         if request_dependants:
