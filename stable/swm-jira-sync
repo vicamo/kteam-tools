@@ -516,16 +516,19 @@ if __name__ == '__main__':
                     summary = issue.fields.summary
                     if 'Crank' in summary:
                         kernel = summary.split()[1] #Crank <kernel> #<sprint>
-                        if kernel in cranky_rotation_reviewers.keys():
-                            reviewer_email = users[cranky_rotation_reviewers[kernel]].get('email')
-                        else:
-                            # Find the cycle lead and assign it to it
-                            reviewer_email = users_find_email_by_name(users, cycle_owner)
-                        reviewer_jira_id = email_to_jira_id(reviewer_email)
-                        if reviewer_jira_id is not None:
-                            jira.assign_issue(issue, reviewer_email)
-                        else:
-                            print("ASSIGN:", issue, reviewer_email, "FAILED")
+                        if kernel in cranky_rotation_reviewers:
+                            reviewer = cranky_rotation_reviewers[kernel]
+                            if reviewer is not None:
+                                reviewer_email = users[reviewer].get('email')
+                            else:
+                                # Find the cycle lead and assign it to it
+                                reviewer_email = users_find_email_by_name(users, cycle_owner)
+
+                            reviewer_jira_id = email_to_jira_id(reviewer_email)
+                            if reviewer_jira_id is not None:
+                                jira.assign_issue(issue, reviewer_email)
+                            else:
+                                print("ASSIGN:", issue, reviewer_email, "FAILED")
 
                     review_want.add(tracker_id)
 
