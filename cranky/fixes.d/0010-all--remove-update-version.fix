@@ -16,6 +16,15 @@ if [ -f "${FIX_MAIN_PATH}"/update-dkms-versions ] ; then
 	exit 0
 fi
 
+# shellcheck disable=SC1091
+. "${FIX_MAIN_PATH}"/debian/debian.env
+if [ ! -f "${FIX_MAIN_PATH}"/"${DEBIAN}"/dkms-versions ]; then
+	# Do not remove any scripts if the main tree does not have an
+	# update-dkms-versions script but also does not support the new
+	# dkms-versions mechanism
+	exit 0
+fi
+
 if [ -f update-version ] ; then
 	rm -f update-version
 	commit "UBUNTU: [Packaging] remove update-version script" update-version
