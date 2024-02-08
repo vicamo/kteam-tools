@@ -65,12 +65,11 @@ class HandleCore:
         return val
 
     def encode_directory(self, package):
-        which = package.type if package.type else "main"
-        which_suffix = "-" + package.type if package.type else ""
+        suffix = "" if package.type == "main" else "-" + package.type
 
         for key in ("{series}--{source}--{package}", "{series}--{source}", "{series}", "{type}", "default"):
             key = key.format(
-                series=package.series.codename, source=package.source.name, package=package.name, type=which
+                series=package.series.codename, source=package.source.name, package=package.name, type=package.type
             )
 
             package_path = self.config.lookup("package-path." + key)
@@ -83,8 +82,8 @@ class HandleCore:
             series=package.series.codename,
             source=package.source.name,
             package=package.name,
-            type=which,
-            type_suffix=which_suffix,
+            type=package.type,
+            type_suffix=suffix,
         )
 
         if package_path.startswith("/") or package_path.startswith("~"):
@@ -193,7 +192,7 @@ class HandleTree(HandleCore):
             bits.append(primary_package.series.codename)
         if cross_source and primary_package.source.name != "linux":
             bits.append(primary_package.source.name.replace("linux-", ""))
-        if cross_type and primary_package.type:
+        if cross_type and primary_package.type != "main":
             bits.append(primary_package.type)
 
         remote = "-".join(bits)
