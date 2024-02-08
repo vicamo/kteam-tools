@@ -455,6 +455,10 @@ class KernelSourceEntry:
         return self._data.get('owner', None)
 
     @property
+    def peer_reviewer(self):
+        return self._data.get('peer-reviewer', None)
+
+    @property
     def stakeholder(self):
         return self._data.get('stakeholder', None)
 

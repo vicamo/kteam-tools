@@ -1451,6 +1451,43 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
 
         self.assertEqual(source.owner, 'botty-mc-bot-face')
 
+    def test_swm_peer_reviewer_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertIsNone(source.peer_reviewer)
+
+    def test_swm_peer_reviewer_empty(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    peer-reviewer:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertIsNone(source.peer_reviewer)
+
+    def test_peer_reviewer_present_something(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    peer-reviewer: botty-mc-bot-face
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.peer_reviewer, 'botty-mc-bot-face')
 
 class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
 
