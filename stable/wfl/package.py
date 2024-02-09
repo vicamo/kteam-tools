@@ -3315,9 +3315,9 @@ class Package():
 
     # meta_check
     #
-    def meta_check(self):
+    def meta_check_old(self):
         cinfo("meta_check: meta is ready...")
-        bi = self.build_info
+        bi = self.legacy_info
 
         pocket_data = bi["meta"].get("build")
         if pocket_data is None:
@@ -3422,3 +3422,121 @@ class Package():
             messages.append("linux-image major version change detected, upgrade testing required; kernel-signoff required.")
         if len(messages) > 0:
             self.bug.add_comment("Kernel requires additional signoff", "\n".join(messages))
+
+    def meta_check_new(self, dry_run=False):
+        cinfo("meta_check: meta is ready...")
+        build_route_entry = self.__pkg_pocket_route_entry("meta", "build")
+        if build_route_entry is None:
+            return
+
+        # XXX: the presupposes the only risky signed package is "signed"
+        signed_route_entry = self.__pkg_pocket_route_entry("signed", "build")
+        signing_present = signed_route_entry is not None
+
+        meta_version = build_route_entry.version
+        src = build_route_entry.source
+        cinfo("meta_check: source={}\n".format(src))
+        if src is None:
+            return
+
+        bins = src.getPublishedBinaries(active_binaries_only=False)
+        bins_image = []
+        for binary in bins:
+            binary_name = binary.binary_package_name
+            if "-image-" in binary_name:
+                bins_image.append(binary)
+        #cinfo("meta_check: bins_image={}".format(bins_image))
+        bins_image_names = set([binary.binary_package_name for binary in bins_image])
+
+        updates_route_entry = self.__pkg_pocket_route_entry("meta", "Updates")
+        release_route_entry = self.__pkg_pocket_route_entry("meta", "Release")
+        variant_change = False
+        version_change = False
+        previously_published = False
+        for route_entry in (updates_route_entry, release_route_entry):
+            if route_entry is None:
+                continue
+            if route_entry.route is None:
+                continue
+            lp_archive, pocket = route_entry.route
+            if lp_archive is None:
+                continue
+
+            #if pocket_data.version is None:
+            #    continue
+            if route_entry.version == meta_version:
+                previously_published = True
+                continue
+
+            # See if we have different names in this pocket.
+            src = route_entry.source
+            cinfo("meta_check: previous src={}\n".format(src))
+            if src is not None:
+                previously_published = True
+                bins = src.getPublishedBinaries(active_binaries_only=False)
+                bins_image_prev = []
+                for binary in bins:
+                    binary_name = binary.binary_package_name
+                    if "-image-" in binary_name:
+                        bins_image_prev.append(binary)
+                    #cinfo("meta_check: bins_image_prev={}".format(bins_image))
+
+                bins_image_prev_names = set([binary.binary_package_name for binary in bins_image_prev])
+                if bins_image_prev_names != bins_image_names:
+                    cinfo("meta_check: names are different variant change prev={} curr={}".format(bins_image_prev_names, bins_image_names))
+                    variant_change = True
+
+            # See if we can see different versions of this package in the released
+            # pocket.
+            some = False
+            for binary in bins_image:
+                pubs = lp_archive.getPublishedBinaries(
+                    order_by_date=True,
+                    exact_match=True,
+                    distro_arch_series=binary.distro_arch_series,
+                    pocket=pocket,
+                    status='Published',
+                    binary_name=binary.binary_package_name,
+                )
+                for pub in pubs:
+                    prev_version = pub.binary_package_version
+                    if prev_version == meta_version:
+                        continue
+                    some = True
+
+                    if meta_version.split('.')[0:2] != prev_version.split('.')[0:2]:
+                        cinfo("meta_check: major versions are different prev={} curr={}".format(prev_version.split('.')[0:2], meta_version.split('.')[0:2]))
+                        version_change = True
+            if some:
+                break
+
+        signing_signoff = signing_present and (not previously_published or version_change)
+        kernel_signoff = version_change or variant_change
+
+        if kernel_signoff and "kernel-signoff" not in self.bug.tasks_by_name:
+            cinfo("meta_check: kernel-signoff required")
+            if not dry_run:
+                self.bug.add_task("kernel-signoff")
+        if signing_signoff and "signing-signoff" not in self.bug.tasks_by_name:
+            cinfo("meta_check: signing-signoff required")
+            if not dry_run:
+                self.bug.add_task("signing-signoff")
+
+        messages = []
+        if signing_signoff and not previously_published:
+            messages.append("New kernel with signed kernels; signing-review required.")
+        elif signing_signoff:
+            messages.append("Major kernel version bump with signed kernels; signing-review required.")
+        if variant_change:
+            messages.append("linux-image name changes detected, review variant/flavour changes; kernel-signoff required.")
+        if version_change:
+            messages.append("linux-image major version change detected, upgrade testing required; kernel-signoff required.")
+        if len(messages) > 0:
+            if not dry_run:
+                self.bug.add_comment("Kernel requires additional signoff", "\n".join(messages))
+
+    def meta_check(self):
+        old = self.meta_check_old()
+        new = self.meta_check_new(dry_run=True)
+        cinfo("PRv5: meta_check() = {} -> {}".format(old, new))
+        return old
