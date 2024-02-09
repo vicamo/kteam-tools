@@ -2560,11 +2560,8 @@ class Package():
         center(s.__class__.__name__ + '.uploaded')
         retval = False
 
-        bi = s.build_info
         for pocket in s.__pockets_uploaded:
-            if pocket not in bi[pkg]:
-                continue
-            cdebug("checking for {} in {} is '{}'".format(pkg, pocket, bi[pkg][pocket]['status']))
+            cdebug("checking for {} in {}".format(pkg, pocket))
             if s.__pkg_in(pkg, pocket):
                 retval = True
                 break
@@ -2580,15 +2577,11 @@ class Package():
         center(s.__class__.__name__ + '.signed')
         retval = False
 
-        bi = s.build_info
-        if pkg in bi:
-            for pocket in s.__pockets_signed:
-                if pocket not in bi[pkg]:
-                    continue
-                cdebug("checking for {} in {} is '{}'".format(pkg, pocket, bi[pkg][pocket]['status']))
-                if s.__pkg_in(pkg, pocket):
-                    retval = True
-                    break
+        for pocket in s.__pockets_signed:
+            cdebug("checking for {} in {}".format(pkg, pocket))
+            if s.__pkg_in(pkg, pocket):
+                retval = True
+                break
 
         cleave(s.__class__.__name__ + '.signed (%s)' % (retval))
         return retval
