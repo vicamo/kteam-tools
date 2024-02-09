@@ -84,19 +84,12 @@ class SynPromoteToAsProposed(TaskHandler):
                 (dst_archive, dst_pocket) = s.bug.debs.routing('as-proposed')[s.bug.built_in - 1]
                 for dep in s.bug.debs.dependent_packages_for_pocket('Proposed'):
                     package = s.bug.debs.pkgs[dep]
-                    # v PRv5
-                    (src_archive, src_pocket) = s.bug.debs.legacy_info[dep]['Proposed']['route']
-                    version = s.bug.debs.legacy_info[dep]['Proposed']['version']
-                    # | PRv5
                     build_route_entry = s.bug.debs.build_route_entry(dep, "Proposed")
                     if build_route_entry:
-                        src_archive2, src_pocket2 = build_route_entry.archive, build_route_entry.pocket
-                        version2 = build_route_entry.version
+                        src_archive, src_pocket = build_route_entry.archive, build_route_entry.pocket
+                        version = build_route_entry.version
                     else:
-                        src_archive2, src_pocket2, version2 = None, None, None
-                    # = PRv5
-                    cinfo("PRv5: promote_to_as_proposed({}, {}) = {} -> {}".format(dep, "Proposed", (src_archive, src_pocket, version), (src_archive2, src_pocket2, version2)))
-                    # ^ PRv5
+                        src_archive, src_pocket, version = None, None, None
                     cinfo("copying from {}:{}:{} to {}:{}:{} package {}:{}".format(src_archive, src_pocket, s.bug.series, dst_archive, dst_pocket, s.bug.series, dep, package))
                     try:
                         dst_archive.copyPackage(

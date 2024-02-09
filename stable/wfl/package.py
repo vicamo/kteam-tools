@@ -1562,25 +1562,8 @@ class Package():
 
     # all_in_pocket
     #
-    def all_in_pocket_old(s, pocket):
-        '''
-        All dependent packages are in the pocket 'pocket'.
-        '''
-        center(s.__class__.__name__ + '.all_in_pocket')
-        retval = True
-
-        for pkg in s.dependent_packages_for_pocket(pocket):
-            pkg_seen = s.__pkg_in(pkg, pocket)
-            if pkg_seen:
-                cinfo('        %s is present in %s.' % (pkg, pocket), 'yellow')
-            else:
-                cinfo('        %s is NOT present in %s.' % (pkg, pocket), 'yellow')
-                retval = False
-                break
-
-        cleave(s.__class__.__name__ + '.all_in_pocket (%s)' % (retval))
-        return retval
-    def all_in_pocket_new(self, pocket):
+    @centerleaveargs
+    def all_in_pocket(self, pocket):
         found = True
         for pkg in s.pkgs:
             package_published = None
@@ -1589,13 +1572,8 @@ class Package():
                 package_published = s.builds[pkg][pocket].version_match(exact=package_version, limit_stream=s.bug.built_in)
             if package_published is None:
                 found = False
-            cdebug("APW all_in_pocket_new({}) {} {}".format(pocket, pkg, "Missing" if package_published is None else "Present"))
+            cdebug("all_in_pocket({}) {} {}".format(pocket, pkg, "Missing" if package_published is None else "Present"))
         return found
-    def all_in_pocket(self, pocket):
-        old = self.all_in_pocket_old(pocket)
-        new = self.all_in_pocket_new(pocket)
-        cinfo("PRv5: all_in_pocket {} = {} -> {}".format(pocket, old, new))
-        return old
 
     # __pockets_from
     #
@@ -1619,43 +1597,21 @@ class Package():
 
     # __pkg_in
     #
-    def __pkg_in_old(s, pkg, pocket):
-        try:
-            pkg_in = s.legacy_info[pkg][pocket]['status'] in s.__states_present
-        except KeyError:
-            pkg_in = False
-        return pkg_in
-    def __pkg_in_new(self, pkg, pocket):
+    def __pkg_in(self, pkg, pocket):
         build_route_entry = self.__pkg_pocket_route_entry(pkg, pocket)
         if build_route_entry is None:
             return False
         return True
-    def __pkg_in(self, pkg, pocket):
-        old = self.__pkg_in_old(pkg, pocket)
-        new = self.__pkg_in_new(pkg, pocket)
-        cinfo("PRv5: __pkg_in({}, {}) = {} -> {}".format(pkg, pocket, old, new))
-        return old
 
     # __pkg_built
     #
-    def __pkg_built_old(s, pkg, pocket):
-        try:
-            pkg_built = s.legacy_info[pkg][pocket]['built']
-        except KeyError:
-            pkg_built = False
-        return pkg_built
-    def __pkg_built_new(self, pkg, pocket):
+    def __pkg_built(self, pkg, pocket):
         build_route_entry = self.__pkg_pocket_route_entry(pkg, pocket)
         if build_route_entry is None:
             return False
         if not build_route_entry.built:
             return False
         return True
-    def __pkg_built(self, pkg, pocket):
-        old = self.__pkg_built_old(pkg, pocket)
-        new = self.__pkg_built_new(pkg, pocket)
-        cinfo("PRv5: __pkg_built({}, {}) = {} -> {}".format(pkg, pocket, old, new))
-        return old
 
     # __pkg_pocket_route_entry
     #
@@ -1838,24 +1794,10 @@ class Package():
                 return True
         return False
 
-    # all_built_and_in_pocket_or_pocket
+    # all_built_in_src_dst_detail
     #
-    @centerleave
-    def all_built_in_src_dst_detail_old(s, src, dst):
-        '''
-        Why dependent packages are not fully built and in src or dst.
-        '''
-        detail = []
-        for pkg in s.dependent_packages_for_pocket(dst):
-            pkg_data = s.legacy_info[pkg][src]
-            if pkg_data["status"] == "":
-                pkg_data = s.legacy_info[pkg][dst]
-            if pkg_data["status"] == "":
-                detail.append("{} is missing".format(pkg))
-            detail += pkg_data.get("status_detail", [])
-        return detail
-    @centerleave
-    def all_built_in_src_dst_detail_new(self, src, dst):
+    @centerleaveargs
+    def all_built_in_src_dst_detail(self, src, dst):
         '''
         Why dependent packages are not fully built and in src or dst.
         '''
@@ -1872,11 +1814,6 @@ class Package():
             else:
                 detail += pocket_route_entry.status_detail
         return detail
-    def all_built_in_src_dst_detail(self, src, dst):
-        old = self.all_built_in_src_dst_detail_old(src, dst)
-        new = self.all_built_in_src_dst_detail_new(src, dst)
-        cinfo("PRv5: all_built_in_src_dst_detail({}, {}) = {} -> {}".format(src, dst, old, new))
-        return old
 
     # built_in_src_dst_delta
     #
@@ -2002,17 +1939,7 @@ class Package():
         packages = s.dependent_packages_for_pocket(pocket)
         return s.delta_failures_in_pocket(packages, pocket, ignore_all_missing)
 
-    def __prereq_completed_old(s, prereq, pocket):
-        published = s.legacy_info[prereq].get(pocket, {}).get('published')
-        built = s.legacy_info[prereq].get(pocket, {}).get('most_recent_build')
-        if published is None:
-            return built
-        if built is None:
-            return published
-        if built > published:
-            return built
-        return published
-    def __prereq_completed_new(self, prereq, pocket):
+    def __prereq_completed(self, prereq, pocket):
         pocket_route = self.__pkg_pocket_route_entry(prereq, pocket)
         if pocket_route is None:
             return None
@@ -2025,17 +1952,10 @@ class Package():
         if built > published:
             return built
         return published
-    def __prereq_completed(self, pkg, pocket):
-        old = self.__prereq_completed_old(pkg, pocket)
-        new = self.__prereq_completed_new(pkg, pocket)
-        cinfo("PRv5: __prereq_completed({}, {}) = {} -> {}".format(pkg, pocket, old, new))
-        return old
 
     # __pkg_state
     #
-    def __pkg_state_old(self, pkg, pocket):
-        return self.legacy_info.get(pkg,{}).get(pocket, {}).get('status')
-    def __pkg_state_new(self, pkg, pocket):
+    def __pkg_state(self, pkg, pocket):
         package_version = self.package_version_exact(pkg)
         if package_version is None:
             return None
@@ -2043,11 +1963,6 @@ class Package():
         if pocket_route_entry is None:
             return None
         return pocket_route_entry.status
-    def __pkg_state(self, pkg, pocket):
-        old = self.__pkg_state_old(pkg, pocket)
-        new = self.__pkg_state_new(pkg, pocket)
-        cinfo("PRv5: __pkg_state({}, {}) = {} -> {}".format(pkg, pocket, old, new))
-        return old
 
     # delta_failures_in_pocket
     #
@@ -2175,25 +2090,8 @@ class Package():
 
     # creator
     #
-    def creator_old(s, pkg, pocket=None):
-        center('Packages::creator')
-        cdebug('   pkg: %s' % pkg)
-        cdebug('pocket: %s' % pocket)
-        retval = None
-
-        bi = s.legacy_info
-        if pocket is None:
-            for pocket in s.__pockets_uploaded:
-                if pocket not in bi[pkg]:
-                    continue
-                if s.__pkg_in(pkg, pocket):
-                    retval = bi[pkg][pocket]['creator']
-                    break
-        else:
-            retval = bi[pkg][pocket]['creator']
-        cleave('Packages::creator')
-        return retval
-    def creator_new(self, pkg, pocket=None):
+    @centerleaveargs
+    def creator(self, pkg, pocket=None):
         if pocket is None:
             pockets = self.__pockets_uploaded
         else:
@@ -2203,33 +2101,11 @@ class Package():
             if pocket_route is not None:
                 return pocket_route.creator
         return None
-    def creator(self, pkg, pocket=None):
-        old = self.creator_old(pkg, pocket)
-        new = self.creator_new(pkg, pocket)
-        cinfo("PRv5: creator({}, {}) = {} -> {}".format(pkg, pocket, old, new))
-        return old
 
     # signer
     #
-    def signer_old(s, pkg, pocket=None):
-        center('Packages::signer')
-        cdebug('   pkg: %s' % pkg)
-        cdebug('pocket: %s' % pocket)
-        retval = None
-
-        bi = s.legacy_info
-        if pocket is None:
-            for pocket in s.__pockets_uploaded:
-                if pocket not in bi[pkg]:
-                    continue
-                if s.__pkg_built(pkg, pocket): # XXX: __pkg_in ???
-                    retval = bi[pkg][pocket]['signer']
-                    break
-        else:
-            retval = bi[pkg][pocket]['signer']
-        cleave('Packages::signer')
-        return retval
-    def signer_new(self, pkg, pocket=None):
+    @centerleaveargs
+    def signer(self, pkg, pocket=None):
         if pocket is None:
             pockets = self.__pockets_uploaded
         else:
@@ -2239,11 +2115,6 @@ class Package():
             if pocket_route is not None:
                 return pocket_route.signer
         return None
-    def signer(self, pkg, pocket=None):
-        old = self.signer_old(pkg, pocket)
-        new = self.signer_new(pkg, pocket)
-        cinfo("PRv5: signer({}, {}) = {} -> {}".format(pkg, pocket, old, new))
-        return old
 
     def changes_data(self, url):
         """
@@ -2539,19 +2410,7 @@ class Package():
 
     # pocket_route
     #
-    def pocket_route_old(s, pocket):
-        retval = None
-        bi = s.legacy_info
-        for pkg in bi:
-            if pocket not in bi[pkg]:
-                continue
-            if bi[pkg][pocket]['status'] != "":
-                retval = bi[pkg][pocket]['route']
-                cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
-                break
-
-        return retval
-    def pocket_route_new(self, pocket):
+    def pocket_route(self, pocket):
         retval = None
         for pkg in self.dependent_packages():
             build_route_entry = self.__pkg_pocket_route_entry(pkg, pocket)
@@ -2561,11 +2420,6 @@ class Package():
             cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
             break
         return retval
-    def pocket_route(self, pocket):
-        old = self.pocket_route_old(pocket)
-        new = self.pocket_route_new(pocket)
-        cinfo("PRv5: pocket_route {} = {} -> {}".format(pocket, old, new))
-        return old
 
     # pocket_routing
     #
