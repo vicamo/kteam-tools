@@ -1825,6 +1825,18 @@ class Package():
         cleave(s.__class__.__name__ + '.all_built_in_src_dst ({})'.format(retval))
         return retval
 
+    @centerleave
+    def any_superseded_in_pocket(self, pocket):
+        '''
+        An dependent packages have Superseded binaries in pocket 'pocket'.
+        '''
+        for pkg in self.dependent_packages_for_pocket(pocket):
+            pocket_route_entry = self.__pkg_pocket_route_entry(pkg, pocket)
+            if pocket_route_entry is None:
+                cdebug("{} is missing".format(pkg))
+            elif pocket_route_entry.status == "SUPERSEDED":
+                return True
+        return False
 
     # all_built_and_in_pocket_or_pocket
     #
