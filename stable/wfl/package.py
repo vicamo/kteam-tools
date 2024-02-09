@@ -2495,7 +2495,7 @@ class Package():
 
     # pocket_clear
     #
-    def pocket_clear(s, pocket, pockets_after):
+    def pocket_clear_old(s, pocket, pockets_after):
         '''
         Check that the proposed pocket is either empty or contains the same version
         as found in -updates/-release.
@@ -2509,7 +2509,7 @@ class Package():
                 pocket_next = 'Release' if s.bug.is_development_series else 'Updates'
             pockets_srch.append(pocket_next)
 
-        bi = s.build_info
+        bi = s.legacy_info
         pkg_outstanding = set(bi.keys())
         for pkg in bi:
             if pocket not in bi[pkg]:
@@ -2591,6 +2591,117 @@ class Package():
             s.bug.reasons['packages-unaccounted'] = 'Stalled -s ' + yaml.dump(outstanding, default_flow_style=True, width=10000).strip()
 
         return retval
+
+    def pocket_clear_new(s, pocket, pockets_after, dry_run=False):
+        '''
+        Check that the proposed pocket is either empty or contains the same version
+        as found in -updates/-release.
+        '''
+        retval = True
+
+        # Release/Updates maps based on development series.
+        pockets_srch = []
+        for pocket_next in pockets_after:
+            if pocket_next == 'Release/Updates':
+                pocket_next = 'Release' if s.bug.is_development_series else 'Updates'
+            pockets_srch.append(pocket_next)
+
+        pkg_all = s.dependent_packages_for_pocket(pocket)
+        pkg_outstanding = set(pkg_all)
+        for pkg in pkg_all:
+            build_route_entry = s.__pkg_pocket_route_entry(pkg, pocket)
+            if build_route_entry is None:
+                continue
+            if build_route_entry.version is None:
+                found = True
+            ancillary_for = s.ancillary_package_for(pkg)
+            if ancillary_for is not None:
+                pkg_af = ancillary_for
+            else:
+                pkg_af = pkg
+            # If the version is our version then ultimatly we won't copy this item, all is well.
+            if build_route_entry.version == s.bug.bprops.get('versions', {}).get(pkg_af):
+                cinfo('            {} has {} pending in {} -- my version so ignored.'.format(pkg, build_route_entry.version, pocket), 'yellow')
+                found = True
+            # If the versions is a version we have replaced within the life of this tracker, all is well.
+            if not found and pocket_route_entry.version in s.bug.bprops.get('versions-replace', {}).get(pkg_af, []):
+                cinfo('            {} has {} pending in {} -- an old version of mine so ignored.'.format(pkg, build_route_entry.version, pocket), 'yellow')
+                found = True
+            # If the version is in a later pocket then all is well.
+            for pocket_next in pockets_srch:
+                if found:
+                    break
+                next_route_entry = s.__pkg_pocket_route_entry(pkg, pocket_next, exact_match=False)
+                if next_route_entry is None:
+                    continue
+                try:
+                    if version_compare(build_route_entry.version, next_route_entry.version) <= 0:
+                        cinfo('            {} has {} pending in {} -- matches later pocket so ignored.'.format(pkg, build_route_entry.version, pocket), 'yellow')
+                        found = True
+                except ValueError:
+                    pass
+                if pkg not in s.dependent_packages_for_pocket(pocket_next):
+                    found = True
+                cinfo("APW: {} <= {} = {}".format(build_route_entry.version, next_route_entry.version, version_compare(build_route_entry.version, next_route_entry.version)))
+            if found:
+                pkg_outstanding.discard(pkg)
+
+        # We are ready to go but proposed is not clear.  Consider any
+        # bug we are marked as replacing.
+        if not dry_run:
+            s.bug.dup_replaces()
+
+        # If proposed is not clear, consider if it is full due to a bug
+        # which has been duplicated against me.
+        if len(pkg_outstanding):
+            cinfo("APW: packages {} unaccounted for".format(pkg_outstanding))
+            duplicates = s.bug.workflow_duplicates
+            for dup_wb in duplicates:
+                # Stop scanning out duplicates if we manage to account for everything.
+                if len(pkg_outstanding) == 0:
+                    break
+                for pkg in list(pkg_outstanding):
+                    found = False
+                    build_route_entry = s.__pkg_pocket_route_entry(pkg, pocket)
+                    if build_route_entry is None:
+                        continue
+                    if build_route_entry.version is None:
+                        found = True
+                    ancillary_for = s.ancillary_package_for(pkg)
+                    if ancillary_for is not None:
+                        pkg_af = ancillary_for
+                    else:
+                        pkg_af = pkg
+                    # If the version is our version then ultimatly we won't copy this item, all is well.
+                    if build_route_entry.version == dup_wb.bprops.get('versions', {}).get(pkg_af):
+                        found = True
+                    # If the versions is a version we have replaced within the life of this tracker, all is well.
+                    if build_route_entry.version in dup_wb.bprops.get('versions-replace', {}).get(pkg_af, []):
+                        found = True
+                    # If we have found it then all is good for this package.
+                    if found:
+                        cinfo('            {} has {} pending in {} -- belongs to duplicate so ignored.'.format(pkg, build_route_entry.version, pocket, ), 'yellow')
+                        pkg_outstanding.discard(pkg)
+
+        outstanding = {}
+        for pkg in pkg_outstanding:
+            build_route_entry = s.__pkg_pocket_route_entry(pkg, pocket)
+            if build_route_entry is None:
+                continue
+            cinfo('            {} has {} pending in {} -- unaccounted for so blocking.'.format(pkg, build_route_entry.version, pocket), 'yellow')
+            retval = False
+            outstanding[pkg] = [build_route_entry.version]
+
+        if not dry_run and len(outstanding):
+            s.bug.reasons['packages-unaccounted'] = 'Stalled -s ' + yaml.dump(outstanding, default_flow_style=True, width=10000).strip()
+
+        return retval
+
+    def pocket_clear(s, pocket, pockets_after):
+        old = s.pocket_clear_old(pocket, pockets_after)
+        new = s.pocket_clear_new(pocket, pockets_after, dry_run=True)
+        cinfo("PRv5: pocket_clear({}, {}) = {} -> {}".format(pocket, pockets_after, old, new))
+        return old
 
     # uploaded
     #
