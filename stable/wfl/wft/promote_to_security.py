@@ -79,6 +79,8 @@ class PromoteToSecurity(Promoter):
                 if s.bug.tasks_by_name['promote-to-updates'].status == 'Fix Released':
                     if s.bug.debs.any_superseded_in_pocket("Updates"):
                         s.task.reason = 'Stalled -- not ready for security (superseded binaries in Updates)'
+                    elif not s.bug.debs.all_built_and_in_pocket('Updates'):
+                        s.task.reason = 'Stalled -- not ready for security (missing packages in Updates)'
                     else:
                         s.task.reason = 'Holding -- not ready for security (replication dwell)'
                 break
