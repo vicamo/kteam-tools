@@ -2626,21 +2626,6 @@ class Package():
         cleave(s.__class__.__name__ + '.signed (%s)' % (retval))
         return retval
 
-    def upload_version(s, pkg):
-        '''
-        '''
-        center(s.__class__.__name__ + '.upload_version')
-        retval = None
-
-        bi = s.build_info
-        for pocket in bi[pkg]:
-            if s.__pkg_in(pkg, pocket):
-                retval = bi[pkg][pocket]['version']
-                break
-
-        cleave(s.__class__.__name__ + '.upload_version (%s)' % (retval))
-        return retval
-
     # ready_to_prepare
     #
     def ready_to_prepare(s):
