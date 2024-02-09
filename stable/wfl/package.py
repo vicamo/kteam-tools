@@ -1836,7 +1836,7 @@ class Package():
 
     # all_built_and_in_pocket_for
     #
-    def all_built_and_in_pocket_for(s, pocket, period):
+    def all_built_and_in_pocket_for_old(s, pocket, period):
         '''
         Check if we are fully built in a specific pocket and have been there
         for at least period time.
@@ -1850,7 +1850,7 @@ class Package():
             # package.
             #
             date_available = None
-            bi = s.build_info
+            bi = s.legacy_info
             for d in sorted(bi):
                 if bi[d][pocket]['published'] is None:
                     continue
@@ -1879,8 +1879,48 @@ class Package():
                 # Record when it makes sense to check again.
                 s.bug.refresh_at(comp_date, 'package publication to {} for {}'.format(pocket, period))
 
-        cleave(s.__class__.__name__ + '.all_built_and_in_pocket_for (%s)' % (retval))
         return retval
+
+    @centerleaveargs
+    def all_built_and_in_pocket_for_new(s, pocket, period):
+        retval = False
+        if s.all_built_and_in_pocket_or_after(pocket):
+            # Find the most recent date of either the published date/time or the
+            # date/time of the last build on any arch for any package.
+            date_available = None
+            for pkg in s.dependent_packages_for_pocket(pocket):
+                build_route_entry = s.__pkg_pocket_route_entry(pkg, pocket)
+                if build_route_entry is None:
+                    continue
+                if build_route_entry.published is not None:
+                    if date_available is None or build_route_entry.published > date_available:
+                        date_available = build_route_entry.published
+                if build_route_entry.latest_build is not None:
+                    if date_available is None or build_route_entry.latest_build > date_available:
+                        date_available = build_route_entry.latest_build
+
+            now = datetime.now(timezone.utc)
+            if date_available is None:
+                date_available = now
+            date_available = date_available.replace(tzinfo=timezone.utc)
+            comp_date = date_available + period
+            if comp_date <= now:
+                retval = True
+            else:
+                cinfo('It has been less than {} since the last package was either published or built in {}'.format(period, pocket))
+                cinfo('    target: %s' % comp_date)
+                cinfo('       now: %s' % now)
+
+                # Record when it makes sense to check again.
+                ##s.bug.refresh_at(comp_date, 'package publication to {} for {}'.format(pocket, period))
+
+        return retval
+
+    def all_built_and_in_pocket_for(s, pocket, period):
+        old = s.all_built_and_in_pocket_for_old(pocket, period)
+        new = s.all_built_and_in_pocket_for_new(pocket, period)
+        cinfo("PRv5: all_built_and_in_pocket_for({}, {}) = {} -> {}".format(pocket, period, old, new))
+        return old
 
     # attempt_retry_logless
     #
