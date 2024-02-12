@@ -1078,27 +1078,25 @@ class Package():
         cleave(self.__class__.__name__ + '.routing')
         return routes
 
+    @centerleaveargs
     def monitor_routes(self, routes):
+        cinfo("APW: monitor_route: routes={}".format(routes))
         if 'ppa' in routes:
             routes.remove('ppa')
             routes.append('build')
             routes.append('build-private')
-        for route_name in routes:
-            route_found = self.pocket_route(route_name)
-            if route_found is not None:
-                cinfo("monitor_routes: {} location found {}".format(route_name, route_found))
-                route_list = [route_found]
-            else:
-                route_list = self.routing(route_name)
-            if route_list is None:
-                continue
-            cinfo("monitor_routes: {} using {}".format(route_name, route_list))
-            for route_archive, route_pocket in route_list:
-                # Copy over any build related monitors for this archive/pocket.
-                for monitor in self.monitor_debs:
-                    if (monitor['reference'] == route_archive.reference and
-                            monitor['pocket'] == route_pocket):
-                        self.bug.monitor_add(monitor)
+        monitors = []
+        for pocket in routes:
+            for pkg in self.dependent_packages():
+                pocket_route = self.builds.get(pkg, {}).get(pocket)
+                if pocket_route is None:
+                    continue
+                for package_route_entry in pocket_route.publications:
+                    cinfo("APW: monitor_route: package_route_entry={} monitors={}".format(package_route_entry, package_route_entry.monitors))
+                    monitors += package_route_entry.monitors
+        cinfo("APW: monitor_route: adding monitors={}".format(monitors))
+        for monitor in monitors:
+            self.bug.monitor_add(monitor)
 
     @property
     def prepare_id(s):
