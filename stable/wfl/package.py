@@ -1851,53 +1851,8 @@ class Package():
 
     # all_built_and_in_pocket_for
     #
-    def all_built_and_in_pocket_for_old(s, pocket, period):
-        '''
-        Check if we are fully built in a specific pocket and have been there
-        for at least period time.
-        '''
-        center(s.__class__.__name__ + '.all_built_and_in_pocket_for({}, {})'.format(pocket, period))
-        retval = False
-        if s.all_built_and_in_pocket_or_after(pocket):
-
-            # Find the most recent date of either the publish date/time or the
-            # date/time of the last build of any arch of any of the dependent
-            # package.
-            #
-            date_available = None
-            bi = s.legacy_info
-            for d in sorted(bi):
-                if bi[d][pocket]['published'] is None:
-                    continue
-                if bi[d][pocket]['most_recent_build'] is None:
-                    continue
-
-                if bi[d][pocket]['published'] > bi[d][pocket]['most_recent_build']:
-                    if date_available is None or bi[d][pocket]['published'] > date_available:
-                        date_available = bi[d][pocket]['published']
-                else:
-                    if date_available is None or bi[d][pocket]['most_recent_build'] > date_available:
-                        date_available = bi[d][pocket]['most_recent_build']
-
-            now = datetime.now(timezone.utc)
-            if date_available is None:
-                date_available = now
-            date_available = date_available.replace(tzinfo=timezone.utc)
-            comp_date = date_available + period
-            if comp_date <= now:
-                retval = True
-            else:
-                cinfo('It has been less than {} since the last package was either published or built in {}'.format(period, pocket))
-                cinfo('    target: %s' % comp_date)
-                cinfo('       now: %s' % now)
-
-                # Record when it makes sense to check again.
-                s.bug.refresh_at(comp_date, 'package publication to {} for {}'.format(pocket, period))
-
-        return retval
-
     @centerleaveargs
-    def all_built_and_in_pocket_for_new(s, pocket, period):
+    def all_built_and_in_pocket_for(s, pocket, period):
         retval = False
         if s.all_built_and_in_pocket_or_after(pocket):
             # Find the most recent date of either the published date/time or the
@@ -1927,15 +1882,9 @@ class Package():
                 cinfo('       now: %s' % now)
 
                 # Record when it makes sense to check again.
-                ##s.bug.refresh_at(comp_date, 'package publication to {} for {}'.format(pocket, period))
+                s.bug.refresh_at(comp_date, 'package publication to {} for {}'.format(pocket, period))
 
         return retval
-
-    def all_built_and_in_pocket_for(s, pocket, period):
-        old = s.all_built_and_in_pocket_for_old(pocket, period)
-        new = s.all_built_and_in_pocket_for_new(pocket, period)
-        cinfo("PRv5: all_built_and_in_pocket_for({}, {}) = {} -> {}".format(pocket, period, old, new))
-        return old
 
     # attempt_retry_logless
     #
@@ -2478,21 +2427,8 @@ class Package():
 
     # pocket_routing
     #
-    def pocket_routing_old(s, pocket):
-        '''
-        '''
-        retval = None
-
-        bi = s.legacy_info
-        for pkg in bi:
-            if pocket not in bi[pkg]:
-                continue
-            retval = bi[pkg][pocket].routing
-            cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
-            break
-
-        return retval
-    def pocket_routing_new(self, pocket):
+    @centerleaveargs
+    def pocket_routing(self, pocket):
         retval = None
         for pkg in self.dependent_packages():
             build_route = self.builds.get(pkg, {}).get(pocket)
@@ -2502,112 +2438,10 @@ class Package():
             cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
             break
         return retval
-    def pocket_routing(self, pocket):
-        old = self.pocket_routing_old(pocket)
-        new = self.pocket_routing_new(pocket)
-        cinfo("PRv5b: pocket_routing {} = {} -> {}".format(pocket, old, new))
-        return old
 
     # pocket_clear
     #
-    def pocket_clear_old(s, pocket, pockets_after):
-        '''
-        Check that the proposed pocket is either empty or contains the same version
-        as found in -updates/-release.
-        '''
-        retval = True
-
-        # Release/Updates maps based on development series.
-        pockets_srch = []
-        for pocket_next in pockets_after:
-            if pocket_next == 'Release/Updates':
-                pocket_next = 'Release' if s.bug.is_development_series else 'Updates'
-            pockets_srch.append(pocket_next)
-
-        bi = s.legacy_info
-        pkg_outstanding = set(bi.keys())
-        for pkg in bi:
-            if pocket not in bi[pkg]:
-                continue
-            found = False
-            if bi[pkg][pocket]['version'] is None:
-                found = True
-            ancillary_for = s.ancillary_package_for(pkg)
-            if ancillary_for is not None:
-                pkg_af = ancillary_for
-            else:
-                pkg_af = pkg
-            # If the version is our version then ultimatly we won't copy this item, all is well.
-            if bi[pkg][pocket]['version'] == s.bug.bprops.get('versions', {}).get(pkg_af):
-                cinfo('            {} has {} pending in {} -- my version so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
-                found = True
-            # If the versions is a version we have replaced within the life of this tracker, all is well.
-            if not found and bi[pkg][pocket]['version'] in s.bug.bprops.get('versions-replace', {}).get(pkg_af, []):
-                cinfo('            {} has {} pending in {} -- an old version of mine so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
-                found = True
-            # If the version is in a later pocket then all is well.
-            for pocket_next in pockets_srch:
-                if found:
-                    break
-                if pocket_next not in bi[pkg]:
-                    continue
-                try:
-                    if version_compare(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version']) <= 0:
-                        cinfo('            {} has {} pending in {} -- matches later pocket so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
-                        found = True
-                except ValueError:
-                    pass
-                if pkg not in s.dependent_packages_for_pocket(pocket_next):
-                    found = True
-                cinfo("APW: {} <= {} = {}".format(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version'], version_compare(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version'])))
-            if found:
-                pkg_outstanding.discard(pkg)
-
-        # We are ready to go but proposed is not clear.  Consider any
-        # bug we are marked as replacing.
-        s.bug.dup_replaces()
-
-        # If proposed is not clear, consider if it is full due to a bug
-        # which has been duplicated against me.
-        if len(pkg_outstanding):
-            cinfo("APW: packages {} unaccounted for".format(pkg_outstanding))
-            duplicates = s.bug.workflow_duplicates
-            for dup_wb in duplicates:
-                # Stop scanning out duplicates if we manage to account for everything.
-                if len(pkg_outstanding) == 0:
-                    break
-                for pkg in list(pkg_outstanding):
-                    found = False
-                    if bi[pkg][pocket]['version'] is None:
-                        found = True
-                    ancillary_for = s.ancillary_package_for(pkg)
-                    if ancillary_for is not None:
-                        pkg_af = ancillary_for
-                    else:
-                        pkg_af = pkg
-                    # If the version is our version then ultimatly we won't copy this item, all is well.
-                    if bi[pkg][pocket]['version'] == dup_wb.bprops.get('versions', {}).get(pkg_af):
-                        found = True
-                    # If the versions is a version we have replaced within the life of this tracker, all is well.
-                    if bi[pkg][pocket]['version'] in dup_wb.bprops.get('versions-replace', {}).get(pkg_af, []):
-                        found = True
-                    # If we have found it then all is good for this package.
-                    if found:
-                        cinfo('            {} has {} pending in {} -- belongs to duplicate so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket, ), 'yellow')
-                        pkg_outstanding.discard(pkg)
-
-        outstanding = {}
-        for pkg in pkg_outstanding:
-            cinfo('            {} has {} pending in {} -- unaccounted for so blocking.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
-            retval = False
-            outstanding[pkg] = [bi[pkg][pocket]['version']]
-
-        if len(outstanding):
-            s.bug.reasons['packages-unaccounted'] = 'Stalled -s ' + yaml.dump(outstanding, default_flow_style=True, width=10000).strip()
-
-        return retval
-
-    def pocket_clear_new(s, pocket, pockets_after, dry_run=False):
+    def pocket_clear(s, pocket, pockets_after, dry_run=False):
         '''
         Check that the proposed pocket is either empty or contains the same version
         as found in -updates/-release.
@@ -2711,12 +2545,6 @@ class Package():
             s.bug.reasons['packages-unaccounted'] = 'Stalled -s ' + yaml.dump(outstanding, default_flow_style=True, width=10000).strip()
 
         return retval
-
-    def pocket_clear(s, pocket, pockets_after):
-        old = s.pocket_clear_old(pocket, pockets_after)
-        new = s.pocket_clear_new(pocket, pockets_after, dry_run=True)
-        cinfo("PRv5: pocket_clear({}, {}) = {} -> {}".format(pocket, pockets_after, old, new))
-        return old
 
     # uploaded
     #
@@ -3330,115 +3158,7 @@ class Package():
 
     # meta_check
     #
-    def meta_check_old(self):
-        cinfo("meta_check: meta is ready...")
-        bi = self.legacy_info
-
-        pocket_data = bi["meta"].get("build")
-        if pocket_data is None:
-            return
-
-        meta_version = pocket_data.version
-        signing_present = "signed" in bi
-
-        src = pocket_data.source
-        cinfo("meta_check: source={}\n".format(pocket_data.source))
-        if src is None:
-            return
-
-        bins = src.getPublishedBinaries(active_binaries_only=False)
-        bins_image = []
-        for binary in bins:
-            binary_name = binary.binary_package_name
-            if "-image-" in binary_name:
-                bins_image.append(binary)
-        #cinfo("meta_check: bins_image={}".format(bins_image))
-        bins_image_names = set([binary.binary_package_name for binary in bins_image])
-
-        variant_change = False
-        version_change = False
-
-        previously_published = False
-        for pocket_data in (bi["meta"].get("Updates"), bi["meta"].get("Release")):
-            if pocket_data is None:
-                continue
-            if pocket_data.route is None:
-                continue
-            lp_archive, pocket = pocket_data.route
-            if lp_archive is None:
-                continue
-
-            #if pocket_data.version is None:
-            #    continue
-            if pocket_data.version == meta_version:
-                previously_published = True
-                continue
-
-            # See if we have different names in this pocket.
-            src = pocket_data.source
-            cinfo("meta_check: previous src={}\n".format(pocket_data.source))
-            if src is not None:
-                previously_published = True
-                bins = src.getPublishedBinaries(active_binaries_only=False)
-                bins_image_prev = []
-                for binary in bins:
-                    binary_name = binary.binary_package_name
-                    if "-image-" in binary_name:
-                        bins_image_prev.append(binary)
-                    #cinfo("meta_check: bins_image_prev={}".format(bins_image))
-
-                bins_image_prev_names = set([binary.binary_package_name for binary in bins_image_prev])
-                if bins_image_prev_names != bins_image_names:
-                    cinfo("meta_check: names are different variant change prev={} curr={}".format(bins_image_prev_names, bins_image_names))
-                    variant_change = True
-
-            # See if we can see different versions of this package in the released
-            # pocket.
-            some = False
-            for binary in bins_image:
-                pubs = lp_archive.getPublishedBinaries(
-                    order_by_date=True,
-                    exact_match=True,
-                    distro_arch_series=binary.distro_arch_series,
-                    pocket=pocket,
-                    status='Published',
-                    binary_name=binary.binary_package_name,
-                )
-                for pub in pubs:
-                    prev_version = pub.binary_package_version
-                    if prev_version == meta_version:
-                        continue
-                    some = True
-
-                    if meta_version.split('.')[0:2] != prev_version.split('.')[0:2]:
-                        cinfo("meta_check: major versions are different prev={} curr={}".format(prev_version.split('.')[0:2], meta_version.split('.')[0:2]))
-                        version_change = True
-            if some:
-                break
-
-        signing_signoff = signing_present and (not previously_published or version_change)
-        kernel_signoff = version_change or variant_change
-
-        if kernel_signoff and "kernel-signoff" not in self.bug.tasks_by_name:
-            cinfo("meta_check: kernel-signoff required")
-            self.bug.add_task("kernel-signoff")
-        if signing_signoff and "signing-signoff" not in self.bug.tasks_by_name:
-            cinfo("meta_check: signing-signoff required")
-            self.bug.add_task("signing-signoff")
-
-        messages = []
-        if signing_signoff and not previously_published:
-            messages.append("New kernel with signed kernels; signing-review required.")
-        elif signing_signoff:
-            messages.append("Major kernel version bump with signed kernels; signing-review required.")
-        if variant_change:
-            messages.append("linux-image name changes detected, review variant/flavour changes; kernel-signoff required.")
-        if version_change:
-            messages.append("linux-image major version change detected, upgrade testing required; kernel-signoff required.")
-        if len(messages) > 0:
-            self.bug.add_comment("Kernel requires additional signoff", "\n".join(messages))
-
-    def meta_check_new(self, dry_run=False):
+    def meta_check(self, dry_run=False):
         cinfo("meta_check: meta is ready...")
         build_route_entry = self.__pkg_pocket_route_entry("meta", "build")
         if build_route_entry is None:
@@ -3549,9 +3269,3 @@ class Package():
         if len(messages) > 0:
             if not dry_run:
                 self.bug.add_comment("Kernel requires additional signoff", "\n".join(messages))
-
-    def meta_check(self):
-        old = self.meta_check_old()
-        new = self.meta_check_new(dry_run=True)
-        cinfo("PRv5: meta_check() = {} -> {}".format(old, new))
-        return old
