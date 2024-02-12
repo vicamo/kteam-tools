@@ -13,6 +13,12 @@ from wfl.secrets import Secrets
 class SwmWorkCmds:
     _group = None
 
+    def _publish(self, payload, priority=None):
+        if priority is None:
+            priority = 4
+        key = "swm.{}".format(payload["type"])
+        self.mq.publish(key, payload, priority=priority)
+
     def group_id(self, rotate=False):
         if self._group is None or rotate:
             self._group = uuid.uuid4().hex
@@ -22,12 +28,9 @@ class SwmWorkCmds:
         if priority is None:
             priority = 6
         payload = {"type": "quit"}
-        key = "direct.{}.swm.{}".format(name, payload["type"])
-        self.mq.publish(key, payload, priority=priority)
+        self._publish(payload, priority)
 
     def send_shank(self, tracker, scanned=None, priority=None):
-        if priority is None:
-            priority = 4
         payload = {
             "type": "shank",
             "tracker": tracker,
@@ -35,32 +38,24 @@ class SwmWorkCmds:
             "id": uuid.uuid4().hex,
             "group": self.group_id(),
         }
-        key = "swm.{}".format(payload["type"])
-        self.mq.publish(key, payload, priority=priority)
+        self._publish(payload, priority)
 
     def send_instantiate(self, tracker, scanned=None, priority=None):
-        if priority is None:
-            priority = 4
         payload = {
             "type": "instantiate",
             "tracker": tracker,
             "id": uuid.uuid4().hex,
             "group": self.group_id(),
         }
-        key = "swm.{}".format(payload["type"])
-        self.mq.publish(key, payload, priority=priority)
+        self._publish(payload, priority)
 
     def send_dependants(self, priority=None):
-        if priority is None:
-            priority = 4
         payload = {"type": "dependants"}
-        key = "swm.{}".format(payload["type"])
-        self.mq.publish(key, payload, priority=priority)
+        self._publish(payload, priority)
 
-    def send_complete(self, payload):
+    def send_complete(self, payload, priority=None):
         payload["type"] += "-complete"
-        key = "swm.{}".format(payload["type"])
-        self.mq.publish(key, payload)
+        self._publish(payload, priority)
 
     def send_barrier(self, priority=None):
         self.group_id(rotate=True)
