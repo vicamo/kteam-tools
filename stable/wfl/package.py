@@ -1722,6 +1722,23 @@ class Package():
         delta = s.delta_src_dst(pocket_src, pocket_dest, pair_signing=pocket_src == "ppa")
         s.bug.bprops.setdefault('delta', {})[which] = delta
 
+    # all_in_pocket
+    #
+    @centerleaveargs
+    def all_in_pocket(s, pocket):
+        '''
+        All dependent packages are in the pocket 'pocket'.
+        '''
+        retval = True
+
+        for pkg in s.dependent_packages_for_pocket(pocket):
+            pkg_built = s.__pkg_in(pkg, pocket)
+            if not pkg_built:
+                cinfo('        {} is not in {}.'.format(pkg, pocket), 'red')
+                retval = False
+                break
+        return retval
+
     # all_built_and_in_pocket
     #
     def all_built_and_in_pocket(s, pocket):

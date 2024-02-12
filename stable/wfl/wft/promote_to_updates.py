@@ -195,6 +195,11 @@ class PromoteToUpdates(Promoter):
 
                 if s.task.status == 'Confirmed':
                     s.task.reason = 'Pending -- ready to copy'
+                elif (s.task.status == 'Fix Committed'
+                    and s.bug.debs.all_in_pocket("Updates")
+                    and s.bug.debs.any_superseded_in_pocket("Updates")
+                ):
+                    s.task.reason = 'Stalled -- packages published with superseded binaries'
                 else:
                     s.task.reason = 'Ongoing -- packages not yet published'
                 break
