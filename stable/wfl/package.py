@@ -1042,7 +1042,6 @@ class Package():
         if s.source is None:
             raise PackageError('Unable to check package builds for this bug: the package/series combination is invalid')
 
-        s._cache = None
         s._builds = None
         s._version_tried = {}
 
@@ -1278,7 +1277,6 @@ class Package():
     def __determine_build_status(s):
         center('Sources::__determine_build_status')
 
-        s._cache = {}
         s._builds = {}
 
         cinfo('')
@@ -1288,8 +1286,6 @@ class Package():
             cdebug('')
             cinfo('%s: ' % dep, 'blue')
             cinfo('--------------------------------------------------------------------------------', 'blue')
-            if dep in s._cache:
-                break
             Clog.indent += 4
 
             # Lookup the package version we are expecting -- if we have it match on explicit version.
@@ -1314,7 +1310,6 @@ class Package():
 
             cinfo("{} {} abi={} sloppy={}".format(s.pkgs[dep], version, abi, sloppy))
 
-            s._cache[dep] = {}
             s._builds[dep] = {}
             if not s.bug.is_development_series:
                 cdebug('Stable Package', 'cyan')
@@ -1336,10 +1331,8 @@ class Package():
                     cwarn(s.bug.overall_reason)
                     continue
 
-                s._cache[dep][pocket] = PackageBuild(s.bug, s.distro_series, dep, pocket_from, s._routing[pocket_from], s.pkgs[dep], version, abi, sloppy)
                 s._builds[dep][pocket] = PackageBuildRoute(s.distro_series, dep, pocket_from, s._routing[pocket_from], s.pkgs[dep], bug=s.bug)
                 if pocket == scan_pockets[0]:
-                    s._cache[dep]['ppa'] = s._cache[dep][pocket]
                     s._builds[dep]['ppa'] = s._builds[dep][pocket]
                 #cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
             Clog.indent -= 4
@@ -1371,13 +1364,6 @@ class Package():
                         cwarn("APW: NEW package_version built_in={} != {}".format(built_in, package_published.route_entry))
         if built_in is not None and built_in is not False:
             s.bug.built_in = built_in
-
-        #cdebug('')
-        #cdebug('The Cache:', 'cyan')
-        #for d in sorted(s._cache):
-        #    cdebug('    %s' % d, 'cyan')
-        #    for p in sorted(s._cache[d]):
-        #        cdebug('        %-8s : %-5s   (%s)' % (p, s._cache[d][p]['built'], date_to_string(s._cache[d][p]['published'])), 'cyan')
 
         cleave('Sources::__determine_build_status')
         return None
@@ -1425,14 +1411,6 @@ class Package():
     __pockets_uploaded = ('ppa', 'Signing', 'Proposed', 'Security', 'Updates', 'Release')
     __pockets_signed = ('Proposed', 'Security', 'Updates', 'Release')
 
-    # build_info
-    #
-    @property
-    def build_info(s):
-        if s._cache is None:
-            s.__determine_build_status()
-        return s._cache
-
     # builds
     #
     @property
@@ -1440,22 +1418,6 @@ class Package():
         if self._builds is None:
             self.__determine_build_status()
         return self._builds
-
-    # srcs
-    #
-    @property
-    def srcs(s):
-        if s._cache is None:
-            s.__determine_build_status()
-        return s._cache
-
-    # legacy_info
-    #
-    @property
-    def legacy_info(s):
-        if s._cache is None:
-            s.__determine_build_status()
-        return s._cache
 
     # pkgs_qualified
     #
