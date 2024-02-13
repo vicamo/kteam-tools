@@ -13,10 +13,12 @@ from wfl.secrets import Secrets
 class SwmWorkCmds:
     _group = None
 
-    def _publish(self, payload, priority=None):
+    def _publish(self, payload, priority=None, name=None):
         if priority is None:
             priority = 4
         key = "swm.{}".format(payload["type"])
+        if name:
+            key = "direct.{}.".format(name) + key
         self.mq.publish(key, payload, priority=priority)
 
     def group_id(self, rotate=False):
@@ -28,7 +30,7 @@ class SwmWorkCmds:
         if priority is None:
             priority = 6
         payload = {"type": "quit"}
-        self._publish(payload, priority)
+        self._publish(payload, priority, name=name)
 
     def send_shank(self, tracker, scanned=None, priority=None):
         payload = {
