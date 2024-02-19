@@ -128,11 +128,13 @@ if __name__ == '__main__':
         options={'agile_rest_path': AgileResource.AGILE_BASE_REST_PATH})
 
     # Lookup custom fields we are going to use.
-    #for field in jira.fields():
+    custom_sprint = None
+    for field in jira.fields():
     #    if field['name'] == 'Epic Link':
     #        custom_epic_link = field['key']
-    #    if field['name'] == 'Sprint':
-    #        custom_sprint = field['key']
+        if field['name'] == 'Sprint':
+            custom_sprint = field['schema']['customId']
+    print("custom_sprint={}".format(custom_sprint))
 
     project_key, board_name = 'KSRU', 'SRU Cycles'
 
@@ -207,7 +209,7 @@ if __name__ == '__main__':
         chunk_size = 50
         cycle_owner = None
         while True:
-            issues = jira.search_issues('project="{}" and sprint={}'.format(project_key, jira_cycle.id), startAt=chunk_offset, maxResults=chunk_size)
+            issues = jira.search_issues('project="{}" and cf[{}]={}'.format(project_key, custom_sprint, jira_cycle.id), startAt=chunk_offset, maxResults=chunk_size)
             chunk_offset += chunk_size
             if len(issues) == 0:
                 break
