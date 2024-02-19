@@ -78,7 +78,7 @@ class SourceReview(TaskHandler):
         # If we are in confirmed and our prerequisites are no longer valid
         # pull back to new.
         status = s.task.status
-        if status == "Confirmed":
+        if status in ("Confirmed", "Triaged"):
             ready = True
             for which, task_name, ready_stati in s.prerequisites:
                 cinfo("{}: {} ? {}".format(s.review_task, task_name, ready_stati))
@@ -137,7 +137,8 @@ class SruReview(SourceReview):
 
     review_task = 'sru-review'
     prerequisites = [
-            [SourceReview.IN, ':prepare-packages', ['Fix Committed', 'Fix Released']]]
+            [SourceReview.IN, ':prepare-packages', ['Fix Committed', 'Fix Released']],
+            [SourceReview.NOT_IN, 'new-review', ['Incomplete']]]
 
 
 class NewReview(SourceReview):
