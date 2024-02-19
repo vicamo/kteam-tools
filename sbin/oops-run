@@ -15,7 +15,7 @@ shift
 
 if [ -d "$HOME/oops" ]; then
 	mkdir -p "$HOME/oops/$key"
-	oops_url="$key/oops"
+	oops_url="oops/$(cat $HOME/oops/.id)/$key"
 	oops=$(mktemp "$HOME/oops/$key/XXXXXXXXXXXXXXXX")
 else
 	oops_url="oops"
@@ -42,6 +42,7 @@ elif [ "$rc" != 0 ]; then
 	final_oops="$(dirname "$oops")/$oops_csum"
 	mv "$oops" "$final_oops"
 	echo "OOPS: https://kernel.ubuntu.com/$oops_url/$(basename "$final_oops")"
+	"$here/../bin/announce" "oops" "https://kernel.ubuntu.com/$oops_url/$(basename "$final_oops")"
 
 else
 	rm -f "$oops"
