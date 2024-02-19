@@ -3145,19 +3145,15 @@ class Package():
         #cinfo("meta_check: bins_image={}".format(bins_image))
         bins_image_names = set([binary.binary_package_name for binary in bins_image])
 
-        updates_route_entry = self.__pkg_pocket_route_entry("meta", "Updates")
-        release_route_entry = self.__pkg_pocket_route_entry("meta", "Release")
+        updates_route_entry = self.__pkg_pocket_route_entry("meta", "Updates", exact_match=False)
+        release_route_entry = self.__pkg_pocket_route_entry("meta", "Release", exact_match=False)
         variant_change = False
         version_change = False
         previously_published = False
         for route_entry in (updates_route_entry, release_route_entry):
             if route_entry is None:
                 continue
-            if route_entry.route is None:
-                continue
-            lp_archive, pocket = route_entry.route
-            if lp_archive is None:
-                continue
+            lp_archive, pocket = route_entry.archive, route_entry.pocket
 
             #if pocket_data.version is None:
             #    continue
