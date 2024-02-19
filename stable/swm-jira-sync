@@ -128,11 +128,13 @@ if __name__ == '__main__':
         options={'agile_rest_path': AgileResource.AGILE_BASE_REST_PATH})
 
     # Lookup custom fields we are going to use.
-    #for field in jira.fields():
+    custom_sprint = None
+    for field in jira.fields():
     #    if field['name'] == 'Epic Link':
     #        custom_epic_link = field['key']
-    #    if field['name'] == 'Sprint':
-    #        custom_sprint = field['key']
+        if field['name'] == 'Sprint':
+            custom_sprint = field['schema']['customId']
+    print("custom_sprint={}".format(custom_sprint))
 
     project_key, board_name = 'KSRU', 'SRU Cycles'
 
@@ -187,8 +189,11 @@ if __name__ == '__main__':
 
         if cycle not in jira_cycles:
             print("{}: new sprint ...".format(cycle))
-            start_date = datetime.strptime(cycle, '%Y.%m.%d').replace(tzinfo=timezone.utc, microsecond=0)
-            end_date = start_date + timedelta(days=21)
+            sru_cycle = sc.lookup_cycle(cycle)
+            if sru_cycle is None:
+                continue
+            start_date = sru_cycle.start_date
+            end_date = sru_cycle.release_date
             new_sprint = jira.create_sprint(name=cycle, board_id=board.id, startDate=start_date.isoformat(), endDate=end_date.isoformat())
             jira_cycles[cycle] = new_sprint
 
@@ -204,7 +209,7 @@ if __name__ == '__main__':
         chunk_size = 50
         cycle_owner = None
         while True:
-            issues = jira.search_issues('project="{}" and sprint={}'.format(project_key, jira_cycle.id), startAt=chunk_offset, maxResults=chunk_size)
+            issues = jira.search_issues('project="{}" and cf[{}]={}'.format(project_key, custom_sprint, jira_cycle.id), startAt=chunk_offset, maxResults=chunk_size)
             chunk_offset += chunk_size
             if len(issues) == 0:
                 break
@@ -308,7 +313,9 @@ if __name__ == '__main__':
             tracker_issue = trackers[key].get('issue')
             tracker_overall = tracker_tasks.get('kernel-sru-workflow', {}).get('status', 'Invalid')
 
-            if key not in jira_issues and tracker_overall not in ('Fix Committed', 'Fix Released', 'Invalid'):
+            if cycle_complete.get(cycle, False):
+                continue
+            elif key not in jira_issues and tracker_overall not in ('Fix Committed', 'Fix Released', 'Invalid'):
                 print("MISSING ISSUE")
                 print("{}: new issue ...".format(cycle))
                 title = key_to_title(key)

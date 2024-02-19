@@ -23,5 +23,4 @@ else
 	(cd kernel-versions && git pull)
 fi
 
-set -o pipefail
-"$here/swm-jira-sync" "$@" 2>&1 | tee -a "$HOME/logs/swm-jira-sync.log"
+"$here/swm-jira-sync" "$@"
