@@ -524,7 +524,7 @@ class MonitorSwmStatusMonitor:
         try:
                 observer = TestObserverResults()
                 result = observer.lookup_result(to_id)
-        except TestObserverResultsError as e:
+        except TestObserverError as e:
             print("test_observer: data not available ({}) change={}".format(str(e), False))
             return False
 
