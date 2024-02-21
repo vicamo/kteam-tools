@@ -11,7 +11,6 @@ from wfl.secrets import Secrets
 
 
 class SwmWorkCmds:
-
     _group = None
 
     def group_id(self, rotate=False):
@@ -68,7 +67,6 @@ class SwmWorkCmds:
 
 
 class SwmWork(SwmWorkCmds):
-
     def __init__(self, local=False, config=None):
         if config is None:
             raise ValueError("config required")
@@ -76,11 +74,13 @@ class SwmWork(SwmWorkCmds):
         self.secrets = Secrets(os.path.expanduser(config))
 
         # Pass in credentials if we have them, else use the limited defaults.
-        hostname = self.secrets.get('amqp-hostname')
-        username = self.secrets.get('amqp-username')
-        password = self.secrets.get('amqp-password')
+        hostname = self.secrets.get("amqp-hostname")
+        username = self.secrets.get("amqp-username")
+        password = self.secrets.get("amqp-password")
         credentials = None
         if username is not None and password is not None:
             credentials = MsgQueueCredentials(username, password)
 
-        self.mq = MsgQueueService(service="swm", local=local, host=hostname, credentials=credentials, exchange="swm", heartbeat=60)
+        self.mq = MsgQueueService(
+            service="swm", local=local, host=hostname, credentials=credentials, exchange="swm", heartbeat=60
+        )
