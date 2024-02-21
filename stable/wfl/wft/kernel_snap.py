@@ -20,11 +20,10 @@ class KernelSnapBase(TaskHandler):
         # For a legacy combo variant the debs from which we will make a snap
         # are associated with this bug.  For a snap variant they come from
         # our parent tracker.  Add a direct pointer to whichever bug that is.
-        s.debs_bug = bug
         if s._bug.variant == 'snap-debs':
-            master_bug = bug.master_bug
-            if master_bug is not None:
-                s.debs_bug = master_bug
+            s.debs_bug = bug.master_bug
+        else:
+            s.debs_bug = bug
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -108,15 +107,16 @@ class SnapPrepare(KernelSnapBase):
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
         while not retval:
-            if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
-                cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
-                s.task.reason = 'Holding -b Not ready to be cranked'
-                break
+            if s.debs_bug is not None:
+                if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
+                    cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
+                    s.task.reason = 'Holding -b Not ready to be cranked'
+                    break
 
-            if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
-                cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\'', 'yellow')
-                s.task.reason = 'Holding -b Not ready to be cranked'
-                break
+                if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
+                    cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\'', 'yellow')
+                    s.task.reason = 'Holding -b Not ready to be cranked'
+                    break
 
             # Attempt to apply replaces as we are ready to promote.
             s.bug.dup_replaces()
@@ -165,14 +165,15 @@ class SnapPrepare(KernelSnapBase):
             if block is not None:
                 cinfo('            Blocked via {} pulling back from Confirmed'.format(block), 'yellow')
                 pull_back = True
-            if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
-                cinfo('    task promote-to-proposed is not \'Fix Released\' pulling back from Confirmed', 'yellow')
-                pull_back = True
-                break
-            if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
-                cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\' pulling back from Confirmed', 'yellow')
-                pull_back = True
-                break
+            if s.debs_bug is not None:
+                if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
+                    cinfo('    task promote-to-proposed is not \'Fix Released\' pulling back from Confirmed', 'yellow')
+                    pull_back = True
+                    break
+                if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
+                    cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\' pulling back from Confirmed', 'yellow')
+                    pull_back = True
+                    break
 
             if pull_back:
                 s.task.status = 'New'
@@ -358,10 +359,11 @@ class SnapReleaseToBeta(KernelSnapBase):
                 cinfo('    task snap-release-to-edge is not \'Fix Released\'', 'yellow')
                 break
 
-            if s.debs_bug.tasks_by_name['promote-to-proposed'].status != 'Fix Released':
-                cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
-                s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
-                break
+            if s.debs_bug is not None:
+                if s.debs_bug.tasks_by_name['promote-to-proposed'].status != 'Fix Released':
+                    cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
+                    s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
+                    break
 
             # Check if this is the oldest tracker for this target.
             older = s.oldest_tracker
@@ -493,20 +495,21 @@ class SnapReleaseToStable(KernelSnapBase):
             cinfo('    task snap-qa-testing is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
             return False
 
-        promote_to = 'promote-to-updates'
-        if 'promote-to-release' in s.debs_bug.tasks_by_name:
-            promote_to = 'promote-to-release'
-        if s.debs_bug.tasks_by_name[promote_to].status in ['New', 'Incomplete']:
-            cinfo('    task promote-to-updates/release is \'{}\''.format(s.debs_bug.tasks_by_name[promote_to].status), 'yellow')
-            s.task.reason = 'Holding -- waiting for debs to {}'.format(promote_to)
-            return False
-        if (s.debs_bug.tasks_by_name[promote_to].status == 'Invalid' and
-                'promote-to-security' in s.bug.tasks_by_name and
-                s.bug.tasks_by_name['promote-to-security'].status not in ['Fix Released', 'Invalid']):
-            cinfo('    task promote-to-updates/release is \'Invalid\' and promote-to-security is neither \'Fix Released\''
-                  ' nor \'Invalid\'', 'yellow')
-            s.task.reason = 'Holding -- waiting for debs to promote-to-security'
-            return False
+        if s.debs_bug is not None:
+            promote_to = 'promote-to-updates'
+            if 'promote-to-release' in s.debs_bug.tasks_by_name:
+                promote_to = 'promote-to-release'
+            if s.debs_bug.tasks_by_name[promote_to].status in ['New', 'Incomplete']:
+                cinfo('    task promote-to-updates/release is \'{}\''.format(s.debs_bug.tasks_by_name[promote_to].status), 'yellow')
+                s.task.reason = 'Holding -- waiting for debs to {}'.format(promote_to)
+                return False
+            if (s.debs_bug.tasks_by_name[promote_to].status == 'Invalid' and
+                    'promote-to-security' in s.bug.tasks_by_name and
+                    s.bug.tasks_by_name['promote-to-security'].status not in ['Fix Released', 'Invalid']):
+                cinfo('    task promote-to-updates/release is \'Invalid\' and promote-to-security is neither \'Fix Released\''
+                      ' nor \'Invalid\'', 'yellow')
+                s.task.reason = 'Holding -- waiting for debs to promote-to-security'
+                return False
 
         if s.bug.manual_block("snap-release-to-stable"):
             s.task.reason = "Stalled -- promotion manually blocked"
