@@ -980,7 +980,7 @@ if __name__ == '__main__':
         changed.update(new)
 
     updates_after = perf_counter()
-    print("CHANGED changed={} time={} wall={}".format(changed, updates_after - updates_before, time()))
+    print("CHANGED {} {} time={} wall={}".format(len(changed), changed, updates_after - updates_before, time()))
 
     swm_filter = FilterSwmStatus(factory=factory)
     changed = swm_filter.filter(changed)
