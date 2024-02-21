@@ -503,7 +503,7 @@ class MonitorStatusSwmStatus:
                 #print("APW", bug_data['refresh-time'] - start_date, bug_data['refresh-time'] < start_date)
                 if when < start_date:
                     #print("APW", bug_id, bug_data['refresh-time'], "READY")
-                    changed.add('shank', bug_id, reason="refresh time passed")
+                    changed.add('shank', bug_id, reason="refresh time passed ({})".format(why))
 
             sru_cycle = self.sc.lookup_spin(bug_data.get('cycle'))
             cycle_complete = sru_cycle is not None and sru_cycle.complete
