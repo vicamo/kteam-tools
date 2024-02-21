@@ -212,14 +212,6 @@ class WorkflowBug():
         return ctx.ks
 
     @property
-    def peer_reviewer(self):
-        ks = self.kernel_series
-        ktl_series = ks.lookup_series(codename=self.series)
-        ktl_source = ktl_series.lookup_source(self.name)
-
-        return ktl_source.peer_reviewer
-
-    @property
     def sc(self):
         return ctx.sc
 
@@ -802,6 +794,13 @@ class WorkflowBug():
                 if assignee is not None and assignee.name != 'canonical-kernel-team':
                     owner = assignee.name
         return owner
+
+    @property
+    def peer_reviewer(self):
+        reviewer = None
+        if self.source is not None:
+            reviewer = self.source.peer_reviewer
+        return reviewer
 
     def status_summary(s):
         '''
