@@ -1339,7 +1339,6 @@ class Package():
 
         # Scan across the build locations and dertermine if we see an upload in an appropriate
         # version.  Use this to set the built_in if we don't have one.
-        built_in = None
         for pkg in s.pkgs:
             package_published = s.builds[pkg]["ppa"].version_match(exact=s.bug.version, limit_stream=s.bug.built_in)
             if package_published is None:
@@ -1356,14 +1355,10 @@ class Package():
                 if s.bug.bprops.get("versions", {}).get(pkg) is None and s.ancillary_package_for(pkg) is None:
                     cinfo("APW: NEW package_version found {} in {} ({}#{}) -- setting".format(package_published.version, package_published.reference, package_published.route_name, package_published.route_entry))
                     s.bug.bprops.setdefault('versions', {})[pkg] = package_published.version
-                    if built_in is False:
-                        pass
-                    elif built_in is None:
-                        built_in = package_published.route_entry
-                    elif package_published.route_entry != built_in:
-                        cwarn("APW: NEW package_version built_in={} != {}".format(built_in, package_published.route_entry))
-        if built_in is not None and built_in is not False:
-            s.bug.built_in = built_in
+                if s.bug.built_in is None:
+                    s.bug.built_in = package_published.route_entry
+                elif package_published.route_entry != s.bug.built_in:
+                    cwarn("APW: NEW package_version built_in={} != {}".format(s.bug.built_in, package_published.route_entry))
 
         cleave('Sources::__determine_build_status')
         return None
