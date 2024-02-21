@@ -80,19 +80,20 @@ class SynPreparePackages(TaskHandler):
                 if s.bug.flag('jira-in-review'):
                     s.task.reason = 'Stalled -b Debs waiting for peer-review on SRU board (jira)'
                     peer_reviewer = s.bug.peer_reviewer
-                    if peer_reviewer is not None:
-                        s.task.bug.announce_drip(
-                            "swm-transition-peer-reviewable",
-                            subject="@{reviewer} [{id}](https://warthogs.atlassian.net/jira/software/c/projects/KSRU/boards/205?selectedIssue={id}) {cycle} {series}:{source} is ready for your review".format(
-                                reviewer=peer_reviewer,
-                                id=s.bug.bprops['issue'],
-                                cycle=s.task.bug.sru_spin_name,
-                                series=s.task.bug.series,
-                                source=s.task.bug.name
-                            ),
-                            every=timedelta(hours=24),
-                            since=s.task.date_confirmed,
-                        )
+                    if peer_reviewer is None:
+                        peer_reviewer = "cycle-lead"
+                    s.task.bug.announce_drip(
+                        "swm-transition-peer-reviewable",
+                        subject="@{reviewer} [{id}](https://warthogs.atlassian.net/jira/software/c/projects/KSRU/boards/205?selectedIssue={id}) {cycle} {series}:{source} is ready for your review".format(
+                            reviewer=peer_reviewer,
+                            id=s.bug.bprops['issue'],
+                            cycle=s.task.bug.sru_spin_name,
+                            series=s.task.bug.series,
+                            source=s.task.bug.name
+                        ),
+                        every=timedelta(hours=24),
+                        since=s.task.date_confirmed,
+                    )
                 else:
                     s.task.reason = 'Ongoing -b Being cranked by: {}'.format(s.task.assignee.username)
             else:
