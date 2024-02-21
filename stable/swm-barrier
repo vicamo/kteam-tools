@@ -120,7 +120,7 @@ class SwmBarrier(SwmWorkCmds):
             if what == 'quit':
                 self.mq.listen_stop()
 
-            elif what == 'shank':
+            elif what in ('shank', 'instantiate'):
                 if self.open is None:
                     new_group = SwmBarrierGroup()
                     self.groups.append(new_group)
@@ -130,7 +130,7 @@ class SwmBarrier(SwmWorkCmds):
                 self.groups[-1].add(shank_id)
                 self.log.info("groups={}".format(self.groups))
 
-            elif what == 'shank-complete':
+            elif what in ('shank-complete', 'instantiate-complete'):
                 shank_id = payload.get('id')
                 for group in self.groups:
                     if group.offer(shank_id):
