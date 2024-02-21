@@ -240,17 +240,17 @@ class Promoter(TaskHandler):
         # otherwise ready to release.
         for task in ('promote-to-updates', 'promote-to-release'):
             if task in master.tasks_by_name and master.tasks_by_name[task].status == 'Fix Released':
-                cdebug('master bug already released')
+                cdebug('parent tracker already released')
                 retval = True
                 cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
                 return retval
 
         if master.debs.routing('Updates') is None and master.debs.routing('Release') is None:
             retval = True
-            cinfo('master bug has no routing for Updates/Release ignoring', 'yellow')
+            cinfo('parent tracker has no routing for Updates/Release ignoring', 'yellow')
 
         else:
-            # Check if the master bug could release.
+            # Check if the parent tracker could release.
             required_sru_tasks = {
                 'prepare-package'            : ['Fix Released'],
                 'prepare-package-lbm'        : ['Fix Released'],
@@ -276,12 +276,12 @@ class Promoter(TaskHandler):
             retval = True
             for t in tasks:
                 if master.task_status(t) not in (tasks[t] + ['Invalid']):
-                    cinfo('master bug task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
+                    cinfo('parent tracker task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
                     retval = False
                     break
 
         if 'kernel-block' in master.tags or 'kernel-block-proposed' in master.tags:
-            cinfo('master bug is blocked')
+            cinfo('parent tracker is blocked')
             retval = False
 
         cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
@@ -299,10 +299,10 @@ class Promoter(TaskHandler):
 
         master = s.bug.master_bug
 
-        # If the master bug does not have routing for -proposed we should not block on it.
+        # If the parent tracker does not have routing for -proposed we should not block on it.
         if master.debs.routing('Proposed') is None:
             retval = True
-            cinfo('master bug has no routing for Proposed ignoring', 'yellow')
+            cinfo('parent tracker has no routing for Proposed ignoring', 'yellow')
 
         else:
             tasks = required_sru_tasks
@@ -310,11 +310,11 @@ class Promoter(TaskHandler):
             for t in tasks:
                 try:
                     if master.tasks_by_name[t].status not in tasks[t]:
-                        cinfo('master bug task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
+                        cinfo('parent tracker task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
                         retval = False
                         break
                 except KeyError:
-                    cdebug('master bug does not contian the %s task' % t)
+                    cdebug('parent tracker does not contian the %s task' % t)
 
         cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
         return retval

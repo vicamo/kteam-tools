@@ -412,7 +412,7 @@ class WorkflowBug():
                         raise error
                 except WorkflowBugError as e:
                     # Mark this as known to fail.
-                    raise WorkflowCrankError("invalid master bug link -- {}".format(e.args[0]))
+                    raise WorkflowCrankError("invalid parent tracker link -- {}".format(e.args[0]))
                 s._master_bug = master
             else:
                 s._master_bug = None

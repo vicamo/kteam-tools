@@ -83,7 +83,7 @@ class PreparePackage(TaskHandler):
             # rebase on.
             if not s.bug.debs.ready_to_prepare():
                 if pkg == 'main' or not s.bug.valid_package('main'):
-                    s.task.reason = 'Holding -- waiting for master bug'
+                    s.task.reason = 'Holding -- waiting for parent tracker'
                 break
 
             # Check for blocking trackers in a previous cycle.

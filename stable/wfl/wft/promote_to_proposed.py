@@ -106,7 +106,7 @@ class PromoteFromTo(Promoter):
 
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready_for_proposed():
-                    s.task.reason = 'Holding -- master bug not ready for proposed'
+                    s.task.reason = 'Holding -- parent tracker not ready for proposed'
                     break
 
             clear = True
