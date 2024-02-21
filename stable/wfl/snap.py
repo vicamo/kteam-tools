@@ -9,6 +9,7 @@ except ImportError:
 
 import os
 import json
+from copy import copy
 from .errors import ShankError
 from datetime import datetime
 import subprocess
@@ -95,7 +96,7 @@ class SnapStore:
                 "fields": ["name","revision","type","version"],
             }
             try:
-                headers = s.common_headers
+                headers = copy(s.common_headers)
                 store_id = s.secrets.get(s.snap.name, {}).get("store-id")
                 if store_id is not None:
                     cdebug("SnapStore: {} using snap specific store-id")
