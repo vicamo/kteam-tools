@@ -122,6 +122,20 @@ class PreparePackage(TaskHandler):
             if s.task.status not in ('Confirmed'):
                 break
 
+            # Announce (and reannounce) this every day.
+            s.task.bug.announce_drip(
+                "swm-transition-crankable",
+                subject="@{owner} [LP#{id}](https://launchpad.net/bugs/{id}) {cycle} {series}:{source} crankable".format(
+                    owner=s.bug.owner,
+                    id=s.task.bug.lpbug.id,
+                    cycle=s.task.bug.sru_cycle,
+                    series=s.task.bug.series,
+                    source=s.task.bug.name,
+                ),
+                every=timedelta(hours=24),
+                since=s.task.date_confirmed,
+            )
+
             pull_back = False
             block = s.bug.source_block_present()
             if block is not None:
