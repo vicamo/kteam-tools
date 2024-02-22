@@ -92,7 +92,6 @@ class SynPreparePackages(TaskHandler):
                             source=s.task.bug.name
                         ),
                         every=timedelta(hours=24),
-                        since=s.task.date_confirmed,
                     )
                 else:
                     s.task.reason = 'Ongoing -b Being cranked by: {}'.format(s.task.assignee.username)
