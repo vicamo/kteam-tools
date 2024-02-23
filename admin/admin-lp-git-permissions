@@ -407,7 +407,7 @@ def is_nvidia(source):
     return source.name.startswith('linux-nvidia')
 
 def is_gitea(source):
-    if source.name  == "linux-oem-6.1":
+    if source.name in ('linux-oem-6.5', 'linux-oem-6.8'):
         return True
     # For the linux main package, allow access to specific series
     if source.name == "linux":
