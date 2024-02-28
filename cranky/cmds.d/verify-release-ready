@@ -155,10 +155,11 @@ class VerifyReleaseReady:
             v = cl1["version"]
             msg = "previous abi present (%s)" % (v)
             abi = Debian.abi()
-            if v not in abi:
-                s.status(msg, False)
-            else:
-                s.status(msg, True)
+            if abi:
+                if v not in abi:
+                    s.status(msg, False)
+                else:
+                    s.status(msg, True)
 
             # If ABI override is present, then check correctness and print info
             abi_arch, empty = Debian.abi_arch()

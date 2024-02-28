@@ -261,6 +261,10 @@ class Debian:
     @classmethod
     def abi(cls):
 
+        # HACK: Newer kernels don't have an ABI directory anymore
+        if not path.exists("debian/scripts/misc/getabis"):
+            return []
+
         # Check each possible directory for an abi file
         debian_dirs = cls.debian_directories()
         retvals = []
@@ -289,6 +293,10 @@ class Debian:
     #
     @classmethod
     def abi_arch(cls):
+
+        # HACK: Newer kernels don't have an ABI directory anymore
+        if not path.exists("debian/scripts/misc/getabis"):
+            return [], []
 
         # Return contents of all arch directories within an ABI
         debian_dirs = cls.debian_directories()
