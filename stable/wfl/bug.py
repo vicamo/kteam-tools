@@ -1002,6 +1002,15 @@ class WorkflowBug():
             occupancy = s.debs.occupancy
             status['occupancy'] = list(sorted(occupancy))
 
+        # test-observer deadlines
+        if 'test-observer' in status:
+            spin = s.sru_spin
+            if spin is not None:
+                release_date = spin.release_date
+                if release_date is not None:
+                    due_date = datetime.combine(release_date - timedelta(days=5), datetime.min.time())
+                    status['test-observer']['due-date'] = due_date.strftime('%Y-%m-%d')
+
         # Do not expose this API error.
         master_bug = s.master_bug_property_name
         if master_bug != 'master-bug' and master_bug in status:
