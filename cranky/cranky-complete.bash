@@ -16,6 +16,7 @@ _cranky() {
 		"diff-sauce TAG"
 		"dput-sources -h --help -f --force -c --current -e --email HANDLE"
 		"fdr -h --help -c --clean"
+		"check-fips -h --help -p --previous -c --current"
 		"fix -h --help"
 		"link-tb -h --help -d --dry-run -r --re-run -s --sru-cycle -c --cve"
 		"list-repos -h --help -v --verbose -g --git-url --supported-sources --base-sources --derivative-sources --include main meta signed lrm lrs lrg lum lbm HANDLE"

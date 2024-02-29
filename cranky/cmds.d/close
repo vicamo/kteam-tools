@@ -180,6 +180,13 @@ if ! [ "$series" ]; then
 	echo "Failed to retrieve the package series from changelog: $DEBIAN/changelog"
 	exit 1
 fi
+
+# Check for FIPS kernels
+if [ -f "$DEBIAN/fips/files.list" ];then
+	echo "FIPS check:"
+	"$C" check-fips "$@"
+fi
+
 # Close the changelog
 run dch --nomultimaint -c "$DEBIAN/changelog" -r -D "$series" ''
 
