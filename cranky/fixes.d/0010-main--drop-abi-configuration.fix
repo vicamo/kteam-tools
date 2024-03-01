@@ -1,0 +1,39 @@
+#!/bin/bash -eu
+# update update.conf
+
+# shellcheck disable=SC2046 source=./cranky/fixes.d/lib.sh
+. $(dirname "$0")/lib.sh
+
+# Only applies to primary trees.
+case "$FIX_TYPE" in
+main)	;;
+*)	fix_verbose "not a main package"; exit 0 ;;
+esac
+
+if [ ! -f debian/debian.env ] ; then
+	echo "${PWD} does not look like a kernel directory"
+	exit 1
+fi
+
+source debian/debian.env
+
+# If we have an abi-chekc script then we should leave the ABI.
+if [ -f debian/scripts/checks/abi-check ]; then
+	fix_verbose "ABI still required (new style)"
+	exit 0
+fi
+if [ -f debian/scripts/abi-check ]; then
+	fix_verbose "ABI still required (old style)"
+	exit 0
+fi
+
+abi_present="$(git ls-files "$DEBIAN/abi")"
+if [ "$abi_present" = "" ]; then
+	fix_verbose "ABI already removed"
+	exit 0
+fi
+
+msg="UBUNTU: [Packaging] drop ABI data"
+git rm -rf "$DEBIAN/abi"
+commit "$msg" "$DEBIAN/abi"
+exit 0
