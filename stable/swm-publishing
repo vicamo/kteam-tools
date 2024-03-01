@@ -1003,17 +1003,17 @@ if __name__ == '__main__':
         swm_work = SwmWork(config="~/.kernel-swm-worker.yaml")
         barrier = False
         for change in changed:
-            if change.cmd == 'instantiate':
+            if change.cmd == 'shank':
                 print("QUEUE #1: {} {} ({})".format(change.cmd, change.tracker, change.reason))
-                swm_work.send_instantiate(change.tracker)
+                swm_work.send_shank(change.tracker, scanned=change.scanned)
                 barrier = True
         if barrier:
             swm_work.send_barrier()
         barrier = False
         for change in changed:
-            if change.cmd == 'shank':
+            if change.cmd == 'instantiate':
                 print("QUEUE #2: {} {} ({})".format(change.cmd, change.tracker, change.reason))
-                swm_work.send_shank(change.tracker, scanned=change.scanned)
+                swm_work.send_instantiate(change.tracker)
                 barrier = True
         if barrier:
             swm_work.send_barrier()
