@@ -271,6 +271,7 @@ class MonitorLaunchpadProject:
         # Now that we have the latest update, check through the activity
         # log for each bug and consider whether it has been changed by
         # swm, if so then we can ignore it.
+        instantiate = set()
         changed = Changes()
         for bug_id, bug in bugs.items():
             dup = bug.duplicate_of
@@ -316,7 +317,11 @@ class MonitorLaunchpadProject:
                 continue
             print("TASK ({})".format(task.status), task, bug, bug.date_last_updated)
             if task.status == 'Confirmed':
-                changed.add('instantiate', str(bug.id), reason="nascent tracker")
+                instantiate.add(str(bug.id))
+                if len(instantiate) <= 15:
+                    changed.add('instantiate', str(bug.id), reason="nascent tracker")
+                else:
+                    print("DELAYING instantiate", str(bug.id))
             else:
                 changed.add('shank', str(bug.id), reason="new tracker")
 
