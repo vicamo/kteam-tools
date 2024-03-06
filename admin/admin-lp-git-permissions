@@ -563,6 +563,10 @@ def add_primary(repo_set):
                         repo_rules.add_grants(
                             grants(ref, people=people_kernel_bot, create=True, push=True, rewind=True)
                         )
+            ref = "refs/heads/{}--*".format(branch)
+            repo_rules.add_grants(
+                grants(ref, people=people, create=True, push=True, rewind=True)
+            )
             if is_gitea(thing.source):
                 repo_rules.add_grants(
                     grants("refs/heads/*/*", people=people_gitea, force=True)
