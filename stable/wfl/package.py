@@ -253,19 +253,19 @@ class PackageBuildRouteEntry:
                             'lp-api': build.self_link,
                             'last-scanned': self.bug.tracker_instantiated}) # XXX: (as above)
 
-                #if buildstate != 'Successfully built':
-                #    # XXX: do we use the maintenance records any more ?
-                #    self.bug.maintenance_add({
-                #        'type': 'deb-build',
-                #        'target': self.bug.target,
-                #        'detail': {
-                #            'state': buildstate,
-                #            'type': self.dependent,
-                #            'package': build.source_package_name,
-                #            'url': build.web_link,
-                #            'lp-api': build.self_link,
-                #            'log': build.build_log_url,
-                #        }})
+                if buildstate != 'Successfully built':
+                    # XXX: do we use the maintenance records any more ?
+                    self.bug.maintenance_add({
+                        'type': 'deb-build',
+                        'target': self.bug.target,
+                        'detail': {
+                            'state': buildstate,
+                            'type': self.dependent,
+                            'package': build.source_package_name,
+                            'url': build.web_link,
+                            'lp-api': build.self_link,
+                            'log': build.build_log_url,
+                        }})
 
                 # Accumulate the latest build completion.
                 if build.datebuilt is not None and (latest_build is None or latest_build < build.datebuilt):
