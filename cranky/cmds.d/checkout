@@ -88,7 +88,7 @@ def checkout_repos(
             if cycle_ref:
                 rmt_ref = cycle_ref.refname
             else:
-                cnotice("{} does not have a release for {}, falling back to tip.".format(pkg.name, cycle))
+                raise CrankyException("{}: cycle reference not found".format(cycle))
 
         if crd:
             try:
