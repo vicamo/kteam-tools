@@ -1,7 +1,7 @@
 [user]
 	email = <firstname>.<lastname>@canonical.com
 	name = <firstname> <lastname>
-	signkey = <your-pgp-signing-key-id> # the one uploaded in Launchpad
+	signingkey = <your-pgp-signing-key-id> # the one uploaded in Launchpad
 
 [sendemail]
 	smtpencryption = tls
