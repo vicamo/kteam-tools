@@ -90,7 +90,7 @@ class KernelVersion:
     def __repr__(self):
         return "KernelVersion({})".format(self.version)
 
-    def _bump_main(self):
+    def _bump_main(self, abi_gap):
         """Bump main package version"""
         m = re.fullmatch(RE_VERSION, self.version)
         if not m:
@@ -98,14 +98,14 @@ class KernelVersion:
 
         upstream, abi, upload, sameport, extra, digit = m.group(1, 2, 3, 4, 5, 6)
         if not extra:
-            self.version = "{}-{}.{}".format(upstream, int(abi) + 1, int(upload) + 1)
+            self.version = "{}-{}.{}".format(upstream, int(abi) + abi_gap, int(upload) + abi_gap)
             return
 
         base = "{}-{}.{}{}".format(upstream, abi, upload, sameport or "")
         parent = self.parent_version or base
         cmp = apt_pkg.version_compare(parent, base)
         if cmp < 0:
-            self.version = "{}-{}.{}{}1".format(upstream, int(abi) + 1, int(upload) + 1, extra)
+            self.version = "{}-{}.{}{}1".format(upstream, int(abi) + abi_gap, int(upload) + abi_gap, extra)
         elif cmp > 0:
             self.version = "{}{}1".format(parent, extra)
         else:
@@ -162,11 +162,12 @@ class KernelVersion:
         parent_abi = ".".join(parent_comps[0:4])
         self.version = "{}.{}".format(parent_abi, int(comps[-1]) + 1)
 
-    def bump(self):
+    def bump(self, abi_gap=None):
         """Bump package version"""
+        abi_gap = 1 if abi_gap is None else int(abi_gap)
         prev_version = self.version
         if self.package_type == "main":
-            self._bump_main()
+            self._bump_main(abi_gap=abi_gap)
         elif self.package_type in ("lrm", "signed"):
             self._bump_lrm_signed_meta()
         elif self.package_type == "meta":
