@@ -194,8 +194,9 @@ if [ "${series}" = "UNRELEASED" ] ; then
 fi
 
 # Get the list of supported architectures
-raw_arches=$(echo $(awk '/# ARCH:/ {$1=""; $2=""; print}' "$debian_d/config/annotations"))
-declare -a all_arches=($raw_arches)
+read -ra all_arches <<EOD
+$(awk '/# ARCH:/ {$1=""; $2=""; print}' "${debian_d}/config/annotations")
+EOD
 
 if [ "${arches[0]}" = "all" ] ; then
 	# shellcheck disable=SC2012
