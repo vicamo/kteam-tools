@@ -194,13 +194,9 @@ if [ "${series}" = "UNRELEASED" ] ; then
 fi
 
 # Get the list of supported architectures
-if [ -f "${debian_d}/abi/abiname" ]; then
-	abidir="${debian_d}/abi/"
-else
-	abi=$(git ls-tree -d "${commit}" "${debian_d}/abi/" | sed -e 's,.*/,,')
-	abidir="${debian_d}/abi/${abi}/"
-fi
-readarray -t all_arches < <(git ls-tree -d "${commit}" "${abidir}/" | sed -e 's,.*/,,')
+read -ra all_arches <<EOD
+$(awk '/# ARCH:/ {$1=""; $2=""; print}' "${debian_d}/config/annotations")
+EOD
 
 if [ "${arches[0]}" = "all" ] ; then
 	# shellcheck disable=SC2012
