@@ -1,10 +1,8 @@
 #!/usr/bin/python3
 
-import glob
 import os
 import subprocess
 import sys
-import yaml
 from argparse import ArgumentParser
 
 
