@@ -11,7 +11,6 @@ class GitRebaseSelectorError(Exception):
 
 
 class GitRebaseSelector:
-
     def __init__(self):
         pass
 
@@ -31,9 +30,7 @@ class GitRebaseSelector:
             kwargs["stdout"] = sys.stdout
         rc = subprocess.run(cmd, **kwargs)
         if rc.returncode not in accept_exit:
-            raise GitRebaseSelectorError(
-                "ERROR: {} failed (rc={})".format(verbose, rc.returncode)
-            )
+            raise GitRebaseSelectorError("ERROR: {} failed (rc={})".format(verbose, rc.returncode))
         return rc
 
     def commit_disposition(self, ghash, desc, reapply):
@@ -52,22 +49,21 @@ class GitRebaseSelector:
             if line[0] == ":":
                 filename = line.split("\t")[1]
                 files.add(filename)
-        ignore_files = set([
-            "update-dkms-versions",
-            "debian/dkms-versions",
-            "debian/scripts/misc/git-ubuntu-log",
-            "debian/scripts/helpers",
-        ])
+        ignore_files = set(
+            [
+                "update-dkms-versions",
+                "debian/dkms-versions",
+                "debian/scripts/misc/git-ubuntu-log",
+                "debian/scripts/helpers",
+            ]
+        )
         if ignore_files.intersection(files) != set():
             return ("drop", "auto-fix")
 
         return ("pick", None)
 
     def filter_file(self, infile, outfile):
-        record = os.path.join(
-            os.path.dirname(os.path.dirname(infile)),
-            "REBASE-SELECTOR"
-        )
+        record = os.path.join(os.path.dirname(os.path.dirname(infile)), "REBASE-SELECTOR")
         print("II: record={}".format(record))
         with open(infile) as ifd, open(outfile, "w") as ofd, open(record, "w") as rfd:
             lines = [line.strip() for line in ifd]
@@ -78,9 +74,9 @@ class GitRebaseSelector:
             for line in lines:
                 if line.startswith("pick "):
                     cmd, ghash, desc = line.split(None, 2)
-                    if desc.startswith("Revert \""):
+                    if desc.startswith('Revert "'):
                         revert.add(desc)
-                    elif desc.startswith("Reapply \""):
+                    elif desc.startswith('Reapply "'):
                         revert_desc = "Revert " + desc.split(None, 1)[1]
                         if revert_desc in revert:
                             reapply.add(desc)
