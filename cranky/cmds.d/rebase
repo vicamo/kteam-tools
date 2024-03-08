@@ -154,7 +154,7 @@ BASE_VERSION=$(git show --format=%s -s "$BASE_COMMIT" | sed 's/^UBUNTU: //')
 echo "Rebase still needed between $BASE_VERSION and $MASTER_VERSION."
 
 if [ "${DRY_RUN}" ]; then
-	echo "DRY RUN: git -c "sequence.editor=$here/rebase-selector" rebase --interactive --empty=drop --onto ${MASTER_COMMIT} ${BASE_COMMIT}"
+	echo "DRY RUN: git -c \"sequence.editor=$here/rebase-selector\" rebase --interactive --empty=drop --onto ${MASTER_COMMIT} ${BASE_COMMIT}"
 	exit 0
 fi
 
