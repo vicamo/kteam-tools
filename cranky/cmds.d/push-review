@@ -118,7 +118,7 @@ if ! cranky shell-helper list-handles | grep -q "${series}:${source}"; then
 fi
 
 # Verify we can talk to the host
-if ! ssh -o ConnectTimeout=5 "${host}" whoami >/dev/null ; then
+if ! remote_user=$(ssh -o ConnectTimeout=5 "${host}" whoami) ; then
 	pr_error "Unable to ssh to host '${host}'"
 	exit 1
 fi
@@ -179,7 +179,7 @@ for linux_dir in ${directories} ; do
 		pr_warn "Only ${artifacts_count} artifacts found, usually 5 expected."
 	fi
 
-	remote_addr="ssh://${host}/~${USER}/${series}-${repo}"
+	remote_addr="ssh://${host}/~${remote_user}/${series}-${repo}"
 	pr_info "${repo}: Pushing ${latest_tag} to ${remote_addr}"
 
 	if [ "${dry_run}" -eq 0 ] ; then
@@ -197,7 +197,7 @@ for linux_dir in ${directories} ; do
 		scp ../*"${artifacts_name}"* "${host}:${remote_artifacts_path}"
 	fi
 done
-summary="${summary}packages: ${host}:~${USER}/${remote_artifacts_path}"
+summary="${summary}packages: ${host}:~${remote_user}/${remote_artifacts_path}"
 
 if [ "${dry_run}" -eq 0 ] ; then
 	printf "Ready for review:\n\n\`\`\`\n%b\n\`\`\`\n" "${summary}"
