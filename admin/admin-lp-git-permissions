@@ -338,6 +338,7 @@ def add_misc(repo_set):
             + grant_sets([grants(branch, admins_core, force=True) for branch, force in fw_branches])
             + grant_sets([grants(branch, people_core + people_tools, force=force, push=True) for branch, force in fw_branches])
             + grant_sets([grants(branch, people_kernel_bot, force=True) for branch, force in fw_branches])
+            + grant_sets([grants(branch, people_gitea, force=True) for branch, force in fw_branches])
             + grants("refs/tags/Ubuntu-*", team_owner)
             + grants("refs/tags/Ubuntu-*", admins_core, force=True)
             + grants("refs/tags/Ubuntu-*", people_core + people_tools + people_gitea, create=True)
