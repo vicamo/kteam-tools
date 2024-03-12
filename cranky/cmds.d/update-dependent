@@ -9,7 +9,7 @@ function update_dependent()
 	local ignore_abi_check="${1}"
 
 	case "$("${C}" shell-helper tree-type)" in
-		meta|signed|lrm) ;;
+		meta|signed|lrm|extra|extra2) ;;
 		*)
 			echo "This is not a dependent kernel package repo" >&2
 			return 1
