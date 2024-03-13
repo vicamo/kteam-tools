@@ -161,7 +161,7 @@ tag_prefix=${tag_prefix#linux-restricted-modules}
 tag_prefix=Ubuntu${tag_prefix}-
 
 # Verify that the correct tag exists
-tag=${tag_prefix}${version//~/_}
+tag=${tag_prefix}${version//\~/_}
 tag_count=$(git for-each-ref refs/tags/"${tag}" | wc -l)
 if [ "${tag_count}" -ne 1 ] && [ -n "${namespace}" ] ; then
 	tag=${namespace}${tag}
