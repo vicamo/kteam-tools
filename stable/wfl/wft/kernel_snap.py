@@ -935,10 +935,15 @@ class SnapCertificationTesting(KernelSnapBase):
                     result = observer.lookup_result(existing)
                     cinfo("TO direct result={}".format(result))
                 if result is None:
+                    # test-observer reports the _current_ branch not the tested
+                    # branch so we cannot use that as a selector.  Therefore we
+                    # assume that in the common case that
+                    # <snap>:<version>:<revisions> will be unique in space and
+                    # time, where it is not we will have only one result and it
+                    # is 99% likley the right one.
                     results = observer.lookup_results(
                         "snap",
                         name=s.bug.snap.name,
-                        stage="beta",
                         version=s.bug.version,
                     )
                     cinfo("TO snap results={}".format(results))
