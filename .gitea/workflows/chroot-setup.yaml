@@ -1,0 +1,30 @@
+---
+name: chroot-setup PR Checks
+
+on:
+  pull_request_target:
+    types:
+      - edited
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - 'chroot-setup/**'
+      - 'ktl/**'
+      - 'lib/**'
+
+jobs:
+  include-chroot-defs-conf:
+    runs-on:
+    steps:
+      - step:
+        name: Clone
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - step:
+        run: |
+          set -xe
+          export CDIR="$(realpath chroot-setup)"
+          source chroot-setup/scripts/chroot-defs.conf
