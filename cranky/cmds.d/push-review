@@ -152,9 +152,12 @@ for linux_dir in ${directories} ; do
 			# shellcheck disable=SC2088
 			ssh "${host}" cp -r "${bare_repo_path}" "~/${remote_path}"
 			# shellcheck disable=SC2087
-			ssh "${host}" /bin/bash <<EOF
+			if ! ssh "${host}" /bin/bash <<EOF
 cd ~/${remote_path} && git remote add origin2 ${origin2} && git fetch origin2
 EOF
+			then
+				pr_warn "Fail to pull ${linux_dir} from ${origin2:-origin} from ${host}, will push from local"
+			fi
 		fi
 	fi
 done
