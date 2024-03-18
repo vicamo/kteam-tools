@@ -63,8 +63,8 @@ RE_ABI = re.compile("(\d+)\.(\d+)(.*)")
 # .*NUM
 RE_EXTRA = re.compile("(.*[^\d])(\d+)")
 
-# .*[~+]NUM.NUM.NUM
-RE_OLD_BP_FP_VERSION = re.compile(r"^.*[~+]\d{2}\.\d{2}\.\d+$")
+# .*[-~+]NUM.NUM.NUM
+RE_OLD_BP_FP_VERSION = re.compile(r"^.*[-~+]\d+\.\d+\.\d+$")
 
 
 class KernelVersion:
@@ -142,7 +142,7 @@ class KernelVersion:
             raise ValueError("Invalid parent version: {}".format(self.parent_version))
 
         if RE_OLD_BP_FP_VERSION.match(self.parent_version):
-            # Backport (~yy.mm.X) or forwardport (+yy.mm.X) package
+            # Backport (~yy.mm.X), forwardport (+yy.mm.X) package or sameport version schema.
             # Bump the last digit (X) if the base version (everything before the last '.')
             # is equal to the parent's base, otherwise use the parent's base and reset the
             # last digit to 1.
