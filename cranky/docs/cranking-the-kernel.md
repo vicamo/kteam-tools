@@ -789,6 +789,14 @@ uploading packages to `ubuntu` (see snip-dput.cf).
 **Note** dput-source will raise an error if you do not have the public key of your
 sponsor. Verify and import the public key of your sponsor to resolve this problem.
 
+**Note** if you are a reviewer and you are manually uploading packages cranked
+by other team members, make sure to re-sign them with your key, for example:
+```
+$ debsign -s YOUR_EMAIL linux-oracle_4.15.0-1010.12~16.04.1_source.changes
+$ debsign -s YOUR_EMAIL linux-meta-oracle_4.15.0.1010.4_source.changes
+$ debsign -s YOUR_EMAIL linux-signed-oracle_4.15.0-1010.12~16.04.1_source.changes
+```
+
 ### Special kernels
 
 Pay attention to the following kernels, they require special actions to be
@@ -800,7 +808,7 @@ cranked:
 
 Another option to provide public repositories to other members of the team or to
 external people is using Launchpad. This is described here though for
-documention purpose only, pushing kernels for review to one of the builders is
+documentation purpose only, pushing kernels for review to one of the builders is
 the preferred way to avoid leaking private repositories to the public by
 mistake.
 
