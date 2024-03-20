@@ -48,7 +48,7 @@ case "$("${C}" shell-helper tree-type)" in
 		. debian/debian.env
 		changelog_file=${DEBIAN}/changelog
 		;;
-	meta|signed|lrm)
+	meta|signed|lrm|extra|extra2)
 		changelog_file=debian/changelog
 		;;
 	*)
