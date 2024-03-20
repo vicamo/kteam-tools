@@ -2657,88 +2657,25 @@ class Package():
     # older_tracker_in_ppa
     #
     @property
-    def _older_tracker_in_ppa(s):
-        # The target trackers are returned in cycle order.
-        target_trackers = s.bug.target_trackers
-        #cinfo("older_tracker_in_ppa: {}".format(target_trackers))
-
-        my_cycle_key = s.cycle_key(s.bug.sru_spin_name)
-        my_id = str(s.bug.lpbug.id)
-        for tracker_nr, tracker_data in target_trackers:
-            # If we find ourselves then we have considered everything "older".
-            if tracker_nr == my_id:
-                return None
-
-            # If we find we have an older cycle than the current entry we are older
-            # than it.  This only can occur when we are new and have not yet saved
-            # a single status.
-            if my_cycle_key < tracker_data.get('cycle', '-'):
-                return None
-
-            # Consider if this is a blocker if it promote-to-proposed is not
-            # Fix Released.
-            cinfo("    considering {}".format(tracker_nr))
-            ptp_status = tracker_data.get('task', {}).get('promote-to-proposed', {}).get('status', 'Invalid')
-            stream = tracker_data.get('built', {}).get('route-entry')
-            if stream is not None and stream != s.bug.built_in:
-                cinfo("    not in stream {}".format(tracker_nr))
-
-            elif ptp_status not in ('Invalid', 'Fix Released'):
-                cinfo("      promote-to-proposed {} considered blocking".format(ptp_status))
-                return tracker_nr
-
-        return None
-
-    # older_tracker_in_ppa
-    #
-    @property
     def older_tracker_in_ppa(s):
-        retval = s._older_tracker_in_ppa
-        newval = s.older_tracker_in_pocket("build")
-        cinfo("OTv1: older_tracker_in_proposed = {} -> {}".format(retval, newval))
+        retval = s.older_tracker_in_pocket("build")
+        cinfo("OCCUPANCY: older_tracker_in_proposed = {}".format(retval))
         return retval
-
-    def _older_tracker_in_proposed(s, limit_stream):
-        # The target trackers are returned in cycle order.
-        target_trackers = s.bug.target_trackers
-        #cinfo("older_tracker_in_ppa: {}".format(target_trackers))
-
-        for tracker_nr, tracker_data in target_trackers:
-            # If we find ourselves then we have considered everything "older".
-            if tracker_nr == str(s.bug.lpbug.id):
-                return None
-            # Consider if this is a blocker if it promote-to-proposed is
-            # Fix Released and promote-to-updates/release is not Fix Released.
-            cinfo("    considering {}".format(tracker_nr))
-            ptp_status = tracker_data.get('task', {}).get('promote-to-proposed', {}).get('status', 'Invalid')
-            ptu_status = tracker_data.get('task', {}).get('promote-to-updates', {}).get('status', 'Invalid')
-            if ptu_status == 'Invalid':
-                ptu_status = tracker_data.get('task', {}).get('promote-to-release', {}).get('status', 'Invalid')
-            stream = tracker_data.get('built', {}).get('route-entry')
-            if stream is not None and limit_stream is not None and stream != limit_stream:
-                cinfo("    not in stream {}".format(tracker_nr))
-            elif ptp_status == 'Fix Released' and ptu_status not in ('Invalid', 'Fix Released'):
-                cinfo("      promote-to-proposed {} plus promote-to-{{updates,release}} {} considered blocking".format(ptp_status, ptu_status))
-                return tracker_nr
-
-        return None
 
     # older_tracker_in_proposed
     #
     @property
     def older_tracker_in_proposed(s):
-        retval = s._older_tracker_in_proposed(s.bug.built_in)
-        newval = s.older_tracker_in_pocket("Proposed")
-        cinfo("OTv1: older_tracker_in_proposed = {} -> {}".format(retval, newval))
+        retval = s.older_tracker_in_pocket("Proposed")
+        cinfo("OCCUPANCY: older_tracker_in_proposed = {}".format(retval))
         return retval
 
     # older_tracker_in_proposed_any
     #
     @property
     def older_tracker_in_proposed_any(s):
-        retval = s._older_tracker_in_proposed(None)
-        newval = s.older_tracker_in_pocket("Updates")
-        cinfo("OTv1: older_tracker_in_proposed_any = {} -> {}".format(retval, newval))
+        retval = s.older_tracker_in_pocket("Updates")
+        cinfo("OCCUPANCY: older_tracker_in_proposed_any = {}".format(retval))
         return retval
 
     # older_tracker_in_pocket
