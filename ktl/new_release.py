@@ -58,10 +58,10 @@ import re
 import apt_pkg
 
 # ABI.UPLOAD(EXTRA)
-RE_ABI = re.compile("(\d+)\.(\d+)(.*)")
+RE_ABI = re.compile(r"(\d+)\.(\d+)(.*)")
 
 # .*NUM
-RE_EXTRA = re.compile("(.*[^\d])(\d+)")
+RE_EXTRA = re.compile(r"(.*[^\d])(\d+)")
 
 # .*[-~+]NUM.NUM.NUM
 RE_OLD_BP_FP_VERSION = re.compile(r"^.*[-~+]\d+\.\d+\.\d+$")
