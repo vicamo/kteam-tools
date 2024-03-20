@@ -25,7 +25,8 @@ function update_file()
 	local src=${1} dst=${2}
 
 	cp -p "$src" "$dst"
-	if ! git diff --exit-code -- "${dst}" >/dev/null ; then
+	git add "$dst"
+	if ! git diff --cached --exit-code -- "${dst}" >/dev/null ; then
 		git commit -s -m "UBUNTU: ${dst} -- update from main" -- "${dst}"
 	else
 		echo "${dst}: no changes from main"
