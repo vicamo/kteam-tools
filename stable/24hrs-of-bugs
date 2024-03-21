@@ -158,7 +158,7 @@ class ThisApp:
         return retval
 
     def main(self):
-        packages_of_interest = ["linux-firmware"]
+        packages_of_interest = ["linux-firmware", "bluez-firmware"]
         for series in self.kernel_series.series:
             if series.supported is False:
                 continue
