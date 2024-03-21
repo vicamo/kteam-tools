@@ -248,7 +248,7 @@ if [ "${dkms_versions}" != debian/dkms-versions ] && [ -e debian/dkms-versions ]
 fi
 
 if ! git diff --cached --exit-code -- "${things[@]}" >/dev/null ; then
-	git commit -m "UBUNTU: ${dkms_versions} -- update from kernel-versions (${git_human})" \
+	git commit -m "UBUNTU: [Packaging] ${dkms_versions} -- update from kernel-versions (${git_human})" \
 	           -m "BugLink: https://bugs.launchpad.net/bugs/1786013" \
 	           -s -- "${things[@]}"
 else
