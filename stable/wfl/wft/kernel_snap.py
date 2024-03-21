@@ -268,6 +268,7 @@ class SnapPrepareManual(KernelSnapBase):
         s.jumper['Triaged']       = s._verify_prepared
         s.jumper['In Progress']   = s._verify_prepared
         s.jumper['Fix Committed'] = s._verify_prepared
+        s.jumper['Incomplete']    = s._verify_prepared
 
         cleave(s.__class__.__name__ + '.__init__')
 
