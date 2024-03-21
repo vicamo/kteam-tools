@@ -318,7 +318,7 @@ class SnapPrepareManual(KernelSnapBase):
                 if s.task.status != 'Incomplete':
                     s.task.status = 'Incomplete'
                     retval = True
-                    break
+                break
 
             if s.task.status != 'Fix Released':
                 s.task.status = 'Fix Released'
