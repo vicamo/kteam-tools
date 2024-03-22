@@ -164,3 +164,23 @@ class TestNewRelease(unittest.TestCase):
         b = KernelVersion("5.15.0.9.9+22.10.1", parent_version="5.15.0-11.12+22.10.1", package_type="meta")
         b.bump()
         self.assertEqual(b, KernelVersion("5.15.0.11.12+22.10.1"))
+
+    def test_main_sameport_backport(self):
+        a = KernelVersion("6.5.0-26.26.1~22.04.1", parent_version="6.5.0-27.28.1", package_type="main")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-27.28.1~22.04.1"))
+
+    def test_main_parent_sameport_bump(self):
+        a = KernelVersion("6.5.0-27.28.1~22.04.1", parent_version="6.5.0-27.28.2", package_type="main")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-27.28.2~22.04.1"))
+
+    def test_main_sameport_backport_reupload(self):
+        a = KernelVersion("6.5.0-27.28.1~22.04.1", parent_version="6.5.0-27.28.1", package_type="main")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-27.28.1~22.04.2"))
+
+    def test_main_sameport(self):
+        a = KernelVersion("6.5.0-26.26.1", parent_version="6.5.0-27.28", package_type="main")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-27.28.1"))

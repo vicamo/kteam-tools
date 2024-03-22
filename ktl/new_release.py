@@ -57,8 +57,8 @@
 import re
 import apt_pkg
 
-# ABI.UPLOAD(EXTRA)
-RE_ABI = re.compile(r"(\d+)\.(\d+)(.*)")
+# ABI.UPLOAD(.NUM)(EXTRA)
+RE_ABI = re.compile(r"(\d+)\.(\d+)(\.\d+)?(.*)")
 
 # .*NUM
 RE_EXTRA = re.compile(r"(.*[^\d])(\d+)")
@@ -87,7 +87,9 @@ class KernelVersion:
             m = re.search(RE_ABI, debian)
             abi = m.group(1)
             upload = m.group(2)
-            extra = m.group(3)
+            # In case we have four groups,
+            # the third one is the sameport upload number, we don't need that
+            extra = m.group(4) or m.group(3)
 
             if not extra:
                 abi = int(abi) + 1
