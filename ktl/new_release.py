@@ -83,6 +83,9 @@ class KernelVersion:
     def __str__(self):
         return self.version
 
+    def __repr__(self):
+        return "KernelVersion({})".format(self.version)
+
     def _bump_main(self):
         """Bump main package version"""
         try:
