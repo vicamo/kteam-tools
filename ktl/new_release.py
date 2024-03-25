@@ -59,6 +59,8 @@
 import re
 import apt_pkg
 
+apt_pkg.init()
+
 # ABI.UPLOAD(.SPUN)(EXTRA), i.e. NUM.NUM(.NUM)(EXTRA)
 RE_ABI = re.compile(r"(\d+)\.(\d+)(\.\d+)?(.*)")
 
@@ -74,7 +76,6 @@ class KernelVersion:
         self.version = version
         self.parent_version = parent_version
         self.package_type = package_type if package_type else "main"
-        apt_pkg.init()
 
     def __eq__(self, other):
         return self.version == other.version
