@@ -57,6 +57,31 @@ class TestNewRelease(unittest.TestCase):
         a.bump()
         self.assertEqual(a, b)
 
+    def test_sameport(self):
+        a = KernelVersion("6.5.0-26.26.2", parent_version="6.5.0-27.28")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-27.28.1"))
+
+    def test_sameport_reupload(self):
+        a = KernelVersion("6.5.0-27.28.2", parent_version="6.5.0-27.28")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-27.28.3"))
+
+    def test_sameport_backport(self):
+        a = KernelVersion("6.5.0-26.26.1~22.04.2", parent_version="6.5.0-27.28.1")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-27.28.1~22.04.1"))
+
+    def test_sameport_reupload_backport(self):
+        a = KernelVersion("6.5.0-27.28.1~22.04.2", parent_version="6.5.0-27.28.2")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-27.28.2~22.04.1"))
+
+    def test_sameport_backport_reupload(self):
+        a = KernelVersion("6.5.0-27.28.1~22.04.2", parent_version="6.5.0-27.28.1")
+        a.bump()
+        self.assertEqual(a, KernelVersion("6.5.0-27.28.1~22.04.3"))
+
     def test_invalid(self):
         # Library does not validate upstream version
         a = KernelVersion("50-20.3000")
@@ -133,7 +158,7 @@ class TestNewRelease(unittest.TestCase):
         a.bump()
         self.assertEqual(a, KernelVersion("6.5.0.27.28.1"))
 
-    def test_meta_old_sameport_upload_version(self):
+    def test_meta_old_sameport_reupload(self):
         a = KernelVersion("6.5.0.27.28.1", parent_version="6.5.0-27.28.1", package_type="meta")
         a.bump()
         self.assertEqual(a, KernelVersion("6.5.0.27.28.2"))
@@ -164,23 +189,3 @@ class TestNewRelease(unittest.TestCase):
         b = KernelVersion("5.15.0.9.9+22.10.1", parent_version="5.15.0-11.12+22.10.1", package_type="meta")
         b.bump()
         self.assertEqual(b, KernelVersion("5.15.0.11.12+22.10.1"))
-
-    def test_main_sameport_backport(self):
-        a = KernelVersion("6.5.0-26.26.1~22.04.1", parent_version="6.5.0-27.28.1", package_type="main")
-        a.bump()
-        self.assertEqual(a, KernelVersion("6.5.0-27.28.1~22.04.1"))
-
-    def test_main_parent_sameport_bump(self):
-        a = KernelVersion("6.5.0-27.28.1~22.04.1", parent_version="6.5.0-27.28.2", package_type="main")
-        a.bump()
-        self.assertEqual(a, KernelVersion("6.5.0-27.28.2~22.04.1"))
-
-    def test_main_sameport_backport_reupload(self):
-        a = KernelVersion("6.5.0-27.28.1~22.04.1", parent_version="6.5.0-27.28.1", package_type="main")
-        a.bump()
-        self.assertEqual(a, KernelVersion("6.5.0-27.28.1~22.04.2"))
-
-    def test_main_sameport(self):
-        a = KernelVersion("6.5.0-26.26.1", parent_version="6.5.0-27.28", package_type="main")
-        a.bump()
-        self.assertEqual(a, KernelVersion("6.5.0-27.28.1"))
