@@ -27,7 +27,8 @@ function update_file()
 	cp -p "$src" "$dst"
 	git add "$dst"
 	if ! git diff --cached --exit-code -- "${dst}" >/dev/null ; then
-		git commit -s -m "UBUNTU: ${dst} -- update from main" -- "${dst}"
+		git commit -s -m "UBUNTU: [Packaging] ${dst} -- resync from main package" \
+			-m "BugLink: https://bugs.launchpad.net/bugs/1786013" -- "${dst}"
 	else
 		echo "${dst}: no changes from main"
 	fi
@@ -186,8 +187,8 @@ if [ ${no_update} -eq 0 ] ; then
 			update_file "${main_debian}"/tracking-bug debian/tracking-bug
 			"${C}" update-dkms-versions
 			update_file "${main_path}"/debian/scripts/dkms-build debian/scripts/dkms-build
-			update_file	"${main_path}"/debian/scripts/dkms-build--nvidia-N debian/scripts/dkms-build--nvidia-N
-			update_file	"${main_path}"/debian/scripts/fix-filenames.c debian/scripts/fix-filenames.c
+			update_file "${main_path}"/debian/scripts/dkms-build--nvidia-N debian/scripts/dkms-build--nvidia-N
+			update_file "${main_path}"/debian/scripts/fix-filenames.c debian/scripts/fix-filenames.c
 			;;
 	esac
 fi
