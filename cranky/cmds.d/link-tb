@@ -3,7 +3,10 @@
 import sys
 import os
 
-from datetime import datetime, timedelta
+try:
+    from datetime import datetime, timedelta, UTC
+except ImportError:
+    from datetime import datetime, timedelta
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from logging import basicConfig, DEBUG, INFO, WARNING
 
@@ -100,7 +103,10 @@ class Tracking:
         search_status = ["New", "In Progress", "Incomplete", "Fix Committed"]
         # The tracking bugs that we are interested in should have been created recently (days).
         #
-        search_since = datetime.utcnow() - timedelta(days=45)
+        try:
+            search_since = datetime.now(UTC) - timedelta(days=45)
+        except NameError:
+            search_since = datetime.utcnow() - timedelta(days=45)
         lp_project = self.launchpad.projects[project]
         tasks = lp_project.searchTasks(
             status=search_status,
