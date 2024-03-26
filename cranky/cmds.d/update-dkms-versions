@@ -82,17 +82,6 @@ if [ -f debian/debian.env ] ; then
 	. debian/debian.env
 fi
 
-# Determine our series and mainline version from our own changelog
-our_series=$(LC_ALL=C dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution)
-if [ "${our_series}" = "UNRELEASED" ] ; then
-	our_series=$(LC_ALL=C dpkg-parsechangelog -l"${DEBIAN}"/changelog -o1 -c1 -SDistribution)
-fi
-
-if [ "${our_series}" = "xenial" ] || [ "${our_series}" = "trusty" ] ; then
-	echo "Not available for xenial and trusty yet" >&2
-	exit 1
-fi
-
 if [ -z "${sru_cycle}" ] ; then
 	if [ -f "${DEBIAN}"/tracking-bug ] ; then
 		read -r _x sru_cycle _x <"${DEBIAN}"/tracking-bug
@@ -178,6 +167,11 @@ if [ -z "${obj_type}" ] ; then
 	esac
 fi
 
+# Determine our series and mainline version from our own changelog
+our_series=$(LC_ALL=C dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution)
+if [ "${our_series}" = "UNRELEASED" ] ; then
+	our_series=$(LC_ALL=C dpkg-parsechangelog -l"${DEBIAN}"/changelog -o1 -c1 -SDistribution)
+fi
 our_mainline=$(LC_ALL=C dpkg-parsechangelog -l"${DEBIAN}"/changelog -SVersion | sed -e 's/-.*//')
 our_package=$(LC_ALL=C dpkg-parsechangelog -l"${DEBIAN}"/changelog -SSource)
 our_source=${our_package/-restricted-modules/}
