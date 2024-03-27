@@ -1,0 +1,33 @@
+#!/bin/bash -eu
+
+# shellcheck disable=SC2046 source=./cranky/fixes.d/lib.sh
+. $(dirname "$0")/lib.sh
+
+# Only applies to primary trees.
+case "$FIX_TYPE" in
+main)	;;
+*)	fix_verbose "not a main package"; exit 0 ;;
+esac
+
+if [ ! -f debian/debian.env ] ; then
+	echo "${PWD} does not look like a kernel directory"
+	exit 1
+fi
+
+source debian/debian.env
+# If we have an the debian/scripts/misc/getabis then keep it
+if [ -f debian/scripts/misc/getabis ]; then
+	fix_verbose "getabis file still required, the script is there"
+	exit 0
+fi
+
+getabis_present="$(git ls-files "${DEBIAN}/etc/getabis")"
+if [ "${getabis_present}" = "" ]; then
+	fix_verbose "Getabis already removed"
+	exit 0
+fi
+
+msg="UBUNTU: [Packaging] drop getabis data"
+git rm -rf "${DEBIAN}/etc/getabis"
+commit "$msg" "${DEBIAN}/etc/getabis"
+exit 0
