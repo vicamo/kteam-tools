@@ -6,20 +6,22 @@
 #
 #  1) Upstream and debian versions are split with a dash. That means meta
 #     packages are not supported.
-#  2) Debian version is formatted as ABI.UPLOAD(EXTRA) or ABI.UPLOAD(EXTRA),
-#     where the parentheses are only for separation. ABI and UPLOAD are only
-#     digits, EXTRA may be anything else that is allowed in a debian version,
-#     starting with a non-digit (in most cases, a ~ or a +), and ending with
-#     a sequence of digits.
-#  3) The EXTRA part is optional, and when it exists and no parent version is
+#  2) Debian version is formatted as ABI.UPLOAD, ABI.UPLOAD(EXTRA), or
+#     ABI.UPLOAD(.SPUN)(EXTRA) where the parentheses are only for separation.
+#     ABI, UPLOAD and SPUN (sameport upload number) are only digits, EXTRA
+#     may be anything else that is allowed in a debian version, starting with
+#     a non-digit (in most cases, a ~ or a +), and ending with a sequence of
+#     digits.
+#  3) The SPUN part is optional and only exists for sameport package versions.
+#  4) The EXTRA part is optional, and when it exists and no parent version is
 #     given, bumping the version means bumping the last digits part of EXTRA.
-#  4) When there is no EXTRA, bumping means incrementing both ABI and UPLOAD,
+#  5) When there is no EXTRA, bumping means incrementing both ABI and UPLOAD,
 #     no matter if a parent is given.
-#  5) When there is EXTRA and a parent is given, if the parent version matches
+#  6) When there is EXTRA and a parent is given, if the parent version matches
 #     the given version without the EXTRA part, then 3 is followed. If it does
 #     not match, the new version is the parent version plust the EXTRA part with
 #     its last digits reset to 1.
-#  6) EXCEPTION: when parent version is lower than the given version, ABI and
+#  7) EXCEPTION: when parent version is lower than the given version, ABI and
 #     UPLOAD are incremented and EXTRA last digit is reset to 1.
 #
 #  For linux-restricted-modules (aka LRM), linux-signed and linux-meta (see
@@ -57,13 +59,13 @@
 import re
 import apt_pkg
 
-# ABI.UPLOAD(.NUM)(EXTRA)
+# ABI.UPLOAD(.SPUN)(EXTRA), i.e. NUM.NUM(.NUM)(EXTRA)
 RE_ABI = re.compile(r"(\d+)\.(\d+)(\.\d+)?(.*)")
 
-# .*NUM
+# *[^NUM]NUM
 RE_EXTRA = re.compile(r"(.*[^\d])(\d+)")
 
-# .*[-~+]NUM.NUM.NUM
+# *[-~+]NUM.NUM.NUM
 RE_OLD_BP_FP_VERSION = re.compile(r"^.*[-~+]\d+\.\d+\.\d+$")
 
 
