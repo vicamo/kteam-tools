@@ -6,7 +6,8 @@
 function usage()
 {
 	cat <<EOF
-Usage: cranky pull-source [-h] SOURCE_PACKAGE VERSION RELEASE
+Usage: cranky pull-source [-h] HANDLE [VERSION]
+       cranky pull-source [-h] SOURCE_PACKAGE VERSION RELEASE
        cranky pull-source [-h] SOURCE_PACKAGE [VERSION|RELEASE]
 
 Downloads the specified VERSION of the kernel source package SOURCE_PACKAGE
@@ -21,6 +22,7 @@ There are basically two modes of operation:
      packages from the archive.
 
 Positional arguments:
+  HANDLE          Handle of the kernel, eg. RELEASE:SOURCE_PACKAGE
   SOURCE_PACKAGE  The kernel package name (linux, linux-aws, ...).
   VERSION         The kernel package version.
   RELEASE         The release name (xenial, bionic, ...).
@@ -65,7 +67,15 @@ while [ $# -gt 0 ] ; do
 			;;
 		*)
 			if [ -z "${src_pkg}" ] ; then
-				src_pkg=${1}
+				case "$1" in
+				?*:?*)
+					release="${1%%:*}"
+					src_pkg="${1#*:}"
+					;;
+				*)
+					src_pkg="$1"
+					;;
+				esac
 			elif [ -z "${version}" ] ; then
 				version=${1}
 			elif [ -z "${release}" ] ; then
@@ -85,12 +95,8 @@ if [ -z "${src_pkg}" ] ; then
 fi
 
 # Call pull-lp-source if not all positional arguments are specified
-if [ -z "${version}" ] ; then
-	pull-lp-source -d "${src_pkg}"
-	exit
-elif [ -z "${release}" ] ; then
-	pull-lp-source -d "${src_pkg}" "${version}"
-	exit
+if [ -z "$version" ] || [ -z "$release" ]; then
+	exec pull-lp-source -d "$src_pkg" "$version$release"
 fi
 
 dsc=${src_pkg}_${version}.dsc
