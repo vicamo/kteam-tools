@@ -1,0 +1,109 @@
+#!/bin/bash -eu
+#
+# debian/control sanity checks
+#
+
+C=${C:-cranky}
+SC=$(basename "${0}")
+
+function out()
+{
+	rc=${?}
+
+	trap - EXIT INT TERM HUP
+
+	if [ ${rc} -ne 0 ] ; then
+		echo "Error: ${C} ${SC} failed" >&2
+	fi
+
+	exit ${rc}
+}
+
+function check_linux_source()
+{
+	local linux_source
+
+	echo "  - Check linux-source package stanza"
+
+	linux_source=$(grep -P '^Package:\s*linux.*-source-\d+\.\d+\.\d+' debian/control | \
+	               sed 's/^Package:\s*//')
+
+	case "${SOURCE}___${linux_source}" in
+		linux___linux-source-*)
+			# Main kernel package produces linux-source
+			true
+			;;
+		linux-*___)
+			# Non-main kernel package must *not* produce linux-source
+			true
+			;;
+		*)
+			# All other combinations are packaging mistakes
+			if [ -n "${linux_source}" ] ; then
+				echo "EE: debian/control contains invalid package stanza:" >&2
+				echo "Package: ${linux_source}" >&2
+			else
+				echo "EE: debian/control is missing package stanza:" >&2
+				echo "Package: linux-source-PKGVER" >&2
+			fi
+			RC=1
+			;;
+	esac
+}
+
+function usage()
+{
+    cat << EOF
+Usage: ${C} ${SC} [-h]
+
+Check debian/control for missing or invalid package stanzas.
+
+Optional arguments:
+  -h, --help  Show this help message and exit.
+EOF
+}
+
+while [ ${#} -ne 0 ] ; do
+	case "${1}" in
+		-h|--help)
+			usage
+			exit
+			;;
+		*)
+			usage
+			exit 2
+			;;
+	esac
+	# shellcheck disable=SC2317
+	shift
+done
+
+trap out EXIT INT TERM HUP
+
+if ! [ -e debian/debian.env ] ; then
+	echo "Not in an Ubuntu kernel package tree" >&2
+	exit 1
+fi
+
+if ! [ -e debian/control ] ; then
+	echo "debian/control does not exist" >&2
+	exit 1
+fi
+
+# shellcheck disable=SC1091
+. debian/debian.env
+
+SOURCE=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SSource)
+
+RC=0
+
+echo "Check debian/control"
+check_linux_source
+
+if [ ${RC} -ne 0 ] ; then
+	echo "EE: Some checks failed" >&2
+	exit 1
+fi
+
+echo "All checks passed"
+exit 0
