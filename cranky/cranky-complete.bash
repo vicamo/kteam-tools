@@ -9,6 +9,8 @@ _cranky() {
 	local first cmd opts prev
 	local cmds=(
 		"build-sources -h --help -c --current --build-opts HANDLE"
+		"check-control -h --help"
+		"check-fips -h --help -p --previous -c --current"
 		"checkout -h --help -r --reference -d --dissociate --depth --cycle HANDLE"
 		"chroot -h --help create-base create-session map-session run destroy-session HANDLE"
 		"close -h --help -d --dry-run -c --include-config -s --skip-master"
@@ -16,7 +18,6 @@ _cranky() {
 		"diff-sauce TAG"
 		"dput-sources -h --help -f --force -c --current -e --email HANDLE"
 		"fdr -h --help -c --clean"
-		"check-fips -h --help -p --previous -c --current"
 		"fix -h --help"
 		"link-tb -h --help -d --dry-run -r --re-run -s --sru-cycle -c --cve"
 		"list-repos -h --help -v --verbose -g --git-url --supported-sources --base-sources --derivative-sources --include main meta signed lrm lrs lrg lum lbm HANDLE"
