@@ -130,7 +130,14 @@ check_linux_tools
 
 if [ ${RC} -ne 0 ] ; then
 	echo "EE: Some checks failed" >&2
-	exit 1
+	series=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution)
+	if [ "${series}" = "noble" ] ; then
+		exit 1
+	fi
+	echo
+	echo "WW: Please fix the reported packaging issues and/or report them to the kernel owner." >&2
+	echo "WW: This is currently just a warning but will be turned into an error in the future." >&2
+	exit 0
 fi
 
 echo "All checks passed"
