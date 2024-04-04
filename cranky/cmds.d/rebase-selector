@@ -55,6 +55,7 @@ class GitRebaseSelector:
                 "debian/dkms-versions",
                 "debian/scripts/misc/git-ubuntu-log",
                 "debian/scripts/helpers",
+                "debian/scripts/misc/getabis",
             ]
         )
         if ignore_files.intersection(files) != set():
