@@ -243,7 +243,7 @@ At this point you should double check that the version number at the top of
 
 <https://kernel.ubuntu.com/sru/dashboards/web/kernel-stable-board.html>
 
-Look next to kernel name you are craking (e.g. linux-fips), inside the section
+Look next to kernel name you are cranking (e.g. linux-fips), inside the section
 of the release in the dashboard you are currently cranking such as "xenial".
 
 ### Starting commit - `cranky open`
@@ -626,7 +626,7 @@ $ cranky pull-source linux-oracle <version> xenial
 ```
 
 **Note** Be aware that you will need to provide the version to `cranky
-pull-source` when craking/dealing with a private kernel otherwise pulling will
+pull-source` when cranking/dealing with a private kernel otherwise pulling will
 fail.
 
 Example:
