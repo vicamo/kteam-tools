@@ -54,6 +54,30 @@ function check_linux_source()
 	fi
 }
 
+function check_linux_tools()
+{
+	local note
+
+	echo "  - Check linux-*-tools-common and linux-*-tools-host package stanzas"
+
+	note=" (see LP: #2048183)"
+
+	if [ "${SOURCE}" = "linux" ] ; then
+		must_produce "linux-tools-common" "${note}"
+		must_produce "linux-cloud-tools-common" "${note}"
+		must_produce "linux-tools-host" "${note}"
+	else
+		must_not_produce "linux-tools-common" "${note}"
+		must_not_produce "${SOURCE}-tools-common" "${note}"
+
+		must_not_produce "linux-cloud-tools-common" "${note}"
+		must_not_produce "${SOURCE}-cloud-tools-common" "${note}"
+
+		must_not_produce "linux-tools-host" "${note}"
+		must_not_produce "${SOURCE}-tools-host" "${note}"
+	fi
+}
+
 function usage()
 {
     cat << EOF
@@ -102,6 +126,7 @@ RC=0
 
 echo "Check debian/control"
 check_linux_source
+check_linux_tools
 
 if [ ${RC} -ne 0 ] ; then
 	echo "EE: Some checks failed" >&2
