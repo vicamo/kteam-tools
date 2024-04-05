@@ -1,0 +1,41 @@
+#!/bin/bash -eu
+
+# shellcheck disable=SC2046 source=./cranky/fixes.d/lib.sh
+. $(dirname "$0")/lib.sh
+
+# Only applies to primary trees.
+case "$FIX_TYPE" in
+main)	;;
+*)	fix_verbose "not a main package"; exit 0 ;;
+esac
+
+if [ ! -f debian/debian.env ] ; then
+	echo "${PWD} does not look like a kernel directory"
+	exit 1
+fi
+
+source debian/debian.env
+
+# Determine our series from our own changelog
+our_series=$(LC_ALL=C dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution)
+if [ "${our_series}" = "UNRELEASED" ] ; then
+	our_series=$(LC_ALL=C dpkg-parsechangelog -l"${DEBIAN}"/changelog -o1 -c1 -SDistribution)
+fi
+
+if [ "${our_series}" != "mantic" ] && [ "${our_series}" != "noble" ]; then
+        exit 0
+fi
+
+KERNEL="${DEBIAN##debian.}"
+inclusion_file="${DEBIAN}/control.d/${KERNEL}.inclusion-list"
+if ! [ -f "${inclusion_file}" ]; then
+	fix_verbose "${inclusion_file} does not exist"
+	exit 0
+fi
+
+# replace fs/cifs/* with fs/sb/client
+sed -i 's/fs\/cifs\/\*/fs\/smb\/\*/g' "${inclusion_file}"
+
+msg="UBUNTU: [Packaging] Replace fs/cifs with fs/smb in inclusion list"
+commit "$msg" "${inclusion_file}"
+exit 0
