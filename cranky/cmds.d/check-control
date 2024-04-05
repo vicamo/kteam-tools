@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 #
-# debian/control sanity checks
+# debian/control and build flags sanity checks
 #
 
 C=${C:-cranky}
@@ -78,6 +78,21 @@ function check_linux_tools()
 	fi
 }
 
+function check_do_tools_flags()
+{
+	local note
+
+	echo "  - Check do_tools_* build flags in ${DEBIAN}/rules.d/*.mk"
+
+	note=" (see LP: #2048183)"
+
+	if grep -qE "\b(do_tools_common|do_tools_host)\b" "${DEBIAN}"/rules.d/*.mk ; then
+		echo "EE: Invalid/unnecessary flags in rule files${note}:" >&2
+		grep -E "\b(do_tools_common|do_tools_host)\b" "${DEBIAN}"/rules.d/*.mk
+		RC=1
+	fi
+}
+
 function usage()
 {
     cat << EOF
@@ -127,6 +142,11 @@ RC=0
 echo "Check debian/control"
 check_linux_source
 check_linux_tools
+
+if [ "${SOURCE}" != "linux" ] ; then
+	echo "Check rules"
+	check_do_tools_flags
+fi
 
 if [ ${RC} -ne 0 ] ; then
 	echo "EE: Some checks failed" >&2
