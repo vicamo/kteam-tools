@@ -107,6 +107,29 @@ class GitHandle:
 
         return sha1
 
+    def get_current_tag(self):
+        cmd = ["git", "tag", "--points-at", "HEAD"]
+        tags = run(cmd, capture_output=True, cwd=self.directory).stdout.decode("utf-8")
+        if len(tags) > 0:
+            return tags.splitlines()[-1:][0]
+        else:
+            return None
+
+    def push_ref(self, remote, ref, target_ref=None, force=False, dry_run=False):
+        cmd = ["git", "push"]
+        if force:
+            cmd.append("--force-with-lease")
+        cmd.append(remote)
+        if target_ref:
+            cmd.append(target_ref + ":" + ref)
+        else:
+            cmd.append(ref)
+        if dry_run:
+            print("DRY-RUN:" + str(self.directory) + " $ " + str(cmd))
+            return 0
+        else:
+            return run(cmd, cwd=self.directory).returncode
+
     def get_cranky_branch_name(self, crd=None, cycle=None):
         """
         Return the local branch name which is used by cranky.
