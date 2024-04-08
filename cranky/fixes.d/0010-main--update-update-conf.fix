@@ -18,6 +18,12 @@ fi
 source debian/debian.env
 CONF="$DEBIAN/etc/update.conf"
 
+ETCMISSING=false
+if [ ! -d "$DEBIAN/etc" ]; then
+	ETCMISSING=true
+	mkdir "$DEBIAN/etc"
+fi
+
 TMP=$(mktemp "$CONF".XXX)
 $(here)/generate-update-conf "$FIX_CYCLE" > "$TMP"
 if [ -s "$TMP" ] ; then
@@ -25,6 +31,10 @@ if [ -s "$TMP" ] ; then
 else
 	# The new config is empty, purge any existing contents.
 	rm -f "$TMP" "$CONF"
+	if $ETCMISSING; then
+		rmdir "$DEBIAN/etc"
+		exit 0
+	fi
 fi
 
 msg="UBUNTU: [Packaging] update update.conf"
