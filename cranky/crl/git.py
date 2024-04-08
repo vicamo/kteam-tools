@@ -79,6 +79,14 @@ class GitHandle:
 
         return result.returncode == 0
 
+    def pristine(self):
+        repo_dir = self.directory
+
+        result_reset = run(["git", "reset", "--hard", "HEAD"], cwd=repo_dir)
+        result_clean = run(["git", "clean", "-xdf"], cwd=repo_dir)
+
+        return (result_reset.returncode + result_clean.returncode) == 0
+
     def is_ancestor(self, old_sha1, new_sha1):
         result = run(["git", "merge-base", "--is-ancestor", old_sha1, new_sha1], cwd=self.directory)
         return result.returncode == 0

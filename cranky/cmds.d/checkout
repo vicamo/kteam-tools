@@ -8,6 +8,7 @@ import logging
 import os
 import sys
 import datetime
+import shutil
 
 from ktl.log import cerror, cnotice, Clog
 
@@ -18,7 +19,9 @@ from crl.exceptions import CrankyException
 from crl.handle import HandleError
 
 
-def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=None, nc=False, cycle=None):
+def checkout_repos(
+    handle, reference=None, dissociate=False, depth=None, crd=None, nc=False, cycle=None, pristine=False, cleanup=False
+):
     """
     Clone the repos that make up the set of kernel packages
     """
@@ -46,6 +49,8 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
         else:
             gh.clone(reference, dissociate, depth)
 
+        if pristine:
+            gh.pristine()
         # Configure the git repo. Do this every time in case things have
         # changed, for example when a release transitions to ESM.
         gh.configure()
@@ -109,6 +114,18 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
             "  Repo '{name}' in directory '{dir}' (branch '{branch}' "
             "remote '{remote}' remote-branch '{remote-branch}')".format(**s)
         )
+
+    if cleanup:
+        checkout_root = os.path.dirname(summary[0]["dir"])
+        checked_out = [s["dir"] for s in summary]
+        for file in os.listdir(os.fsencode(checkout_root)):
+            filename = os.fsdecode(file)
+            filepath = os.path.join(checkout_root, filename)
+            if filepath not in checked_out:
+                if os.path.isfile(filepath) or os.path.islink(filepath):
+                    os.remove(filepath)
+                elif os.path.isdir(filepath):
+                    shutil.rmtree(filepath)
 
 
 def expanduser(path):
@@ -198,6 +215,10 @@ Note that without using --dissociate, the referenced repo *must not* be deleted
 otherwise the cranky checkout'd repo will get corrupted.
 """
 
+    HELP_CLEANUP = """
+Remove everything from top level directory except repos checked out (such as unused lrm/signed and artifacts).
+"""
+
     help_dissociate = """
 Borrow the objects from the referenced local repository only to reduce network
 traffic. This is a git clone option, check 'git help clone' for more details.
@@ -224,6 +245,10 @@ Example:
     to this cycle.
 """
 
+    HELP_PRISTINE = """
+Remove uncommited/untracked files from repos.
+"""
+
     formatter = argparse.RawDescriptionHelpFormatter
     parser = argparse.ArgumentParser(description=desc, formatter_class=formatter, epilog=epilog, prog="cranky checkout")
     parser.add_argument("handle", help=help_handle)
@@ -235,6 +260,8 @@ Example:
     parser.add_argument("-C", "--crd", default=None, type=datetime.date.fromisoformat, help=help_crd)
     parser.add_argument("--nc", action="store_true", default=False, help=help_nc)
     parser.add_argument("--cycle", help=help_cycle)
+    parser.add_argument("--cleanup", action="store_true", default=False, help=HELP_CLEANUP)
+    parser.add_argument("--pristine", action="store_true", default=False, help=HELP_PRISTINE)
 
     try:
         checkout_repos(**vars(parser.parse_args()))
