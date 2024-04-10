@@ -2750,7 +2750,7 @@ class Package():
             cinfo("APW: occupancy_reference pocket={} no routing".format(pocket))
             return "error:NO-ROUTE " + pocket
         # XXX: we directly understand streaming here...
-        if pocket in ("build", "proposed"):
+        if pocket in ("build", "Proposed"):
             which = s.bug.built_in
             if which is None:
                 which = 1
