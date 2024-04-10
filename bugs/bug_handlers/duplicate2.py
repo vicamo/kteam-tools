@@ -14,7 +14,7 @@ class Duplicate1(BugHandler):
     #
     def __init__(self, lp, vout):
         BugHandler.__init__(self, lp, vout)
-        self.target_rc = re.compile('^WARNING: at /build/buildd/linux-2.6.35/net/sched/sch_generic.c:258 dev_watchdog\+0x1fd\/0x210\(\)$')
+        self.target_rc = re.compile(r'^WARNING: at /build/buildd/linux-2.6.35/net/sched/sch_generic.c:258 dev_watchdog\+0x1fd\/0x210\(\)$')
 
     # run
     #

@@ -11,14 +11,14 @@ class GitError(Exception):
         self.msg = error
 
 class Git:
-    commit_rc  = compile('^commit\s+([a-f0-9]+)\s*$')
-    author_rc  = compile('^Author:\s+(.*)\s+<(.*)>$')
-    date_rc    = compile('^Date:\s+(.*)$')
-    buglink_rc = compile('^\s+BugLink:\s+http.*launchpad\.net/.*/([0-9]+)$')
-    sob_rc     = compile('^\s+Signed-off-by:\s+(.*)\s+<(.*)>$')
-    ack_rc     = compile('^\s+Acked-by:\s+(.*)\s+<(.*)>$')
-    subject_rc = compile("^UBUNTU: (Ubuntu-.*)$")
-    tag_rc     = compile("^Ubuntu-([a-z][^-]*-){0-2}(.*)$")
+    commit_rc  = compile(r'^commit\s+([a-f0-9]+)\s*$')
+    author_rc  = compile(r'^Author:\s+(.*)\s+<(.*)>$')
+    date_rc    = compile(r'^Date:\s+(.*)$')
+    buglink_rc = compile(r'^\s+BugLink:\s+http.*launchpad\.net/.*/([0-9]+)$')
+    sob_rc     = compile(r'^\s+Signed-off-by:\s+(.*)\s+<(.*)>$')
+    ack_rc     = compile(r'^\s+Acked-by:\s+(.*)\s+<(.*)>$')
+    subject_rc = compile(r"^UBUNTU: (Ubuntu-.*)$")
+    tag_rc     = compile(r"^Ubuntu-([a-z][^-]*-){0-2}(.*)$")
     log_results = {}
 
     @classmethod

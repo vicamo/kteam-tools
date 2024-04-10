@@ -100,7 +100,7 @@ class SRUBoard:
         self.jira.rank(issue, before)
 
     LatestSpin = namedtuple("LatestSpin", ['spin', 'issue'])
-    respin_re = re.compile("^Re-spin \(#([0-9]+)\) *(.*)?$")
+    respin_re = re.compile(r"^Re-spin \(#([0-9]+)\) *(.*)?$")
     def get_latest_spin(self):
         '''
         Get all respin issues from the project.
