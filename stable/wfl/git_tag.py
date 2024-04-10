@@ -157,7 +157,7 @@ class GitTagsSnap:
         if self.snap.repo is not None:
             self.remote = GitRemote(self.snap.repo.url)
 
-    prefix_version_re = re.compile('^(.*-)([0-9.]+-[0-9._]+)$')
+    prefix_version_re = re.compile(r'^(.*-)([0-9.]+-[0-9._]+)$')
     def analyse_tip(self):
         if self.remote is None:
             return None

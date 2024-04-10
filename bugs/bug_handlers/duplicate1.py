@@ -15,7 +15,7 @@ class Duplicate1(BugHandler):
     #
     def __init__(self, lp, vout):
         BugHandler.__init__(self, lp, vout)
-        self.target_rc = re.compile('^WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait\+0x2ea/0x360 \[radeon\]\(\)$')
+        self.target_rc = re.compile(r'^WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait\+0x2ea/0x360 \[radeon\]\(\)$')
 
     # run
     #

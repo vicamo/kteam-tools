@@ -54,8 +54,8 @@ class SruReport:
         self._dbg('core', "_initialize: enter")
         apt_pkg.init_system()
         # note that only 'LP: #1234' is official, but sometimes people get it wrong
-        self.changelog_bug_pattern = re.compile('(?:lp(?::| |#)+|href="/bugs/)([0-9]+)')
-        self.published_date_pattern = re.compile('Published.*\n.*on ([-0-9]+)')
+        self.changelog_bug_pattern = re.compile(r'(?:lp(?::| |#)+|href="/bugs/)([0-9]+)')
+        self.published_date_pattern = re.compile(r'Published.*\n.*on ([-0-9]+)')
 
         if self.lp_service is None:
             self.cfg['launchpad_client_name'] = 'kernel-team-sru-report'

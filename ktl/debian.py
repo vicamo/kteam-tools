@@ -32,17 +32,17 @@ class DebianError(Exception):
 class Debian:
     verbose = False
     debug = False
-    version_line_rc = compile("^(linux[-\S]*) \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~\S]*)\) (\S+); urgency=\S+$")
-    version_rc      = compile("^([0-9]+\.[0-9]+\.[0-9]+)[-\.]([0-9]+)\.([0-9]+)([~\S]*)$")
+    version_line_rc = compile(r"^(linux[-\S]*) \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~\S]*)\) (\S+); urgency=\S+$")
+    version_rc      = compile(r"^([0-9]+\.[0-9]+\.[0-9]+)[-\.]([0-9]+)\.([0-9]+)([~\S]*)$")
 
-    package_rc = compile("^(linux[-\S])*.*$")
-    ver_rc     = compile("^linux[-\S]* \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~a-z0-9]*)\).*$")
-    bug_rc = compile("LP:\s*#[0-9]+(?:\s*,\s*#[0-9]+)*")
-    bug_nr_rc = compile("#([0-9]+)")
+    package_rc = compile(r"^(linux[-\S])*.*$")
+    ver_rc     = compile(r"^linux[-\S]* \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~a-z0-9]*)\).*$")
+    bug_rc = compile(r"LP:\s*#[0-9]+(?:\s*,\s*#[0-9]+)*")
+    bug_nr_rc = compile(r"#([0-9]+)")
     ubuntu_master_re = compile(r'^\s.*\[ Ubuntu: ([0-9.-]*) \]$')
 
-    parent_bug_section_rc = compile("^\s*\[ Ubuntu: .*\]")
-    endsection_line_rc = compile("^ -- ")
+    parent_bug_section_rc = compile(r"^\s*\[ Ubuntu: .*\]")
+    endsection_line_rc = compile(r"^ -- ")
 
     @classmethod
     def fdr(cls, cmd, dry_run=False):
