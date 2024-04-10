@@ -260,8 +260,8 @@ class Bug(object):
         programmatically digestable dictionary form.
         '''
         if self.__properties is None:
-            re_kvp            = re.compile("^(\s*)([\.\-\w]+):\s*(.*)$")
-            re_error          = re.compile("^Error:\s*(.*)$")
+            re_kvp            = re.compile(r"^(\s*)([\.\-\w]+):\s*(.*)$")
+            re_error          = re.compile(r"^Error:\s*(.*)$")
             self.__properties = {}
             last_key = {'': 'bar'}
             for line in self.description.split("\n"):

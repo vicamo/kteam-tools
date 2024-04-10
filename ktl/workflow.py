@@ -71,7 +71,7 @@ class Properties:
         # Set a name:value pair in a bug description
         olddescr = self.bug.description
         newdscr = ''
-        re_kvp = re.compile("^(\s*)([\.\-\w]+):\s*(.*)$")
+        re_kvp = re.compile(r"^(\s*)([\.\-\w]+):\s*(.*)$")
         last_key = {'': 'bar'}
         # copy everything, removing an existing one with this name if it exists
         foundProp = False

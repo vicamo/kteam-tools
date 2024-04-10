@@ -761,7 +761,7 @@ class TrackingBug(object):
 
                 # Determine and mark appropriate tasks Invalid
                 if s._target_version is not None:
-                    lin_ver = re.findall('([0-9]+\.[^-]+)', s._target_version)
+                    lin_ver = re.findall(r'([0-9]+\.[^-]+)', s._target_version)
                     if lin_ver:
                         lin_ver = lin_ver[0]
                         if not s.isdev and s.__wf.is_task_invalid(s._target_package, task_name, lin_ver):

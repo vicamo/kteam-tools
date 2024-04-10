@@ -14,16 +14,16 @@ class GitError(Exception):
 
 class Git:
     debug = False
-    commit_rc  = compile('^commit\s+([a-f0-9]+)\s*$')
-    author_rc  = compile('^Author:\s+(.*)\s+<(.*)>$')
-    date_rc    = compile('^Date:\s+(.*)$')
-    buglink_rc = compile('^\s+BugLink:\s+http.*launchpad\.net/.*/([0-9]+)$')
-    sob_rc     = compile('^\s+Signed-off-by:\s+(.*)\s+<(.*)>$')
-    ack_rc     = compile('^\s+Acked-by:\s+(.*)\s+<(.*)>$')
-    subject_rc = compile("^UBUNTU: (Ubuntu-.*)$")
-    tag_rc     = compile("^Ubuntu-([a-z][^-]*-){0-2}(.*)$")
+    commit_rc  = compile(r'^commit\s+([a-f0-9]+)\s*$')
+    author_rc  = compile(r'^Author:\s+(.*)\s+<(.*)>$')
+    date_rc    = compile(r'^Date:\s+(.*)$')
+    buglink_rc = compile(r'^\s+BugLink:\s+http.*launchpad\.net/.*/([0-9]+)$')
+    sob_rc     = compile(r'^\s+Signed-off-by:\s+(.*)\s+<(.*)>$')
+    ack_rc     = compile(r'^\s+Acked-by:\s+(.*)\s+<(.*)>$')
+    subject_rc = compile(r"^UBUNTU: (Ubuntu-.*)$")
+    tag_rc     = compile(r"^Ubuntu-([a-z][^-]*-){0-2}(.*)$")
     source_rc = compile(
-            "\s*\[*\(*(?:cherry picked|backported|forward ported)\sfrom\scommit\s([a-f0-9]+)\s*([^\s\]\)]*)\s*([^\s\]\)]*)"
+            r"\s*\[*\(*(?:cherry picked|backported|forward ported)\sfrom\scommit\s([a-f0-9]+)\s*([^\s\]\)]*)\s*([^\s\]\)]*)"
         )
 
     log_results = {}
@@ -171,7 +171,7 @@ class Git:
         prefix=""
         if include_derivatives:
             # Also match derivatives, ie "Ubuntu-azure-4.18.0-1001.1".
-            prefix="\([^0-9\s]*-\)\?"
+            prefix=r"\([^0-9\s]*-\)\?"
         cmd = "git log --pretty=%%H -1 --grep='UBUNTU: Ubuntu-%s[0-9]' '%s' '%s'" % \
             (prefix, branch, debian_dir)
         (status, output) = run_command(cmd, cls.debug)
@@ -316,7 +316,7 @@ class Git:
             log_cmd = "%s -%d" % (log_cmd, num)
         if grep != "":
             # Escape all special characters, explicitly including ", then unescape ()
-            grep = escape(grep).replace('"', '\\"').replace("\(", "(").replace("\)", ")")
+            grep = escape(grep).replace('"', '\\"').replace(r"\(", "(").replace(r"\)", ")")
             log_cmd = '%s --grep "%s"' % (log_cmd, grep)
         status, result = run_command(log_cmd, cls.debug)
         commit       = {}
