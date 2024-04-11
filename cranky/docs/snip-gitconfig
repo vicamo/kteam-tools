@@ -22,9 +22,10 @@
 	insteadof = lps:
 	insteadof = "git+ssh://git.launchpad.net/"
 
-[url "git+ssh://<your-launchpad-id>@git.launchpad.net/~canonical-kernel-esm/"]
-	insteadof = lp:~canonical-kernel-esm
-	insteadof = git://git.launchpad.net/~canonical-kernel-esm/
+# Used for real-time, esm and other private kernels.
+[url "git+ssh://<your-launchpad-id>@git.launchpad.net/~canonical-kernel"]
+	insteadof = lp:~canonical-kernel
+	insteadof = git://git.launchpad.net/~canonical-kernel
 
 [url "git://git.launchpad.net/"]
 	insteadof = lp:
