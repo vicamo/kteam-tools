@@ -14,7 +14,7 @@ from ktl.utils     import run_command
 
 
 class Cycle:
-    def __init__(self, name):
+    def __init__(self, name, cycle_owner):
         '''
         Create a new cycle object.
 
@@ -47,6 +47,8 @@ class Cycle:
             self._startdate = date + timedelta(days=28)
             self._enddate = self._startdate + timedelta(days=14)
 
+        self._cycle_owner = cycle_owner
+
     @property
     def name(self):
         return self._name
@@ -63,8 +65,17 @@ class Cycle:
     def release_date(self):
         return self._enddate
 
+    @property
+    def cycle_owner(self):
+        return self._cycle_owner
 
 class SRUCreator:
+    id_to_email = {
+        "roxanan": "roxana.nicolescu@canonical.com",
+        "smb": "stefan.bader@canonical.com",
+        "diewald": "manuel.diewald@canonical.com"
+    }
+
     def __init__(self, cycle):
         """
         :param cycle: an object of type cycle containing the data
@@ -101,6 +112,10 @@ class SRUCreator:
         # add the cards to the board, under the default list
         for card in self.config['cards']:
             name = card['name']
+            if 'owner' in card:
+                owner = card['owner']
+            else:
+                owner = self.id_to_email[self.cycle.cycle_owner]
             desc = None
             if 'description' in card:
                 # Fields in the yaml file get encoded with escapes when it's loaded.
@@ -110,7 +125,7 @@ class SRUCreator:
             state = card.get('list', self.config['board']['default_list'])
             if state not in self.config['board']['lists']:
                 raise SRUBoardError("Undefined target state for '{}'({})".format(name, state))
-            issue = board.add_issue(name, desc, state)
+            issue = board.add_issue(name, desc, state, owner)
             if name == "Cycle README":
                 self.cycle.notes_link = issue.key if issue else 'KSRU-0FAKE0'
 
@@ -135,7 +150,7 @@ def update_cycle_info(cycle, dryrun=False):
     if cycle.notes_link:
         cycle_data['notes-link'] = cycle.notes_link
 
-    new_entry = SruCycleSpinEntry(cycle.name, cycle_data)
+    new_entry = SruCycleSpinEntry(cycle.name, data=cycle_data, owner=cycle.cycle_owner)
     sc = SruCycle(data='local')
     try:
         sc.add_cycle(new_entry)
@@ -177,16 +192,16 @@ This also updates the sru-cycle info file with relevant data for the sprint.
 
 Examples:
     Run with the default options:
-    $ {0} 2018.09.10
+    $ {0} 2018.09.10 --cycle-owner <owner>
 
     Do not create anything, just print what would be done:
-    $ {0} --dry-run 2018.09.10
+    $ {0} --dry-run 2018.09.10 --cycle-owner <owner>
 
     Create a security cycle sprint instead of a SRU cycle one:
-    $ {0} --security 2018.09.10
+    $ {0} --security 2018.09.10 --cycle-owner <owner>
 
     Do not add the new cycle entry to the cycle info file
-    $ {0} --no-cycle-info 2018.09.10
+    $ {0} --no-cycle-info 2018.09.10 --cycle-owner <owner>
 '''.format(os.path.basename(__file__))
     parser = argparse.ArgumentParser(description=description, epilog=epilog,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -194,12 +209,14 @@ Examples:
                         help='cycle date (expected format: YYYY.MM.DD)')
     parser.add_argument('--no-cycle-info', required=False, action='store_true', default=False,
                         help='do not add an entry to the cycle info yaml file')
+    parser.add_argument('--cycle-owner', required=True, action='store',
+                        help='cycle-owner id')
     parser.add_argument('--dry-run', required=False, action='store_true', default=False,
                         help='only print steps, no action done')
     args = parser.parse_args()
 
     try:
-        cycle = Cycle(args.cycle)
+        cycle = Cycle(args.cycle, cycle_owner=args.cycle_owner)
         # The board has to be populated before updating the cycle info but in order to catch
         # the case of trying to add an existing cycle we neeed to check that before doing the
         # board.

@@ -48,11 +48,13 @@ SRU_CYCLE_HEADER = '''# kernel SRU Cycle information file (YAML format)
 #       the stream which the cycle uses by default (1 if not present)
 #  * notes-link (string)
 #       a notes link; initially a jira card identifier KERN-1234
+#  * owner (string)
+#       the owner of the cycle
 '''
 
 class SruCycleSpinEntry:
 
-    def __init__(self, spin, data=False, sc=None):
+    def __init__(self, spin, data=False, sc=None, owner=None):
         '''
         Instantiate a new SruCycleSpinEntry object.
 
@@ -99,6 +101,7 @@ class SruCycleSpinEntry:
 
         self._previous_cycle = data.get('previous-cycle')
         self._previous_cycle_explicit = self._previous_cycle is not None
+        self._owner = owner
 
     def __eq__(self, other):
         '''
@@ -211,6 +214,8 @@ class SruCycleSpinEntry:
             s += "    complete: {}\n".format(str(self._complete).lower())
         if self._previous_cycle_explicit:
             s += "    previous-cycle: {}\n".format(self.previous_cycle.name)
+        if self._owner:
+            s += "    owner: {}\n".format(self._owner)
         return s
 
 
