@@ -52,6 +52,7 @@
         - name: 'Sync copy-forward kernels (archive and git trees)'
           description: 'Copy linux-snapdragon etc forward to later releases'
         - name: 'Update master branches after promotion to -updates'
+          owner: 'andy.whitcroft@canonical.com'
         - name: 'Cycle Retrospective'
           description: 'After the cycle, run a SRU retrospective (hangout).'
         - name: 'Cleanup old PPAs content'

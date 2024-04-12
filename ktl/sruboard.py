@@ -63,7 +63,7 @@ class SRUBoard:
             else:
                 self.sprint = 'DRY:{}'.format(self.cycle)
 
-    def add_issue(self, name, desc=None, state=None):
+    def add_issue(self, name, desc=None, state=None, owner=None):
         """
         Add the given card to the board.
 
@@ -93,6 +93,9 @@ class SRUBoard:
             self.jira.add_issues_to_sprint(sprint_id=self.sprint.id, issue_keys=[issue.key])
             if state is not None:
                 self.jira.transition_issue(issue, transition=state)
+            
+            if owner is not None:
+                self.jira.assign_issue(issue, owner)
 
         return issue
 
