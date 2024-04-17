@@ -807,7 +807,8 @@ class WorkflowBug():
     # private_group_set
     #
     def private_group_set(s, group, field, value):
-        hold = s.private_props.setdefault(group, {})
+        hold = s.private_props.get(group) or {}
+        s.private_props[group] = hold
         if value is not None:
             hold[field] = value
 
@@ -820,7 +821,7 @@ class WorkflowBug():
     # private_group_get
     #
     def private_group_get(s, group, field):
-        return s.private_props.get(group, {}).get(field)
+        return (s.private_props.get(group) or {}).get(field)
 
     def clamp_assign(s, clamp, value):
         s.private_group_set('clamps', clamp, value)
@@ -831,7 +832,8 @@ class WorkflowBug():
     # group_set
     #
     def group_set(s, group, field, value):
-        hold = s.bprops.setdefault(group, {})
+        hold = s.bprops.get(group) or {}
+        s.bprops[group] = hold
         if value is not None:
             hold[field] = value
 
@@ -844,7 +846,7 @@ class WorkflowBug():
     # built_get
     #
     def group_get(s, group, field):
-        return s.bprops.get(group, {}).get(field)
+        return (s.bprops.get(group) or {}).get(field)
 
     # built_set
     #
