@@ -237,7 +237,7 @@ mantic)
 esac
 case "$SUITE" in
 noble)
-	ADDPKG="$ADDPKG rustc-1.73 rust-1.73-src rustfmt-1.73 bindgen-0.65 clang-17 llvm-17 lld-17 libclang1-17"
+	ADDPKG="$ADDPKG rustc-1.74 rust-1.74-src rustfmt-1.74 bindgen-0.65 clang-17 llvm-17 lld-17 libclang1-17"
 
 	# Always include the latest stock Rust toolchain in the latest Ubuntu release
 	ADDPKG="$ADDPKG rustc rust-src rustfmt bindgen clang llvm lld libclang1"
