@@ -2,12 +2,9 @@
 name: chroot-setup PR Checks
 
 on:
-  pull_request_target:
-    types:
-      - edited
-      - opened
-      - reopened
-      - synchronize
+  pull_request:
+    branches:
+      - master
     paths:
       - 'chroot-setup/**'
       - 'ktl/**'
