@@ -98,35 +98,6 @@ do
 			)
 			arc="$?"
 
-		elif [ -f $source-*/debian/scripts/gen-ancillary ]; then
-			echo "$id: triggering gen-anciallary"
-			(
-				cd $source-* || exit 2
-				./debian/scripts/gen-ancillary
-				rc="$?"
-				if [ "$rc" != 0 ]; then
-					echo "$id: gen-ancillary failed rc=$rc" 1>&2
-				fi
-				exit "$rc"
-			)
-			arc="$?"
-		
-		elif [ -f $source-*/debian/scripts/gen-rules.lrm ]; then
-			(
-				cd $source-* || exit 2
-
-				echo "$id: building linux-restricted-generate ..."
-				sed -i -e '1s/linux-restricted-modules/linux-restricted-generate/' debian/changelog
-				debian/rules clean
-				dpkg-buildpackage --no-sign -nc -S
-
-				echo "$id: building linux-restricted-signatures ..."
-				sed -i -e '1s/linux-restricted-generate/linux-restricted-signatures/' debian/changelog
-				debian/rules clean
-				dpkg-buildpackage --no-sign -nc -S
-			)
-			arc="$?"
-
 		else
 			echo "$id: non-ancillary form, marking ignored"
 			touch "ignore"
