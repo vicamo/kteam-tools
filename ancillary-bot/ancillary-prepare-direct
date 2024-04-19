@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $0 <id> <source]" 1>&2
+	exit 1
+fi
+id="$1"
+source="$2"
+
+echo "$id: direct ancillaries present"
+
+cd $source-*/debian/ancillary/ || exit 2
+for ancillary in *
+do
+	[ ! -d $ancillary/debian ] && continue
+	(
+		echo "$id: building direct ancillary $ancillary ..."
+		cd "$ancillary" || exit 2
+		debian/rules clean
+		dpkg-buildpackage --no-sign -nc -S
+	) || exit "$?"
+	ancillary_package=$(cd "$ancillary" && dpkg-parsechangelog -SSource)
+	mv ${ancillary_package}_* ../../..
+done
+
+exit 0
