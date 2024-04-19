@@ -101,7 +101,7 @@ class PromoteToRelease(Promoter):
         retval = False
 
         while not retval:
-            if s.task.status not in ('Confirmed'):
+            if s.task.status not in ('Confirmed', 'Triaged'):
                 break
 
             pull_back = False
