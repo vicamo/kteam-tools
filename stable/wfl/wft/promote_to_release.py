@@ -114,6 +114,11 @@ class PromoteToRelease(Promoter):
                     cinfo('            Master bug no longer ready pulling back from Confirmed', 'yellow')
                     pull_back = True
 
+            # Note this will set appropriate reasons.
+            prerequisites = s._prerequisites_released()
+
+            # XXX: we are not checking the prerequisites just reporting them.
+
             blocks = s.bug.block_present('hold-promote-to-updates')
             if blocks is not None:
                 cinfo("promote-to-release held {}".format(blocks))
