@@ -12,6 +12,8 @@ ppa_ps="$2"
 
 here=$(dirname $(readlink -f "$0"))
 
+echo "II: scanning $ppa $ppa_ps ..."
+
 ignore="IGNORE-BUILD"
 [ ! -f "$ignore" ] && touch "$ignore"
 
@@ -20,7 +22,7 @@ while read id source urls
 do
 	if [ "$urls" = '-' ]; then
 		if [ -d "$id" ]; then
-			echo "$id: in -ps"
+			echo "$id: ancillaries confirmed uploaded"
 			rm -rf "$id"
 		fi
 		continue
@@ -137,3 +139,13 @@ do
 		rm -rf "./$id/"
 	fi
 done
+RC=("${PIPESTATUS[@]}")
+if [ "${RC[0]}" != "0" ]; then
+        echo "EE: lookup failed" 1>&2
+        exit "${RC[0]}"
+fi
+if [ "${RC[1]}" != "0" ]; then
+        echo "EE: processing failed" 1>&2
+        exit "${RC[1]}"
+fi
+exit 0

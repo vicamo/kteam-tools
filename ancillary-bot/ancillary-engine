@@ -16,6 +16,5 @@ echo "II: $@ ..."
 "$here/ancillary-config" "$@" | \
 while read public private
 do
-	echo "$public" "$private"
-	"$builder" "$public" "$private"
+	"$here/../sbin/oops-stream" "ancillary-bot" "$builder" "$public" "$private"
 done
