@@ -1,15 +1,18 @@
 #!/usr/bin/python3
 
 from argparse import ArgumentParser
+from collections import namedtuple
 
 from ktl.kernel_series import KernelSeries
-
 
 parser = ArgumentParser()
 parser.add_argument("--security", action="store_true", help="include security PPAs in list")
 parser.add_argument("--regular", action="store_true", help="include build PPAs in list")
 parser.add_argument("--lrm-spinner", action="store_true", help="include lrm-spinner PPAs in list")
 args = parser.parse_args()
+
+FakeRoute = namedtuple("FakeRoute", ["reference"])
+no_private = FakeRoute(reference="-")
 
 ks = KernelSeries()
 
@@ -36,7 +39,9 @@ for ks_series in ks.series:
         if args.regular:
             build_routes = ks_routing.lookup_route("build")
             build_private_routes = ks_routing.lookup_route("build-private")
-            if len(build_routes) != 0 and len(build_private_routes) != 0:
+            if len(build_routes) != 0:
+                if len(build_private_routes) == 0:
+                    build_private_routes = [no_private] * len(build_routes)
                 for build_route, private_route in zip(build_routes, build_private_routes):
                     route_pairs.add((build_route.reference, private_route.reference))
 
