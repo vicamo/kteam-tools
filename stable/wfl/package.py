@@ -1849,14 +1849,21 @@ class Package():
         retried = False
         for maint in s.bug.maintenance:
             if maint['type'] == 'deb-build' and maint['detail']['type'] == pkg:
-                # If we have a maintenance record and it is in 'Failed to build'
-                # and we have no log then this is a clear retry candidate.
-                if (maint is not None and
-                        maint['detail']['state'] == 'Failed to build' and
-                        maint['detail']['log'] is None):
-                    cinfo("RETRY: {} (logless failure)".format(maint['detail']['lp-api']))
-                    if s.attempt_retry(pkg):
-                        retried = True
+                # If we have a maintenance record ...
+                if maint is not None:
+                    # ... and it is in 'Failed to build' and we have no log ...
+                    if (maint['detail']['state'] == 'Failed to build'
+                        and maint['detail']['log'] is None
+                    ):
+                        cinfo("RETRY: {} (logless failure)".format(maint['detail']['lp-api']))
+                        if s.attempt_retry(pkg):
+                            retried = True
+
+                    # ... and it is in 'Chroot problem' ...
+                    elif maint['detail']['state'] == 'Chroot problem':
+                        cinfo("RETRY: {} (chroot problem)".format(maint['detail']['lp-api']))
+                        if s.attempt_retry(pkg):
+                            retried = True
         return retried
 
     # attempt_retry
