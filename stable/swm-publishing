@@ -630,6 +630,9 @@ class MonitorSwmStatusMonitor:
 
         ks = KernelSeries.for_spin(sru_cycle)
         if ks is None:
+            # XXX: for_spin should handle the "d" mappings.
+            ks = KernelSeries.for_spin(None)
+        if ks is None:
             return False
         ks_series = ks.lookup_series(codename=series)
         if ks_series is None:
