@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 #
-# debian/control sanity checks
+# debian/control and build flags sanity checks
 #
 
 C=${C:-cranky}
@@ -19,36 +19,78 @@ function out()
 	exit ${rc}
 }
 
+
+function must_produce()
+{
+	local package=${1} note=${2:-}
+
+	if ! grep -qP "^Package:\s*${package}$" debian/control ; then
+		echo "EE: debian/control is missing package stanza${note}:" >&2
+		echo "Package: ${package}" >&2
+		RC=1
+	fi
+}
+
+function must_not_produce()
+{
+	local package=${1} note=${2:-}
+
+	if grep -qP "^Package:\s*${package}$" debian/control ; then
+		echo "EE: debian/control contains invalid package stanza${note}:" >&2
+		echo "Package: ${package}" >&2
+		RC=1
+	fi
+}
+
 function check_linux_source()
 {
-	local linux_source
-
 	echo "  - Check linux-source package stanza"
 
-	linux_source=$(grep -P '^Package:\s*linux.*-source-\d+\.\d+\.\d+' debian/control | \
-	               sed 's/^Package:\s*//')
+	if [ "${SOURCE}" = "linux" ] ; then
+		must_produce "linux-source-\d+\.\d+\.\d+"
+	else
+		must_not_produce "linux-source-\d+\.\d+\.\d+"
+		must_not_produce "${SOURCE}-source-\d+\.\d+\.\d+"
+	fi
+}
 
-	case "${SOURCE}___${linux_source}" in
-		linux___linux-source-*)
-			# Main kernel package produces linux-source
-			true
-			;;
-		linux-*___)
-			# Non-main kernel package must *not* produce linux-source
-			true
-			;;
-		*)
-			# All other combinations are packaging mistakes
-			if [ -n "${linux_source}" ] ; then
-				echo "EE: debian/control contains invalid package stanza:" >&2
-				echo "Package: ${linux_source}" >&2
-			else
-				echo "EE: debian/control is missing package stanza:" >&2
-				echo "Package: linux-source-PKGVER" >&2
-			fi
-			RC=1
-			;;
-	esac
+function check_linux_tools()
+{
+	local note
+
+	echo "  - Check linux-*-tools-common and linux-*-tools-host package stanzas"
+
+	note=" (see LP: #2048183)"
+
+	if [ "${SOURCE}" = "linux" ] ; then
+		must_produce "linux-tools-common" "${note}"
+		must_produce "linux-cloud-tools-common" "${note}"
+		must_produce "linux-tools-host" "${note}"
+	else
+		must_not_produce "linux-tools-common" "${note}"
+		must_not_produce "${SOURCE}-tools-common" "${note}"
+
+		must_not_produce "linux-cloud-tools-common" "${note}"
+		must_not_produce "${SOURCE}-cloud-tools-common" "${note}"
+
+		must_not_produce "linux-tools-host" "${note}"
+		must_not_produce "${SOURCE}-tools-host" "${note}"
+	fi
+}
+
+function check_do_tools_flags()
+{
+	local note
+
+	echo "  - Check do_tools_* build flags in ${DEBIAN}/rules.d/*.mk"
+
+	note=" (see LP: #2048183)"
+
+	if grep -qE "\b(do_tools_common|do_tools_host)\b" "${DEBIAN}"/rules.d/*.mk ; then
+		echo "EE: Invalid/unnecessary flags in rule files${note}:" >&2
+		grep -E "\b(do_tools_common|do_tools_host)\b" "${DEBIAN}"/rules.d/*.mk
+		RC=1
+	fi
 }
 
 function usage()
@@ -99,10 +141,23 @@ RC=0
 
 echo "Check debian/control"
 check_linux_source
+check_linux_tools
+
+if [ "${SOURCE}" != "linux" ] ; then
+	echo "Check rules"
+	check_do_tools_flags
+fi
 
 if [ ${RC} -ne 0 ] ; then
 	echo "EE: Some checks failed" >&2
-	exit 1
+	series=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution)
+	if [ "${series}" = "noble" ] ; then
+		exit 1
+	fi
+	echo
+	echo "WW: Please fix the reported packaging issues and/or report them to the kernel owner." >&2
+	echo "WW: This is currently just a warning but will be turned into an error in the future." >&2
+	exit 0
 fi
 
 echo "All checks passed"
