@@ -59,14 +59,20 @@
 import re
 import apt_pkg
 
-# ABI.UPLOAD(.SPUN)(EXTRA), i.e. NUM.NUM(.NUM)(EXTRA)
-RE_ABI = re.compile(r"(\d+)\.(\d+)(\.\d+)?(.*)")
+apt_pkg.init()
 
-# *[^NUM]NUM
-RE_EXTRA = re.compile(r"(.*[^\d])(\d+)")
+# UPSTREAM-ABI.UPLOAD(.SPUN)(EXTRA DIGIT)
+RE_VERSION = re.compile(r"([^-]+)-(\d+)\.(\d+)(\.\d+(?=[^\d]))?(?:(.*[^\d])(\d+))?")
+# However the (.SPUN) is only needed to correctly identify the
+# base version of sameport backports.
+# Eg. in 6.5.0-27.28.1~22.04.1 where 6.5.0-27.28.1 is the base version,
+# (SPUN) matches the .1 and (EXTRA DIGIT) matches the ~22.04.1.
+# For plain sameports, eg. 6.5.0-27.28.1, the SPUN .1 is matched
+# by (EXTRA DIGIT) and handled like any other extra bits added to
+# the base version 6.5.0-27.28
 
 # *[-~+]NUM.NUM.NUM
-RE_OLD_BP_FP_VERSION = re.compile(r"^.*[-~+]\d+\.\d+\.\d+$")
+RE_OLD_BP_FP_VERSION = re.compile(r".*[-~+]\d+\.\d+\.\d+")
 
 
 class KernelVersion:
@@ -74,7 +80,6 @@ class KernelVersion:
         self.version = version
         self.parent_version = parent_version
         self.package_type = package_type if package_type else "main"
-        apt_pkg.init()
 
     def __eq__(self, other):
         return self.version == other.version
@@ -82,40 +87,29 @@ class KernelVersion:
     def __str__(self):
         return self.version
 
+    def __repr__(self):
+        return "KernelVersion({})".format(self.version)
+
     def _bump_main(self):
         """Bump main package version"""
-        try:
-            upstream, debian = self.version.split("-")
-            m = re.search(RE_ABI, debian)
-            abi = m.group(1)
-            upload = m.group(2)
-            # In case we have four groups,
-            # the third one is the sameport upload number, we don't need that
-            extra = m.group(4) or m.group(3)
+        m = re.fullmatch(RE_VERSION, self.version)
+        if not m:
+            raise ValueError("Invalid version {}".format(self.version))
 
-            if not extra:
-                abi = int(abi) + 1
-                upload = int(upload) + 1
-                self.version = "{}-{}.{}".format(upstream, abi, upload)
-            else:
-                m = re.search(RE_EXTRA, extra)
-                extra_prefix = m.group(1)
-                extra_digit = m.group(2)
-                if not self.parent_version or self.parent_version + extra == self.version:
-                    extra_digit = int(extra_digit) + 1
-                else:
-                    extra_digit = 1
-                extra = "{}{}".format(extra_prefix, extra_digit)
-                if self.parent_version:
-                    if apt_pkg.version_compare(self.version, self.parent_version) <= 0:
-                        self.version = "{}{}".format(self.parent_version, extra)
-                        return
-                    else:
-                        abi = int(abi) + 1
-                        upload = int(upload) + 1
-                self.version = "{}-{}.{}{}".format(upstream, abi, upload, extra)
-        except Exception:
-            raise ValueError("Invalid version")
+        upstream, abi, upload, sameport, extra, digit = m.group(1, 2, 3, 4, 5, 6)
+        if not extra:
+            self.version = "{}-{}.{}".format(upstream, int(abi) + 1, int(upload) + 1)
+            return
+
+        base = "{}-{}.{}{}".format(upstream, abi, upload, sameport or "")
+        parent = self.parent_version or base
+        cmp = apt_pkg.version_compare(parent, base)
+        if cmp < 0:
+            self.version = "{}-{}.{}{}1".format(upstream, int(abi) + 1, int(upload) + 1, extra)
+        elif cmp > 0:
+            self.version = "{}{}1".format(parent, extra)
+        else:
+            self.version = "{}{}{}".format(parent, extra, int(digit) + 1)
 
     def _bump_lrm_signed_meta(self):
         """Bump lrm, signed or meta package version"""
@@ -145,7 +139,7 @@ class KernelVersion:
         if not self.parent_version:
             raise ValueError("Invalid parent version: {}".format(self.parent_version))
 
-        if RE_OLD_BP_FP_VERSION.match(self.parent_version):
+        if RE_OLD_BP_FP_VERSION.fullmatch(self.parent_version):
             # Backport (~yy.mm.X), forwardport (+yy.mm.X) package or sameport version schema.
             # Bump the last digit (X) if the base version (everything before the last '.')
             # is equal to the parent's base, otherwise use the parent's base and reset the
