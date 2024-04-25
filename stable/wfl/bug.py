@@ -1040,6 +1040,7 @@ class WorkflowBug():
         s.is_gone = False
         s.is_purgable = False
         s.is_duplicate = s.lpbug.duplicate_of is not None
+        date_fix_committed = None
         for t in s.lpbug.bug_tasks:
             task_name       = t.bug_target_name
 
@@ -1053,6 +1054,7 @@ class WorkflowBug():
                     s.is_crankable = True
                 elif t.status == 'Fix Committed':
                     s.is_closed = True
+                    date_fix_committed = t.date_fix_committed
                 elif t.status == 'Fix Released':
                     s.is_closed = True
                     s.is_purgable = True
@@ -1067,6 +1069,14 @@ class WorkflowBug():
         # closure.
         sru_cycle = s.sc.lookup_spin(s.sru_spin_name)
         cycle_complete = sru_cycle is not None and sru_cycle.complete
+        if sru_cycle is None and s.sru_spin_name[0] == "d" and date_fix_committed is not None:
+            date_full_close = date_fix_committed.replace(tzinfo=timezone.utc) + timedelta(days=10)
+            cinfo("workflow closed in development cycle: closed={} date_full_close={}".format(date_fix_committed, date_full_close))
+            if date_full_close >= datetime.now(timezone.utc):
+                s.refresh_at(date_full_close, "Development tracker full-close")
+            else:
+                cycle_complete = True
+
         if not cycle_complete:
             return
 

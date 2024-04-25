@@ -136,7 +136,14 @@ class WorkflowBugTask(object):
         confirmed = self.lp_task.date_confirmed
         if confirmed is None:
             return None
-        return self.lp_task.date_confirmed.replace(tzinfo=None)
+        return confirmed.replace(tzinfo=None)
+
+    @property
+    def date_fix_committed(self):
+        fix_committed = self.lp_task.date_fix_committed
+        if fix_committed is None:
+            return None
+        return fix_committed.replace(tzinfo=None)
 
     # modified
     #
