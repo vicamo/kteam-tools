@@ -694,13 +694,14 @@ class WorkflowBug():
 
     # transient_reset_all
     #
-    def transient_reset_all(s):
+    def transient_reset_all(s, keep_refresh=False):
         '''
         Reset all existing transient data (reasons etc) for this bug.
         '''
         if 'reason' in s.bprops:
             del s.bprops['reason']
-        s._refresh = [None, None]
+        if not keep_refresh:
+            s._refresh = [None, None]
         s._monitor = []
         s.interlocks = {}
 

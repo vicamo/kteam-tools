@@ -699,7 +699,7 @@ class WorkflowManager():
             if bug.is_closed:
                 # Update linkage.
                 bug.add_live_children(s.live_children(bugid))
-                bug.transient_reset_all()
+                bug.transient_reset_all(keep_refresh=True)
                 bug.save()
                 status = None if bug.is_purgable else bug.status_summary()
                 s.status_set(bugid, status, modified=False)
