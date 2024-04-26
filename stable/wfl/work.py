@@ -75,6 +75,12 @@ class SwmWorkCmds:
         self.group_id(rotate=True)
 
 
+class SwmWorkGroup(SwmWorkCmds):
+    def __init__(self, mq=None, group=None):
+        self.mq = mq
+        self._group = group
+
+
 class SwmWork(SwmWorkCmds):
     def __init__(self, local=False, config=None):
         if config is None:
@@ -93,3 +99,10 @@ class SwmWork(SwmWorkCmds):
         self.mq = MsgQueueService(
             service="swm", local=local, host=hostname, credentials=credentials, exchange="swm", heartbeat=60
         )
+
+    def new_group(self, group=None):
+        return SwmWorkGroup(mq=self.mq, group=group)
+
+    def rescan_group(self):
+        # uuid.uuid5(uuid.NAMESPACE_URL, "https://kernel.ubuntu.com/swm/rescan").hex
+        return SwmWorkGroup(mq=self.mq, group="e07d561532195503af548d14abf5f9b6")
