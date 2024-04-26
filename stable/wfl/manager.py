@@ -534,7 +534,7 @@ class WorkflowManager():
         buglist = list(set(buglist))
         buglist = list(sorted(buglist, key=self.tracker_key))
 
-        work = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml"))
+        group = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml")).rescan_group()
 
         with self.lock_status():
             status = self.status_load()
@@ -550,15 +550,10 @@ class WorkflowManager():
                     continue
 
                 cinfo("queuing shank {} {}".format(bugid, scanned))
-                work.send_shank(bugid, scanned=scanned, priority=priority)
+                group.send_shank(bugid, scanned=scanned, priority=priority)
                 submitted += 1
 
                 manager['time-requested'] = scanned
-
-            if dependants and submitted > 0:
-                # If we had anything todo, ask for a rescan at low-priority.
-                cinfo("queuing barrier")
-                work.send_barrier(priority=priority)
 
             if submitted > 0:
                 self.status_save(status)
