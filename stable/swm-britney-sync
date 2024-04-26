@@ -25,6 +25,7 @@ def record(result):
 
 
 if __name__ == '__main__':
+    overall_rc = 0
     try:
         parser = argparse.ArgumentParser(description='SWM britney sync tool')
         parser.add_argument('git_url', help='remote git repository URL')
@@ -70,7 +71,10 @@ if __name__ == '__main__':
             cmd = [ "git", "checkout", "-f", branch ]
             result = run(cmd, cwd=args.git_repo, stdout=PIPE, stderr=PIPE)
             if result.returncode != 0:
-                raise AppError(result.stderr.decode('utf-8').strip())
+                #raise AppError(result.stderr.decode('utf-8').strip())
+                print("WARNING: branch checkout failed -- {}".format(result.stderr.decode('utf-8').strip()))
+                overall_rc = 1
+                continue
             record(result)
 
             with open(os.path.join(args.git_repo, "release"), "w") as rfd:
@@ -127,3 +131,5 @@ if __name__ == '__main__':
         for arg in e.args:
             print(arg, file=sys.stderr)
         sys.exit(1)
+
+    sys.exit(overall_rc)
