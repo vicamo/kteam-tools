@@ -28,16 +28,13 @@ from wfl.work import SwmWork
 
 class TrackerProduction:
 
-    def __init__(self, project, lp=None, ks=None, wf=None):
+    def __init__(self, project, lp=None, wf=None):
         if lp is None:
             lp = LaunchpadDirect.login_application('swm-instantiate')
-        if ks is None:
-            ks = KernelSeries()
         if wf is None:
             wf = Workflow()
 
         self.lp = lp
-        self.ks = ks
         self.wf = wf
         self.project_name = project
         self.project = self.lp.projects[project]
@@ -52,9 +49,19 @@ class TrackerProduction:
 
         (series_name, source_name) = (match.group(1), match.group(2))
 
-        cinfo("series_name<{}> source_name<{}>".format(series_name, source_name))
+        spin = None
+        for tag in bug.tags:
+            if tag.startswith('kernel-sru-cycle-'):
+                spin = tag.replace('kernel-sru-cycle-', '')
+                break
 
-        series = self.ks.lookup_series(codename=series_name)
+        cinfo("spin<{}> series_name<{}> source_name<{}>".format(spin, series_name, source_name))
+
+        ks = KernelSeries.for_spin(spin)
+        if ks is None:
+            ks = KernelSeries.tip()
+
+        series = ks.lookup_series(codename=series_name)
         if series is None:
             raise ValueError("{}: series not in kernel-series".format(bug_id))
         source = series.lookup_source(source_name)
