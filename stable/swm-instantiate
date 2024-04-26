@@ -252,8 +252,8 @@ class TrackerProduction:
             lockf(lockfd, LOCK_UN, 1, int(what))
 
     def request_shank(self, bug_id):
-        work = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml"))
-        work.send_shank(bug_id, priority=6)
+        group = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml")).rescan_group()
+        group.send_shank(bug_id, priority=6)
 
     def instantiate_one(self, bug_id):
         try:
