@@ -136,9 +136,10 @@ class TrackerProduction:
         # First add all of the required workflow tasks
         for wf_task in self.project.series_collection:
             cinfo(wf_task)
-            if not self.wf.is_task_valid(wf_task, ks_source, variant, snap_name=swm_props.get('snap-name')):
-                continue
             wf_name = wf_task.display_name
+            if not self.wf.is_task_valid(wf_task, ks_source, variant, snap_name=swm_props.get('snap-name')):
+                cdebug('    invalid: %s' % wf_name)
+                continue
             cdebug('    adding: %s' % wf_name)
             if wf_task.self_link not in lp_tasks:
                 lp_tasks[wf_task.self_link] = lp_bug.addTask(target=wf_task)
@@ -274,7 +275,11 @@ examples:
 
     # If logging parameters were set on the command line, handle them
     # here.
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        level=logging.DEBUG if args.debug else logging.INFO,
+    )
     logger = logging.getLogger('swm-instantiate')
     logger.setLevel(level=logging.DEBUG if args.debug else logging.INFO)
 
