@@ -1004,22 +1004,15 @@ if __name__ == '__main__':
         cmd_before = perf_counter()
         ss = factory.ss
         swm_work = SwmWork(config="~/.kernel-swm-worker.yaml")
-        barrier = False
+        group_shank = swm_work.new_group()
+        group_instantiate = swm_work.new_group()
         for change in changed:
             if change.cmd == 'shank':
                 print("QUEUE #1: {} {} ({})".format(change.cmd, change.tracker, change.reason))
-                swm_work.send_shank(change.tracker, scanned=change.scanned)
-                barrier = True
-        if barrier:
-            swm_work.send_barrier()
-        barrier = False
-        for change in changed:
-            if change.cmd == 'instantiate':
+                group_shank.send_shank(change.tracker, scanned=change.scanned)
+            elif change.cmd == 'instantiate':
                 print("QUEUE #2: {} {} ({})".format(change.cmd, change.tracker, change.reason))
-                swm_work.send_instantiate(change.tracker)
-                barrier = True
-        if barrier:
-            swm_work.send_barrier()
+                group_instantiate.send_instantiate(change.tracker)
         cmd_after = perf_counter()
         print("COMMAND COMPLETE time={} wall={}".format(cmd_after - cmd_before, time()))
 
