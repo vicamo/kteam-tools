@@ -177,7 +177,7 @@ class HandleTree(HandleCore):
                     if self.package == package:
                         continue
                     directory = os.path.abspath(self.encode_directory(package))
-                    if self.directory == directory:
+                    if os.path.realpath(self.directory) == os.path.realpath(directory):
                         if self.series != series:
                             cross_series = True
                         if self.package.source != source:
