@@ -724,7 +724,7 @@ uploading packages, this manual step is not necessary as it is wrapped by
 
 ### Uploading packages - `cranky upload`
 
-**Note** Only packages signed by team members with commit rights can be
+**Note** Only packages signed by team members with upload rights can be
 uploaded. Pushing to the official git repos can only be done by team members
 with commit rights. Before a new member is granted such rights, the git trees
 and source packages produced need to be reviewed and sponsored by some other
