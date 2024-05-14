@@ -303,6 +303,7 @@ def add_misc(repo_set):
             + grants("refs/heads/master", admins_core, force=True)
             + grants("refs/heads/master", people_core, push=True)
             + grants("refs/heads/master", people_tools, push=True)
+            + grants("refs/heads/master", people_gitea, push=True)
         ],
         [
             "~canonical-kernel/+git/kernel-versions",
