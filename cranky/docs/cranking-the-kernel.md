@@ -514,6 +514,7 @@ Example:
 $ cranky test-build -f -a amd64,i386 -t compileselftests kathleen
 ```
 
+## Release
 
 ### Prepare meta/signed/resticted-modules repositories - `cranky update-dependents`
 <!--cheatsheet-->
@@ -717,6 +718,8 @@ only for the latest crank.
 intended delta from the previous release. If the .changes file is too large,
 Launchpad may not accept the package upload, and it will not indicate whether
 or not the packages were accepted or rejected.
+
+## Upload
 
 ### Sign packages - `debsign`
 
