@@ -506,36 +506,15 @@ Example:
 $ cranky test-build -f -a amd64,i386 -t compileselftests kathleen
 ```
 
-### Tagging - `cranky tag`
+
+### Prepare meta/signed/resticted-modules repositories - `cranky update-dependents`
 <!--cheatsheet-->
 ```
-$ cranky tag
+$ cranky update-dependents
 ```
 <!--/cheatsheet-->
 
-Run the following command to apply the correct tag to the kernel:
-```
-$ cranky tag
-```
-
-### Prepare meta/signed/resticted-modules repositories - `cranky update-dependent`
-<!--cheatsheet-->
-```
-$ cd ../linux-meta
-$ cranky update-dependent
-$ cranky tag
-
-$ cd ../linux-signed
-$ cranky update-dependent
-$ cranky tag
-
-$ cd ../linux-lrm
-$ cranky update-dependent
-$ cranky tag
-```
-<!--/cheatsheet-->
-
-Currently this step must be done manually, calling the scripts from
+If you want to do it manually, you have to call the `update-dependent` for
 "linux-meta", "linux-signed" and "linux-lrm" (the additional
 repositories cloned via `cranky checkout`).
 
@@ -543,15 +522,12 @@ Example:
 ```
 $ cd ../linux-meta
 $ cranky update-dependent
-$ cranky tag
 
 $ cd ../linux-signed
 $ cranky update-dependent
-$ cranky tag
 
 $ cd ../linux-lrm
 $ cranky update-dependent
-$ cranky tag
 ```
 
 It is mandatory to run "cranky update-dependent" and "cranky tag" from the
@@ -561,8 +537,32 @@ from the kernel source directory.
 **Note** In certain releases "linux-signed" and "linux-lrm" are
 missing, for example "linux-kvm". To show the list of packages that are part of
 a certain kernel set, you can use the command `cranky rmadison`, example:
+
 ```
 $ cranky rmadison xenial:linux-oracle
+```
+
+### Tagging - `cranky tags`
+<!--cheatsheet-->
+```
+$ cranky tags
+```
+<!--/cheatsheet-->
+
+Or, if you want to do it manually, apply the correct tag to the kernel and
+to the dependents:
+
+```
+$ cranky tag
+
+$ cd ../linux-meta
+$ cranky tag
+
+$ cd ../linux-signed
+$ cranky tag
+
+$ cd ../linux-lrm
+$ cranky tag
 ```
 
 ### Verify preparation
