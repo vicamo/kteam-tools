@@ -721,6 +721,38 @@ or not the packages were accepted or rejected.
 
 ## Upload
 
+### Push refs - `cranky push-refs`
+
+**Note** Only team members with commit rights can go through this process.
+
+Newly created tags and new HEADs should be pushed to their corresponding trees.
+This can be done for all dependants in one command:
+<!--cheatsheet-->
+```
+cranky push-refs .
+```
+<!--/cheatsheet-->
+
+Or, if you want to do it manually, push the tag/head for main and each
+dependents:
+
+```
+$ git push --force-with-lease
+$ git push oracle Ubuntu-oracle-4.15.0-1021.23~16.04.1
+
+$ cd ../linux-meta
+$ git push
+$ git push oracle Ubuntu-oracle-4.15.0.1021.23~16.04.1
+
+$ cd ../linux-signed
+$ git push
+$ git push oracle Ubuntu-oracle-4.15.0-1021.23~16.04.1
+
+$ cd ../linux-lrm
+$ git push
+$ git push oracle Ubuntu-oracle-4.15.0-1021.23~16.04.1
+```
+
 ### Sign packages - `debsign`
 
 Sign the source packages:
