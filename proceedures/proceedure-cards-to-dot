@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import sys
+import yaml
+from textwrap import wrap
+
+
+if __name__ == '__main__':
+
+    description = 'Produce a DOT graph from the internal prerequisite connections'
+    epilog = '''
+The script reads the configuration from a yaml file, creates a DOT graph from the internal
+prerequisite connections expressed within.
+'''
+    parser = argparse.ArgumentParser(description=description, epilog=epilog,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('config', help='issue configuration yaml file', action='store')
+    args = parser.parse_args()
+
+    with open(args.config) as cfd:
+        config = yaml.safe_load(cfd)
+
+    print("digraph {");
+    print("  pad=0.5;")
+    print('  rankdir="LR";')
+    #print('  graph [splines="ortho"];')
+    print('  splines="compound";')
+    #print('  splines="ortho";')
+
+    # Accumulate subgraphs based on subtask-of relations.
+    subgraphs = {}
+    for card in config['cards']:
+        name = card['name']
+        subtask_of = card.get('subtask-of', None)
+        if subtask_of is None:
+            continue
+        subgraphs.setdefault(subtask_of, []).append(name)
+
+    for sgid, (name, members) in enumerate(sorted(subgraphs.items())):
+        print("  subgraph cluster{} {{".format(sgid))
+        print('    "{}"'.format(name))
+        for member in members:
+            print('    "{}"'.format(member))
+        print('  }')
+
+    for card in config['cards']:
+        name = card['name']
+        loner = True
+        #subtask_of = card.get('subtask-of', None)
+        #if subtask_of is not None:
+        #    print('  "{}" -> "{}"'.format(subtask_of, name))
+        #    loner = False
+        prereqs = card.get('prerequisites')
+        if prereqs is not None:
+            for prereq in prereqs:
+                print('  "{}" -> "{}"'.format(prereq, name))
+                loner = False
+        if loner:
+            print('  "{}" [shape="box"; label="{}";]'.format(name, "\\n".join(wrap(name, width=25))))
+        else:
+            print('  "{}" [label="{}";]'.format(name, "\\n".join(wrap(name, width=25))))
+    print("}")
