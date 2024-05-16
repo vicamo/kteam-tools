@@ -63,18 +63,6 @@ $ cranky chroot create-base xenial:linux
 $ cranky chroot create-session xenial:linux
 ```
 
-After your chroot environment is initialized, you only need to update your
-chroots before cranking each cycle. Do this by re-running `cranky chroot
-create-session`.
-
-Example:
-```
-$ cranky chroot create-session xenial:linux
-```
-
-Note that `create-base` is not required for updating a chroot. It is only
-required for creating a new chroot.
-
 ### Removing a chroot environment
 
 Once a non-LTS Ubuntu release reach end of life, you can remove the
@@ -124,6 +112,26 @@ Example:
 $ cd $HOME/canonical/kteam-tools
 $ git pull
 ```
+
+### Update your chroot
+
+<!--cheatsheet-->
+```
+$ cranky chroot create-session RELEASE:linux
+```
+<!--/cheatsheet-->
+
+After your chroot environment is initialized, you only need to update your
+chroots before cranking each cycle. Do this by re-running `cranky chroot
+create-session`.
+
+Example:
+```
+$ cranky chroot create-session xenial:linux
+```
+
+Note that `create-base` is not required for updating a chroot. It is only
+required for creating a new chroot.
 
 ### Clone and checkout the kernel repository - `cranky checkout`
 <!--cheatsheet-->
