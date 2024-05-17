@@ -1,0 +1,70 @@
+#!/bin/bash
+
+here=$(dirname $(readlink -f "$0"))
+
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $0 <data-directory> <published-info-directory>" 1>&2
+	exit 1
+fi
+data="$(readlink -e "$1")"
+out="$(readlink -e "$2")"
+
+echo "$(date): starting"
+
+cd "$out" || exit "$?"
+
+# Update the data and tooling.
+if [ ! -d "$data/kernel-users" ]; then
+	git clone git://git.launchpad.net/~canonical-kernel/+git/kernel-users "$data/kernel-users" || exit "$?"
+else
+	(
+		cd "$data/kernel-users" || exit 1
+		git fetch --prune origin
+		git reset --hard origin/main
+	) || exit "$?"
+fi
+
+# Update and convert branches...
+{
+	(
+		cd "$data/kernel-users" || exit 1
+		objectname=$(git for-each-ref --format "%(objectname)" refs/remotes/origin/main)
+		git ls-tree --name-only -r refs/remotes/origin/main | egrep "*\.yaml" | \
+		while read ks
+		do
+			which="$(echo "$ks" | sed -e "s@.*/@@" -e "s@.yaml\$@@")"
+			echo "$which - $data/kernel-users refs/remotes/origin/main $objectname $ks"
+		done
+	)
+} | tee SOURCE.new | \
+while read filename variant repo refname objectname objectpath x
+do
+	case "$variant" in
+	-|@info)	variant=""
+	esac
+	objectname_file="$out/.$filename$variant.on"
+	echo "REPO<$repo> ON<$objectname> RN<$refname> objectname_file<$objectname_file>"
+	objectname_existing="$(cat "$objectname_file" 2>/dev/null)"
+	if [ "$objectname_existing" = "$objectname" ]; then
+		continue
+	fi
+	echo "II: upstream $(basename "$repo"):$(basename "$refname") $filename.yaml$variant object changed ..."
+	(
+		cd "$repo" || exit 1
+		git show "$refname:$objectpath" >"$out/$filename.yaml.new" || exit 0
+		if [ -e "$out/$filename.yaml$variant" ]; then
+			cmp -s "$out/$filename.yaml$variant" "$out/$filename.yaml.new" && exit 0
+		fi
+		echo "II: upstream $(basename "$repo"):$(basename "$refname") $filename.yaml$variant data changed ..."
+		"$here/ks-convert" "$out/$filename.yaml.new" "$out/$filename.json.new" || exit 0
+		gzip -9 <"$out/$filename.json.new" >"$out/$filename.json.gz.new"
+		mv -f "$out/$filename.yaml.new" "$out/$filename.yaml$variant"
+		mv -f "$out/$filename.json.new" "$out/$filename.json$variant"
+		mv -f "$out/$filename.json.gz.new" "$out/$filename.json.gz$variant"
+	) || exit "$?"
+	echo "$objectname" >"$objectname_file"
+done
+
+mv -f SOURCE.new SOURCE
+
+echo "$(date): complete"
