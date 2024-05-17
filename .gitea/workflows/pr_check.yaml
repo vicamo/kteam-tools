@@ -59,7 +59,7 @@ jobs:
           fetch-depth: 0
       - step:
         name: Sign-off Check
-        uses: actions/tnt-sign-off-check@v2
+        uses: actions/tnt-sign-off-check@v1
         with:
           check-owner-sob: false
       - name: Lint
