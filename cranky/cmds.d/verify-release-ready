@@ -142,12 +142,12 @@ class VerifyReleaseReady:
             else:
                 s.status(msg, True)
 
-            # Check: Make sure the current version is correctly incremented from the previous one.
+            # Check: Make sure the build (upload) no is *always* incremented
             #
-            msg = "build number (%d)" % (int(cl1_build) + 1)
-            if int(cl0_build) != int(cl1_build) + 1:
+            msg = "build number (%d)" % (int(cl0_build))
+            if int(cl0_build) <= int(cl1_build):
                 s.status(msg, "warning")
-                s.verbose("expected %d but got: %d" % (int(cl1_build), int(cl0_build)))
+                s.verbose("expected >%d but got: %d" % (int(cl1_build), int(cl0_build)))
             else:
                 s.status(msg, True)
 
@@ -523,10 +523,10 @@ class VerifyReleaseReady:
         while True:
             # Check: Make sure the current version is correctly incremented from the previous one.
             #
-            msg = "build number (%d)" % (int(cl1_build) + 1)
-            if int(cl0_build) != int(cl1_build) + 1:
+            msg = "build number (%d)" % (int(cl0_build))
+            if int(cl0_build) <= int(cl1_build):
                 s.status(msg, False)
-                s.verbose("expected %d but got: %d" % (int(cl1_build) + 1, int(cl0_build)))
+                s.verbose("expected >%d but got: %d" % (int(cl1_build), int(cl0_build)))
                 break
             s.status(msg, True)
 
