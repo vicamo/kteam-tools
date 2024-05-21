@@ -794,6 +794,14 @@ signed: git+ssh://kathleen/~<user>/xenial-linux-signed-oracle tag <TAG>
 packages: kathleen:~<user>/2023.09.04/xenial/linux-oracle
 ```
 
+**!!!IMPORTANT**: Once you pasted the information in the JIRA ticket, change
+the status to Kernel Peer Review.
+If the kernel was assigned to you manually by someone, make sure the
+assignee is that person. If the kernel was automatically assigned to you
+because you are part of cranky rotation, then the assignee is
+automatically assigned to you by swm, therefore no need to change it. But
+this won't happen if the status is not Kernel Peer Review.
+
 After source packages and git repositories have been reviewed and acknowledged
 by another kernel team member, this person could either upload the packages
 themselves or send them back to the cranker for upload. For the latter, copy
