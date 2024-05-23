@@ -815,7 +815,7 @@ team member with the necessary rights.
 **Note** _DO NOT_ publish private kernels such as ESM, linux-ibm-gt and
 linux-fips to public repositories, see section "Special kernels" below.
 
-Upload the signed files with `cranky dput-sources`:
+Upload the signed files:
 
 ```
 $ cranky dput-sources auto xenial:linux-oracle
