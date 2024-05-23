@@ -768,6 +768,8 @@ uploading packages, this manual step is not necessary as it is wrapped by
 
 ### Asking for review - `cranky push-review`
 
+**Note** Skip this section if you have upload rights.
+
 `cranky push-review` is used to push build artifacts and tags to a runner in
 order to be reviewed by another kernel member. It needs to be run inside
 the main kernel directory:
