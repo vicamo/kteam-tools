@@ -765,7 +765,7 @@ rights), it is a good practice to get familiar with package signing. When
 uploading packages, this manual step is not necessary as it is wrapped by
 `cranky dput-sources` (see below).
 
-### Uploading packages - `cranky upload`
+### Uploading packages - `cranky dput-sources`
 
 **Note** Only packages signed by team members with upload rights can be
 uploaded. Pushing to the official git repos can only be done by team members
