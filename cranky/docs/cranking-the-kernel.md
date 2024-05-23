@@ -756,6 +756,7 @@ $ git push oracle Ubuntu-oracle-4.15.0-1021.23~16.04.1
 ### Sign packages - `debsign`
 
 Sign the source packages:
+
 ```
 $ debsign *_source.changes
 ```
@@ -765,25 +766,18 @@ rights), it is a good practice to get familiar with package signing. When
 uploading packages, this manual step is not necessary as it is wrapped by
 `cranky dput-sources` (see below).
 
-### Uploading packages - `cranky dput-sources`
-
-**Note** Only packages signed by team members with upload rights can be
-uploaded. Pushing to the official git repos can only be done by team members
-with commit rights. Before a new member is granted such rights, the git trees
-and source packages produced need to be reviewed and sponsored by some other
-team member with the necessary rights.
-
-**Note** _DO NOT_ publish private kernels such as ESM, linux-ibm-gt and
-linux-fips to public repositories, see section "Special kernels" below.
+### Asking for review - `cranky push-review`
 
 `cranky push-review` is used to push build artifacts and tags to a runner in
 order to be reviewed by another kernel member. It needs to be run inside
 the main kernel directory:
+
 ```
 cranky push-review -s 2023.09.04 kathleen
 ```
 
 It will output a summary which you can copy/paste to the matching JIRA ticket:
+
 ```
 Ready for review:
 
@@ -806,8 +800,21 @@ After source packages and git repositories have been reviewed and acknowledged
 by another kernel team member, this person could either upload the packages
 themselves or send them back to the cranker for upload. For the latter, copy
 the signed packages to the same directory that `cranky build-sources` uses, this
-replaces the previously signed files. Then upload them using `cranky
-dput-sources`:
+replaces the previously signed files.
+
+### Uploading packages - `cranky dput-sources`
+
+**Note** Only packages signed by team members with upload rights can be
+uploaded. Pushing to the official git repos can only be done by team members
+with commit rights. Before a new member is granted such rights, the git trees
+and source packages produced need to be reviewed and sponsored by some other
+team member with the necessary rights.
+
+**Note** _DO NOT_ publish private kernels such as ESM, linux-ibm-gt and
+linux-fips to public repositories, see section "Special kernels" below.
+
+Upload the signed files with `cranky dput-sources`:
+
 ```
 $ cranky dput-sources auto xenial:linux-oracle
 ```
@@ -816,6 +823,7 @@ Unless stated otherwise, the default upload destination should always be
 "auto". This will ask SWM which stream the packages should be uploaded to.
 You can find the other possible upload destinations and archive/ppa information
 by executing the following cranky command:
+
 ```
 $ cranky list-routing xenial:linux-oracle
 ```
@@ -826,6 +834,7 @@ by another team member, the packages should not be re-signed as Launchpad would
 reject packages signed by a user who doesn't have upload rights.
 
 Alternatively, you can upload them manually using dput:
+
 ```
 $ dput -u ppa:canonical-kernel-team/ppa linux-oracle_4.15.0-1010.12~16.04.1_source.changes
 $ dput -u ppa:canonical-kernel-team/ppa linux-meta-oracle_4.15.0.1010.4_source.changes
@@ -842,6 +851,7 @@ sponsor. Verify and import the public key of your sponsor to resolve this proble
 
 **Note** if you are a reviewer and you are manually uploading packages cranked
 by other team members, make sure to re-sign them with your key, for example:
+
 ```
 $ debsign -s YOUR_EMAIL linux-oracle_4.15.0-1010.12~16.04.1_source.changes
 $ debsign -s YOUR_EMAIL linux-meta-oracle_4.15.0.1010.4_source.changes
