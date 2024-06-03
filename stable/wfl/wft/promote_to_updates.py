@@ -36,6 +36,8 @@ class PromoteToUpdates(Promoter):
                 reason = 'Stalled -- promote-to-proposed complete but not all packages are reporting built'
                 detail = s.bug.debs.all_built_in_src_dst_detail("Proposed", "Updates")
                 if len(detail):
+                    if len(detail) > 3:
+                        detail = detail[0:2] + ['(+{} others)'.format(len(detail) - 2)]
                     reason += ": " + ", ".join(detail)
                 s.task.reason = reason
                 return False
