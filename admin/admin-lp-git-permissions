@@ -298,6 +298,14 @@ def add_misc(repo_set):
             + grants("refs/heads/master", people_kernel_bot, force=True)
         ],
         [
+            "~canonical-kernel/+git/kernel-review",
+            grants("refs/heads/main", team_owner)
+            + grants("refs/heads/main", admins_core, force=True)
+            + grants("refs/heads/main", people_core, push=True)
+            + grants("refs/heads/main", people_tools, push=True)
+            + grants("refs/heads/main", people_gitea, push=True)
+        ],
+        [
             "~canonical-kernel/+git/adt-matrix-hints",
             grants("refs/heads/master", team_owner)
             + grants("refs/heads/master", admins_core, force=True)
