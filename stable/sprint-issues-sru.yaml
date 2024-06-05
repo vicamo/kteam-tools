@@ -46,7 +46,7 @@
           description: 'For each series for which kernels should be cranked, run "create-kernel-tasks --series <series> --spin 1 <cycle date>".'
           list: 'To Do'
         - name: 'SRU -proposed announcement'
-          description: 'Once the main and HWE kernels are in proposed, send the SRU announcement to the mailing lists (use "gen-sru-announce <cycle>" to prepare the content). Publish the annoucement contents to Discourse (https://discourse.canonical.com/c/engineering/kernel/63).'
+          description: 'Once the main and HWE kernels are in proposed, send the SRU announcement to the mailing lists (use "gen-sru-announce <cycle>" to prepare the content). Publish the annoucement contents to the public Ubuntu Discourse (https://discourse.ubuntu.com/c/kernel/kernel-sru/127).'
         - name: 'Verify meta-package upload delta'
           description: 'Run stable/verify-meta-versions and correct any closing deltas reported.'
         - name: 'Sync copy-forward kernels (archive and git trees)'
