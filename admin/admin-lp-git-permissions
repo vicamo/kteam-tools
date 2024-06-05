@@ -360,6 +360,12 @@ def add_misc(repo_set):
             + grants("refs/heads/main", people_tools, push=True)
             + grants("refs/heads/main", people_gitea, force=True)
         ],
+        [
+            "~ubuntu-kernel-stable/+git/stable-tools",
+            grants("refs/heads/*", team_owner, force=True)
+            + grants("refs/heads/*", admins_core, force=True)
+            + grants("refs/heads/*", people_gitea, force=True)
+        ],
     ]:
         print("misc: {}".format(os.path.basename(repo_path)))
 
