@@ -301,7 +301,6 @@ def add_misc(repo_set):
             "~canonical-kernel/+git/adt-matrix-hints",
             grants("refs/heads/master", team_owner)
             + grants("refs/heads/master", admins_core, force=True)
-            + grants("refs/heads/master", people_core, push=True)
             + grants("refs/heads/master", people_tools, push=True)
             + grants("refs/heads/master", people_gitea, push=True)
         ],
