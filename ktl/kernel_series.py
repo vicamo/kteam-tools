@@ -512,7 +512,11 @@ class KernelSourceEntry:
         if 'derived-from' not in self._data:
             return None
 
-        (series_key, source_key) = self._data['derived-from']
+        if isinstance(self._data['derived-from'][0], list):
+            # Multiple parents: pick the first for now
+            (series_key, source_key) = self._data['derived-from'][0]
+        else:
+            (series_key, source_key) = self._data['derived-from']
 
         series = self._ks.lookup_series(series_key)
         source = series.lookup_source(source_key)
