@@ -2650,6 +2650,7 @@ class Package():
     # Expand a cycle-spin combo so that it is comparible as text.  0 extend
     # the spin number to three digits: 2021.06.31-1 -> 2021.05.31-001.
     # Format: YYYY.MM.DD-SSS.
+    # XXX: this is partially duplicate of manager equivalent
     def cycle_key(self, cycle):
         if cycle != '-':
             cycle_bits = cycle.split('-')
@@ -2657,7 +2658,13 @@ class Package():
                 cycle_spin = int(cycle_bits[-1])
             except ValueError:
                 cycle_spin = 0
+            # Move any cycle type prefix character to the end of the cycle
+            # number.  Also expand the spin number to three digits so it
+            # sorts correctly:
+            # s2023.08.07-1 -> 2023.08.07s-001
             cycle_bits[-1] = '{:03}'.format(cycle_spin)
+            if not cycle_bits[0][0].isdigit():
+                cycle_bits[0] = cycle_bits[0][1:] + cycle_bits[0][0]
             cycle = '-'.join(cycle_bits)
         return cycle
 
@@ -2729,7 +2736,8 @@ class Package():
             # If we find we have an older cycle than the current entry we are older
             # than it.  This only can occur when we are new and have not yet saved
             # a single status.
-            if my_cycle_key < tracker_data.get('cycle', '-'):
+            tracker_cycle_key = s.cycle_key(tracker_data.get('cycle', '-'))
+            if my_cycle_key < tracker_cycle_key:
                 return None
 
             cinfo("    considering {}".format(tracker_nr))
