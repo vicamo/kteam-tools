@@ -390,16 +390,15 @@ class Handle:
             )
 
         cycle_name, series_name, source_name, directory = self.decode_handle(handle)
-        if cycle is None:
-            cycle = cycle_name
 
+        cycle = cycle if cycle is not None else cycle_name
+
+        ks = ks if ks is not None else KernelSeries.for_cycle(cycle)
         if ks is None:
-            ks = KernelSeries.for_cycle(cycle)
-            if ks is None:
-                raise HandleError("{}: cycle {} configuration not found".format(handle, cycle))
+            raise HandleError("{}: cycle {} configuration not found".format(handle, cycle))
+
         series = ks.lookup_series(codename=series_name)
-        if series is None:
-            series = ks.lookup_series(series=series_name)
+        series = series if series is not None else ks.lookup_series(series=series_name)
         if series is None:
             raise HandleError("{}: handle contains series not known in cycle {}".format(series_name, cycle))
 
