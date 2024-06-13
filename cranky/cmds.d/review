@@ -63,9 +63,9 @@ def normalize_control_file(path, source_pkg, ver, abi, upload):
     verabi2 = verabi.replace("." + abi, "-" + abi)
     cfile_data = cfile_data.replace(verabi2, "VERABI")
     cfile_data = cfile_data.replace(ver, "VERSION")
-    cfile_data = re.sub("\n [0-9a-f]{32} \d+ " + source_pkg, "\n MD5SUM SIZE " + source_pkg, cfile_data)
-    cfile_data = re.sub("\n [0-9a-f]{40} \d+ " + source_pkg, "\n SHA1SUM SIZE " + source_pkg, cfile_data)
-    cfile_data = re.sub("\n [0-9a-f]{64} \d+ " + source_pkg, "\n SHA256SUM SIZE " + source_pkg, cfile_data)
+    cfile_data = re.sub(r"\n [0-9a-f]{32} \d+ " + source_pkg, "\n MD5SUM SIZE " + source_pkg, cfile_data)
+    cfile_data = re.sub(r"\n [0-9a-f]{40} \d+ " + source_pkg, "\n SHA1SUM SIZE " + source_pkg, cfile_data)
+    cfile_data = re.sub(r"\n [0-9a-f]{64} \d+ " + source_pkg, "\n SHA256SUM SIZE " + source_pkg, cfile_data)
     with open(path, "w") as cfile:
         cfile.write(cfile_data)
 
@@ -138,7 +138,7 @@ def review_dscs(prev_dsc_file, dsc_file, output=None):
     #  VERSION = 4.15.0
     #  ABI = 34
     #  UPLOAD = 37
-    verabi_re = re.compile("([0-9]+\.[0-9]+\.[0-9]+[-.])([0-9]+)\.(.+)")
+    verabi_re = re.compile(r"([0-9]+\.[0-9]+\.[0-9]+[-.])([0-9]+)\.(.+)")
 
     m = verabi_re.match(version)
     (ver, abi, upload) = m.group(1, 2, 3)
@@ -209,12 +209,12 @@ def review(prev_dsc_dir="", changes_files=[], output=None):
             sys.exit(1)
 
         (source_pkg, version) = dsc_source_version(changes_file)
-        source_pkg = re.sub("-[0-9]+\.[0-9]+$", "", source_pkg)
+        source_pkg = re.sub(r"-[0-9]+\.[0-9]+$", "", source_pkg)
 
         (prev_dsc_file, prev_version) = (None, None)
         for dsc_file in prev_dscs:
             (dsc_source, dsc_version) = dsc_source_version(dsc_file)
-            dsc_source = re.sub("-[0-9]+\.[0-9]+$", "", dsc_source)
+            dsc_source = re.sub(r"-[0-9]+\.[0-9]+$", "", dsc_source)
 
             # Don't consider files for other source packages ...
             if dsc_source != source_pkg:

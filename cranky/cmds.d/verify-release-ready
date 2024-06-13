@@ -256,7 +256,7 @@ class VerifyReleaseReady:
         #         last commit matches the tag
         #
         closed = True
-        expected = "^UBUNTU: (Ubuntu[-\S]*-(%s|%s))$" % (version, cl0["version"].replace("+", "\+"))
+        expected = r"^UBUNTU: (Ubuntu[-\S]*-(%s|%s))$" % (version, cl0["version"].replace("+", r"\+"))
         m = re.match(expected, commit[0])
         msg = "closing release commit"
         if len(commit) != 1:  # There should only be a single line in the commit
@@ -323,7 +323,7 @@ class VerifyReleaseReady:
         changelog = Debian.changelog()
         content = changelog[0]["own-content"]
         for line in content:
-            m = re.match("\* Miscellaneous .* changes$", line.strip())
+            m = re.match(r"\* Miscellaneous .* changes$", line.strip())
             if m:
                 s.status(msg, False)
                 stdo(colored("\t\t" + line + "\n", "red"))
@@ -398,7 +398,7 @@ class VerifyReleaseReady:
                 # Consider normal not starting with '[PATCH]'
                 # or not having a special char as the first char
                 # other than '[{/<_'
-                if subject.startswith("[PATCH]") or not re.match("[a-zA-Z0-9\[{/<_]", subject):
+                if subject.startswith("[PATCH]") or not re.match(r"[a-zA-Z0-9\[{/<_]", subject):
                     s.status(msg, "warning")
                     s.status(subject, "warning")
                     return
