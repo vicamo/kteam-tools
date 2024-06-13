@@ -41,7 +41,11 @@ class Config:
             data = yaml.safe_load(data)
 
         if data is None:
+            print("Missing configuration, using default config.")
+            warn = True
             data = {}
+            data["base-path"] = "~/canonical/kernel/ubuntu"
+            data["package-path"] = {"default": "{series}/linux{type_suffix}"}
 
         self.config = data
 

@@ -123,6 +123,13 @@ class TestConfig(unittest.TestCase):
             data = config.lookup("simple")
             self.assertIsNone(data)
 
+    def test_config_should_never_be_empty(self):
+        config = Config()
+        self.assertNotEqual(config, None)
+
+        data = config.lookup("base-path")
+        self.assertNotEqual(data, None)
+
 
 if __name__ == "__main__":
     unittest.main()
