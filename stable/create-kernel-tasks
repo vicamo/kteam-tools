@@ -455,7 +455,7 @@ class TaskSet():
 if __name__ == '__main__':
 
     desc = '''
-Create all tasks (tracking bugs and trello cards for a given SRU cycle.
+Create all tasks (tracking bugs and JIRA cards for a given SRU cycle.
 By default this will cover all supported (excluding development) series
 and all supported kernel source for each series.
 '''
@@ -473,7 +473,7 @@ Examples:
 
   $ create-kernel-tasks --devel 2018.09.24
 
-  This would skip creating any trello cards and only create tracking bugs.
+  This would skip creating any JIRA cards and only create tracking bugs.
   Spin number calculation and duplication will be the same as for normal
   SRU cycles but the cycle tag will automatically be prefixed with 'd'.
   Kernel sources can be limited/selected with the --source option but
@@ -488,7 +488,7 @@ Examples:
     parser.add_argument('--dry-run', action='store_true', default=False,
                         help='do not make any changes, just show what would be done')
     parser.add_argument('--force-nocards', action='store_true', default=False,
-                        help='forcefully disable the creation of Trello cards. This is the default in --devel mode')
+                        help='forcefully disable the creation of JIRA cards. This is the default in --devel mode')
     parser.add_argument('--force-nobugs', action='store_true', default=False,
                         help='forcefully disable the creation of tracking bugs')
     parser.add_argument('--allow-nomaster', action='store_true', default=False,
