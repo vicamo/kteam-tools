@@ -343,80 +343,6 @@ class MonitorLaunchpadQueues:
         return "Launchpad Queue Monitor {}".format(self.distro)
 
 
-class MonitorTrelloDisposition:
-
-    def __init__(self, trello_path, lp=None, bs=None):
-        if lp is None:
-            raise ValueError("launchpad not specified")
-        if bs is None:
-            raise ValueError("backing store not specified")
-
-        self.lp = lp
-
-        self.path = trello_path
-        self.swm_trello = {}
-        if os.path.exists(self.path):
-            with open(self.path) as rfd:
-                self.swm_trello = yaml.safe_load(rfd)
-
-        self.disposition = self.swm_trello.get('disposition', {})
-        bs.attach(self.path, self)
-
-    tagged = MonitorStoreAttr(default={})
-
-    def changed(self):
-        changed = set()
-
-        new_tagged = {}
-
-        # Add a tag for any newly blocked tracker.
-        for lane, lane_key in (
-                    ('Blocked', 'blocked'),
-                    ('For Review', 'review')
-                ):
-            tag_prefix = 'kernel-trello-' + lane_key + '-'
-
-            for tracker in self.disposition.get(lane, []):
-                print("CHECKING", lane, tracker)
-                tracker_id = tracker['id']
-                tracker_task = tracker['task']
-                tracker_task = tracker_task[1:] if tracker_task[0] == ':' else tracker_task
-                tracker_tag = tag_prefix + tracker_task
-                tracker_key = tracker_id + '-' + tracker_tag
-                new_tagged[tracker_key] = True
-                lp_bug = self.lp.bugs[tracker_id]
-                if tracker_tag not in lp_bug.tags:
-                    print("ADDING", tracker_id, tracker_task, tracker_tag)
-                    tags = lp_bug.tags
-                    tags.append(tracker_tag)
-                    lp_bug.tags = tags
-                    lp_bug.lp_save()
-
-                    changed.add(('shank', tracker_id))
-
-        # Remove a tag for any tracker which is no longer blocked.
-        for tracker_key in self.tagged:
-            if tracker_key in new_tagged:
-                continue
-            tracker_id, tracker_tag = tracker_key.split('-', 1)
-            lp_bug = self.lp.bugs[tracker_id]
-            if tracker_tag in lp_bug.tags:
-                print("REMOVING", tracker_id, tracker_tag)
-                tags = lp_bug.tags
-                tags.remove(tracker_tag)
-                lp_bug.tags = tags
-                lp_bug.lp_save()
-
-            changed.add(('shank', tracker_id))
-
-        self.tagged = new_tagged
-
-        return changed
-
-    def __str__(self):
-        return "Trello Disposition Monitor {}".format(self.path)
-
-
 class MonitorKernelSeries:
 
     def __init__(self, factory=None):
@@ -841,9 +767,6 @@ class MonitorFactory:
     def swm_monitor(self):
         return [MonitorSwmStatusMonitor(factory=self)]
 
-    def trello_disposition(self, trello_path):
-        return [MonitorTrelloDisposition(trello_path, lp=self.lp, bs=self.bs)]
-
     def sync(self):
         self.bs.sync()
 
@@ -942,7 +865,6 @@ if __name__ == '__main__':
     monitors += factory.swm_status()
     monitors += factory.kernel_series()
     monitors += factory.swm_monitor()
-    monitors += factory.trello_disposition('swm-trello.yaml')
     monitors += factory.launchpad_queues()
 
     command = None
