@@ -1,6 +1,5 @@
 *.pyc
 sru-workflow.cfg
-trellotool
 announce/jira
 announce/mattermostdriver
 deps/
