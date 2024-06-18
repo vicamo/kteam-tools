@@ -545,10 +545,6 @@ class WorkflowBug():
         s.flag_assign('jira-preparation-block', block)
         block = 'kernel-jira-in-review' in s.tags
         s.flag_assign('jira-in-review', block)
-        block = ('kernel-trello-blocked-debs-prepare' in s.tags or
-            'kernel-trello-blocked-prepare-packages' in s.tags or
-            'kernel-trello-blocked-snap-prepare' in s.tags)
-        s.flag_assign('trello-preparation-block', block)
 
         # Sync over the jira-issue link.
         issue_key = None
@@ -759,16 +755,6 @@ class WorkflowBug():
         block = 'kernel-jira-preparation-blocked' in s.tags
         if block:
             return "SRU Board (jira)"
-
-        if s.debs is not None:
-            block = 'kernel-trello-blocked-debs-prepare' in s.tags or 'kernel-trello-blocked-prepare-packages' in s.tags
-            if block:
-                return "SRU Board (trello)"
-
-        if s.snap is not None:
-            block = 'kernel-trello-blocked-snap-prepare' in s.tags
-            if block:
-                return "SRU Board (trello)"
 
         return None
 
