@@ -13,4 +13,4 @@ Currently this fetches and installs the following dependencies:
 
 1) python-jira -- used to interact with the JIRA API.  This is used
    by kernel-various swm related tools.
-2) python-mattermost-driver -- used to interact with Mattermots.
+2) python-mattermost-driver -- used to interact with Mattermost.
