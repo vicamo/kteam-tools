@@ -243,6 +243,14 @@ noble)
 	ADDPKG="$ADDPKG rustc rust-src rustfmt bindgen clang llvm lld libclang1"
 	;;
 esac
+case "$SUITE" in
+oracular)
+	# Latest stock Rust toolchain
+	ADDPKG="$ADDPKG rustc rust-src rustfmt bindgen clang llvm lld libclang1"
+	# and libtrace for tools/tracing/rtla
+	ADDPKG="$ADDPKG libtraceevent-dev libtracefs-dev"
+	;;
+esac
 
 # Always needed for selftests, available in all suites, not declared
 # as a default build-dep
