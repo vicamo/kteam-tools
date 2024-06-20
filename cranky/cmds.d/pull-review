@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+
+"""cranky pull-review -- Pull a review from the text of a JIRA review request.
+
+The text of the review request is standardised and created from the
+`cranky push-review` command. It can be passed to the stdin of this
+program to checkout the review locally.
+
+Example text input for the program:
+
+linux: ssh://kathleen/~roger/bionic-linux tag Ubuntu-azure-4.15-4.15.0-1178.193
+linux-meta: ssh://kathleen/~roger/bionic-linux-meta tag Ubuntu-azure-4.15-4.15.0.1178.146
+linux-signed: ssh://kathleen/~roger/bionic-linux-signed tag Ubuntu-azure-4.15-4.15.0-1178.193
+linux-lrm: ssh://kathleen/~roger/bionic-linux-lrm tag Ubuntu-azure-4.15-4.15.0-1178.193
+packages: kathleen:~roger/s2024.04.29/bionic/linux-azure-4.15
+
+"""
+
+from dataclasses import dataclass
+import sys
+import os
+import subprocess
+import logging
+import argparse
+from typing import Tuple
+
+from crl.handle import Handle
+from crl.pull_review import Review
+from ktl.log import cnotice, cdebug, Clog
+
+
+@dataclass
+class CommandBuilder:
+    dry_run: bool
+    cwd: str
+    prefix: str = ""
+
+    def run(self, desc: str, cmd: Tuple, check=True, *args, **kwargs):
+        if "cwd" not in kwargs:
+            kwargs["cwd"] = self.cwd
+
+        pretty_cmd = " ".join(cmd)
+
+        cnotice(f"{self.prefix}{desc}")
+        cdebug(f"{self.prefix}{pretty_cmd}")
+        cdebug(f"{self.prefix}({kwargs})")
+
+        if self.dry_run:
+            cdebug("Nothing done, dry run.")
+            return
+
+        subprocess.run(cmd, check=check, *args, **kwargs)
+
+
+TMP_BRANCH = "__cranky-pull-review-tmp"
+
+
+def main(dry_run, nc):
+    Clog.color = sys.stdout.isatty() and not nc
+
+    lines = sys.stdin.readlines()
+    review = Review.from_lines(lines)
+    review_branch = f"review-{review.user}"
+
+    origin_handle = review.origin_handle
+    cnotice(f"Found origin handle {origin_handle}")
+
+    hdl = Handle()
+    git_tree = hdl.lookup_tree(origin_handle)
+    base_path = os.path.dirname(git_tree.directory)
+
+    cmd = CommandBuilder(dry_run, base_path)
+
+    url = review.packages.url
+    cmd.run(f"Download built packages from {url}", ("rsync", "-avz", f"{url}/*", "."))
+
+    # cmd.run("Checkout origin", ("cranky", "checkout", origin_handle))
+
+    for repo in review.repos:
+        git_tree = os.path.join(base_path, repo.dir)
+        cmd = CommandBuilder(dry_run, git_tree, prefix=f"[{repo.repo}] ")
+
+        cmd.run("Remove 'review' remote", ("git", "remote", "remove", "review"), check=False)
+        cmd.run("Add    'review' remote", ("git", "remote", "add", "review", repo.url))
+        cmd.run("Fetch tag into FETCH_HEAD", ("git", "fetch", "review", repo.tag))
+
+        # Checking out a temporary branch is needed in case HEAD is pointing to review_branch,
+        # because git cannot delete a currently checked out branch.
+        cmd.run(f"Checkout a temporary branch named {TMP_BRANCH}", ("git", "checkout", "-b", TMP_BRANCH))
+
+        cmd.run(
+            f"Delete eventual previous review branch {review_branch}",
+            ("git", "branch", "-D", review_branch),
+            check=False,
+        )
+
+        cmd.run(
+            f"Checkout review tag {repo.tag}",
+            ("git", "fetch", "review", f"refs/tags/{repo.tag}:refs/tags/{repo.tag}", "--no-tags"),
+        )
+        cmd.run(
+            f"Checkout FETCH_HEAD into review branch {review_branch}",
+            ("git", "checkout", repo.tag, "-b", review_branch),
+        )
+        cmd.run(f"Delete temporary branch {TMP_BRANCH}", ("git", "branch", "-D", TMP_BRANCH), check=False)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+
+    desc = """
+Pull a crank review request from a formatted text input.
+"""
+
+    epilog = """
+Example:
+
+  $ cat ~/review.txt
+  linux: ssh://kathleen/~roger/bionic-linux tag Ubuntu-azure-4.15-4.15.0-1178.193
+  linux-meta: ssh://kathleen/~roger/bionic-linux-meta tag Ubuntu-azure-4.15-4.15.0.1178.146
+  linux-signed: ssh://kathleen/~roger/bionic-linux-signed tag Ubuntu-azure-4.15-4.15.0-1178.193
+  linux-lrm: ssh://kathleen/~roger/bionic-linux-lrm tag Ubuntu-azure-4.15-4.15.0-1178.193
+  packages: kathleen:~roger/s2024.04.29/bionic/linux-azure-4.15
+
+  $ cranky pull-review < ~/review.txt
+      Pull the review correponding to the review request.
+"""
+
+    help_dry_run = """
+Don't actually do anything.
+"""
+
+    help_nc = """No Colour. By default the debug output that is printed comes out in
+multiple colours to help with the debugging. This option disables that.
+"""
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(
+        description=desc, formatter_class=formatter, epilog=epilog, prog="cranky pull-review"
+    )
+    parser.add_argument("--nc", action="store_true", default=False, help=help_nc)
+    parser.add_argument("--dry-run", action="store_true", default=False, help=help_dry_run)
+
+    args = parser.parse_args()
+
+    main(**vars(args))
