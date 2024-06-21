@@ -9,7 +9,8 @@ version = "0.0.1"
 dependencies = [
   "pyyaml",
   "python-dateutil",
-  "python-apt"
+  "python-apt",
+  "xdg",
 ]
 
 # Modules will be managed separately (cranky, info, ktl, etc.)
