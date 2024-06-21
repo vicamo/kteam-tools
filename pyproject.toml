@@ -9,8 +9,7 @@ version = "0.0.1"
 dependencies = [
   "pyyaml",
   "python-dateutil",
-  # TODO: Replace raw sha1 with tag once this commit is included in a tag
-  "python-apt @ git+https://salsa.debian.org/apt-team/python-apt@555708a0b7ed4ca6e938bfc1abe937cc810243d2"
+  "python-apt"
 ]
 
 # Modules will be managed separately (cranky, info, ktl, etc.)
