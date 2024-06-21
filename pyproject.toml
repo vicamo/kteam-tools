@@ -24,6 +24,7 @@ dev = [
   "pre-commit",
   "ruff",
   "testfixtures",
+  "pytest",
 ]
 
 [tool.black]
