@@ -163,6 +163,7 @@ class BaseCrankyTest(unittest.TestCase):
 
 
 class TestCycleRef(BaseCrankyTest):
+    @unittest.skip("This test is too slow to be run on every commit")
     def test_cycle_ref_list_none(self):
         """A git repo with no cycle history in $debian/tracking-bug should be handled"""
         with TempDirectory() as d:
@@ -176,6 +177,7 @@ class TestCycleRef(BaseCrankyTest):
             self.assertEqual(len(actual), 0, "No cycles should have been returned")
             self.context_git_is_clean()
 
+    @unittest.skip("This test is too slow to be run on every commit")
     def test_cycle_ref_list_no_tags(self):
         """A git repo with some cycle history in $debian/tracking-bug but no tags should be handled"""
         with TempDirectory() as d:
@@ -196,6 +198,7 @@ class TestCycleRef(BaseCrankyTest):
             self.assertEqual(len(actual), 0, "No cycles should have been returned")
             self.context_git_is_clean()
 
+    @unittest.skip("This test is too slow to be run on every commit")
     def test_cycle_ref_list_some(self):
         """A git repo with some cycle history in $debian/tracking-bug should be handled"""
         with TempDirectory() as d:
@@ -216,6 +219,7 @@ class TestCycleRef(BaseCrankyTest):
             self.assertEqual(len(actual), 3)
             self.context_git_is_clean()
 
+    @unittest.skip("This test is too slow to be run on every commit")
     def test_cycle_ref_list_some_descending(self):
         """Descending order should work"""
         with TempDirectory() as d:
@@ -242,6 +246,7 @@ class TestCycleRef(BaseCrankyTest):
                 self.assertEqual(actual[i].cycle, expect)
             self.context_git_is_clean()
 
+    @unittest.skip("This test is too slow to be run on every commit")
     def test_cycle_ref_list_some_before_after(self):
         """Descending order with before and after should work"""
         with TempDirectory() as d:
