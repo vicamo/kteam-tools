@@ -44,7 +44,7 @@ jobs:
           (cd ktl/tests && python3 -m unittest -v)
           # See Gitea Issue # 414
           #(cd cranky/crl/tests && python3 -m unittest -v)
-          (cd cranky/annotations-tools && python3 -m unittest -v)
+          (cd cranky/ && python3 -m pytest)
 
   # Tests that are not affected by the host's environment
   series-agnostic-tests:
