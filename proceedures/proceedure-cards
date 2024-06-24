@@ -34,9 +34,9 @@ class JIRAIssues:
         self.dryrun = dryrun
 
         # Lookup custom fields we are going to use.
-        for field in self.jira.fields():
-            if field['name'] == 'Epic Link':
-                self.epic_link = field['key']
+        #for field in self.jira.fields():
+        #    if field['name'] == 'Epic Link':
+        #        self.epic_link = field['key']
 
         self.issues = {}
         self.transition_ids = {}
@@ -70,7 +70,7 @@ class JIRAIssues:
             params['issuetype'] = {'name': 'Task'}
             if self.epic_key is not None:
                 print(" ", "add epic-key", self.epic_key)
-                params[self.epic_link] = self.epic_key
+                params['parent'] = {'key': self.epic_key}
         if desc is not None:
             params['description'] = desc
         if self.component is not None:
