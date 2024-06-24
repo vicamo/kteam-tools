@@ -5,3 +5,4 @@ announce/mattermostdriver
 deps/
 stable/jira
 *.egg-info
+venv/
