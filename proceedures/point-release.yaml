@@ -32,6 +32,11 @@ cards:
         needs to be updated to include the firmware blobs to match. Ideally
         this needs to be done before the point release is out so it gets
         included in the installation media.
+  - name: "Sync with Certification Team"
+    description: |
+      - Notify the Certification Team as soon as possible about a new HWE kernel
+        being prepared to allow them to plan for the certification tests on
+        time.
   - name: "Roll linux-*-edge to point release version"
     description: |
       - Prepare and upload updates to the linux-*-edge package moving it
@@ -45,13 +50,6 @@ cards:
   - name: "Review linux-*-edge upgrade testing and approve"
     description: |
       - Review all of the ADT and upgrade testing and approve rolls
-  - name: "Sync with Certification Team"
-    description: |
-      - Notify the Certification Team as soon as possible about a new HWE kernel
-        being prepared to allow them to plan for the certification tests on
-        time.
-    prerequisites:
-      - "Roll linux-*-edge to point release version"
   - name: "Roll linux-*-edge to linux-* package"
     description: |
       - Update the variants of the linux-*-edge package to '-*' so the
