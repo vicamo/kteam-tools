@@ -32,6 +32,38 @@ Please submit a [merge proposal](https://code.launchpad.net/~canonical-kernel/+g
 to Launchpad and be sure to add `Canonical Kernel` as a reviewer. Someone from
 our team will review your contribution when possible.
 
+### Modifying Gitea CI files
+
+In other software forges like Github and Gerrit the CI workflow are run using
+the files in the PR. However here Gitea is using the previous `pr_check.yaml`,
+making the CI fail.
+
+This is expected, because gitea has no such thing as `ref/merge/70` that Github
+has. When you're trying to modify something related to the workflow itself, the
+workflow definition will always come from the base, and
+`github.event.pull_request` would give all the necessary information about the
+remote branch.
+
+Usually, the easy way is to merge the workflow changes with fingers crossed,
+and then test if it actually behaves as expected. Or, one can create another
+branch and let it act as the main branch, create yet another pull request
+toward it, test and verify whatever it ought to be, and then copy the changes
+back to the PR toward the real main branch, and merge with fingers crossed.
+
+1. push a fake-main branch that has the same HEAD of your pr to kteam-tools
+   repo
+2. create a random pull request toward it so that it will trigger pr\_check but
+   with base branch == fake-main
+3. if everything goes well, then accept the original pr to the real main
+
+Anyone with branch creation privileges would do, and they are apw, fginther,
+cypressyew, sfeole, and vicamo.
+
+Example:
+
+- prcheck review: https://kernel.ubuntu.com/gitea/kernel/kteam-tools/pulls/638
+- WIP review: https://kernel.ubuntu.com/gitea/kernel/kteam-tools/pulls/642
+
 ## Development
 
 Development on kteam-tools requires adhering to our coding style and lint checks.
