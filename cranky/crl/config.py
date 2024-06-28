@@ -5,7 +5,7 @@ import yaml
 import xdg
 
 from dataclasses import dataclass
-from typing import Optional, Self, Dict
+from typing import ClassVar, Optional, Self, Dict
 
 
 @dataclass
@@ -43,6 +43,11 @@ class ConfigPath:
 @dataclass
 class Config:
     config: Dict
+
+    DEFAULT: ClassVar = {
+        "base-path": "~/canonical/kernel/ubuntu",
+        "package-path": {"default": "{series}/linux{type_suffix}"},
+    }
 
     def __post_init__(self):
         self.warn_deprecated_options()
@@ -96,9 +101,7 @@ class Config:
 
         if data is None:
             print("Missing configuration, using default config.")
-            data = {}
-            data["base-path"] = "~/canonical/kernel/ubuntu"
-            data["package-path"] = {"default": "{series}/linux{type_suffix}"}
+            data = dict(cls.DEFAULT)
 
         return cls(data)
 
