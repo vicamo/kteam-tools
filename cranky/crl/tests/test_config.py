@@ -22,28 +22,28 @@ class TestConfig(unittest.TestCase):
     """
 
     def test_config_data_simple_present(self):
-        config = Config(data=self.data_yaml)
+        config = Config.default(data=self.data_yaml)
         self.assertNotEqual(config, None)
 
         data = config.lookup("simple")
         self.assertEqual(data, "data")
 
     def test_config_data_paths_default_present(self):
-        config = Config(data=self.data_yaml)
+        config = Config.default(data=self.data_yaml)
         self.assertNotEqual(config, None)
 
         data = config.lookup("paths.default")
         self.assertEqual(data, "something")
 
     def test_config_data_simple2_absent(self):
-        config = Config(data=self.data_yaml)
+        config = Config.default(data=self.data_yaml)
         self.assertNotEqual(config, None)
 
         data = config.lookup("simple2")
         self.assertIsNone(data)
 
     def test_config_data_dict_value_error(self):
-        config = Config(data=self.data_yaml)
+        config = Config.default(data=self.data_yaml)
         self.assertNotEqual(config, None)
 
         with self.assertRaises(AttributeError):
@@ -53,7 +53,7 @@ class TestConfig(unittest.TestCase):
         with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {"HOME": "/non-existant"}):
             d.write("cranky.conf", self.data_yaml.encode("utf-8"))
 
-            config = Config(filename=d.getpath("cranky.conf"))
+            config = Config.default(filename=d.getpath("cranky.conf"))
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
@@ -61,7 +61,7 @@ class TestConfig(unittest.TestCase):
 
     def test_config_filename_absent(self):
         with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {"HOME": "/non-existant"}):
-            config = Config(filename=d.getpath("cranky.conf"))
+            config = Config.default(filename=d.getpath("cranky.conf"))
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
@@ -71,7 +71,7 @@ class TestConfig(unittest.TestCase):
         with TempDirectory() as d, unittest.mock.patch.object(xdg, "XDG_CONFIG_HOME", d.path):
             d.write("cranky/cranky.yaml", self.data_yaml.encode("utf-8"))
 
-            config = Config()
+            config = Config.default()
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
@@ -83,7 +83,7 @@ class TestConfig(unittest.TestCase):
         ):
             d.write(".config/cranky/cranky.yaml", self.data_yaml.encode("utf-8"))
 
-            config = Config()
+            config = Config.default()
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
@@ -95,7 +95,7 @@ class TestConfig(unittest.TestCase):
         ):
             d.write(".cranky", self.data_yaml.encode("utf-8"))
 
-            config = Config()
+            config = Config.default()
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
@@ -107,7 +107,7 @@ class TestConfig(unittest.TestCase):
         ):
             d.write(".cranky.yaml", self.data_yaml.encode("utf-8"))
 
-            config = Config()
+            config = Config.default()
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
@@ -117,14 +117,14 @@ class TestConfig(unittest.TestCase):
         with TempDirectory() as d, unittest.mock.patch.object(xdg, "XDG_CONFIG_HOME", d.path):
             d.write("cranky/cranky.yaml", self.data_yaml.encode("utf-8"))
 
-            config = Config(data="")
+            config = Config.default(data="")
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
             self.assertIsNone(data)
 
     def test_config_should_never_be_empty(self):
-        config = Config()
+        config = Config.default()
         self.assertNotEqual(config, None)
 
         data = config.lookup("base-path")

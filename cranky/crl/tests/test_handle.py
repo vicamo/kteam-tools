@@ -80,7 +80,7 @@ class TestHandle(unittest.TestCase):
 
     def config_in_temp_dir(self, temp_dir, data=path_config_yaml):
         """Load config YAML and set base-path to dynamic temp_dir"""
-        config = Config(data=data)
+        config = Config.default(data=data)
         config.config["base-path"] = temp_dir.path
         return config
 
@@ -88,7 +88,7 @@ class TestHandle(unittest.TestCase):
 class TestHandleSeries(TestHandle):
     def test_series_source(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_set("bionic:linux", ks=ks)
 
         self.assertEqual(hdl.source.series.codename, "bionic")
@@ -96,7 +96,7 @@ class TestHandleSeries(TestHandle):
 
     def test_series_source_main_missmatch(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_set("bionic:linux2", ks=ks)
 
         self.assertEqual(hdl.source.series.codename, "bionic")
@@ -104,7 +104,7 @@ class TestHandleSeries(TestHandle):
 
     def test_series_package(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_tree("bionic:linux-meta", ks=ks)
 
         self.assertEqual(hdl.package.series.codename, "bionic")
@@ -112,7 +112,7 @@ class TestHandleSeries(TestHandle):
 
     def test_series_package_main_missmatch(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_tree("bionic:linux2-main", ks=ks)
 
         self.assertEqual(hdl.package.series.codename, "bionic")
@@ -120,7 +120,7 @@ class TestHandleSeries(TestHandle):
 
     def test_trees_series_bionic(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_set("bionic:linux", ks=ks)
 
         trees_match = [
@@ -131,7 +131,7 @@ class TestHandleSeries(TestHandle):
 
     def test_trees_series_artful(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_set("artful:linux", ks=ks)
 
         trees_match = [
@@ -142,7 +142,7 @@ class TestHandleSeries(TestHandle):
 
     def test_trees_series_bionic_basepath(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.basepath_config_yaml)
+        config = Config.default(data=self.basepath_config_yaml)
         hdl = Handle(config=config).lookup_set("bionic:linux", ks=ks)
 
         trees_match = [
@@ -155,7 +155,7 @@ class TestHandleSeries(TestHandle):
 class TestHandleSeriesVersion(TestHandle):
     def test_series_bionic(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdlc = Handle(config=config).lookup_set("bionic:linux", ks=ks)
         hdlv = Handle(config=config).lookup_set("18.04:linux", ks=ks)
 
@@ -171,7 +171,7 @@ class TestHandleDirectoryEncode(TestHandle):
             default:    '{series}'
         """
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=config_yaml)
+        config = Config.default(data=config_yaml)
         hdl = Handle(config=config).lookup_tree("bionic:linux-meta", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -185,7 +185,7 @@ class TestHandleDirectoryEncode(TestHandle):
             default:    '{source}'
         """
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=config_yaml)
+        config = Config.default(data=config_yaml)
         hdl = Handle(config=config).lookup_tree("bionic:linux-meta", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -199,7 +199,7 @@ class TestHandleDirectoryEncode(TestHandle):
             default:    '{package}'
         """
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=config_yaml)
+        config = Config.default(data=config_yaml)
         hdl = Handle(config=config).lookup_tree("bionic:linux-meta", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -213,7 +213,7 @@ class TestHandleDirectoryEncode(TestHandle):
             default:    '{type}'
         """
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=config_yaml)
+        config = Config.default(data=config_yaml)
         hdl = Handle(config=config).lookup_tree("bionic:linux", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -227,7 +227,7 @@ class TestHandleDirectoryEncode(TestHandle):
             default:    '{type}'
         """
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=config_yaml)
+        config = Config.default(data=config_yaml)
         hdl = Handle(config=config).lookup_tree("bionic:linux-meta", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -241,7 +241,7 @@ class TestHandleDirectoryEncode(TestHandle):
             default:    '{type_suffix}'
         """
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=config_yaml)
+        config = Config.default(data=config_yaml)
         hdl = Handle(config=config).lookup_tree("bionic:linux", ks=ks, validate=False)
 
         directory = hdl.encode_directory(hdl.package)
@@ -255,7 +255,7 @@ class TestHandleDirectoryEncode(TestHandle):
             default:    '{type_suffix}'
         """
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=config_yaml)
+        config = Config.default(data=config_yaml)
         hdl = Handle(config=config).lookup_tree("bionic:linux-meta", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -264,7 +264,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
     def test_encode_directory_bionic_linux(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_tree("bionic:linux", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -274,7 +274,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
     def test_encode_directory_bionic_linux_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_tree("bionic:linux-meta", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -284,7 +284,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
     def test_encode_directory_artful_linux(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_tree("artful:linux", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -293,7 +293,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
     def test_encode_directory_artful_linux_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_tree("artful:linux-meta", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -302,7 +302,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
     def test_encode_directory_xenial_linux(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_tree("xenial:linux", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -311,7 +311,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
     def test_encode_directory_xenial_linux_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
         hdl = Handle(config=config).lookup_tree("xenial:linux-meta", ks=ks)
 
         directory = hdl.encode_directory(hdl.package)
@@ -361,7 +361,7 @@ class TestHandleDirectory(TestHandle):
         self.setUpRunCmd(git_path, 'git commit -a -m "Initial"')
 
     def test_directory_source_noconfig(self):
-        config = Config(data="")
+        config = Config.default(data="")
 
         with self.assertRaises(HandleError):
             _ = Handle(config=config).lookup_set("bionic:linux")
@@ -483,7 +483,7 @@ class TestHandleDirectory(TestHandle):
 class TestHandleSuffixes(TestHandle):
     def test_minimal_suffixes_bionic_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux", ks=ks)
 
@@ -503,7 +503,7 @@ class TestHandleSuffixes(TestHandle):
 
     def test_minimal_suffixes_artful(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
 
         hdl = Handle(config=config).lookup_tree("artful:linux", ks=ks)
 
@@ -523,7 +523,7 @@ class TestHandleSuffixes(TestHandle):
 
     def test_minimal_suffixes_xenial(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_yaml)
+        config = Config.default(data=self.path_config_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux", ks=ks)
 
@@ -588,7 +588,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_one_xenial_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_one_yaml)
+        config = Config.default(data=self.path_config_one_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux", ks=ks)
 
@@ -596,7 +596,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_one_xenial_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_one_yaml)
+        config = Config.default(data=self.path_config_one_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-meta", ks=ks)
 
@@ -604,7 +604,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_one_xenial_kvm_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_one_yaml)
+        config = Config.default(data=self.path_config_one_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-kvm", ks=ks)
 
@@ -612,7 +612,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_one_xenial_kvm_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_one_yaml)
+        config = Config.default(data=self.path_config_one_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-meta-kvm", ks=ks)
 
@@ -620,7 +620,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_one_bionic_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_one_yaml)
+        config = Config.default(data=self.path_config_one_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux", ks=ks)
 
@@ -628,7 +628,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_one_bionic_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_one_yaml)
+        config = Config.default(data=self.path_config_one_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux-meta", ks=ks)
 
@@ -636,7 +636,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_one_bionic_raspi2(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_one_yaml)
+        config = Config.default(data=self.path_config_one_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux-raspi2", ks=ks)
 
@@ -650,7 +650,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crossseries_xenial_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crossseries_yaml)
+        config = Config.default(data=self.path_config_crossseries_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux", ks=ks)
 
@@ -658,7 +658,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crossseries_xenial_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crossseries_yaml)
+        config = Config.default(data=self.path_config_crossseries_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-meta", ks=ks)
 
@@ -666,7 +666,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crossseries_xenial_kvm_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crossseries_yaml)
+        config = Config.default(data=self.path_config_crossseries_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-kvm", ks=ks)
 
@@ -674,7 +674,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crossseries_xenial_kvm_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crossseries_yaml)
+        config = Config.default(data=self.path_config_crossseries_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-meta-kvm", ks=ks)
 
@@ -682,7 +682,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crossseries_bionic_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crossseries_yaml)
+        config = Config.default(data=self.path_config_crossseries_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux", ks=ks)
 
@@ -690,7 +690,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crossseries_bionic_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crossseries_yaml)
+        config = Config.default(data=self.path_config_crossseries_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux-meta", ks=ks)
 
@@ -698,7 +698,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crossseries_bionic_raspi2(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crossseries_yaml)
+        config = Config.default(data=self.path_config_crossseries_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux-raspi2", ks=ks)
 
@@ -712,7 +712,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crosspackage_xenial_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crosspackage_yaml)
+        config = Config.default(data=self.path_config_crosspackage_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux", ks=ks)
 
@@ -720,7 +720,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crosspackage_xenial_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crosspackage_yaml)
+        config = Config.default(data=self.path_config_crosspackage_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-meta", ks=ks)
 
@@ -728,7 +728,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crosspackage_xenial_kvm_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crosspackage_yaml)
+        config = Config.default(data=self.path_config_crosspackage_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-kvm", ks=ks)
 
@@ -736,7 +736,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crosspackage_xenial_kvm_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crosspackage_yaml)
+        config = Config.default(data=self.path_config_crosspackage_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-meta-kvm", ks=ks)
 
@@ -744,7 +744,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crosspackage_bionic_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crosspackage_yaml)
+        config = Config.default(data=self.path_config_crosspackage_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux", ks=ks)
 
@@ -752,7 +752,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crosspackage_bionic_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crosspackage_yaml)
+        config = Config.default(data=self.path_config_crosspackage_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux-meta", ks=ks)
 
@@ -760,7 +760,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_crosspackage_bionic_raspi2(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_crosspackage_yaml)
+        config = Config.default(data=self.path_config_crosspackage_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux-raspi2", ks=ks)
 
@@ -774,7 +774,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_separate_xenial_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_separate_yaml)
+        config = Config.default(data=self.path_config_separate_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux", ks=ks)
 
@@ -782,7 +782,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_separate_xenial_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_separate_yaml)
+        config = Config.default(data=self.path_config_separate_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-meta", ks=ks)
 
@@ -790,7 +790,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_separate_xenial_kvm_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_separate_yaml)
+        config = Config.default(data=self.path_config_separate_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-kvm", ks=ks)
 
@@ -798,7 +798,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_separate_xenial_kvm_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_separate_yaml)
+        config = Config.default(data=self.path_config_separate_yaml)
 
         hdl = Handle(config=config).lookup_tree("xenial:linux-meta-kvm", ks=ks)
 
@@ -806,7 +806,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_separate_bionic_main(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_separate_yaml)
+        config = Config.default(data=self.path_config_separate_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux", ks=ks)
 
@@ -814,7 +814,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_separate_bionic_meta(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_separate_yaml)
+        config = Config.default(data=self.path_config_separate_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux-meta", ks=ks)
 
@@ -822,7 +822,7 @@ class TestHandleTreeRemote(TestHandle):
 
     def test_remote_separate_bionic_raspi2(self):
         ks = KernelSeries(data=self.data_yaml)
-        config = Config(data=self.path_config_separate_yaml)
+        config = Config.default(data=self.path_config_separate_yaml)
 
         hdl = Handle(config=config).lookup_tree("bionic:linux-raspi2", ks=ks)
 

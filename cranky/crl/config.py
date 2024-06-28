@@ -5,7 +5,7 @@ import yaml
 import xdg
 
 from dataclasses import dataclass
-from typing import Optional, Self
+from typing import Optional, Self, Dict
 
 
 @dataclass
@@ -40,8 +40,24 @@ class ConfigPath:
             return None
 
 
+@dataclass
 class Config:
-    def __init__(self, filename=None, data=None):
+    config: Dict
+
+    def __post_init__(self):
+        self.warn_deprecated_options()
+
+    @classmethod
+    def default(cls, filename=None, data=None):
+        """Load the configuration from:
+
+        1. The data provided as an argument
+        2. The filename provided in the CRANKY_CONFIG_FILE env var;
+        3. The filename provided as an argument;
+        4. One of the possible ConfigPath filenames
+        5. A default dummy configuration
+
+        """
         filename = os.getenv("CRANKY_CONFIG_FILE", filename)
 
         if filename is not None and data is not None:
@@ -53,7 +69,6 @@ class Config:
                 filename = config_path.path
 
                 if config_path.is_obsolete:
-                    warn = True
                     warnings.warn(
                         "Using config file {}. You need to move it to {} to prevent this warning".format(
                             filename, ConfigPath.default()
@@ -69,31 +84,31 @@ class Config:
 
         if data is None:
             print("Missing configuration, using default config.")
-            warn = True
             data = {}
             data["base-path"] = "~/canonical/kernel/ubuntu"
             data["package-path"] = {"default": "{series}/linux{type_suffix}"}
 
-        self.config = data
+        return cls(data)
 
-        # Warn if old/deprecated config options are found
-        # fmt: off
-        warn = False
+    def warn_deprecated_options(self):
+        """Warn if old/deprecated config options are found."""
+        deprecated_option_found = False
+
+        def warn(s):
+            print(s, file=sys.stderr)
+
         if self.lookup("package-path.base-path", None) is not None:
-            warn = True
-            print("Deprecated 'package-path.base-path' option found in cranky config file.",
-                  file=sys.stderr)
-            print("You should rename it to 'base-path'.", file=sys.stderr)
+            deprecated_option_found = True
+            warn("Deprecated 'package-path.base-path' option found in cranky config file.")
+            warn("You should rename it to 'base-path'.")
+
         if self.lookup("test-build.logdir", None) is not None:
-            warn = True
-            print("Deprecated 'test-build.logdir' option found in cranky config file.",
-                  file=sys.stderr)
-            print("You should rename it to 'test-build.log-path' and make it relative to 'base-path'.",
-                  file=sys.stderr)
-        if warn:
-            print("Check the config example in kteam-tools/cranky/docs/snip-cranky.yaml for more information.",
-                  file=sys.stderr)
-        # fmt: on
+            deprecated_option_found = True
+            warn("Deprecated 'test-build.logdir' option found in cranky config file.")
+            warn("You should rename it to 'test-build.log-path' and make it relative to 'base-path'.")
+
+        if deprecated_option_found:
+            warn("Check the config example in kteam-tools/cranky/docs/snip-cranky.yaml for more information.")
 
     def lookup(self, element, default=None):
         config = dict(self.config)

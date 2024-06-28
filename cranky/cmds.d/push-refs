@@ -58,7 +58,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     # Get the config options from file
-    config = Config()
+    config = Config.default()
 
     desc = """
 Push the refs (HEAD and tags) to all remotes.
