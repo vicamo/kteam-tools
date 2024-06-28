@@ -48,39 +48,51 @@ class Config:
         self.warn_deprecated_options()
 
     @classmethod
-    def default(cls, filename=None, data=None):
-        """Load the configuration from:
+    def default(cls):
+        """Load the default configuration.
 
-        1. The data provided as an argument
-        2. The filename provided in the CRANKY_CONFIG_FILE env var;
-        3. The filename provided as an argument;
-        4. One of the possible ConfigPath filenames
-        5. A default dummy configuration
+        The configuration is loaded in order from:
+
+        1. The filename provided in the CRANKY_CONFIG_FILE env var;
+        3. One of the possible ConfigPath filenames
+        4. The default configuration
 
         """
-        filename = os.getenv("CRANKY_CONFIG_FILE", filename)
+        filename = os.getenv("CRANKY_CONFIG_FILE", None)
 
-        if filename is not None and data is not None:
-            raise ValueError("supply only one of filename and data")
+        if filename is not None:
+            return cls.from_filename(filename)
 
-        if data is None and filename is None:
-            config_path = ConfigPath.find()
-            if config_path is not None:
-                filename = config_path.path
+        config_path = ConfigPath.find()
+        if config_path is not None:
+            filename = config_path.path
 
-                if config_path.is_obsolete:
-                    warnings.warn(
-                        "Using config file {}. You need to move it to {} to prevent this warning".format(
-                            filename, ConfigPath.default()
-                        )
+            if config_path.is_obsolete:
+                warnings.warn(
+                    "Using config file {}. You need to move it to {} to prevent this warning".format(
+                        filename, ConfigPath.default()
                     )
+                )
 
-        if data is None and filename is not None and os.path.exists(filename):
+        return cls.from_filename(filename)
+
+    @classmethod
+    def from_filename(cls, filename: Optional[str] = None):
+        """Load config from filename, or default config if None."""
+        yaml_data = None
+
+        if filename is not None and os.path.exists(filename):
             with open(filename) as yfd:
-                data = yfd.read()
+                yaml_data = yfd.read()
 
-        if data is not None:
-            data = yaml.safe_load(data)
+        return cls.from_yaml(yaml_data)
+
+    @classmethod
+    def from_yaml(cls, yaml_data: Optional[str]) -> Self:
+        """Load config from YAML data, or default config if None."""
+        data = None
+        if yaml_data is not None:
+            data = yaml.safe_load(yaml_data)
 
         if data is None:
             print("Missing configuration, using default config.")

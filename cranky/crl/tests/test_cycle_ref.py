@@ -90,7 +90,7 @@ class BaseCrankyTest(unittest.TestCase):
         #
         # Generate a context using our temporary directory
         config_yaml = f"base-path:                      '{d.path}'"
-        handle_config = Config.default(data=config_yaml)
+        handle_config = Config.from_yaml(config_yaml)
         self.context = CrankyContext(
             f"{series}:linux",
             package,
