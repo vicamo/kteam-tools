@@ -4,6 +4,41 @@ import warnings
 import yaml
 import xdg
 
+from dataclasses import dataclass
+from typing import Optional, Self
+
+
+@dataclass
+class ConfigPath:
+    path: str
+    is_obsolete: bool
+
+    @staticmethod
+    def default() -> str:
+        """Return the default configuration file path."""
+        return os.path.join(xdg.XDG_CONFIG_HOME, "cranky", "cranky.yaml")
+
+    @classmethod
+    def find(cls) -> Optional[Self]:
+        """Find a configuration file, eventually obsolete."""
+        path = ConfigPath.default()
+        if os.path.exists(path):
+            return cls(path, False)
+
+        obsolete_paths = (
+            os.path.join(os.environ["HOME"], ".config", "cranky", "cranky.yaml"),
+            os.path.join(os.environ["HOME"], ".cranky.yaml"),
+            os.path.join(os.environ["HOME"], ".cranky"),
+        )
+
+        try:
+            return cls(
+                next(p for p in obsolete_paths if os.path.exists(p)),
+                True,
+            )
+        except StopIteration:
+            return None
+
 
 class Config:
     def __init__(self, filename=None, data=None):
@@ -13,25 +48,17 @@ class Config:
             raise ValueError("supply only one of filename and data")
 
         if data is None and filename is None:
-            warn = False
-            for path in (
-                os.path.join(xdg.XDG_CONFIG_HOME, "cranky", "cranky.yaml"),
-                os.path.join(os.environ["HOME"], ".config", "cranky", "cranky.yaml"),
-                os.path.join(os.environ["HOME"], ".cranky.yaml"),
-                os.path.join(os.environ["HOME"], ".cranky"),
-            ):
-                if os.path.exists(path):
-                    filename = path
-                    break
+            config_path = ConfigPath.find()
+            if config_path is not None:
+                filename = config_path.path
 
-                warn = True
-
-            if filename is not None and warn:
-                warnings.warn(
-                    "Using config file {}. You need to move it to {}/cranky/cranky.yaml to prevent this warning".format(
-                        filename, xdg.XDG_CONFIG_HOME
+                if config_path.is_obsolete:
+                    warn = True
+                    warnings.warn(
+                        "Using config file {}. You need to move it to {} to prevent this warning".format(
+                            filename, ConfigPath.default()
+                        )
                     )
-                )
 
         if data is None and filename is not None and os.path.exists(filename):
             with open(filename) as yfd:
