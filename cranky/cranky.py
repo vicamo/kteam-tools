@@ -6,6 +6,8 @@
 import os
 import sys
 
+from importlib import import_module
+
 # HACK: This seems to be required when packaging for the snap
 sys.path.append(os.path.dirname(__file__))
 
@@ -19,6 +21,16 @@ def main():
         # ~/snap/cranky/<version> which breaks cranky completely, so reset
         # it to its real value.
         os.environ["HOME"] = realhome
+
+    # Add all commands.
+    # For each command in the 'commands' directory, do something similar to:
+    #   from commands import <cmd>
+    #   cli.cranky_cli.add_command(<cmd>.<cmd>)
+    for f in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "commands")):
+        if f.endswith(".py") and not f.startswith("__"):
+            cmd_name = f[:-3]
+            cmd_func = getattr(import_module(f"commands.{cmd_name}"), cmd_name)
+            cli.cranky_cli.add_command(cmd_func)
 
     # Run
     cli.cranky_cli()
