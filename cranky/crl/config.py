@@ -5,7 +5,7 @@ import yaml
 import xdg
 
 from dataclasses import dataclass
-from typing import ClassVar, Optional, Self, Dict
+from typing import ClassVar, Optional, Dict
 
 
 @dataclass
@@ -19,8 +19,12 @@ class ConfigPath:
         return os.path.join(xdg.XDG_CONFIG_HOME, "cranky", "cranky.yaml")
 
     @classmethod
-    def find(cls) -> Optional[Self]:
+    def find(cls) -> Optional["ConfigPath"]:
         """Find a configuration file, eventually obsolete."""
+
+        # TODO: Replace Optional["ConfigPath"] with Optional[Self] in signature when we stop to support jammy and
+        #       can use `from typing import Self` introduced in Python 3.11.
+
         path = ConfigPath.default()
         if os.path.exists(path):
             return cls(path, False)
@@ -93,8 +97,12 @@ class Config:
         return cls.from_yaml(yaml_data)
 
     @classmethod
-    def from_yaml(cls, yaml_data: Optional[str]) -> Self:
+    def from_yaml(cls, yaml_data: Optional[str]) -> "Config":
         """Load config from YAML data, or default config if None."""
+
+        # TODO: Replace "ConfigPath" with Self in signature when we stop to support jammy and
+        #       can use `from typing import Self` introduced in Python 3.11.
+
         data = None
         if yaml_data is not None:
             data = yaml.safe_load(yaml_data)
