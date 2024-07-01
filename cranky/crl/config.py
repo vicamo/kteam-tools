@@ -53,7 +53,7 @@ class Config:
         self.warn_deprecated_options()
 
     @classmethod
-    def default(cls):
+    def load(cls):
         """Load the default configuration.
 
         The configuration is loaded in order from:
