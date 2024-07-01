@@ -138,7 +138,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     # Get the config options from file
-    config = Config()
+    config = Config.load()
     if config.lookup("clone", None) is not None:
         cerror("Deprecated 'clone' section found in the cranky config file.")
         cerror("You need to remove it or rename it to 'checkout'.")
