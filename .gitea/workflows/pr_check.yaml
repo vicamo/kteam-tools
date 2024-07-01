@@ -13,7 +13,7 @@ env:
   KERNEL_SERIES_USE: local
 
 jobs:
-  multi-series-tests:
+  multi-series-tests-ktl:
     strategy:
       matrix:
         image:
@@ -42,6 +42,33 @@ jobs:
           git config --global user.name "Bot"
           pip3 install xdg
           (cd ktl/tests && python3 -m unittest -v)
+
+  multi-series-tests-cranky:
+    strategy:
+      matrix:
+        image:
+          - ubuntu-22.04
+    runs-on: ${{ matrix.image }}
+    steps:
+      - step:
+        name: Clone
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
+      - step:
+        name: Show Versions
+        run: |
+          cat /etc/os-release
+          python3 --version
+          pip3 list
+      - step:
+        name: Run Tests
+        run: |
+          git config --global user.email "noreply+ckctreview-bot@canonical.com"
+          git config --global user.name "Bot"
+          pip3 install xdg
           # See Gitea Issue # 414
           #(cd cranky/crl/tests && python3 -m unittest -v)
           (cd cranky/ && python3 -m pytest)
