@@ -30,7 +30,7 @@ class HandleCore:
         self.series = series
         self.package = package
         self.source = source
-        self.config = Config() if config is None else config
+        self.config = Config.load() if config is None else config
         self.ks = KernelSeries() if ks is None else ks
         self.name = "" if series is None or package is None else "{}:{}".format(series.codename, package.name)
 
@@ -272,7 +272,7 @@ class HandleSet(HandleCore):
 class Handle:
     def __init__(self, config=None):
         if config is None:
-            config = Config()
+            config = Config.load()
         self.config = config
 
     def directory_identity(self, directory):
