@@ -10,7 +10,7 @@ dependencies = [
   "python-debian",
   "pyyaml",
   "python-dateutil",
-  "python-apt",
+  "python-apt @ git+https://salsa.debian.org/apt-team/python-apt.git@2.8.0",
   "xdg",
 ]
 
