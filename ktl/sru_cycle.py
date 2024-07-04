@@ -101,7 +101,9 @@ class SruCycleSpinEntry:
 
         self._previous_cycle = data.get('previous-cycle')
         self._previous_cycle_explicit = self._previous_cycle is not None
-        self._owner = owner
+        self._owner = data.get('owner')
+        if owner is not None:
+            self._owner = owner
 
     def __eq__(self, other):
         '''
