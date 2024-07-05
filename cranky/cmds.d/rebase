@@ -49,7 +49,7 @@ do
 	shift
 	case "$arg" in
 		'--dry-run') set -- "$@" '-d' ;;
-		'--'*) echo "usage: ${usage}"; exit ;;
+		'--'*) echo "usage: ${usage}"; exit 2 ;;
 		*) set -- "$@" "$arg" ;;
 	esac
 done

@@ -53,7 +53,7 @@ while [ "$#" -gt 0 ]; do
 			;;
 		*)
 			usage
-			exit 1
+			exit 2
 			;;
 	esac
 	shift
