@@ -1,0 +1,43 @@
+#!/usr/bin/python3
+
+from ktl.swm_status import SwmStatus
+from ktl.tracking_bug2 import TrackingBugs, TrackingBugError
+
+
+class SwmAdditionalCreate:
+
+    def __init__(self):
+        self.ss = SwmStatus()
+
+    def fix_snap_to_snap_linkage(self):
+        snap_parent = {}
+        snap_link = []
+        for tracker_id, tracker in self.ss.trackers.items():
+            cycle = tracker.get("cycle")
+            series = tracker.get("series")
+            source = tracker.get("source")
+            target = tracker.get("target")
+            parent = tracker.get("master-bug")
+            if series == "focal" and source == "linux-uc20-intel-iotg":
+                if target == "intel-iotg-kernel":
+                    snap_parent[cycle] = str(tracker_id)
+                elif target == "intel-kernel":
+                    snap_link.append((str(tracker_id), cycle, str(parent)))
+
+        tbs = None
+        for tracker_id, cycle, parent in snap_link:
+            want_parent = snap_parent[cycle]
+            if parent != want_parent:
+                print(tracker_id, cycle, parent, want_parent)
+                if tbs is None:
+                    tbs = TrackingBugs()
+                tb = tbs.add(tracker_id)
+                tb.wf_set_property('kernel-stable-master-bug', int(want_parent))
+                tb.save()
+
+    def main(self):
+        self.fix_snap_to_snap_linkage()
+
+
+if __name__ == "__main__":
+    SwmAdditionalCreate().main()
