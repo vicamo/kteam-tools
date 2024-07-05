@@ -246,7 +246,7 @@ chroot_update()
 usage()
 {
 	cat <<EOF
-Usage: cranky chroot <commands> <args>...
+Usage: cranky chroot [-h] <commands> <args>...
 commands:
   create-base [-w <which>] [<series>|<handle>]
       Create a base sbuilder chroot for the series of the handle package.
@@ -271,6 +271,8 @@ positional arguments:
       Kernel series. This is equivalent to the handle <series>:linux.
 
 optional arguments:
+  -h|--help
+      Show this help message and exit.
   -w|--which <which>
       String appended to the default session name.
   -u|--user <user>
@@ -307,12 +309,14 @@ DEPRECATION NOTE:
   Create the new session:
   $ cranky chroot create-session <handle>
 EOF
-
-	exit 2
 }
 
 # MAIN:
-[ "$#" -lt 1 ] && usage
+if [ $# -lt 1 ] ; then
+	usage
+	exit 2
+fi
+
 cmd="$1"
 shift
 
@@ -334,6 +338,7 @@ case "$cmd" in
 				*)
 					if [ -n "$handle" ] ; then
 						usage
+						exit 2
 					fi
 					handle="$1"
 					;;
@@ -361,6 +366,7 @@ case "$cmd" in
 				*)
 					if [ -n "$handle" ]; then
 						usage
+						exit 2
 					fi
 					handle="$1"
 					;;
@@ -369,10 +375,16 @@ case "$cmd" in
 		done
 		if [ "$#" -eq 0 ] || [ "$separator" -eq 0 ]; then
 			usage
+			echo 2
 		fi
+		;;
+	-h|--help)
+		usage
+		exit
 		;;
 	*)
 		usage
+		exit 2
 		;;
 esac
 

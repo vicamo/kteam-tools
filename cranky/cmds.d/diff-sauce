@@ -45,6 +45,23 @@ function format_tags {
         -e "s/^+++ \/dev\/fd\/[0-9]*/+++ ${ubuntu_tag2}/"
 }
 
+function usage()
+{
+    cat <<EOF
+Usage: diff-sauce [-h] <UBUNTU_TAG1> <UBUNTU_TAG2>
+
+Compare SAUCE patches applied between two different Ubuntu tags.
+
+Optional arguments:
+  -h, --help  Show this help message and exit.
+EOF
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ] ; then
+    usage
+    exit
+fi
+
 # Must be executed from a git repository
 if [ ! -d .git ]; then
     echo "error: must run from an Ubuntu kernel git repository"
@@ -53,8 +70,8 @@ fi
 
 # Parse arguments
 if [ $# -ne 2 ]; then
-    echo "Usage: diff-sauce <UBUNTU_TAG1> <UBUNTU_TAG2>"
-    exit 1
+    usage
+    exit 2
 fi
 ubuntu_tag1=$1
 ubuntu_tag2=$2

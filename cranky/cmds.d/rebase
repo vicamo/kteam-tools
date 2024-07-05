@@ -41,7 +41,8 @@ usage+="-r RELEASE_REPO		Git repository to fetch the reference branch from."$'\n
 usage+="-b REMOTE_BRANCH	Remote branch to fetch from."$'\n'
 usage+="-l LOCAL_BRANCH		Use LOCAL_BRANCH as the reference branch."$'\n'
 usage+="-o 			Rebase against own kernel."$'\n'
-usage+="-d,--dry-run		Dry run (do not rebase)."
+usage+="-d, --dry-run		Dry run (do not rebase)."$'\n'
+usage+="-h, --help		Show this help message and exit."
 
 # Convert long options to short options
 for arg in "$@"
@@ -49,6 +50,7 @@ do
 	shift
 	case "$arg" in
 		'--dry-run') set -- "$@" '-d' ;;
+		'--help') echo "usage: ${usage}"; exit ;;
 		'--'*) echo "usage: ${usage}"; exit 2 ;;
 		*) set -- "$@" "$arg" ;;
 	esac
@@ -60,14 +62,15 @@ done
 # [-b REMOTE_BRANCH] - override default remote branch.
 # [-l LOCAL_BRANCH]  - do not fetch from remote repo, use a local branch.
 
-while getopts "r:b:l:od" opt; do
+while getopts "r:b:l:odh" opt; do
 	case $opt in
 	r ) RELEASE_REPO="$OPTARG" ;;
 	b ) SOURCE_RELEASE_BRANCH="$OPTARG" ;;
 	l ) LOCAL_BRANCH="$OPTARG" ;;
 	d ) DRY_RUN=1 ;;
 	o ) OWN=1 ;;
-	\? ) echo "usage: ${usage}"; exit ;;
+	h ) echo "usage: ${usage}"; exit ;;
+	\? ) echo "usage: ${usage}"; exit 2 ;;
 	esac
 done
 shift $((OPTIND - 1))
