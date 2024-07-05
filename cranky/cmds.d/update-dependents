@@ -27,7 +27,6 @@ Examples:
       Iterate over all dependent packages of jammy:linux-oracle and run
       cranky update-dependent against them.
 EOF
-	exit 2
 }
 
 rollback_on_error=
@@ -35,6 +34,7 @@ for arg in "$@" ; do
 	case "${arg}" in
 		-h|--help)
 			usage
+			exit
 			;;
 		# Consume options that should not be forwarded to update-dependent
 		-r|--rollback)

@@ -101,7 +101,6 @@ Notes:
   into the user's home directory on the builder, installs the git hook that
   triggers the actual build and adds a git remote to the local repo.
 EOF
-	exit 2
 }
 
 host=
@@ -131,6 +130,7 @@ while [ "${#}" -gt 0 ] ; do
 			;;
 		-h|--help)
 			usage
+			exit
 			;;
 		-o|--outdir)
 			shift
@@ -146,6 +146,7 @@ while [ "${#}" -gt 0 ] ; do
 		*)
 			if [ -n "${host}" ] ; then
 				usage
+				exit 2
 			fi
 			host=${1}
 			;;
@@ -157,6 +158,7 @@ remote="${host}"
 
 if [ -z "${host}" ] ; then
 	usage
+	exit 2
 fi
 
 if ! [ -e .git ] ; then

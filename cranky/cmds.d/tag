@@ -18,7 +18,6 @@ Optional arguments:
   -f, --force    Replace a tag if it already exists.
   -v, --verbose  Show extra info when running.
 EOF
-	exit 2
 }
 
 debug=0
@@ -27,6 +26,7 @@ while [ "${#}" -gt 0 ] ; do
 	case "${1}" in
 		-h|--help)
 			usage
+			exit
 			;;
 		-v|--verbose)
 			debug=1
@@ -37,6 +37,7 @@ while [ "${#}" -gt 0 ] ; do
 		*)
 			echo "error: Unrecognized argument ${1}" >&2
 			usage
+			exit 2
 			;;
 	esac
 	shift

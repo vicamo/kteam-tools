@@ -14,13 +14,13 @@ Optional arguments:
   -f, --force    Replace a tag if it already exists.
   -v, --verbose  Show extra info when running.
 EOF
-	exit 2
 }
 
 for arg in "$@" ; do
 	case "${arg}" in
 		-h|--help)
 			usage
+			exit
 			;;
 	esac
 done

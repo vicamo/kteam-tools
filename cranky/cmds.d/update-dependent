@@ -134,14 +134,14 @@ while [ $# -gt 0 ] ; do
 	case "${1}" in
 		-h|--help)
 			usage
-			exit 2
+			exit
 			;;
 		--ignore-abi-check)
 			ignore_abi_check=1
 			;;
 		*)
 			echo "Unexpected argument: ${1}" >&2
-			exit 1
+			exit 2
 			;;
 	esac
 	shift

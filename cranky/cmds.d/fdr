@@ -24,7 +24,7 @@ Optional arguments:
   -h, --help            Show this help message and exit.
 
 EOF
-[ -z "$alias" ] && cat << EOF
+[ -n "$alias" ] || cat << EOF
 Examples:
   Clean build files and update configs:
     \$ cranky fdr clean updateconfigs
