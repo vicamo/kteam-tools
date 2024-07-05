@@ -19,7 +19,7 @@ function out()
 
 function usage()
 {
-	cat - 1>&2 <<EOM
+	cat <<EOM
 Usage: $0 [-h] [-v]
 
 cranky fix -- fix various common files from kteam-tools for main packages, and
@@ -32,7 +32,6 @@ options:
                   when handle is a directory and the tip otherwise.
 
 EOM
-	exit 1
 }
 
 verbose=0
@@ -43,6 +42,7 @@ while [ "$#" -gt 0 ] ; do
 	case "${1}" in
 		-h|--help)
 			usage
+			exit
 			;;
 		-v|--verbose)
 			verbose=1
@@ -55,6 +55,7 @@ while [ "$#" -gt 0 ] ; do
 		*)
 			echo "error: Unrecognized argument ${1}" >&2
 			usage
+			exit 2
 			;;
 	esac
 	shift
