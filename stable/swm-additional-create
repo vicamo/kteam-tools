@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+from copy import deepcopy
+
+from ktl.kernel_series import KernelSeries
 from ktl.swm_status import SwmStatus
 from ktl.tracking_bug2 import TrackingBugs, TrackingBugError
 
@@ -8,6 +11,7 @@ class SwmAdditionalCreate:
 
     def __init__(self):
         self.ss = SwmStatus()
+        self.ks = KernelSeries.tip()
 
     def fix_snap_to_snap_linkage(self):
         snap_parent = {}
@@ -35,8 +39,75 @@ class SwmAdditionalCreate:
                 tb.wf_set_property('kernel-stable-master-bug', int(want_parent))
                 tb.save()
 
+    def fix_esm_stream(self):
+        tbs = None
+        for tracker_id, tracker in self.ss.trackers.items():
+            cycle = tracker.get("cycle")
+            series = tracker.get("series")
+            source = tracker.get("source")
+            target = tracker.get("target")
+            parent = tracker.get("master-bug")
+            ks_series = self.ks.lookup_series(codename=series)
+            if ks_series is None or not ks_series.esm:
+                continue
+
+            prepare_package = tracker.get("task", {}).get("prepare-package", {})
+            snap_prepare = tracker.get("task", {}).get("snap-prepare", {})
+            if (
+                prepare_package.get("status", "Invalid") not in ("New", "Confirmed")
+                and snap_prepare.get("status", "Invalid") not in ("New", "Confirmed")
+            ):
+                continue
+
+            stream_id = tracker.get("built", {}).get("route-entry")
+            if stream_id != 2:
+                continue
+
+            print(cycle, tracker_id, series, "ESM unprepared stream#2")
+            if tbs is None:
+                tbs = TrackingBugs()
+            tb = tbs.add(tracker_id)
+            built_old = tb.wf_get_property("built")
+            built = deepcopy(built_old)
+            built["route-entry"] = 1
+            if built_old != built:
+                print(" updating stream to #1")
+                tb.wf_set_property("built", built)
+                tb.save()
+
+    def fix_snaps_on_stream_2(self):
+        tbs = None
+        for tracker_id, tracker in self.ss.trackers.items():
+            cycle = tracker.get("cycle")
+            series = tracker.get("series")
+            source = tracker.get("source")
+            target = tracker.get("target")
+            parent = tracker.get("master-bug")
+
+            prepare_package = tracker.get("task", {}).get("snap-prepare", {})
+            if prepare_package.get("status", "Invalid") not in ("New", "Confirmed"):
+                continue
+
+            stream_id = tracker.get("built", {}).get("route-entry")
+            if stream_id != 2:
+                continue
+
+            if tbs is None:
+                tbs = TrackingBugs()
+            tb = tbs.add(tracker_id)
+            built = tb.wf_get_property("built")
+
+            if built.get("route-entry") != 2:
+                continue
+
+            print(cycle, tracker_id, series, source, target, "snap unprepared stream#2")
+            tb.invalidate()
+
+
     def main(self):
         self.fix_snap_to_snap_linkage()
+        self.fix_esm_stream()
+        self.fix_snaps_on_stream_2()
 
 
 if __name__ == "__main__":
