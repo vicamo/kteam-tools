@@ -798,6 +798,16 @@ because you are part of cranky rotation, then the assignee is
 automatically assigned to you by swm, therefore no need to change it. But
 this won't happen if the status is not Kernel Peer Review.
 
+### Doing a review - `cranky pull-review`
+
+The text of the review request is standardised and created from the
+`cranky push-review` command. It can be passed to the stdin of pull-review
+to checkout the review locally.
+
+It will checkout the review tags and the artifacts into the cranky basepath.
+
+### Review completed
+
 After source packages and git repositories have been reviewed and acknowledged
 by another kernel team member, this person could either upload the packages
 themselves or send them back to the cranker for upload. For the latter, copy
