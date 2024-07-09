@@ -26,6 +26,7 @@ _cranky() {
 		"list-routing -h --help -v --verbose HANDLE"
 		"open -h --help -d --dry-run -r --reuse-abi"
 		"promote-snap -h --help --dry-run --debug"
+		"pull-review -h --help --dry-run"
 		"pull-source -h --help -n --no-verify"
 		"pull-sources  -h --help -n --no-verify -l --latest HANDLE"
 		"push-refs -h --help --nc --dry-run HANDLE"
