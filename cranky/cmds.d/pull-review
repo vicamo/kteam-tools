@@ -32,11 +32,11 @@ from ktl.log import cnotice, cdebug, Clog
 @dataclass
 class CommandBuilder:
     dry_run: bool
-    cwd: str
+    cwd: str = None
     prefix: str = ""
 
     def run(self, desc: str, cmd: Tuple, check=True, *args, **kwargs):
-        if "cwd" not in kwargs:
+        if "cwd" not in kwargs and self.cwd is not None:
             kwargs["cwd"] = self.cwd
 
         pretty_cmd = " ".join(cmd)
@@ -52,9 +52,6 @@ class CommandBuilder:
         subprocess.run(cmd, check=check, *args, **kwargs)
 
 
-TMP_BRANCH = "__cranky-pull-review-tmp"
-
-
 def main(dry_run, nc):
     Clog.color = sys.stdout.isatty() and not nc
 
@@ -65,16 +62,18 @@ def main(dry_run, nc):
     origin_handle = review.origin_handle
     cnotice(f"Found origin handle {origin_handle}")
 
+    # Doing the checkout before creating the handle is important,
+    # as the git tree can be inconsistent before that.
+    cmd = CommandBuilder(dry_run)
+    cmd.run("Checkout origin", ("cranky", "checkout", origin_handle))
+
     hdl = Handle()
     git_tree = hdl.lookup_tree(origin_handle)
     base_path = os.path.dirname(git_tree.directory)
 
-    cmd = CommandBuilder(dry_run, base_path)
-
     url = review.packages.url
+    cmd = CommandBuilder(dry_run, base_path)
     cmd.run(f"Download built packages from {url}", ("rsync", "-avz", f"{url}/*", "."))
-
-    # cmd.run("Checkout origin", ("cranky", "checkout", origin_handle))
 
     for repo in review.repos:
         git_tree = os.path.join(base_path, repo.dir)
@@ -84,25 +83,14 @@ def main(dry_run, nc):
         cmd.run("Add    'review' remote", ("git", "remote", "add", "review", repo.url))
         cmd.run("Fetch tag into FETCH_HEAD", ("git", "fetch", "review", repo.tag))
 
-        # Checking out a temporary branch is needed in case HEAD is pointing to review_branch,
-        # because git cannot delete a currently checked out branch.
-        cmd.run(f"Checkout a temporary branch named {TMP_BRANCH}", ("git", "checkout", "-b", TMP_BRANCH))
-
-        cmd.run(
-            f"Delete eventual previous review branch {review_branch}",
-            ("git", "branch", "-D", review_branch),
-            check=False,
-        )
-
         cmd.run(
             f"Checkout review tag {repo.tag}",
             ("git", "fetch", "review", f"refs/tags/{repo.tag}:refs/tags/{repo.tag}", "--no-tags"),
         )
         cmd.run(
             f"Checkout FETCH_HEAD into review branch {review_branch}",
-            ("git", "checkout", repo.tag, "-b", review_branch),
+            ("git", "checkout", repo.tag, "-B", review_branch),
         )
-        cmd.run(f"Delete temporary branch {TMP_BRANCH}", ("git", "branch", "-D", TMP_BRANCH), check=False)
 
 
 if __name__ == "__main__":
