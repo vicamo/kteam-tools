@@ -58,6 +58,7 @@ def main(dry_run, nc):
     lines = sys.stdin.readlines()
     review = Review.from_lines(lines)
     review_branch = f"review-{review.user}"
+    review_remote = f"review-{review.user}"
 
     origin_handle = review.origin_handle
     cnotice(f"Found origin handle {origin_handle}")
@@ -79,13 +80,13 @@ def main(dry_run, nc):
         git_tree = os.path.join(base_path, repo.dir)
         cmd = CommandBuilder(dry_run, git_tree, prefix=f"[{repo.repo}] ")
 
-        cmd.run("Remove 'review' remote", ("git", "remote", "remove", "review"), check=False)
-        cmd.run("Add    'review' remote", ("git", "remote", "add", "review", repo.url))
-        cmd.run("Fetch tag into FETCH_HEAD", ("git", "fetch", "review", repo.tag))
+        cmd.run(f"Remove '{review_remote}' remote", ("git", "remote", "remove", review_remote), check=False)
+        cmd.run(f"Add    '{review_remote}' remote", ("git", "remote", "add", review_remote, repo.url))
+        cmd.run(f"Fetch tag {repo.tag} into FETCH_HEAD", ("git", "fetch", review_remote, repo.tag))
 
         cmd.run(
             f"Checkout review tag {repo.tag}",
-            ("git", "fetch", "review", f"refs/tags/{repo.tag}:refs/tags/{repo.tag}", "--no-tags"),
+            ("git", "fetch", review_remote, f"refs/tags/{repo.tag}:refs/tags/{repo.tag}", "--no-tags"),
         )
         cmd.run(
             f"Checkout FETCH_HEAD into review branch {review_branch}",
