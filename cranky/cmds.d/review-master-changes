@@ -89,11 +89,8 @@ version2commit() {
 	printf "%s" "$prev_commit_id"
 }
 
-# Load values from the config file and fallback to the default values
-git_cmd=$("$C" shell-helper config review-master-changes.git-cmd .)
-git_cmd="${git_cmd:-$default_git_cmd}"
-exclude=$("$C" shell-helper config review-master-changes.exclude .)
-exclude="${exclude:-$default_exclude}"
+git_cmd=
+exclude=
 
 while [ "$#" -gt 0 ]; do
 	case "$1" in
@@ -135,6 +132,16 @@ CONF="$DEBIAN/etc/update.conf"
 if ! [ -f "$CONF" ]; then
 	echo "\"$CONF\" is missing! Skipping non derivative kernel."
 	exit 0
+fi
+
+# Load values from the config file and fallback to the default values
+if [ -z "${git_cmd}" ] ; then
+	git_cmd=$("$C" shell-helper config review-master-changes.git-cmd .)
+	git_cmd="${git_cmd:-$default_git_cmd}"
+fi
+if [ -z "${exclude}" ] ; then
+	exclude=$("$C" shell-helper config review-master-changes.exclude .)
+	exclude="${exclude:-$default_exclude}"
 fi
 
 RELEASE_REPO=

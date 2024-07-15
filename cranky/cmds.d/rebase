@@ -18,24 +18,6 @@ function out()
 	exit "${rc}"
 }
 
-trap out EXIT INT TERM HUP
-
-if [ -f debian/debian.env ]; then
-	# shellcheck disable=SC1091
-	. debian/debian.env
-fi
-
-if [ ! -d "${DEBIAN}" ]; then
-	echo You must run this script from the top directory of this repository.
-	exit 1
-fi
-
-CONF="${DEBIAN}"/etc/update.conf
-if [ -f "${CONF}" ]; then
-	# shellcheck disable=SC1090
-	. "${CONF}"
-fi
-
 usage="$0 [-r RELEASE_REPO] [ -b REMOTE_BRANCH ] [-l LOCAL_BRANCH] [-d]"$'\n\n'
 usage+="-r RELEASE_REPO		Git repository to fetch the reference branch from."$'\n'
 usage+="-b REMOTE_BRANCH	Remote branch to fetch from."$'\n'
@@ -74,6 +56,24 @@ while getopts "r:b:l:odh" opt; do
 	esac
 done
 shift $((OPTIND - 1))
+
+trap out EXIT INT TERM HUP
+
+if [ -f debian/debian.env ]; then
+	# shellcheck disable=SC1091
+	. debian/debian.env
+fi
+
+if [ ! -d "${DEBIAN}" ]; then
+	echo You must run this script from the top directory of this repository.
+	exit 1
+fi
+
+CONF="${DEBIAN}"/etc/update.conf
+if [ -f "${CONF}" ]; then
+	# shellcheck disable=SC1090
+	. "${CONF}"
+fi
 
 # For normal trees the fact that the update.conf file exists means that they are rebase
 # kernels. There are some special trees which started with uc20-efi, which have that

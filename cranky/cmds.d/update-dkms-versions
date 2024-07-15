@@ -29,16 +29,6 @@ Optional arguments:
 EOF
 }
 
-if ! [ -d debian ] ; then
-	echo "Not in a Debian package tree" >&2
-	exit 1
-fi
-
-if [ -f update-dkms-versions ] ; then
-	echo "In-tree update-dkms-versions script exists, you should use that" >&2
-	exit 1
-fi
-
 remote_repo=
 remote_branch="main"
 sru_cycle=
@@ -71,6 +61,16 @@ while [ ${#} -gt 0 ] ; do
 	esac
 	shift
 done
+
+if ! [ -d debian ] ; then
+	echo "Not in a Debian package tree" >&2
+	exit 1
+fi
+
+if [ -f update-dkms-versions ] ; then
+	echo "In-tree update-dkms-versions script exists, you should use that" >&2
+	exit 1
+fi
 
 trap out EXIT INT TERM HUP
 
