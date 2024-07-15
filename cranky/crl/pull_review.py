@@ -2,6 +2,7 @@
 
 """
 
+from crl.git import GitHandleSet
 from typing import List
 from dataclasses import dataclass
 
@@ -18,12 +19,13 @@ class RepoReview:
         repo = repo[:-1]
         return cls(repo, url, tag)
 
-    @property
-    def dir(self) -> str:
-        if self.repo == "linux":
-            return "linux-main"
-
-        return self.repo
+    def path(self, handle) -> str:
+        ghs = GitHandleSet(handle)
+        for gh in ghs:
+            ptype = gh.package.type or "main"
+            if (f"linux-{ptype}" == self.repo) or (self.repo == "linux" and ptype == "main"):
+                return gh.directory
+        raise ValueError(f"Unable to find matching tree for {handle} {self.repo}")
 
 
 @dataclass

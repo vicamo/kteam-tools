@@ -77,8 +77,7 @@ def main(dry_run, nc):
     cmd.run(f"Download built packages from {url}", ("rsync", "-avz", f"{url}/*", "."))
 
     for repo in review.repos:
-        git_tree = os.path.join(base_path, repo.dir)
-        cmd = CommandBuilder(dry_run, git_tree, prefix=f"[{repo.repo}] ")
+        cmd = CommandBuilder(dry_run, repo.path(origin_handle), prefix=f"[{repo.repo}] ")
 
         cmd.run(f"Remove '{review_remote}' remote", ("git", "remote", "remove", review_remote), check=False)
         cmd.run(f"Add    '{review_remote}' remote", ("git", "remote", "add", review_remote, repo.url))
