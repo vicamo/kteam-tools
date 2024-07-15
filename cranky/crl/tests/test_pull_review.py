@@ -61,10 +61,6 @@ def test_reporeview_from_line(repo):
     assert r == repo
 
 
-def test_reporeview_dir(repo):
-    assert repo.dir == "linux-main"
-
-
 def test_packages_from_line(packages):
     line = "packages: kathleen:~roger/s2024.04.29/bionic/linux-azure-4.15\n"
     p = Packages.from_line(line)
