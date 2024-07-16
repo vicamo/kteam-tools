@@ -94,7 +94,8 @@ if ! variants=$("$C" shell-helper list-variants "${cycle_opt[@]}"); then
        exit 1
 fi
 
-cranky_root=$(dirname "$C")
+here=$(dirname "$(readlink -f "${0}")")
+cranky_root=$(readlink -f "${here}"/..)
 
 bug="1786013"
 FIX_VERBOSE="${verbose}" \
