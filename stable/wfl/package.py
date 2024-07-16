@@ -1340,6 +1340,8 @@ class Package():
         # Scan across the build locations and dertermine if we see an upload in an appropriate
         # version.  Use this to set the built_in if we don't have one.
         for pkg in s.pkgs:
+            if "ppa" not in s.builds[pkg]:
+                continue
             package_published = s.builds[pkg]["ppa"].version_match(exact=s.bug.version, limit_stream=s.bug.built_in)
             if package_published is None:
                 if pkg == "lbm":
@@ -1927,7 +1929,9 @@ class Package():
         package_version = self.package_version_exact(pkg)
         if package_version is None:
             return None
-        pocket_route_entry = self.builds[pkg][pocket].version_match(exact=package_version, limit_stream=self.bug.built_in)
+        pocket_route_entry = None
+        if pocket in self.builds[pkg]:
+            pocket_route_entry = self.builds[pkg][pocket].version_match(exact=package_version, limit_stream=self.bug.built_in)
         if pocket_route_entry is None:
             return None
         return pocket_route_entry.status
@@ -2595,7 +2599,11 @@ class Package():
         # delay.
         routing = s.routing('Proposed')
         archive = None
-        if s.bug.built_in is not None and s.bug.built_in <= len(routing):
+        if (
+            s.bug.built_in is not None
+            and routing is not None
+            and s.bug.built_in <= len(routing)
+        ):
             (archive, pocket) = routing[s.bug.built_in - 1]
         if archive is not None and archive.reference == 'ubuntu':
             delay = timedelta(hours=1)
