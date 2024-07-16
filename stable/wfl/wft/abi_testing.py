@@ -46,7 +46,14 @@ class AbiTesting(TaskHandler):
         retval = False
 
         present = s.bug.task_status("prepare-package") == "Fix Released"
-        if not present:
+
+        # If we have no routing for Proposed then there is nothing to test.
+        if s.bug.debs.routing('Proposed') is None:
+            cinfo("abi-testing invalid with no Proposed route")
+            s.task.status = 'Invalid'
+            retval = True
+
+        elif not present:
             if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
                 cinfo('Kernel no longer present in build moving Aborted (Opinion)', 'yellow')
                 s.task.status = 'Opinion'

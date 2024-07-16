@@ -106,7 +106,14 @@ class CertificationTesting(TaskHandler):
         retval = False
 
         present = s.bug.debs.all_built_and_in_pocket_or_after('Proposed')
-        if not present:
+
+        # If we have no routing for Proposed then there is nothing to test.
+        if s.bug.debs.routing('Proposed') is None:
+            cinfo("certification-testing invalid with no Proposed route")
+            s.task.status = 'Invalid'
+            retval = True
+
+        elif not present:
             if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
                 cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
                 s.task.status = 'Opinion'
