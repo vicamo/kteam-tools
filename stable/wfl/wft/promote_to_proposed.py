@@ -172,6 +172,13 @@ class PromoteFromTo(Promoter):
         retval = False
 
         while not retval:
+            if s.pocket_src is None:
+                cinfo('            Source routing is no longer available', 'yellow')
+                s.task.status = 'New'
+                retval = True
+            break
+
+        while not retval:
             if s.task.status not in ('Confirmed'):
                 break
 
@@ -367,6 +374,11 @@ class PromoteFromTo(Promoter):
     def _recind(s):
         center(s.__class__.__name__ + '._recind')
         retval = False
+
+        if s.pocket_src is None:
+            cinfo("source route no longer valid, moving New")
+            s.task.status = "New"
+            retval = True
 
         # XXX: TRANSITION
         clamp = s.bug.clamp('promote-to-proposed')
