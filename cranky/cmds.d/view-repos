@@ -1,0 +1,98 @@
+#!/bin/bash -eu
+#
+# Open a web browser view of a particular kernel package
+# given a kernel handle and optional package types.
+#
+# John Cabaj <john.cabaj@canonical.com>
+#
+
+# Open repo in web browser
+function open_repo()
+{
+    REPO=$1
+
+    # Modify repo URL to open branch directly
+    REPO="${REPO//https:\/\//https:\/\/git.}"
+    REPO="${REPO//\/+ref\//?h=}"
+
+    # Extract URL and open in system's web browser
+    url=$(echo "$REPO" | cut -d' ' -f3)
+    x-www-browser "$url"
+}
+
+function usage()
+{
+	cat <<EOF
+Usage: cranky view-repos [-i] [-h] HANDLE
+
+View kernel repositories in web browser, given a kernel
+handle and optional dependent package repo comma-separated list.
+
+Positional arguments:
+  HANDLE  Handle to a kernel source.
+
+Optional arguments:
+  -i, --include               Exclude all package types EXCEPT for these (comma-separated) types.
+  -h, --help                  Show this help message and exit.
+
+Examples:
+  cranky view-repos jammy:linux-kvm
+
+Notes:
+  Giving no --include options will open all repos associated with the
+  kernel handle.
+EOF
+}
+
+includes=
+handle=
+
+while [ "${#}" -gt 0 ] ; do
+	case "${1}" in
+		-i|--include)
+			shift
+			includes="${1}"
+			;;
+		-h|--help)
+			usage
+			exit
+			;;
+		*)
+			if [ -z "$handle" ] ; then
+				handle=${1}
+			else
+				usage
+				exit 2
+			fi
+			;;
+	esac
+	shift
+done
+
+if [ -z "$handle" ] ; then
+	handle=${PWD}
+fi
+
+# Get list of repos from cranky list-repos
+readarray -t repos < <("$C" list-repos "$handle")
+if [ ${#repos[@]} -eq 0 ] ; then
+	exit 1
+fi
+
+# Loop through repos from all package types
+for repo in "${repos[@]}" ; do
+    # Opening repos from all package types
+    if [ -z "$includes" ] ; then
+        open_repo "$repo"
+    # Opening repos from only requested package types
+    else
+        # Loop through all requested package types
+        for include in ${includes//,/ } ; do
+            if [[ $repo == *$include* ]] ; then
+                open_repo "$repo"
+            fi
+        done
+    fi
+done
+
+exit 0
