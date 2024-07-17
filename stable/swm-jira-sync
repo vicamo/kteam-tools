@@ -16,7 +16,7 @@ import yaml
 
 from datetime import datetime, timedelta, timezone
 
-from jira import JIRA as BrokenJIRA
+from jira import JIRA
 from jira.resources import User
 
 # GreenHopperResource has been renamed to AgileResource in Jira 3.3.0, make
@@ -32,21 +32,6 @@ from ktl.swm_status import SwmStatus
 from wfl.launchpad import LaunchpadDirect
 
 
-class JIRA(BrokenJIRA):
-
-    # XXX: switch this from a `username` to a `query`.  In strict GDPR mode we no longer have
-    # a username, only an accountID.  See python3-jira/client.py for signature.
-    def search_users(
-        self, user, startAt=0, maxResults=50, includeActive=True, includeInactive=False
-    ):
-        params = {
-            "query": user,
-            "includeActive": includeActive,
-            "includeInactive": includeInactive,
-        }
-        return self._fetch_pages(User, None, "user/search", startAt, maxResults, params)
-
-
 def key_to_title(key):
     end = 4
     if key[2] == key[3]:
@@ -60,7 +45,7 @@ if __name__ == '__main__':
         if email not in jira_id_cache:
             jira_id = None
             print("LOOKUP", email)
-            users = jira.search_users(email)
+            users = jira.search_users(query=email)
             if users is not None and len(users) > 0:
                 jira_id = users[0].accountId
             else:
