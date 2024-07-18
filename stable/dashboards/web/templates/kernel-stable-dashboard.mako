@@ -349,6 +349,7 @@ def __status_bites(bug, attrs):
 <%
 import re
 import urllib.parse
+from datetime import datetime, timezone
 
 def cycle_key(cycle):
     # Move any cycle type prefix character to the end.
@@ -531,6 +532,13 @@ for bid in sorted(swm_trackers):
             text-decoration: none;
         }
 
+        .overdue a:link {
+            color: red;
+        }
+        .overdue a:visited {
+            color: red;
+        }
+
         .master a:link {
             color: darkblue;
             background-color: transparent;
@@ -623,6 +631,7 @@ for bid in sorted(swm_trackers):
                                         releases = data['releases']
                                         releases['00.00'] = 'unknown'
                                         cycle_first = True
+                                        now = datetime.now(timezone.utc).date()
                                     %>
                                     % for cycle in sorted(cycles, key=cycle_key):
                                         % if cycle_first is False:
@@ -666,13 +675,17 @@ for bid in sorted(swm_trackers):
                                                                 cell_stream = bug['stream']
                                                                 row_number += 1
                                                             row_style = ' background: #f6f6f6;' if row_number % 2 == 0 else ''
+                                                            if sru_cycle is not None and now > sru_cycle.release_date:
+                                                                overdue = " overdue"
+                                                            else:
+                                                                overdue = ""
                                                         %>
                                                         % if row_number == 1 and bug['bug'] is not None:
                                                             <tr class="entry-any owner-any phase-any cycle-${cycle}">
                                                                 <td colspan="7" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
                                                             </tr>
                                                         % endif
-                                                        <tr class="${bug['row-class']}" style="line-height: 100%;${row_style}">
+                                                        <tr class="${bug['row-class']}${overdue}" style="line-height: 100%;${row_style}">
                                                             <td>&nbsp;</td>
                                                             <td width="120" align="right" class="${bug['master-class']}">${cell_version}</td>
                                                             <td class="${bug['master-class']}">${cell_package}</a></td>
