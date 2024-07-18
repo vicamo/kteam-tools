@@ -19,6 +19,7 @@ from mako.exceptions                    import RichTraceback
 
 from ktl.sru_cycle                      import SruCycle
 from ktl.swm_status                     import SwmStatus
+from ktl.kernel_series                  import KernelSeries
 
 # CmdlineError
 #
@@ -192,6 +193,8 @@ class GenerateDashboard():
                         data[section] = SruCycle()
                     elif file_name == "SwmStatus":
                         data[section] = SwmStatus()
+                    elif file_name == "KernelSeries":
+                        data[section] = KernelSeries
                     else:
                         data[section] = data_load(file_name)
             except FileDoesntExist as e:
