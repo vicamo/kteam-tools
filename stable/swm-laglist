@@ -123,11 +123,12 @@ class CycleStatus:
                 if self._byid[tid].get("variant", "") == 'snap-debs':
                     handle += " [snap]"
 
+                print(f'  - {priority}{handle} (LP: #{tid})', end='')
                 blocking = self.get_nr_blocking(tid)
                 if blocking == 0:
-                    print(f'  - {priority}{handle}')
+                    print()
                 else:
-                    print(f'  - {priority}{handle} ({blocking} sources are waiting on this)')
+                    print(f' ({blocking} sources are waiting on this)')
 
 
 if __name__ == "__main__":
