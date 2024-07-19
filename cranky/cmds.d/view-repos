@@ -17,7 +17,7 @@ function open_repo()
 
     # Extract URL and open in system's web browser
     url=$(echo "$REPO" | cut -d' ' -f3)
-    xdg-open "$url" > /dev/null &
+    xdg-open "$url" > /dev/null 2>&1
 }
 
 function usage()
