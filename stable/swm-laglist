@@ -61,7 +61,28 @@ class CycleStatus:
     def has_lrm(self, tid):
         return self._byid[tid].get("packages", {}).get("lrm", "") != ""
 
-    def list_by_owner(self, ignore=[], lrm=False, crankable=False):
+    def print_tid_tasks(self, tid):
+        task_list_deb = ['automated-testing', 'boot-testing', 'certification-testing',
+                         ':prepare-packages', 'regression-testing', 'verification-testing']
+        task_list_snap = ['snap-prepare', 'snap-certification-testing']
+        ignore_status = ['Invalid', 'Fix Released', 'New']
+
+        if self._byid[tid].get("variant", "") == 'snap-debs':
+            task_list = task_list_snap
+        else:
+            task_list = task_list_deb
+
+        for task in task_list:
+            if task in self._byid[tid].get("task"):
+                status = self._byid[tid].get("task").get(task).get("status")
+            else:
+                continue
+
+            if status in ignore_status:
+                continue
+            print(f'      - {task} - {status}')
+
+    def list_by_owner(self, ignore=[], lrm=False, crankable=False, tasks=False):
         by_owner = dict()
 
         for tid in self._byid:
@@ -130,6 +151,9 @@ class CycleStatus:
                 else:
                     print(f' ({blocking} sources are waiting on this)')
 
+                if tasks:
+                    self.print_tid_tasks(tid)
+
 
 if __name__ == "__main__":
     desc = """
@@ -145,6 +169,11 @@ swm-laglist <DD.MM.YYYY>
     Either a source is not prepared, yet or has not finished all testing. Some
     issues cannot be resolved by the owner directly but at least it should prompt
     asking why this is not complete.
+
+swm-laglist --tasks <DD.MM.YYYY>
+
+    Prints under each kernel task an additional list of tracking bug tasks that need
+    attention (not in the following states: 'Invalid', 'New' or 'Fix Released').
 
 swm-laglist -i <spin number> [-i <spin number> [...]] <DD.MM.YYYY>
 
@@ -168,6 +197,8 @@ swm-laglist --lrm <DD.MM.YYYY>
                                      prog="swm-laglist")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Add more details to the output.")
+    parser.add_argument("-t", "--tasks", action="store_true",
+                        help="Print outstanding tasks")
     parser.add_argument("-i", "--ignore", metavar='<spin nr>', type=str, action="append",
                         default=[],
                         help="Ignore the given spin number (for security spins).")
@@ -196,4 +227,4 @@ swm-laglist --lrm <DD.MM.YYYY>
 
     print(f'Report on SRU Cycle {cdate} ({content})')
     cs = CycleStatus(args.cdate[0], verbose=args.verbose)
-    cs.list_by_owner(ignore=args.ignore, lrm=args.lrm, crankable=args.crankable)
+    cs.list_by_owner(ignore=args.ignore, lrm=args.lrm, crankable=args.crankable, tasks=args.tasks)
