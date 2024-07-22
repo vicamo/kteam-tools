@@ -72,8 +72,13 @@ class SourceReview(TaskHandler):
         # If all of our binaries are now ready upgrade to Triaged.
         status = s.task.status
         if status == 'Confirmed' and pps == 'Fix Released':
-            s.task.status = 'Triaged'
-            retval = True
+            # Triple check that they are indeed ready.
+            present = s.bug.debs.all_built_and_in_pocket_or_after('ppa')
+            if not present:
+                cinfo("new-review: trying to move to Triaged with incomplete builds")
+            else:
+                s.task.status = 'Triaged'
+                retval = True
 
         # If we are in confirmed and our prerequisites are no longer valid
         # pull back to new.
