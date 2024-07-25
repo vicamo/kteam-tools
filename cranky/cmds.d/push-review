@@ -116,7 +116,7 @@ source_short="${source#linux-}"
 
 remote_name="for-review-${host}"
 
-if ! cranky shell-helper list-handles | grep -q "${series}:${source}"; then
+if ! cranky shell-helper list-handles --cycle "${sru_cycle}" | grep -q "${series}:${source}"; then
 	pr_error "Corresponding kernel handle not found"
 	exit 1
 fi
