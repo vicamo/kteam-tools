@@ -68,8 +68,7 @@ def tree_main_path(args):
 
 
 def list_handles(args):
-    ks = KernelSeries.for_cycle(args.cycle)
-    for series in KernelSeries(ks=ks).series:
+    for series in KernelSeries.for_cycle(args.cycle).series:
         if not series.supported:
             continue
         for source in series.sources:
