@@ -35,6 +35,7 @@ Positional arguments:
 
 Optional arguments:
   -d, --dry-run               Do everything except push to the builder (recommended as first run).
+  -f, --force                 Overwrite remote tags (recommended when pushing a second time a review).
   -s, --sru-cycle             Specify the SRU cycle for the cranking. Can be passed as an environment
                               variable as 'SRU_CYCLE'.
   -h, --help                  Show this help message and exit.
