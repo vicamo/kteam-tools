@@ -45,7 +45,6 @@ files: >
   (?x)^(
     cranky/annotations-tools/.* |
     cranky/cmds.d/.* |
-    cranky/commands/.* |
     cranky/crl/.* |
     cranky/docs/.* |
     cranky/fixes.d/.* |
