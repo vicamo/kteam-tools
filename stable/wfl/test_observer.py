@@ -1,4 +1,5 @@
 import json
+import socket
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
@@ -34,6 +35,8 @@ class TestObserverResults:
             data = None
         except URLError as e:
             raise TestObserverError("fetch failure -- " + str(e.reason))
+        except socket.timeout as e:
+            raise TestObserverError("fetch failure -- " + str(e.args))
 
         if data is not None:
             if not isinstance(data, str):
