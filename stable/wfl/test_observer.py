@@ -14,6 +14,7 @@ class TestObserverError(ShankError):
 class TestObserverResults:
 
     _url = "https://test-observer-api.canonical.com/v1"
+    _broken = None
 
     def __init__(self, url=None, data=False):
         if url is None:
@@ -24,6 +25,8 @@ class TestObserverResults:
         self._data = {}
 
     def _grab_json(self, url):
+        if self._broken is not None:
+            raise self._broken
         try:
             headers = {"Content-Type": 'application/json'}
             req = Request(url, headers=headers, method="GET")
@@ -36,7 +39,8 @@ class TestObserverResults:
         except URLError as e:
             raise TestObserverError("fetch failure -- " + str(e.reason))
         except socket.timeout as e:
-            raise TestObserverError("fetch failure -- " + str(e.args))
+            TestObserverResults._broken = TestObserverError("fetch failure -- " + str(e.args))
+            raise TestObserverResults._broken
 
         if data is not None:
             if not isinstance(data, str):
