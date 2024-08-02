@@ -10,8 +10,8 @@ import re
 
 import apt_pkg
 
-BASE_PATH = "/home/kernel-ppa/public_html/mainline"
-BASE_URL = "https://kernel.ubuntu.com/~kernel-ppa/mainline"
+BASE_PATH = "/home/ubuntu/website/mainline"
+BASE_URL = "https://kernel.ubuntu.com/mainline"
 
 STATUS = {
     "0": "pass",
