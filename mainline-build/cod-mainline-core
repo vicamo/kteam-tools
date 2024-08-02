@@ -332,6 +332,23 @@ mv -f "$changelog.new" "$changelog"
 git commit -a -m "debian changelog"
 
 #
+# Override the specified gcc version if necessary
+#
+gcc_wanted=$(cat <<EOF | make -s -f - all
+include debian/rules
+all:
+	@echo \$(gcc)
+EOF
+)
+if [ -n "${gcc_wanted}" ] && ! do_chroot "${chroot_name}" dpkg -l "${gcc_wanted}-cross-base" ; then
+	# Wanted (cross-) gcc version is not installed, so fall back to the default
+	gcc_default=$(do_chroot_quiet "${chroot_name}" readlink "$(which gcc)")
+	sed -i "1igcc:=${gcc_default}" debian/rules.d/0-common-vars.mk
+	echo "II: use ${gcc_default} instead of ${gcc_wanted}"
+	git commit -a -m "use ${gcc_default} (instead of ${gcc_wanted})"
+fi
+
+#
 # Pull the specified version of the configs and default any new
 # configuration options.
 #
