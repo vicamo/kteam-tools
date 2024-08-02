@@ -318,7 +318,7 @@ class MonitorLaunchpadProject:
             print("TASK ({})".format(task.status), task, bug, bug.date_last_updated)
             if task.status == 'Confirmed':
                 instantiate.add(str(bug.id))
-                if len(instantiate) <= 8:
+                if len(instantiate) <= 10:
                     changed.add('instantiate', str(bug.id), reason="nascent tracker")
                 else:
                     print("DELAYING instantiate", str(bug.id))
