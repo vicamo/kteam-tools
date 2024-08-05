@@ -68,11 +68,24 @@ def tree_main_path(args):
 
 
 def list_handles(args):
-    for series in KernelSeries.for_cycle(args.cycle).series:
-        if not series.supported:
-            continue
+    development = args.cycle is not None and args.cycle[0] == "d"
+
+    def is_supported(s):
+        if development:
+            return s.development
+
+        return s.supported
+
+    if development:
+        series_list = KernelSeries.tip().series
+    else:
+        series_list = KernelSeries.for_cycle(args.cycle).series
+
+    for series in series_list:
+        # Some kernels are supported even if the entire series is not,
+        # usually for development
         for source in series.sources:
-            if not source.supported or source.copy_forward is not None:
+            if not is_supported(source) or source.copy_forward is not None:
                 continue
             print("{}:{}".format(series.codename, source.name))
 
