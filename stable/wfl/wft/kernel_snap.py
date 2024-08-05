@@ -309,11 +309,8 @@ class SnapPrepareManual(KernelSnapBase):
                     s.bug.snap.name, s.bug.version))
                 break
 
-            if s.is_v2v:
-                validate_version = s.bug.version
-            else:
-                validate_version = s.debs_bug.debs.package_version_exact("meta")
-            cinfo("validate_version={} v2v={}".format(validate_version, s.is_v2v))
+            validate_version = s.bug.version
+            cinfo("validate_version={} v2={} v2v={}".format(validate_version, s.is_v2, s.is_v2v))
             if not s.bug.snap.snap_validate_request(request, validate_version):
                 s.task.reason = 'Stalled -- snap package version missmatch'
                 if s.task.status != 'Incomplete':
