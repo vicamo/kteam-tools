@@ -175,9 +175,8 @@ publish_tip()
 				git bundle list-heads "$out/$which/$build/crack.bundle" | \
 				while read sha ref
 				do
-					git tag -d "$ref"
-					git fetch "$out/$which/$build/crack.bundle" "$ref:$ref"
-					git push origin "$ref:$ref"
+					git fetch --force "$out/$which/$build/crack.bundle" "$ref:$ref"
+					git push origin --force "$ref:$ref"
 				done
 			)
 		fi
