@@ -46,8 +46,8 @@ done
 
 while getopts "r:b:l:odh" opt; do
 	case $opt in
-	r ) RELEASE_REPO="$OPTARG" ;;
-	b ) SOURCE_RELEASE_BRANCH="$OPTARG" ;;
+	r ) _RELEASE_REPO="$OPTARG" ;;
+	b ) _SOURCE_RELEASE_BRANCH="$OPTARG" ;;
 	l ) LOCAL_BRANCH="$OPTARG" ;;
 	d ) DRY_RUN=1 ;;
 	o ) OWN=1 ;;
@@ -74,6 +74,9 @@ if [ -f "${CONF}" ]; then
 	# shellcheck disable=SC1090
 	. "${CONF}"
 fi
+
+RELEASE_REPO=${_RELEASE_REPO-${RELEASE_REPO}}
+SOURCE_RELEASE_BRANCH=${_SOURCE_RELEASE_BRANCH-${SOURCE_RELEASE_BRANCH}}
 
 # For normal trees the fact that the update.conf file exists means that they are rebase
 # kernels. There are some special trees which started with uc20-efi, which have that
