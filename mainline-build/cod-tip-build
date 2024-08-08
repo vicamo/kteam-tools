@@ -74,6 +74,7 @@ build()
 	local opts
 	local start_time
 	local end_time
+	local jobs
 
 	start_time=$(date +%s)
 
@@ -96,15 +97,25 @@ build()
 		do_chroot "$build_release-$build_arch" \
 			fakeroot debian/rules clean
 
+		# On large systems, limit the number of parallel jobs to 32 to prevent
+		# build failures like 'sh: 1: Cannot fork'. Hopefully...
+		jobs=$(getconf _NPROCESSORS_ONLN || echo 1)
+		if [ "$jobs" -gt 32 ] ; then
+			jobs=32
+		fi
+		echo "use $jobs parallel build jobs"
+
 		version=$(do_chroot_quiet "$build_release-$build_arch" dpkg-buildpackage --version | \
 			awk '(found == 1) {next;} {found=1; print $NF;}')
 		echo "dpkg-buildpackage version=$version"
-		opts=("-uc")
+
+		# Assemble the dpkg-buildpackage commandline arguments
+		opts=("-j$jobs" "-uc" "-a$arch" "$build" "-d")
 		if dpkg --compare-versions "$version" ge "1.18.19"; then
 			opts+=("-ui")
 		fi
 		do_chroot "$build_release-$build_arch" \
-			dpkg-buildpackage "${opts[@]}" -a"$arch" "$build" -d
+			dpkg-buildpackage "${opts[@]}"
 		rc="$?"
 		echo "$rc" >"$result/status"
 	} 2>&1 | tee -a "$result/log"
