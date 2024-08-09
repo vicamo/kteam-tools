@@ -108,7 +108,7 @@ class GitHandle:
         return sha1
 
     def get_current_tag(self):
-        cmd = ["git", "tag", "--points-at", "HEAD"]
+        cmd = ["git", "describe", "--abbrev=0"]
         tags = run(cmd, capture_output=True, cwd=self.directory).stdout.decode("utf-8")
         if len(tags) > 0:
             return tags.splitlines()[-1:][0]
