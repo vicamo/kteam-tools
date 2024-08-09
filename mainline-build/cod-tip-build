@@ -92,11 +92,6 @@ build()
 	{
 		echo "build from $commit ($sha)"
 
-		# Make things shiney.
-		git clean -x -f -d
-		do_chroot "$build_release-$build_arch" \
-			fakeroot debian/rules clean
-
 		# On large systems, limit the number of parallel jobs to 32 to prevent
 		# build failures like 'sh: 1: Cannot fork'. Hopefully...
 		jobs=$(getconf _NPROCESSORS_ONLN || echo 1)
@@ -108,6 +103,11 @@ build()
 		version=$(do_chroot_quiet "$build_release-$build_arch" dpkg-buildpackage --version | \
 			awk '(found == 1) {next;} {found=1; print $NF;}')
 		echo "dpkg-buildpackage version=$version"
+
+		# Make things shiney.
+		git clean -x -f -d
+		do_chroot "$build_release-$build_arch" \
+			fakeroot debian/rules clean
 
 		# Assemble the dpkg-buildpackage commandline arguments
 		opts=("-j$jobs" "-uc" "-a$arch" "$build" "-d")
