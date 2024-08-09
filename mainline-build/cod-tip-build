@@ -89,6 +89,8 @@ build()
 	mkdir -p "$result"
 	echo "build $arch/build on $build_arch ..."
 	{
+		echo "build from $commit ($sha)"
+
 		# Make things shiney.
 		git clean -x -f -d
 		do_chroot "$build_release-$build_arch" \
@@ -153,6 +155,8 @@ build_selftests()
 		mkdir -p "$result"
 		echo "build $arch/self-tests on $build_arch ..."
 		{
+			echo "build from $commit ($sha)"
+
 			# Make things shiney.
 			git clean -x -f -d
 			do_chroot "$build_release-$build_arch" \
