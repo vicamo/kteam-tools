@@ -48,7 +48,10 @@ shank)
 		exit 1
 	fi
 
-	"$here/../sbin/oops-run" swm "$here/../stable/swm-hero" "$@"
+	for arg in "$@"
+	do
+		"$here/../sbin/oops-run" swm "$here/../stable/swm-hero" "$arg"
+	done
 	;;
 retest)
 	if [ "$#" -lt 1 ]; then
