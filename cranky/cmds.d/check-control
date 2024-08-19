@@ -78,6 +78,36 @@ function check_linux_tools()
 	fi
 }
 
+function check_unused_do_flags()
+{
+	local note first line flag
+
+	echo "  - Check unused do_* build flags in ${DEBIAN}/rules.d/*.mk"
+
+	note=" (see LP: #2077306)"
+
+	first=1
+	while IFS= read -r line ; do
+		flag=${line#*:}
+		flag=${flag%%=*}
+		flag=${flag%% *}
+		case "${flag}" in
+			do_dkms*|do_zfs)
+				true
+				;;
+			*)
+				if ! grep -qE "\b${flag}\b" debian/rules debian/rules.d/* ; then
+					if [ ${first} -eq 1 ] ; then
+						first=0
+						echo "EE: Unused flags in rule files${note}" >&2
+					fi
+					RC=1
+					echo "EE:   - ${line}" >&2
+				fi
+		esac
+	done < <(git grep -oPH '\bdo_.*\b' "${DEBIAN}"/rules.d/* | tr "\t" " " | tr -s " " | sort -u)
+}
+
 function check_invalid_do_flags()
 {
 	local note flags
@@ -144,9 +174,10 @@ echo "Check debian/control"
 check_linux_source
 check_linux_tools
 
+echo
+echo "Check rules"
+check_unused_do_flags
 if [ "${SOURCE}" != "linux" ] ; then
-	echo
-	echo "Check rules"
 	check_invalid_do_flags
 fi
 
