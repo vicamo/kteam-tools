@@ -88,7 +88,7 @@ function check_do_tools_flags()
 
 	if grep -qE "\b(do_tools_common|do_tools_host)\b" "${DEBIAN}"/rules.d/*.mk ; then
 		echo "EE: Invalid/unnecessary flags in rule files${note}:" >&2
-		grep -E "\b(do_tools_common|do_tools_host)\b" "${DEBIAN}"/rules.d/*.mk
+		grep -E "\b(do_tools_common|do_tools_host)\b" "${DEBIAN}"/rules.d/*.mk | sed 's,^,EE:   - ,' >&2
 		RC=1
 	fi
 }
@@ -144,9 +144,12 @@ check_linux_source
 check_linux_tools
 
 if [ "${SOURCE}" != "linux" ] ; then
+	echo
 	echo "Check rules"
 	check_do_tools_flags
 fi
+
+echo
 
 if [ ${RC} -ne 0 ] ; then
 	echo "EE: Some checks failed" >&2
@@ -154,7 +157,6 @@ if [ ${RC} -ne 0 ] ; then
 	if [ "${series}" = "noble" ] ; then
 		exit 1
 	fi
-	echo
 	echo "WW: Please fix the reported packaging issues and/or report them to the kernel owner." >&2
 	echo "WW: This is currently just a warning but will be turned into an error in the future." >&2
 	exit 0
