@@ -78,17 +78,18 @@ function check_linux_tools()
 	fi
 }
 
-function check_do_tools_flags()
+function check_invalid_do_flags()
 {
-	local note
+	local note flags
 
-	echo "  - Check do_tools_* build flags in ${DEBIAN}/rules.d/*.mk"
+	echo "  - Check invalid do_* build flags in ${DEBIAN}/rules.d/*.mk"
 
 	note=" (see LP: #2048183)"
+	flags="do_tools_common|do_tools_host"
 
-	if grep -qE "\b(do_tools_common|do_tools_host)\b" "${DEBIAN}"/rules.d/*.mk ; then
+	if grep -qE "\b(${flags})\b" "${DEBIAN}"/rules.d/*.mk ; then
 		echo "EE: Invalid/unnecessary flags in rule files${note}:" >&2
-		grep -E "\b(do_tools_common|do_tools_host)\b" "${DEBIAN}"/rules.d/*.mk | sed 's,^,EE:   - ,' >&2
+		grep -E "\b(${flags})\b" "${DEBIAN}"/rules.d/*.mk | sed 's,^,EE:   - ,' >&2
 		RC=1
 	fi
 }
@@ -146,7 +147,7 @@ check_linux_tools
 if [ "${SOURCE}" != "linux" ] ; then
 	echo
 	echo "Check rules"
-	check_do_tools_flags
+	check_invalid_do_flags
 fi
 
 echo
