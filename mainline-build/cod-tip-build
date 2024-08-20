@@ -8,13 +8,18 @@ if [ "$#" -ne 5 ]; then
 	exit 1
 fi
 
-here=`dirname $0`
+here=$(dirname "$0")
 case "$here" in
 /*) ;;
-*)  here="`pwd`/$here" ;;
+*)  here=$(pwd)/$here ;;
 esac
 
+# 'master_main' is sourced from 'lib-build' but declare it here to please shellcheck.
+master_main=
+
+# shellcheck disable=SC1091
 . "$here/lib-build"
+# shellcheck disable=SC1091
 . "$here/lib-chroot"
 
 series="$1"
@@ -38,7 +43,7 @@ echo "$P.$arch $series $remote $commit $arch $out" >"$result/REBUILD"
 host=$( hostname )
 
 # Ensure we have the commit identified.
-repo_remote_update_list $remote
+repo_remote_update_list "$remote"
 
 # Make sure git is ready for anything...
 rm -rf .git/rebase-apply
@@ -67,8 +72,11 @@ build()
 	local result="$4"
 
 	local opts
-	local start_time=$( date +%s )
+	local start_time
 	local end_time
+	local jobs
+
+	start_time=$(date +%s)
 
 	# Clean out any existing .debs.
 	rm  "$master_main/"linux-{headers,image,modules}-*.deb
@@ -82,24 +90,36 @@ build()
 	mkdir -p "$result"
 	echo "build $arch/build on $build_arch ..."
 	{
+		echo "build from $commit ($sha)"
+
+		# On large systems, limit the number of parallel jobs to 32 to prevent
+		# build failures like 'sh: 1: Cannot fork'. Hopefully...
+		jobs=$(getconf _NPROCESSORS_ONLN || echo 1)
+		if [ "$jobs" -gt 32 ] ; then
+			jobs=32
+		fi
+		echo "use $jobs parallel build jobs"
+
+		version=$(do_chroot_quiet "$build_release-$build_arch" dpkg-buildpackage --version | \
+			awk '(found == 1) {next;} {found=1; print $NF;}')
+		echo "dpkg-buildpackage version=$version"
+
 		# Make things shiney.
 		git clean -x -f -d
 		do_chroot "$build_release-$build_arch" \
 			fakeroot debian/rules clean
 
-		version=$(do_chroot_quiet "$build_release-$build_arch" dpkg-buildpackage --version | \
-			awk '(found == 1) {next;} {found=1; print $NF;}')
-		echo "dpkg-buildpackage version=$version"
-		opts="-uc"
+		# Assemble the dpkg-buildpackage commandline arguments
+		opts=("-j$jobs" "-uc" "-a$arch" "$build" "-d")
 		if dpkg --compare-versions "$version" ge "1.18.19"; then
-			opts="$opts -ui"
+			opts+=("-ui")
 		fi
 		do_chroot "$build_release-$build_arch" \
-			dpkg-buildpackage $opts -a"$arch" "$build" -d
+			dpkg-buildpackage "${opts[@]}"
 		rc="$?"
 		echo "$rc" >"$result/status"
 	} 2>&1 | tee -a "$result/log"
-	read rc <"$result/status"
+	read -r rc <"$result/status"
 	echo "build $arch/build on $build_arch ... rc=$rc"
 
 	# Copy the resulting .debs into the results.
@@ -127,9 +147,11 @@ build_selftests()
 	local arch="$3"
 	local result="$4"
 
-	local start_time=$( date +%s )
+	local start_time
 	local end_time
 	local fat_arch
+
+	start_time=$(date +%s)
 
 	# Make things shiney -- so we can work out if this is a fat arch.
 	git clean -x -f -d
@@ -140,10 +162,12 @@ build_selftests()
 	fat_arch=$(grep-dctrl --regex --field Architecture "\(^\| \)$arch\( \|$\)" -s Package debian/control | grep -c -v linux-libc-dev)
 
 	# On non-crosscompiled architectures build the selftests.
-	if [ "$arch" = "$build_arch" -a "$fat_arch" -ne 0 ]; then
+	if [ "$arch" = "$build_arch" ] && [ "$fat_arch" -ne 0 ]; then
 		mkdir -p "$result"
 		echo "build $arch/self-tests on $build_arch ..."
 		{
+			echo "build from $commit ($sha)"
+
 			# Make things shiney.
 			git clean -x -f -d
 			do_chroot "$build_release-$build_arch" \
@@ -153,8 +177,8 @@ build_selftests()
 			rc="$?"
 			echo "$rc" >"$result/status"
 		} 2>&1 | tee -a "$result/log"
-		read rc <"$result/status"
-		echo "build $what on $build_arch ... rc=$rc"
+		read -r rc <"$result/status"
+		echo "build $arch/self-tests on $build_arch ... rc=$rc"
 
 		# Write the summary YAML.
 		end_time=$( date +%s )

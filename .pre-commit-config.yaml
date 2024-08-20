@@ -52,5 +52,6 @@ files: >
     ktl/new_release\.py |
     ktl/tests/test_new_release\.py |
     mainline-build/cod-mainline-dashboard |
+    mainline-build/cod-tip-build |
     stable/24hrs-of-bugs
   )$
