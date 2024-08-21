@@ -49,6 +49,11 @@ class Application:
                 ),
                 file=ifd,
             )
+            print(
+                '<tr><td>--<td>linux<td>gitea:https://kernel.ubuntu.com/gitea/ubuntu-kernel-next/linux<td>next<td>(<a href="https://kernel.ubuntu.com/gitea/ubuntu-kernel-next/linux">repo</a> <a href="https://kernel.ubuntu.com/gitea/ubuntu-kernel-next/linux/src/branch/next">branch</a>)</tr>',
+                file=ifd,
+            )
+
             re_ucNN = re.compile(r"-uc[0-9][0-9.]*")
             for series in sorted(self.ks.series, key=KernelSeries.key_series_name, reverse=True):
                 if series.esm:
