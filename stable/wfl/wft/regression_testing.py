@@ -274,8 +274,12 @@ class BootTesting(TaskHandler):
         retval = False
 
         while not retval:
-            if s.bug.task_status(':prepare-packages') != 'Fix Released':
-                break
+            if s.bug.has_debs:
+                if s.bug.task_status(':prepare-packages') != 'Fix Released':
+                    break
+            else:
+                if s.bug.task_status('snap-release-to-beta') != 'Fix Released':
+                    break
 
             s.task.status = 'Confirmed'
             retval = True
@@ -301,11 +305,16 @@ class BootTesting(TaskHandler):
                 retval = True
             return retval
 
-        if s.bug.task_status('promote-to-proposed') == 'Fix Released':
-            cinfo('kernels promoted successfully from the PPA', 'green')
-            return retval
+        if s.bug.has_debs:
+            if s.bug.task_status('promote-to-proposed') == 'Fix Released':
+                cinfo('kernels promoted successfully from the PPA', 'green')
+                return retval
 
-        present = s.bug.debs.all_built_and_in_pocket_or_after('ppa')
+            present = s.bug.debs.all_built_and_in_pocket_or_after('ppa')
+
+        else:
+            present = True
+
         if not present:
             if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix"):
                 cinfo('Kernels no longer present in PPA moving Incomplete', 'yellow')
@@ -321,11 +330,14 @@ class BootTesting(TaskHandler):
             # If we are checking results and we have not requested boot testing
             # do that now.
             if not s.bug.flag('boot-testing-requested'):
-                s.bug.debs.send_boot_testing_requests()
+                if s.bug.has_debs:
+                    s.bug.debs.send_boot_testing_requests()
+                else:
+                    s.bug.snap.send_testing_request(op="boot", risk="edge")
                 s.bug.flag_assign('boot-testing-requested', True)
 
             try:
-                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, s.bug.name, s.bug.version, 'boot')
+                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, s.bug.target, s.bug.version, 'boot')
                 task_status = {
                         None: 'Triaged',
                         'noprov': 'Incomplete',

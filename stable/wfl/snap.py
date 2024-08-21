@@ -16,6 +16,7 @@ import subprocess
 
 from lazr.restfulclient.errors import NotFound
 
+from ktl.msgq import MsgQueueCkct
 
 from wfl.git_tag                                import GitTagsSnap
 from wfl.log                                    import center, cleave, cinfo, cerror, cdebug, centerleave
@@ -718,12 +719,16 @@ class SnapDebs:
 
         return state
 
+    def risk_stream(self, risk, stream):
+        risk_branch = risk
+        if stream != 1 and risk != "stable":
+            risk_branch += "/stream{}".format(stream)
+        return risk_branch
+
     @centerleave
     def is_in_risk_request(self, risk, request):
         request = self.recover_request_v2(request)
-        risk_branch = risk
-        if self.bug.built_in != 1 and risk != "stable":
-            risk_branch += "/stream{}".format(self.bug.built_in)
+        risk_branch = self.risk_stream(risk, self.bug.built_in)
 
         # Identify expected revisions.
         revisions = {}
@@ -790,3 +795,45 @@ class SnapDebs:
             cinfo("repo_update_version: {}".format(line))
 
         return proc.returncode == 0
+
+    # send_testing_request
+    #
+    def send_testing_request(s, op="sru", risk="beta"):
+        cdebug("send_testing_request: op={}".format(op))
+
+        who = {
+            2: "s2",
+            3: "s3",
+        }.get(s.bug.built_in, "kernel")
+
+        track = None
+        for arch, tracks in s.snap_info.publish_to.items():
+            arch_track = tracks[0]
+            if track is None:
+                track = arch_track
+            elif track != arch_track:
+                raise SnapError("snap has inconsistent initial track between architectures")
+
+        # Send a message to the message queue. This will kick off testing of
+        # the kernel packages in the -proposed pocket.
+        #
+        msg = {
+            "key"            : "kernel.testing.request.snap",
+            "op"             : op,
+            "who"            : [who],
+            "bug-id"         : str(s.bug.lpbug.id),
+            "date"           : str(datetime.utcnow()),
+            "sru-cycle"      : s.bug.sru_spin_name,
+            "series-name"    : s.series,
+            "package"        : s.source.name,
+            "snap-pkg"       : s.name,
+            "kernel-version" : s.version,
+            "channel"        : track + "/" + s.risk_stream(risk, s.bug.built_in),
+        }
+
+        cinfo("APW: snapDebs send_testing_request {}".format(msg))
+        mq = MsgQueueCkct()
+        mq.publish(msg['key'], msg)
+
+        subject = "[" + s.series + "] " + s.name + " " + track + "/..."  + " " + s.version
+        s.bug.announce('swm-testing-started', subject=subject, body=json.dumps(msg, sort_keys=True, indent=4))

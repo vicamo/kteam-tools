@@ -136,6 +136,7 @@ class WorkflowBug():
             s.debs = None
             if s.variant in ('debs', 'combo'):
                 s.debs = Package(s)
+                s.is_debs = True
             s.snap = None
             if s.variant in ('snap-debs', 'combo'):
                 s.snap = SnapDebs(s)
@@ -207,6 +208,14 @@ class WorkflowBug():
             new_flavours = sorted([ x.name for x in s.source.testable_flavours ])
             if old_flavours != new_flavours:
                 cinfo("APW-TEST-FLAVOURS: {} {} {} {}".format(s.series, s.name, str(old_flavours), str(new_flavours)))
+
+    @property
+    def has_debs(self):
+        return self.debs is not None
+
+    @property
+    def has_snap(self):
+        return self.snap is not None
 
     @property
     def tasks_by_name(s):
