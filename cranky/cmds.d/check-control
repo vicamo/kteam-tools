@@ -186,12 +186,14 @@ echo
 if [ ${RC} -ne 0 ] ; then
 	echo "EE: Some checks failed" >&2
 	series=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution)
-	if [ "${series}" = "noble" ] ; then
-		exit 1
-	fi
-	echo "WW: Please fix the reported packaging issues and/or report them to the kernel owner." >&2
-	echo "WW: This is currently just a warning but will be turned into an error in the future." >&2
-	exit 0
+	case "${series}" in
+		trusty|xenial|bionic|focal|jammy|noble)
+			echo "WW: Please fix the reported packaging issues and/or report them to the kernel owner." >&2
+			echo "WW: This is currently just a warning but will be turned into an error in the future." >&2
+			exit 0
+			;;
+	esac
+	exit 1
 fi
 
 echo "All checks passed"
