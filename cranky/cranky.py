@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
 #
-# Python wrapper for the cranky shell script
+# Cranky entry point
 #
 
 import os
-import subprocess
 import sys
+
+from importlib import import_module
+
+# HACK: This seems to be required when packaging for the snap
+sys.path.append(os.path.dirname(__file__))
+
+from crankylib import cli  # noqa (E402: Module level import not at top of file)
+
 
 def main():
     realhome = os.environ.get("SNAP_REAL_HOME")
@@ -15,9 +22,19 @@ def main():
         # it to its real value.
         os.environ["HOME"] = realhome
 
-    cranky = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                          "cranky")
-    return subprocess.call([cranky] + sys.argv[1:])
+    # Add all commands.
+    # For each command in the 'commands' directory, do something similar to:
+    #   from commands import <cmd>
+    #   cli.cranky_cli.add_command(<cmd>.<cmd>)
+    for f in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "commands")):
+        if f.endswith(".py") and not f.startswith("__"):
+            cmd_name = f[:-3]
+            cmd_func = getattr(import_module(f"commands.{cmd_name}"), cmd_name)
+            cli.cranky_cli.add_command(cmd_func)
+
+    # Run
+    cli.cranky_cli()
+
 
 if __name__ == "__main__":
     sys.exit(main())

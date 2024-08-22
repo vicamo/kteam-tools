@@ -45,6 +45,9 @@ files: >
   (?x)^(
     cranky/annotations-tools/.* |
     cranky/cmds.d/.* |
+    cranky/commands/.*\.py |
+    cranky/cranky\.py |
+    cranky/crankylib/.*\.py |
     cranky/crl/.* |
     cranky/docs/.* |
     cranky/fixes.d/.* |
