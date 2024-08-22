@@ -113,6 +113,12 @@ if [ -d "$DEBIAN/config" ]; then
 	fi
 fi
 
+# Check the control file and build rules for packaging errors
+if ! [ -f debian/control ] ; then
+	run "${C}" fdr clean
+fi
+run "${C}" check-control
+
 # For normal trees the fact that the update.conf file exists means that they are rebase
 # kernels. There are some special trees which started with uc20-efi, which have that
 # file because they logically depend on another source but do not have the directory
