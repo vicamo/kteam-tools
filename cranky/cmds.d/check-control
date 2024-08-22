@@ -78,17 +78,48 @@ function check_linux_tools()
 	fi
 }
 
-function check_do_tools_flags()
+function check_unused_do_flags()
 {
-	local note
+	local note first line flag
 
-	echo "  - Check do_tools_* build flags in ${DEBIAN}/rules.d/*.mk"
+	echo "  - Check unused do_* build flags in ${DEBIAN}/rules.d/*.mk"
+
+	note=" (see LP: #2077306)"
+
+	first=1
+	while IFS= read -r line ; do
+		flag=${line#*:}
+		flag=${flag%%=*}
+		flag=${flag%% *}
+		case "${flag}" in
+			do_dkms*|do_zfs)
+				true
+				;;
+			*)
+				if ! grep -qE "\b${flag}\b" debian/rules debian/rules.d/* ; then
+					if [ ${first} -eq 1 ] ; then
+						first=0
+						echo "EE: Unused flags in rule files${note}" >&2
+					fi
+					RC=1
+					echo "EE:   - ${line}" >&2
+				fi
+		esac
+	done < <(git grep -oPH '\bdo_.*\b' "${DEBIAN}"/rules.d/* | tr "\t" " " | tr -s " " | sort -u)
+}
+
+function check_invalid_do_flags()
+{
+	local note flags
+
+	echo "  - Check invalid do_* build flags in ${DEBIAN}/rules.d/*.mk"
 
 	note=" (see LP: #2048183)"
+	flags="do_tools_common|do_tools_host"
 
-	if grep -qE "\b(do_tools_common|do_tools_host)\b" "${DEBIAN}"/rules.d/*.mk ; then
+	if grep -qE "\b(${flags})\b" "${DEBIAN}"/rules.d/*.mk ; then
 		echo "EE: Invalid/unnecessary flags in rule files${note}:" >&2
-		grep -E "\b(do_tools_common|do_tools_host)\b" "${DEBIAN}"/rules.d/*.mk
+		grep -E "\b(${flags})\b" "${DEBIAN}"/rules.d/*.mk | sed 's,^,EE:   - ,' >&2
 		RC=1
 	fi
 }
@@ -143,10 +174,14 @@ echo "Check debian/control"
 check_linux_source
 check_linux_tools
 
+echo
+echo "Check rules"
+check_unused_do_flags
 if [ "${SOURCE}" != "linux" ] ; then
-	echo "Check rules"
-	check_do_tools_flags
+	check_invalid_do_flags
 fi
+
+echo
 
 if [ ${RC} -ne 0 ] ; then
 	echo "EE: Some checks failed" >&2
@@ -154,7 +189,6 @@ if [ ${RC} -ne 0 ] ; then
 	if [ "${series}" = "noble" ] ; then
 		exit 1
 	fi
-	echo
 	echo "WW: Please fix the reported packaging issues and/or report them to the kernel owner." >&2
 	echo "WW: This is currently just a warning but will be turned into an error in the future." >&2
 	exit 0
