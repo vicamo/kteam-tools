@@ -37,8 +37,10 @@ class MakeUefiVm:
     @property
     def libvirt_arch(self):
         mapping = {
-            'amd64': 'x86_64',
-            'arm64': 'aarch64',
+            'amd64': 'x86_64',		# Requires qemu-system-x86
+            'arm64': 'aarch64',		# Requires qemu-system-arm
+            's390x': 's390x',		# Requires qemu-system-s390x
+            'ppc64el': 'ppc64le',	# Requires qemu-system-ppc
         }
         return mapping[self.args.architecture]
 
