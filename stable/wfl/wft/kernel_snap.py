@@ -440,6 +440,13 @@ class SnapPrepareSigned(SnapPrepareManual):
                 s.task.reason = 'Stalled -- blocked via ' + block
                 break
 
+            # Boot testing will be performed against edge, wait for that to be
+            # complete before allowing this to be prepared.
+            # XXX: we also need to block promote-to-proposed.
+            if s.bug.task_status('boot-testing') not in ['Fix Released', 'Invalid']:
+                cinfo('    task boot-testing is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
+                break
+
             s.task.status = 'In Progress'
             s.task.timestamp('started')
 
