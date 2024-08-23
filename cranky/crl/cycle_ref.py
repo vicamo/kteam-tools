@@ -45,12 +45,10 @@ class Git:
 
 def make_tag_prefix(handle):
     pkg = handle.package
-    sep = "." if pkg.type == "meta" else "-"
     prefix = pkg.source.name.replace("linux", "Ubuntu")
     upstream = pkg.source.versions[-1]
     # FIXME: find out backports suffix (sans "upload" number)
-    suffix = ""
-    tag_prefix = prefix + "-" + upstream + sep + "*" + suffix
+    tag_prefix = prefix + "-" + upstream
     return tag_prefix
 
 
@@ -165,10 +163,12 @@ class CycleRef:
 
             #
             # Locate all tags from oldest to newest so latest respin is observed last
-            tags = this_git(
-                f"for-each-ref --sort=creatordate --format=%(refname) {rtags_prefix}/{tag_prefix}*",
-                split="\n",
-            )
+            tags = []
+            for current_prefix in (tag_prefix + "-*", tag_prefix + ".*"):
+                tags += this_git(
+                    f"for-each-ref --sort=creatordate --format=%(refname) {rtags_prefix}/{current_prefix}",
+                    split="\n",
+                )
             tree_git_tags[tree] = this_git, tags
 
         #
