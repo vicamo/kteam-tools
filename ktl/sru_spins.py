@@ -3,7 +3,9 @@ import argparse
 import json
 import os
 import sys
+from copy import deepcopy
 from datetime import datetime
+from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN
 from urllib.request import pathname2url, urljoin, urlopen
 
 
@@ -20,12 +22,13 @@ class SruSpinsDataHandle:
 #
 class SruSpinsIndex:
     @classmethod
-    def from_loader(cls, loader):
-        return SruSpinsIndex(loader("index"), loader)
+    def from_loader(cls, loader, updater=None):
+        return SruSpinsIndex(loader("index"), loader, updater=updater)
 
-    def __init__(self, cycles, loader=None):
+    def __init__(self, cycles, loader=None, updater=None):
         self._cycles = cycles
         self._loader = loader
+        self._updater = updater
 
     def spin_key(self, data):
         return int(data[0]), data[1]
@@ -60,6 +63,9 @@ class SruSpinsIndex:
             return SruSpinsDataHandle(spin, spin_data[handle])
         return None
 
+    def handle_spin_update(self, handle, spin, data):
+        self._updater(spin, handle, data)
+
 
 # SruSpins
 #
@@ -79,9 +85,47 @@ class SruSpins:
         return json.loads(json_data)
 
     @classmethod
+    def _write_path(cls, path_base, part, data):
+        path = os.path.join(path_base, part + ".json")
+        with open(path + ".new", "w") as jfd:
+            json.dump(data, jfd)
+        os.rename(path + ".new", path)
+
+    @classmethod
+    def _update_path(cls, path_base, spin, handle, data):
+        cycle, spin_no = spin.rsplit("-", 1)
+
+        # Lock the index so we can perform the update.
+        path = os.path.join(path_base, "index.json")
+        with open(path, "a") as lfd:
+            lockf(lfd, LOCK_EX, 1, 0)
+
+            index_data = cls._load_path(path_base, "index")
+            index_data_before = deepcopy(index_data)
+            if cycle not in index_data:
+                index_data[cycle] = True
+                cycle_data = {}
+            else:
+                cycle_data = cls._load_path(path_base, cycle)
+            cycle_data_before = deepcopy(cycle_data)
+
+            # Update the entry.
+            entry = cycle_data.setdefault(spin_no, {}).setdefault(handle, {})
+            entry.update(data)
+
+            # If the data is changed, update it.
+            if cycle_data != cycle_data_before:
+                cls._write_path(path_base, cycle, cycle_data)
+            if index_data != index_data_before:
+                cls._write_path(path_base, "index", index_data)
+
+            lockf(lfd, LOCK_UN, 1, 0)
+
+    @classmethod
     def from_path(cls, path):
         return SruSpinsIndex.from_loader(
             lambda cycle: cls._load_path(path, cycle),
+            updater=lambda spin, handle, data: cls._update_path(path, spin, handle, data),
         )
 
     @classmethod
@@ -109,13 +153,16 @@ class SruSpins:
 
 
 if __name__ == "__main__":
-    sru_spins = SruSpins()
+    sru_spins = SruSpins.from_local()
 
-    handle_data = sru_spins.handle_cycle("noble:linux", "2024.08.05")
-    print(handle_data.spin, handle_data.versions)
+    #handle_data = sru_spins.handle_cycle("noble:linux", "2024.08.05")
+    #print(handle_data.spin, handle_data.versions)
 
-    handle_data = sru_spins.handle_spin("noble:linux", "2024.08.05-3")
-    print(handle_data.spin, handle_data.versions)
+    #handle_data = sru_spins.handle_spin("noble:linux", "2024.08.05-3")
+    #print(handle_data.spin, handle_data.versions)
 
-    handle_data = sru_spins.handle_cycle("noble:linux", "2024.06.10")
-    print(handle_data.spin, handle_data.versions)
+    #handle_data = sru_spins.handle_cycle("noble:linux", "2024.06.10")
+    #print(handle_data.spin, handle_data.versions)
+
+    sru_spins.handle_spin_update("noble:linux", "2024.08.05-3", {"versions": {"main": "1.2.3"}})
+    sru_spins.handle_spin_update("noble:linux", "2024.08.05-2", {"versions": {"main": "1.2.2"}})
