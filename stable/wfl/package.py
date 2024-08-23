@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 
+import os
 import re
 from datetime                           import datetime, timedelta, timezone
 from hashlib                            import sha384
@@ -13,6 +14,7 @@ from lazr.restfulclient.errors          import NotFound, Unauthorized, ServerErr
 from httplib2.socks                     import HTTPError
 
 from ktl.msgq                           import MsgQueue, MsgQueueCkct
+from ktl.sru_spins                      import SruSpins
 from ktl.utils                          import date_to_string, dump
 
 from .check_component                   import CheckComponent
@@ -1047,7 +1049,30 @@ class Package():
 
         s._monitor_debs = []
 
+        s.sync_versions()
+
         cleave('package::__init__')
+
+    @centerleave
+    def sync_versions(self):
+        if "versions" not in self.bug.bprops:
+            return
+        sru_spins = SruSpins.from_path(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                "..",
+                "spin-info",
+            )
+        )
+        data = {
+            "tracker": int(self.bug.lpbug.id),
+            "versions": self.bug.bprops.get("versions"),
+        }
+        sru_spins.handle_spin_update(
+            self.series + ":" + self.name,
+            self.bug.sru_spin_name,
+            data
+        )
 
     @property
     def lp(self):
