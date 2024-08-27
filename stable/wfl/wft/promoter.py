@@ -211,6 +211,8 @@ class Promoter(TaskHandler):
                 wanted.append(('nvidia-driver-gke_{}-{}-{}-{}-{}.'.format(s.bug.series, s.bug.kernel, s.bug.abi, kernel_flavour, release), True))
             for flavour in gke_nvidia_packages:
                 wanted.append(('current-driver-{}-{}-{}-{}'.format(s.bug.series, s.bug.kernel, s.bug.abi, flavour), False))
+                for gpu in s.bug.swm_config.gpu_overrides:
+                    wanted.append(('current-gpu-driver-{}-{}-{}-{}-{}'.format(gpu, s.bug.series, s.bug.kernel, s.bug.abi, flavour), False))
 
             missing = []
             for obj, prefix in wanted:
