@@ -108,7 +108,7 @@ class Config:
             data = yaml.safe_load(yaml_data)
 
         if data is None:
-            print("Missing configuration, using default config.")
+            warnings.warn("Missing configuration, using default config.")
             data = dict(cls.DEFAULT)
 
         return cls(data)
