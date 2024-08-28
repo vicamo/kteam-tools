@@ -1241,6 +1241,9 @@ class WorkflowBug():
         announce.send(key, subject=subject, summary=summary, body=body)
 
     def announce_drip(self, key, subject=None, summary=None, body=None, every=None, since=None):
+        if self.sru_spin_name is not None and 's2024.08.05' in self.sru_spin_name:
+            return
+
         now = datetime.utcnow().replace(tzinfo=None)
         last = self.private_group_get("announce", key)
         delay = now - since if since else None
