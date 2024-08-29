@@ -186,6 +186,9 @@ echo
 if [ ${RC} -ne 0 ] ; then
 	echo "EE: Some checks failed" >&2
 	series=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution)
+	if [ "${series}" = "UNRELEASED" ] ; then
+		series=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution -o1 -c1)
+	fi
 	case "${series}" in
 		trusty|xenial|bionic|focal|jammy|noble)
 			echo "WW: Please fix the reported packaging issues and/or report them to the kernel owner." >&2
