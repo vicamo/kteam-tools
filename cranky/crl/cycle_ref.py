@@ -55,9 +55,12 @@ def make_tag_prefix(handle):
 def read_cycle(git, tag):
     """Return debian folder for this handle"""
     tracking_bug_contents = ""
-    if git(f"ls-files {tag} debian/debian.env", split="\n"):
+    try:
         debian_env = git(f"show {tag}:debian/debian.env", split="\n")
+    except CrankyException:
+        debian_env = None
 
+    if debian_env is not None:
         debian_dir = "debian.master"
         for line in debian_env:
             if "DEBIAN=" in line:
