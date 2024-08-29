@@ -75,6 +75,42 @@ if __name__ == '__main__':
 
         return None
 
+    def find_kernel_source(summary):
+        if summary is None:
+            return None
+
+        if 'Crank' not in summary:
+            return None
+
+        # summary format: Crank <kernel> #<sprint>
+        handle = summary.split()[1]
+        series, kernel = handle.split(':')
+        ks = KernelSeries.for_cycle(cycle)
+        if ks is None:
+            ks = KernelSeries.tip()
+
+        series_ent = ks.lookup_series(codename=series)
+        if series_ent is None:
+            return None
+
+        return series_ent.lookup_source(kernel)
+
+    def assign_jira(issue, assignee):
+        if assignee is None:
+            return
+
+        assignee_email = users[assignee].get('email')
+        assignee_jira_id = email_to_jira_id(assignee_email)
+        if assignee_jira_id is None:
+            print("ASSIGN:", issue, assignee_email, "FAILED")
+            return
+
+        # Assign only if the current assignee is different
+        current_assignee = issue.fields.assignee
+        current_assignee_id = users_find_email_by_name(current_assignee)
+        if current_assignee_id is None or current_assignee_id != assignee_jira_id:
+            jira.assign_issue(issue, assignee_email)
+
     parser = argparse.ArgumentParser(description='SWM JIRA card syncer')
     args = parser.parse_args()
 
@@ -498,32 +534,14 @@ if __name__ == '__main__':
                     blocked_want.add(tracker_id)
 
                 elif starting_state == 'Kernel Peer Review':
-                    summary = issue.fields.summary
-                    if 'Crank' in summary:
-                        handle = summary.split()[1] #Crank <kernel> #<sprint>
-                        series, kernel = handle.split(':')
-                        ks = KernelSeries.for_cycle(cycle)
-                        if ks is None:
-                            ks = KernelSeries.tip()
-
-                        source = None
-                        peer_reviewer = None
-                        series_ent = ks.lookup_series(codename=series)
-                        if series_ent is not None:
-                            source = series_ent.lookup_source(kernel)
+                    if builds_started:
+                        target_state = 'Kernel Building'
+                    else:
+                        source = find_kernel_source(issue.fields.summary)
                         if source is not None:
-                            peer_reviewer = source.peer_reviewer
-                        if peer_reviewer is not None:
-                            reviewer_email = users[peer_reviewer].get('email')
-                        else:
-                            # Find the cycle lead and assign it to it
-                            reviewer_email = users_find_email_by_name(users, cycle_owner)
-
-                        reviewer_jira_id = email_to_jira_id(reviewer_email)
-                        if reviewer_jira_id is not None:
-                            jira.assign_issue(issue, reviewer_email)
-                        else:
-                            print("ASSIGN:", issue, reviewer_email, "FAILED")
+                            # if peer-review is done then change status
+                            # to Kernel Building and assign back the kernel
+                            assign_jira(assignee=source.peer_reviewer, issue=issue)
 
                     review_want.add(tracker_id)
 
@@ -534,6 +552,11 @@ if __name__ == '__main__':
                 print(issue.key, starting_state, '->', target_state)
                 jira.transition_issue(issue, transition=target_state)
                 starting_state = target_state
+                if target_state == 'Kernel Building':
+                    # make sure the owner is the one from kernel_series
+                    source = find_kernel_source(issue.fields.summary)
+                    if source is not None:
+                        assign_jira(assignee=source.owner, issue=issue)
 
             # Detect new issues and link them to their tracker.
             if 'kernel-tracker-v1' not in issue.fields.labels:
