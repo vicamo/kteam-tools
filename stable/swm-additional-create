@@ -77,6 +77,9 @@ class SwmAdditionalCreate:
 
     def fix_snaps_on_stream_2(self):
         tbs = None
+
+        # Close out any snap-debs tracker in stream#2.  Certification cannot
+        # (yet) test them and we have had regressions as a result.
         for tracker_id, tracker in self.ss.trackers.items():
             cycle = tracker.get("cycle")
             series = tracker.get("series")
@@ -101,6 +104,37 @@ class SwmAdditionalCreate:
                 continue
 
             print(cycle, tracker_id, series, source, target, "snap unprepared stream#2")
+            tb.invalidate()
+
+        # Close out any linux-ucNN trackers in stream#2 as these exist purely to
+        # provide binaries for the trackers above which we are closing out.
+        for tracker_id, tracker in self.ss.trackers.items():
+            cycle = tracker.get("cycle")
+            series = tracker.get("series")
+            source = tracker.get("source")
+            target = tracker.get("target")
+            parent = tracker.get("master-bug")
+
+            if not source.startswith("linux-uc2"):
+                continue
+
+            prepare_package = tracker.get("task", {}).get("prepare-package", {})
+            if prepare_package.get("status", "Invalid") not in ("New", "Confirmed"):
+                continue
+
+            stream_id = tracker.get("built", {}).get("route-entry")
+            if stream_id != 2:
+                continue
+
+            if tbs is None:
+                tbs = TrackingBugs()
+            tb = tbs.add(tracker_id)
+            built = tb.wf_get_property("built")
+
+            if built.get("route-entry") != 2:
+                continue
+
+            print(cycle, tracker_id, series, source, target, "snap (linux-ucNN) unprepared stream#2")
             tb.invalidate()
 
 
