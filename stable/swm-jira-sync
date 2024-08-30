@@ -68,7 +68,7 @@ if __name__ == '__main__':
             jira_id_cache[email] = jira_id
         return jira_id_cache[email]
 
-    def users_find_email_by_name(users, name):
+    def users_find_email_by_name(name):
         for _, extra_info in users.items():
             if extra_info["name"] == name:
                 return extra_info["email"]
