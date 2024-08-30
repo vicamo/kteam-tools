@@ -113,6 +113,18 @@ if [ -d "$DEBIAN/config" ]; then
 	fi
 fi
 
+# Check the control file and build rules for packaging errors
+if ! [ -f debian/control ] ; then
+	run "${C}" fdr clean
+fi
+run "${C}" check-control
+
+# Check for FIPS kernels
+if [ -f "$DEBIAN/fips/files.list" ];then
+	echo "FIPS check:"
+	run "$C" check-fips "$@"
+fi
+
 # For normal trees the fact that the update.conf file exists means that they are rebase
 # kernels. There are some special trees which started with uc20-efi, which have that
 # file because they logically depend on another source but do not have the directory
@@ -179,12 +191,6 @@ done
 if ! [ "$series" ]; then
 	echo "Failed to retrieve the package series from changelog: $DEBIAN/changelog"
 	exit 1
-fi
-
-# Check for FIPS kernels
-if [ -f "$DEBIAN/fips/files.list" ];then
-	echo "FIPS check:"
-	"$C" check-fips "$@"
 fi
 
 # Close the changelog
