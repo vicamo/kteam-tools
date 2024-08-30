@@ -84,16 +84,16 @@ if __name__ == '__main__':
 
         # summary format: Crank <kernel> #<sprint>
         handle = summary.split()[1]
-        series, kernel = handle.split(':')
+        kernel_info = handle.split(':')
         ks = KernelSeries.for_cycle(cycle)
         if ks is None:
             ks = KernelSeries.tip()
 
-        series_ent = ks.lookup_series(codename=series)
+        series_ent = ks.lookup_series(codename=kernel_info[0])
         if series_ent is None:
             return None
 
-        return series_ent.lookup_source(kernel)
+        return series_ent.lookup_source(kernel_info[1])
 
     def assign_jira(issue, assignee):
         if assignee is None:
