@@ -399,7 +399,7 @@ if __name__ == '__main__':
                 if status not in ('Invalid', 'Fix Committed', 'Fix Released'):
                     preparation_complete = False
 
-                if status in ('In Progress', 'Fix Committed'):
+                if status == 'Fix Committed':
                     builds_started = True
                 if status not in ('Invalid', 'Fix Released'):
                     builds_complete = False
@@ -535,7 +535,7 @@ if __name__ == '__main__':
 
                 elif starting_state == 'Kernel Peer Review':
                     if builds_started:
-                        target_state = 'Kernel Building'
+                        target_state = 'Kernel Preparing'
                     else:
                         source = find_kernel_source(issue.fields.summary)
                         if source is not None:
