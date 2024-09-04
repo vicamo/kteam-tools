@@ -19,7 +19,9 @@ from wfl.work import SwmWorkCmds
 
 class SwmBarrierGroup:
 
-    def __init__(self):
+    def __init__(self, group):
+        self.group = group
+
         self.want = set()
         self.seen = set()
 
@@ -46,13 +48,13 @@ class SwmBarrierGroup:
         if self.nascent:
             return "GROUP<nascent>"
         else:
-            return "GROUP<want={} seen={} complete={}>".format(self.want, self.seen, self.complete)
+            return "GROUP<{} wants={} sees={} complete={}>".format(self.group, len(self.want), len(self.seen), self.complete)
 
     def __repr__(self):
         if self.nascent:
             return "GROUP<nascent>"
         else:
-            return "GROUP<wants={} sees={} complete={}>".format(len(self.want), len(self.seen), self.complete)
+            return "GROUP<{} wants={} sees={} complete={}>".format(self.group, len(self.want), len(self.seen), self.complete)
 
 
 class SwmBarrier(SwmWorkCmds):
@@ -68,7 +70,7 @@ class SwmBarrier(SwmWorkCmds):
         self.direct = self.queue + '--' + self.args.name
 
         # Wanted, Seen per group.
-        self.groups = [SwmBarrierGroup()]
+        self.groups = []
 
     # _announce
     #
@@ -103,22 +105,28 @@ class SwmBarrier(SwmWorkCmds):
             if what == 'quit':
                 self.mq.listen_stop()
 
-            elif what == 'shank':
+            elif what in ('shank', 'instantiate'):
+                shank_group = payload.get('group')
                 shank_id = payload.get('id')
-                self.groups[-1].add(shank_id)
+                for group in self.groups:
+                    if group.group == shank_group:
+                        group.add(shank_id)
+                        break
+                else:
+                    group = SwmBarrierGroup(shank_group)
+                    self.groups.append(group)
+                    group.add(shank_id)
+
                 self.log.info("groups={}".format(self.groups))
 
-            elif what == 'shank-complete':
+            elif what in ('shank-complete', 'instantiate-complete'):
                 shank_id = payload.get('id')
                 for group in self.groups:
                     if group.offer(shank_id):
-                        self.log.info("groups={}".format(self.groups))
                         break
                 else:
                     self.log.info("skipping id={}".format(shank_id))
-
-            elif what == 'barrier':
-                self.groups.append(SwmBarrierGroup())
+                self.log.info("groups={}".format(self.groups))
 
         except Exception as e:
             self.log.error("announcement failed: {}".format(str(e)))
@@ -129,9 +137,6 @@ class SwmBarrier(SwmWorkCmds):
 
         groups = []
         for group in self.groups:
-            if group.nascent:
-                groups.append(group)
-                continue
             self.log.info("{}".format(group))
             if group.complete:
                 self.log.info("FLAGGING DEPENDANTS")
@@ -142,7 +147,6 @@ class SwmBarrier(SwmWorkCmds):
 
         if len(self.groups) == 0:
             self.log.info("QUEUE EMPTY")
-            self.groups = [SwmBarrierGroup()]
             request_dependants = True
 
         if request_dependants:
