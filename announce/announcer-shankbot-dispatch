@@ -25,6 +25,10 @@ testing)
 		echo "BOOM";
 		exit 1
 		;;
+	oops)
+		"$here/../sbin/oops-run" swm "$0" testing explode-verbose
+		exit 1
+		;;
 	esac
 	;;
 shank)
@@ -44,14 +48,17 @@ shank)
 		exit 1
 	fi
 
-	"$here/../sbin/oops-run" shiv-shank "$here/../stable/swm-hero" "$@"
+	for arg in "$@"
+	do
+		"$here/../sbin/oops-run" swm "$here/../stable/swm-hero" "$arg"
+	done
 	;;
 retest)
 	if [ "$#" -lt 1 ]; then
 		echo "Usage: retest <bug> ..." 1>&2
 		exit 1
 	fi
-	"$here/../sbin/oops-run" --error-ok 2 shiv-retest "$here/../stable/tbt" retest "$@"
+	"$here/../sbin/oops-run" --error-ok 2 swm "$here/../stable/tbt" retest "$@"
 	;;
 help)
 	# Select direct incusion of the output in the message.
