@@ -111,6 +111,19 @@ if __name__ == '__main__':
         if current_assignee_id is None or current_assignee_id != assignee_jira_id:
             jira.assign_issue(issue, assignee_email)
 
+    def transition_issue(issue, transition=None):
+        transition_id = transition_ids.get(transition)
+        if transition_id is None:
+            transitions = jira.transitions(issue)
+            for trans in transitions:
+                if trans["to"]["name"] == transition:
+                    transition_id = trans["id"]
+                    break
+
+            transition_ids[transition] = transition_id
+
+        jira.transition_issue(issue, transition=transition_id)
+
     parser = argparse.ArgumentParser(description='SWM JIRA card syncer')
     args = parser.parse_args()
 
@@ -134,6 +147,9 @@ if __name__ == '__main__':
     # we use a consistent tracker.
     cycles = set()
     cycle_trackers = {}
+
+    transition_ids = {}
+
     for bug_id, bug_data in sorted(status.trackers.items()):
         (cycle, spin) = bug_data['cycle'].rsplit('-', 1)
         if cycle[0] == 'd':
@@ -550,7 +566,7 @@ if __name__ == '__main__':
                     break
 
                 print(issue.key, starting_state, '->', target_state)
-                jira.transition_issue(issue, transition=target_state)
+                transition_issue(issue, transition=target_state)
                 starting_state = target_state
                 if target_state == 'Kernel Building':
                     # make sure the owner is the one from kernel_series
