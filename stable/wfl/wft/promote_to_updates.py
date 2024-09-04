@@ -99,7 +99,7 @@ class PromoteToUpdates(Promoter):
                 s.task.reason = 'Holding -- cycle not ready to release'
                 break
 
-            if s.bug.is_derivative_package:
+            if s.bug.master_bug is not None:
                 if not s.master_bug_ready() and not s._kernel_manual_release():
                     s.task.reason = 'Holding -- parent tracker not ready for release'
                     break
@@ -130,7 +130,7 @@ class PromoteToUpdates(Promoter):
             if s._kernel_manual_release():
                 break
 
-            if s.bug.is_derivative_package:
+            if s.bug.master_bug is not None:
                 if not s.master_bug_ready():
                     cinfo('            Master bug no longer ready pulling back from Confirmed', 'yellow')
                     pull_back = True

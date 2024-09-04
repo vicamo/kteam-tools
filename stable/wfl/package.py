@@ -2355,10 +2355,9 @@ class Package():
     # ready_to_prepare
     #
     def ready_to_prepare(s):
-        if not s.bug.is_derivative_package:
-            return True
-
         master = s.bug.master_bug
+        if master is None:
+            return True
 
         if s.bug.swm_config.need_master_in_proposed:
             if master.tasks_by_name['promote-to-proposed'].status != 'Fix Released':

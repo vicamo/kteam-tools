@@ -104,7 +104,7 @@ class PromoteFromTo(Promoter):
                 s.task.reason = 'Pending -- source package tags missing'
                 break
 
-            if s.bug.is_derivative_package:
+            if s.bug.master_bug is not None:
                 if not s.master_bug_ready_for_proposed():
                     s.task.reason = 'Holding -- parent tracker not ready for proposed'
                     break
