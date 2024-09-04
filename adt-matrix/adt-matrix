@@ -299,7 +299,7 @@ class AutoPackageTest(object):
             pass
 
         # request new results from swift
-        url = os.path.join(swift_url, 'autopkgtest-' + self.series + self.tag)
+        url = os.path.join(swift_url, 'autopkgtest-' + self.series + self.tag, "")
         url += '?' + urlencode(query)
         try:
             f = urlopen(url)
