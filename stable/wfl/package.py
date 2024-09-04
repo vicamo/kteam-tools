@@ -2564,7 +2564,6 @@ class Package():
         check_component = CheckComponent(s)
 
         primary_src_component = None
-        missing_pkg = []
         mis_lst = []
         # Run the packages list for this source, do main first as we need to
         # check components against that.
@@ -2577,12 +2576,6 @@ class Package():
 
             ps = check_component.get_published_sources(s.series, pkg, check_ver, pocket)
             if not ps:
-                if check_ver:
-                    missing_pkg.append([pkg, check_ver])
-                elif pkg_type == 'signed':
-                    missing_pkg.append([pkg, 'for version=%s' % (s.version)])
-                else:
-                    missing_pkg.append([pkg, 'with ABI=%s' % (s.abi)])
                 continue
 
             # We are going to use the primary package source component as
@@ -2626,14 +2619,6 @@ class Package():
                 mis_lst.extend(check_component.mismatches_list(s.series,
                                pkg, ps[0].source_package_version,
                                pocket, ps, which_component))
-            else:
-                missing_pkg.append([pkg, 'for version=%s' % (s.version)])
-
-        if missing_pkg:
-            cdebug('missing_pkg is set')
-            cinfo('        packages not yet available in pocket')
-            cdebug('check_component_in_pocket leave (False)')
-            return (None, None)
 
         if mis_lst:
             cdebug('mis_lst is set')
