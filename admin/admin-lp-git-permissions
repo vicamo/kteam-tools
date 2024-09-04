@@ -298,6 +298,14 @@ def add_misc(repo_set):
             + grants("refs/heads/master", people_kernel_bot, force=True)
         ],
         [
+            "~canonical-kernel/+git/kernel-review",
+            grants("refs/heads/main", team_owner)
+            + grants("refs/heads/main", admins_core, force=True)
+            + grants("refs/heads/main", people_core, push=True)
+            + grants("refs/heads/main", people_tools, push=True)
+            + grants("refs/heads/main", people_gitea, push=True)
+        ],
+        [
             "~canonical-kernel/+git/adt-matrix-hints",
             grants("refs/heads/master", team_owner)
             + grants("refs/heads/master", admins_core, force=True)
@@ -351,6 +359,12 @@ def add_misc(repo_set):
             + grants("refs/heads/main", people_core, push=True)
             + grants("refs/heads/main", people_tools, push=True)
             + grants("refs/heads/main", people_gitea, force=True)
+        ],
+        [
+            "~ubuntu-kernel-stable/+git/stable-tools",
+            grants("refs/heads/*", team_owner, force=True)
+            + grants("refs/heads/*", admins_core, force=True)
+            + grants("refs/heads/*", people_gitea, force=True)
         ],
     ]:
         print("misc: {}".format(os.path.basename(repo_path)))
@@ -466,7 +480,7 @@ def add_primary(repo_set):
                 #if branch.endswith('-next'):
                 #    repo_packages.setdefault(path).append(branch[:-5])
 
-    snap_branch_prefix_re = re.compile('^(.*?)(-[0-9\.]+)?$')
+    snap_branch_prefix_re = re.compile(r'^(.*?)(-[0-9\.]+)?$')
 
     for path, path_things in repo_things.items():
         repo_rules = repo_set.lookup(path)
@@ -563,6 +577,10 @@ def add_primary(repo_set):
                         repo_rules.add_grants(
                             grants(ref, people=people_kernel_bot, create=True, push=True, rewind=True)
                         )
+            ref = "refs/heads/{}--*".format(branch)
+            repo_rules.add_grants(
+                grants(ref, people=people, create=True, push=True, rewind=True)
+            )
             if is_gitea(thing.source):
                 repo_rules.add_grants(
                     grants("refs/heads/*/*", people=people_gitea, force=True)
