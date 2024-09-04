@@ -27,11 +27,13 @@ primary_ref, adjunct_ref, ignore_list = sys.argv[1:]
 primary = lp.archives.getByReference(reference=primary_ref)
 if primary is None:
     raise ValueError("primary reference {} invalid".format(primary_ref))
-adjunct = lp.archives.getByReference(reference=adjunct_ref)
-if adjunct is None:
-    raise ValueError("adjunct reference {} invalid".format(adjunct_ref))
-if not adjunct.private:
-    raise ValueError("adjunct archive {} not private".format(adjunct_ref))
+adjunct = None
+if adjunct_ref != "-":
+    adjunct = lp.archives.getByReference(reference=adjunct_ref)
+    if adjunct is None:
+        raise ValueError("adjunct reference {} invalid".format(adjunct_ref))
+    if not adjunct.private:
+        raise ValueError("adjunct archive {} not private".format(adjunct_ref))
 
 ignore_builds = set()
 with open(ignore_list) as ilfd:
@@ -94,6 +96,8 @@ for prime_type, prime_prefix in ancillary_config:
                             ancillary_ppa = adjunct if ks_package.adjunct else primary
         if not len(ancillary_names):
             continue
+        if ancillary_ppa is None:
+            raise ValueError("adjunct archive required for private ancillaries".format(adjunct_ref))
 
         #print(series_name, source_name, ancillary_ppa.reference, ancillary_names)
 
