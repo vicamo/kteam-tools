@@ -97,6 +97,10 @@ class PromoteToSecurity(Promoter):
                 s.task.reason = 'Holding -- cycle not ready to release'
                 break
 
+            if s._britney_freeze(s.bug.series) and not s._kernel_manual_release():
+                s.task.reason = 'Holding -- cycle not ready to release (britney block)'
+                break
+
             # Record what is missing as we move to Confirmed.
             delta = s.bug.debs.built_in_src_dst_delta('Updates', 'Security')
             s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
@@ -129,8 +133,11 @@ class PromoteToSecurity(Promoter):
             if s._in_blackout():
                 cinfo('            Package now in development blackout pulling back from Confirmed', 'yellow')
                 pull_back = True
-            if not s._cycle_ready():
+            if not s._cycle_ready() and not s._kernel_manual_release():
                 cinfo('            Cycle no longer ready for release pulling back from Confirmed', 'yellow')
+                pull_back = True
+            if s._britney_freeze(s.bug.series) and not s._kernel_manual_release():
+                cinfo('            Cycle no longer ready for release (britney freeze) pulling back from Confirmed', 'yellow')
                 pull_back = True
 
             if pull_back:

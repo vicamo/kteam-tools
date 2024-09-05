@@ -1,4 +1,6 @@
 from datetime                                   import datetime, timedelta, timezone
+from urllib.request                             import urlopen
+from urllib.error                               import HTTPError
 
 from wfl.log                                    import center, cleave, cinfo, cdebug
 from wfl.gcp_bucket                             import GcpBucketObject, GcpBucketError
@@ -11,6 +13,22 @@ class Promoter(TaskHandler):
         center(s.__class__.__name__ + '.__init__')
         super(Promoter, s).__init__(lp, task, bug)
         cleave(s.__class__.__name__ + '.__init__')
+
+    POCKET_FREEZE_URL = "https://git.launchpad.net/~ubuntu-release/britney/+git/" \
+                        "hints-ubuntu/plain/sru-freeze?h=%s"
+
+    def _britney_freeze(self, release):
+        """Check if the release is in a britney pocket freeze."""
+        try:
+            check = urlopen(self.POCKET_FREEZE_URL % release)
+            if check.getcode() == 200:
+                return True
+            else:
+                return False
+        except HTTPError as e:
+            if e.code == 404:
+                return False
+        return True
 
     def _cycle_ready(s):
         if s.bug.is_development or (s.bug.master_bug is not None and s.bug.master_bug.is_development):
