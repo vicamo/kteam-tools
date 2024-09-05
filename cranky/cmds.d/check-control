@@ -26,7 +26,7 @@ function must_produce()
 
 	if ! grep -qP "^Package:\s*${package}$" debian/control ; then
 		echo "EE: debian/control is missing package stanza${note}:" >&2
-		echo "Package: ${package}" >&2
+		echo "EE:   - Package: ${package}" >&2
 		RC=1
 	fi
 }
@@ -37,7 +37,7 @@ function must_not_produce()
 
 	if grep -qP "^Package:\s*${package}$" debian/control ; then
 		echo "EE: debian/control contains invalid package stanza${note}:" >&2
-		echo "Package: ${package}" >&2
+		echo "EE:   - Package: ${package}" >&2
 		RC=1
 	fi
 }
