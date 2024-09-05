@@ -166,6 +166,17 @@ fi
 # shellcheck disable=SC1091
 . debian/debian.env
 
+# Load derivative info
+if [ -f "${DEBIAN}"/etc/update.conf ] ; then
+	# shellcheck disable=SC1091
+	. "${DEBIAN}"/etc/update.conf
+fi
+if [ -n "${BACKPORT_SUFFIX:-}" ] || [ -n "${BACKPORT_NO_SUFFIX:-}" ] ; then
+	is_backport=1
+else
+	is_backport=0
+fi
+
 SOURCE=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SSource)
 
 RC=0
@@ -177,7 +188,7 @@ check_linux_tools
 echo
 echo "Check rules"
 check_unused_do_flags
-if [ "${SOURCE}" != "linux" ] ; then
+if [ "${SOURCE}" != "linux" ] && [ ${is_backport} -eq 0 ] ; then
 	check_invalid_do_flags
 fi
 
