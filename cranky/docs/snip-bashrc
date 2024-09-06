@@ -15,7 +15,15 @@ if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
-# Add cranky tools to the PATH and enable bash auto-completion
+# Add cranky tools to the PATH
 export PATH=$HOME/canonical/kteam-tools/cranky:$PATH
 export PATH=$HOME/canonical/kteam-tools/maintscripts:$PATH
+
+# Enable cranky bash auto-completion
 source $HOME/canonical/kteam-tools/cranky/cranky-complete.bash
+
+# If you want to use the new click-based auto-completion, uncomment the
+# following instead of the above. Note that at the moment, this only
+# auto-completes the subcommands but not any of their arguments or the
+# valid kernel handles.
+# eval "$(_CRANKY_COMPLETE=bash_source cranky)"
