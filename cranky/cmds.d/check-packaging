@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 #
-# debian/control and build flags sanity checks
+# Packaging sanity checks
 #
 
 C=${C:-cranky}
@@ -129,7 +129,7 @@ function usage()
     cat << EOF
 Usage: ${C} ${SC} [-h]
 
-Check debian/control for missing or invalid package stanzas.
+Perform some basic packaging sanity checks.
 
 Optional arguments:
   -h, --help  Show this help message and exit.

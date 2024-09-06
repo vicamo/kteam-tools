@@ -113,11 +113,11 @@ if [ -d "$DEBIAN/config" ]; then
 	fi
 fi
 
-# Check the control file and build rules for packaging errors
+# Check for packaging issues
 if ! [ -f debian/control ] ; then
 	run "${C}" fdr clean
 fi
-run "${C}" check-control
+run "${C}" check-packaging
 
 # Check for FIPS kernels
 if [ -f "$DEBIAN/fips/files.list" ];then
