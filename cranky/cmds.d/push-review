@@ -152,18 +152,24 @@ for linux_dir in ${directories} ; do
 		origin2=""
 	fi
 	if ! ssh "${host}" test -d "${remote_path}"; then
-		pr_info "Copying ${host}:${bare_repo_path} to ${host}:~/${remote_path}"
-		if [ "${dry_run}" -eq 0 ] ; then
-			# We actually want the tilde to be expanded after ssh, not in current shell
-			# shellcheck disable=SC2088
-			ssh "${host}" cp -r "${bare_repo_path}" "~/${remote_path}"
-			# shellcheck disable=SC2087
-			if ! ssh "${host}" /bin/bash <<EOF
+		if ssh "${host}" test -d "${bare_repo_path}"; then
+			pr_info "Copying ${host}:${bare_repo_path} to ${host}:~/${remote_path}"
+			if [ "${dry_run}" -eq 0 ] ; then
+				# We actually want the tilde to be expanded after ssh, not in current shell
+				# shellcheck disable=SC2088
+				ssh "${host}" cp -r "${bare_repo_path}" "~/${remote_path}"
+				# shellcheck disable=SC2087
+				if ! ssh "${host}" /bin/bash <<EOF
 cd ~/${remote_path} && git remote add origin2 ${origin2} && git fetch origin2
 EOF
-			then
-				pr_warn "Fail to pull ${linux_dir} from ${origin2:-origin} from ${host}, will push from local"
+				then
+					pr_warn "Fail to pull ${linux_dir} from ${origin2:-origin} from ${host}, will push from local"
+				fi
 			fi
+		else
+			# We actually want the tilde to be expanded after ssh, not in current shell
+			# shellcheck disable=SC2088
+			ssh "${host}" git init --bare "~/${remote_path}"
 		fi
 	fi
 done
