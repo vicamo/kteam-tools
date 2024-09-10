@@ -1,0 +1,54 @@
+#!/usr/bin/python3
+
+import sys
+import os
+import json
+from argparse import ArgumentParser
+
+from ktl.msgq import MsgQueueService, MsgQueueCredentials
+
+from wfl.work import SwmWork
+
+# from wfl.secrets import Secrets
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser("control SWM worker threads")
+
+    commands = parser.add_subparsers(
+        metavar="COMMAND", title="sub-commands", help="add -h for command help"
+    )
+    # Work around http://bugs.python.org/issue9253
+    commands.required = True
+    parser.add_argument("--local", action="store_true")
+
+    subcmd = commands.add_parser(
+        "workers",
+        help="set the number of workers",
+        description="""Scale the number of workers.""",
+    )
+    #subcmd.set_defaults(func=self.cmd_ready)
+    subcmd.set_defaults(cmd="workers")
+    subcmd.add_argument("count", type=int, help="number of workers")
+
+    args = parser.parse_args()
+
+    swm_work = SwmWork(local=args.local, config="~/.kernel-swm-worker.yaml")
+
+    if args.cmd == "workers":
+        if args.count < 0 or args.count > 16:
+            raise ValueError("worker count out of range 4..16")
+
+        start = []
+        for worker_num in range(4, args.count):
+            swm_work.send_worker_start(worker_num)
+            start.append(str(worker_num))
+        print("Start:", " ".join(start))
+
+        stop = []
+        for worker_num in range(args.count, 16):
+            stop.append(str(worker_num))
+            swm_work.send_worker_stop(worker_num)
+        print("Stop:", " ".join(stop))
+
+    #print(swm_work.mq.queue_info("swm-worker"))

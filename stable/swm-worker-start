@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# swm-worker-start <which> -- start a specific worker.
+#
+here=$(dirname "$(readlink -f "${0}")")
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <number>" 1>&2
+    exit 1
+fi
+n="$1"
+$HOME/kteam-tools/sbin/cron-start --no-report --instance swm-worker-$n $HOME/kteam-tools/stable/swm-worker --name W$n -- 'ShankBot' "Worker $n" 30m 45m >>$HOME/logs/swm-worker-$n.log 2>&1

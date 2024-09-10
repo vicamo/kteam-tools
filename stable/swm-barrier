@@ -24,6 +24,7 @@ class SwmBarrierGroup:
 
         self.want = set()
         self.seen = set()
+        self._priorities = dict()
 
     @property
     def nascent(self):
@@ -33,28 +34,35 @@ class SwmBarrierGroup:
     def complete(self):
         return not self.nascent and self.want == self.seen
 
-    def add(self, ident):
+    def add(self, ident, priority):
         self.want.add(ident)
-        logger.info("{} ADD {}".format(self, ident))
+        self._priorities.setdefault(priority, set()).add(ident)
+        logger.info("{} ADD {} {}".format(self, ident, priority))
 
     def offer(self, ident):
         logger.info("{} OFFER {}".format(self, ident))
         if ident not in self.want:
             return False
         self.seen.add(ident)
+        for priority in self._priorities.values():
+            priority.discard(ident)
         return True
+
+    @property
+    def priorities(self):
+        return sorted([priority for priority, entries in self._priorities.items() if len(entries)])
 
     def __str__(self):
         if self.nascent:
             return "GROUP<nascent>"
         else:
-            return "GROUP<{} wants={} sees={} complete={}>".format(self.group, len(self.want), len(self.seen), self.complete)
+            return "GROUP<{} wants={} sees={} complete={} priorities={}>".format(self.group, len(self.want), len(self.seen), self.complete, self.priorities)
 
     def __repr__(self):
         if self.nascent:
             return "GROUP<nascent>"
         else:
-            return "GROUP<{} wants={} sees={} complete={}>".format(self.group, len(self.want), len(self.seen), self.complete)
+            return "GROUP<{} wants={} sees={} complete={} priorities={}>".format(self.group, len(self.want), len(self.seen), self.complete, self.priorities)
 
 
 class SwmBarrier(SwmWorkCmds):
@@ -108,14 +116,15 @@ class SwmBarrier(SwmWorkCmds):
             elif what in ('shank', 'instantiate'):
                 shank_group = payload.get('group')
                 shank_id = payload.get('id')
+                priority = properties.priority
                 for group in self.groups:
                     if group.group == shank_group:
-                        group.add(shank_id)
+                        group.add(shank_id, priority)
                         break
                 else:
                     group = SwmBarrierGroup(shank_group)
                     self.groups.append(group)
-                    group.add(shank_id)
+                    group.add(shank_id, priority)
 
                 self.log.info("groups={}".format(self.groups))
 
