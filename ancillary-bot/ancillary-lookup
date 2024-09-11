@@ -27,13 +27,24 @@ primary_ref, adjunct_ref, ignore_list = sys.argv[1:]
 primary = lp.archives.getByReference(reference=primary_ref)
 if primary is None:
     raise ValueError("primary reference {} invalid".format(primary_ref))
-adjunct = None
+
+# If we have an adjunct specified then grab a reference and double check
+# the PPA is private.
 if adjunct_ref != "-":
     adjunct = lp.archives.getByReference(reference=adjunct_ref)
     if adjunct is None:
         raise ValueError("adjunct reference {} invalid".format(adjunct_ref))
     if not adjunct.private:
         raise ValueError("adjunct archive {} not private".format(adjunct_ref))
+
+# If the primary PPA is private then we can use it as the adjunct.
+elif primary.private:
+    adjunct_ref = primary_ref
+    adjunct = primary
+
+# Otherwise we do not have one.
+else:
+    adjunct = None
 
 ignore_builds = set()
 with open(ignore_list) as ilfd:
