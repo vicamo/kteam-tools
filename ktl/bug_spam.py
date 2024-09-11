@@ -11,13 +11,17 @@ from ktl.log                            import cwarn, cdebug
 class BugSpam:
     # __init__
     #
-    def __init__(self, cfg, lp_service=None):
+    def __init__(self, cfg, lp_service=None, lp=None):
         self.cfg = cfg
 
-        if lp_service is not None:
-            self.lp_service = lp_service
+        if lp is not None:
+            self.lp = lp
+
+        elif lp_service is not None:
+            self.lp = lp_service.default_service.launchpad
+
         else:
-            self.lp_service = LaunchpadService(self.cfg)
+            self.lp_service = LaunchpadService(self.cfg).default_service.launchpad
 
         log_format = "%(levelname)s - %(message)s"
         if 'debug' in self.cfg or 'verbose' in self.cfg:
@@ -64,9 +68,9 @@ class BugSpam:
             self.verbose("%s/%s:" % (series, package))
 
             for bug_id in bugs:
-                bug = self.lp_service.get_bug(bug_id)
+                bug = self.lp.bugs[bug_id]
                 self.print_bug_info(bug_id, bug)
-                should_be_spammed = False
+                should_be_spammed = True
                 is_tracker_bug = True
 
                 # RULE: Do not add verification tags or comments to bugs that exist
@@ -105,47 +109,71 @@ class BugSpam:
                     is_tracker_bug = False
                     break
 
-                # RULE: If a bug already has the appropriate verification tags on
-                #       it, we don't add them again.
-                #
-                while (not is_tracker_bug):
-                    if 'verification-failed-%s' % self.cfg['series'] in bug.tags:
-                        self.verbose('    . has verification-failed-%s tag' % self.cfg['series'])
-                        break  # The tag exists
+                if is_tracker_bug:
+                    should_be_spammed = False
 
-                    if 'verification-reverted-%s' % self.cfg['series'] in bug.tags:
-                        self.verbose('    . has verification-reverted-%s tag' % self.cfg['series'])
-                        break  # The tag exists
+                    # TRANSITION: fix up errant tagging of non-spammable bugs.
+                    series = self.cfg['series']
+                    tags = set(bug.tags)
+                    for tag in (
+                        'verification-failed-' + series,
+                        'verification-reverted-' + series,
+                        'verification-needed-' + series,
+                        'verification-done-' + series,
+                        'verification-done',
+                    ):
+                        if tag in tags:
+                            self.verbose('    . has {} tag removing'.format(tag))
+                            tags.remove(tag)
 
-                    if 'verification-needed-%s' % self.cfg['series'] in bug.tags:
-                        self.verbose('    . has verification-needed-%s tag' % self.cfg['series'])
-                        break  # The tag exists
+                    # Write the tags back if they are changed.
+                    if set(bug.tags) != tags:
+                        bug.tags = list(tags)
+                        bug.lp_save()
 
-                    if 'verification-done-%s' % self.cfg['series'] in bug.tags:
-                        self.verbose('    . has verification-done-%s tag' % self.cfg['series'])
-                        break  # The tag exists
+                if 'kernel-spammed-%s-%s' % (self.cfg['series'], self.cfg['package']) in bug.tags:
+                    self.verbose('    . already spammed (old-style) for this package')
+                    should_be_spammed = False
+                if 'kernel-spammed-%s-%s-v2' % (self.cfg['series'], self.cfg['package']) in bug.tags:
+                    self.verbose('    . already spammed (new-style) for this package')
+                    should_be_spammed = False
 
-                    # None of the tags that we are checking for exist, lets hook em up.
-                    #
-                    self.verbose('    . no verification tags')
-                    should_be_spammed = True
-                    break
-
+                # Now that we are limiting spamming to those bugs which are unique to a kernel
+                # we can and should remove any old verification tags as we go.
                 if should_be_spammed:
                     self.verbose('    . should be spammed')
-
-                    # Tags
-                    #
-                    self.verbose('        . adding tag: verification-needed-%s' % (self.cfg['series']))
-                    if not self.cfg['dryrun']:
-                        bug.tags.append('verification-needed-%s' % self.cfg['series'])
 
                     # Comment
                     #
                     if 'comment-text' in self.cfg:
                         self.verbose('        . adding comment')
                         if not self.cfg['dryrun']:
-                            bug.add_comment(self.cfg['comment-text'].replace('_SERIES_', self.cfg['series']).replace('_PACKAGE_', self.cfg['package']).replace('_VERSION_', self.cfg['version']))
+                            bug.newMessage(content=self.cfg['comment-text'].replace('_SERIES_', self.cfg['series']).replace('_PACKAGE_', self.cfg['package']).replace('_VERSION_', self.cfg['version']))
+
+                    by_package = self.cfg['series'] + "-" + self.cfg['package']
+                    tags = set(bug.tags)
+                    for tag in (
+                        'verification-failed-' + by_package,
+                        'verification-reverted-' + by_package,
+                        'verification-needed-' + by_package,
+                        'verification-done-' + by_package,
+                        'verification-done',
+                    ):
+                        if tag in tags:
+                            self.verbose('    . has {} tag removing'.format(tag))
+                            tags.remove(tag)
+
+                    # Tags
+                    #
+                    for tag in ('verification-needed-' + by_package, 'kernel-spammed-%s-%s-v2' % (self.cfg['series'], self.cfg['package'])):
+                        self.verbose('        . adding tag: ' + tag)
+                        if not self.cfg['dryrun']:
+                            tags.add(tag)
+
+                    # Write the tags back if they are changed.
+                    if set(bug.tags) != tags:
+                        bug.tags = list(tags)
+                        bug.lp_save()
 
                     # Status
                     #

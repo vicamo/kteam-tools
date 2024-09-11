@@ -2,6 +2,7 @@ import re
 
 from subprocess                 import Popen, PIPE, run
 
+from wfl.context                import ctx
 from wfl.errors                 import ShankError
 from wfl.log                    import center, cleave, cinfo, cdebug
 
@@ -31,8 +32,14 @@ class GitTag():
         self._present = False
 
         if package.repo is not None and package.repo.url is not None:
-            url = package.repo.url
-            self._refs = self.cache_tags(url)
+            remote = GitRemote(package.repo.url)
+
+            try:
+                self._refs = remote.refs
+                self._verifiable = True
+            except GitTagError as e:
+                self._refs = {}
+                cdebug("GitTag: remote lookup failed -- {}".format(str(e)))
 
             tag_prefix = 'Ubuntu{}-'.format(
                 package.source.name.replace('linux', ''))
@@ -62,28 +69,6 @@ class GitTag():
 
         cleave(self.__class__.__name__ + '.__init__')
 
-    def cache_tags(self, url):
-        center(self.__class__.__name__ + '.cache_tags')
-        cdebug('url     : {}'.format(url))
-
-        refs = []
-        if url.startswith("git://git.launchpad.net"):
-            cmd = [ 'git', 'ls-remote', '--refs', url ]
-            result = run(cmd, stdout=PIPE, stderr=PIPE)
-            if result.returncode != 0:
-                raise GitTagError(result.stderr.decode('utf-8').strip())
-
-            self._verifiable = True
-
-            for line in result.stdout.decode('utf-8').split('\n'):
-                if '\t' not in line:
-                    continue
-                (sha, ref) = line.split('\t')
-                refs.append(ref)
-
-        cleave(self.__class__.__name__ + '.lookup_tag')
-        return refs
-
     @property
     def verifiable(self):
         return self._verifiable
@@ -93,9 +78,9 @@ class GitTag():
         return self._present
 
 
-# GitRemote
+# GitRemoteDirect
 #
-class GitRemote:
+class GitRemoteDirect:
 
     # __init__
     #
@@ -119,10 +104,14 @@ class GitRemote:
         hashes = {}
         for entry in proc.stdout:
             bits = entry.decode('utf-8').split()
+            if bits[1] == 'HEAD':
+                continue
+            # We rely on the ordering of the output, that the tags preceed the
+            # peeled tags.
             if bits[1].endswith('^{}'):
                 bits[1] = bits[1][:-3]
-            refs.setdefault(bits[1], []).append(bits[0])
-            hashes.setdefault(bits[0], []).append(bits[1])
+            refs[bits[1]] = bits[0]
+            hashes[bits[0]] = bits[1]
         retcode = proc.wait()
         if retcode != 0:
             raise GitTagError(proc.stderr.read().decode('utf-8').strip())
@@ -142,6 +131,62 @@ class GitRemote:
         if self._hashes is None:
             self.cache_refs(self.url)
         return self._hashes
+
+
+# GitRemoteLaunchpad
+#
+class GitRemoteLaunchpad:
+
+    # __init__
+    #
+    def __init__(self, url, lp=None):
+        center(self.__class__.__name__ + '.__init__')
+        if lp is None:
+            raise ValueError("lp is required")
+
+        self.url = url
+        self.lp = lp
+
+        self._refs = None
+        self._hashes = None
+
+        cleave(self.__class__.__name__ + '.__init__')
+
+    def cache_refs(self, url):
+        center(self.__class__.__name__ + '.cache_refs')
+        cdebug('url     : {}'.format(url))
+
+        lp_repo = self.lp.git_repositories.getByPath(path='~' + url.split('~', 1)[1])
+
+        refs = {}
+        hashes = {}
+        for ref in lp_repo.refs:
+            refs[ref.path] = ref.commit_sha1
+            hashes[ref.commit_sha1] = ref.path
+
+        self._refs = refs
+        self._hashes = hashes
+        cleave(self.__class__.__name__ + '.cache_refs')
+
+    @property
+    def refs(self):
+        if self._refs is None:
+            self.cache_refs(self.url)
+        return self._refs
+
+    @property
+    def hashes(self):
+        if self._hashes is None:
+            self.cache_refs(self.url)
+        return self._hashes
+
+
+class GitRemote:
+
+    def __new__(cls, url):
+        #if '//git.launchpad.net/~' in url:
+        #    return GitRemoteLaunchpad(url, ctx.lp)
+        return GitRemoteDirect(url)
 
 
 class GitTagsSnap:
@@ -172,13 +217,12 @@ class GitTagsSnap:
         tip_hash = self.remote.refs.get(tip_name)
         if tip_hash is None:
             return
-        tip_hash = tip_hash[0]
 
         # See if there are any other refs pointing to that.  If there
         # is extract the tag prefix and current version from the tag.
         for ref_name, ref_hash in self.remote.refs.items():
             #print(tip_name, tip_hash, ref_name, ref_hash)
-            if ref_name != tip_name and tip_hash in ref_hash:
+            if ref_name != tip_name and tip_hash == ref_hash:
                 self._tip_tag = ref_name
                 pv_match = self.prefix_version_re.search(ref_name)
                 if pv_match is not None:

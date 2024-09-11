@@ -156,7 +156,14 @@ class RegressionTesting(TaskHandler):
         present = s.bug.debs.all_built_and_in_pocket_or_after('Proposed')
         if not present and early_testing:
             present = s.bug.debs.all_built_and_in_pocket_or_after('ppa')
-        if not present:
+
+        # If we have no routing for Proposed then there is nothing to test.
+        if s.bug.debs.routing('Proposed') is None:
+            cinfo("regression-testing invalid with no Proposed route")
+            s.task.status = 'Invalid'
+            retval = True
+
+        elif not present:
             if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
                 cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
                 s.task.status = 'Opinion'
@@ -190,7 +197,7 @@ class RegressionTesting(TaskHandler):
                 s.bug.flag_assign('proposed-testing-requested', True)
 
             try:
-                result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'sru')
+                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, s.bug.name, s.bug.version, 'sru')
                 task_status = {
                         None: 'Triaged',
                         'noprov': 'Incomplete',
@@ -211,7 +218,7 @@ class RegressionTesting(TaskHandler):
                 raise WorkflowBugTaskError(str(e))
             s.bug.monitor_add({
                 "type": "regression-testing",
-                #"cycle": s.bug.sru_cycle,
+                #"cycle": s.bug.sru_spin_name,
                 #"series": s.bug.series,
                 #"source": s.bug.name,
                 #"version": s.bug.version,
@@ -267,8 +274,12 @@ class BootTesting(TaskHandler):
         retval = False
 
         while not retval:
-            if s.bug.task_status(':prepare-packages') != 'Fix Released':
-                break
+            if s.bug.has_debs:
+                if s.bug.task_status(':prepare-packages') != 'Fix Released':
+                    break
+            else:
+                if s.bug.task_status('snap-release-to-beta') != 'Fix Released':
+                    break
 
             s.task.status = 'Confirmed'
             retval = True
@@ -294,11 +305,16 @@ class BootTesting(TaskHandler):
                 retval = True
             return retval
 
-        if s.bug.task_status('promote-to-proposed') == 'Fix Released':
-            cinfo('kernels promoted successfully from the PPA', 'green')
-            return retval
+        if s.bug.has_debs:
+            if s.bug.task_status('promote-to-proposed') == 'Fix Released':
+                cinfo('kernels promoted successfully from the PPA', 'green')
+                return retval
 
-        present = s.bug.debs.all_built_and_in_pocket_or_after('ppa')
+            present = s.bug.debs.all_built_and_in_pocket_or_after('ppa')
+
+        else:
+            present = True
+
         if not present:
             if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix"):
                 cinfo('Kernels no longer present in PPA moving Incomplete', 'yellow')
@@ -314,11 +330,14 @@ class BootTesting(TaskHandler):
             # If we are checking results and we have not requested boot testing
             # do that now.
             if not s.bug.flag('boot-testing-requested'):
-                s.bug.debs.send_boot_testing_requests()
+                if s.bug.has_debs:
+                    s.bug.debs.send_boot_testing_requests()
+                else:
+                    s.bug.snap.send_testing_request(op="boot", risk="edge")
                 s.bug.flag_assign('boot-testing-requested', True)
 
             try:
-                result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'boot')
+                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, s.bug.target, s.bug.version, 'boot')
                 task_status = {
                         None: 'Triaged',
                         'noprov': 'Incomplete',
@@ -339,7 +358,7 @@ class BootTesting(TaskHandler):
                 raise WorkflowBugTaskError(str(e))
             s.bug.monitor_add({
                 "type": "regression-testing",
-                #"cycle": s.bug.sru_cycle,
+                #"cycle": s.bug.sru_spin_name,
                 #"series": s.bug.series,
                 #"source": s.bug.name,
                 #"version": s.bug.version,

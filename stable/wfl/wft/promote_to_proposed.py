@@ -78,6 +78,12 @@ class PromoteFromTo(Promoter):
             if not s.bug.debs.delta_in_pocket(delta, s.pocket_dest):
                 break
 
+            # Record what is missing as we move out of New.  This is everything
+            # we will need to move at any stage of the (potentially) multi-step
+            # copy.
+            s.bug.debs.delta_record('promote-to-proposed', 'ppa', 'Proposed')
+            s.bug.clamp_assign('promote-to-proposed', s.bug.debs.prepare_id)
+
             s.task.status = 'Fix Committed'
             s.task.timestamp('started')
 
@@ -129,7 +135,7 @@ class PromoteFromTo(Promoter):
                         '{}:{} waiting for {} to become clear'.format(s.bug.series, s.bug.name, pocket_dest))
                 break
 
-            if s._kernel_block_ppa():
+            if s.bug.manual_block("promote-to-proposed") or s._kernel_block_ppa():
                 s.task.reason = 'Stalled -- manual kernel-block/kernel-block-ppa present'
                 break
 
@@ -166,6 +172,13 @@ class PromoteFromTo(Promoter):
         retval = False
 
         while not retval:
+            if s.pocket_src is None:
+                cinfo('            Source routing is no longer available', 'yellow')
+                s.task.status = 'New'
+                retval = True
+            break
+
+        while not retval:
             if s.task.status not in ('Confirmed'):
                 break
 
@@ -175,11 +188,14 @@ class PromoteFromTo(Promoter):
             if s.new_review_active and s.bug.task_status('new-review') != 'Fix Released':
                 cinfo('            new-review no longer ready pulling back from Confirmed', 'yellow')
                 pull_back = True
+            if s.new_review_active:
+                s.task.status = 'In Progress'
+                retval = True
             for task_src in s.task_srcs:
                 if s.bug.task_status(task_src) not in ('Fix Released', 'Invalid'):
                     cinfo('            {} no longer ready pulling back from Confirmed'.format(task_src), 'yellow')
                     pull_back = True
-            if s._kernel_block_ppa():
+            if s.bug.manual_block("promote-to-proposed") or s._kernel_block_ppa():
                 cinfo('            A kernel-block/kernel-block-ppa tag exists on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
             if s.bug.debs.older_tracker_in_proposed is not None:
@@ -224,6 +240,11 @@ class PromoteFromTo(Promoter):
 
                 elif s.task.status == 'Incomplete':
                     s.task.reason = 'Stalled -- review FAILED'
+                    break
+
+                elif s.task.status == 'In Progress' and s.new_review_active:
+                    s.task.reason = '{} -- promotion in progress'.format(
+                        s.task.reason_state('Ongoing', timedelta(hours=4)))
                     break
 
                 elif s.task.status == 'In Progress':
@@ -354,6 +375,11 @@ class PromoteFromTo(Promoter):
         center(s.__class__.__name__ + '._recind')
         retval = False
 
+        if s.pocket_src is None:
+            cinfo("source route no longer valid, moving New")
+            s.task.status = "New"
+            retval = True
+
         # XXX: TRANSITION
         clamp = s.bug.clamp('promote-to-proposed')
         if clamp is None:
@@ -361,7 +387,7 @@ class PromoteFromTo(Promoter):
 
         clamp = s.bug.clamp('promote-to-proposed')
         if clamp is not None and str(clamp) != str(s.bug.debs.prepare_id):
-            cinfo("promote-to-proposed id has changed, recinding promote-to-proposed")
+            cinfo("promote-to-proposed id has changed, recinding promote-to-proposed ({} -> {})".format(str(clamp), str(s.bug.debs.prepare_id)))
             s.task.status = 'New'
             retval = True
 
@@ -385,7 +411,11 @@ class PromoteFromTo(Promoter):
 
     @property
     def signing_bot(s):
-        return 'kernel-signing-bot' in s.bug.tags
+        has_bot = False
+        for task_name in s.bug.tasks_by_name:
+            if task_name.startswith('canonical-signing-jobs'):
+                has_bot = True
+        return has_bot or 'kernel-signing-bot' in s.bug.tags
 
     @property
     def new_review_active(s):
@@ -417,7 +447,14 @@ class PromoteToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteToProposed, s).__init__(lp, task, bug)
 
-        s.task_srcs = [':prepare-packages', 'signing-signoff', 'boot-testing', 'sru-review'] # XXX: 'new-review'
+        s.task_srcs = [
+            ':prepare-packages',
+            'signing-signoff',
+            'abi-testing',
+            'boot-testing',
+            'sru-review',
+            # XXX: 'new-review',
+        ]
         s.pocket_src = 'ppa'
         s.pockets_clear = []
         s.pockets_watch = []

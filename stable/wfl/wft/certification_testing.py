@@ -1,5 +1,8 @@
-
+from datetime                                   import datetime, timedelta, timezone
+from wfl.bug                                    import WorkflowBugTaskError
+from wfl.context                                import ctx
 from wfl.log                                    import center, cleave, cdebug, cwarn, cinfo
+from wfl.test_observer                          import TestObserverResults, TestObserverError
 from .base                                      import TaskHandler
 
 class CertificationTesting(TaskHandler):
@@ -15,10 +18,12 @@ class CertificationTesting(TaskHandler):
 
         s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._status_check
+        s.jumper['Triaged']       = s._status_check
         s.jumper['In Progress']   = s._status_check
         s.jumper['Incomplete']    = s._status_check
         s.jumper['Opinion']       = s._status_check
         s.jumper['Fix Committed'] = s._status_check
+        s.jumper['Fix Released']  = s._status_check
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -39,12 +44,60 @@ class CertificationTesting(TaskHandler):
             if not s.bug.debs.ready_for_testing:
                 break
 
-            s.task.status = 'Confirmed'
+            if s.bug.built_in not in (None, 1):
+                route_archive, route_pocket = s.bug.debs.pocket_route("Proposed")
+                cinfo("APW route_archive={}".format(route_archive.reference))
+                if route_archive.reference != "ubuntu":
+                    s.task.status = "Invalid"
+                    retval = True
+                    break
+
+            s.task.status = "Confirmed"
             retval = True
             break
 
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
+
+    def match_result(self, data, source):
+        sources = [package.name for package in source.packages]
+
+        # XXX: recover the meta package name from the name field; "." is
+        # mapped to "_".
+        meta = data.get("name", "??").replace("_", ".")
+
+        cinfo("  meta={}".format(meta))
+
+        # XXX: some records seem to be named for the main kernel?!?
+        if meta == self.bug.name:
+            cinfo("  meta={} matches overall source name".format(meta))
+            return True
+
+        # We will assume this is published in the "stage".
+        pocket = data.get("stage", "proposed")
+        route = source.routing.lookup_route(pocket)
+        cinfo("  route={}".format(route))
+
+        for dest in route.entries:
+            cinfo("    dest={} name={} reference={} pocket={}".format(dest, dest.name, dest.reference, dest.pocket))
+
+            archive = self.lp.archives.getByReference(reference=dest.reference)
+            binaries = archive.getPublishedBinaries(
+                order_by_date=True,
+                exact_match=True,
+                binary_name=meta,
+                version=data.get("version"),
+            )
+
+            if len(binaries) == 0:
+                continue
+
+            binary = binaries[0]
+            cinfo(" {} ?? {}".format(binary.source_package_name, sources))
+            if binary.source_package_name in sources:
+                return True
+            break
+        return False
 
     # _status_check
     #
@@ -53,7 +106,14 @@ class CertificationTesting(TaskHandler):
         retval = False
 
         present = s.bug.debs.all_built_and_in_pocket_or_after('Proposed')
-        if not present:
+
+        # If we have no routing for Proposed then there is nothing to test.
+        if s.bug.debs.routing('Proposed') is None:
+            cinfo("certification-testing invalid with no Proposed route")
+            s.task.status = 'Invalid'
+            retval = True
+
+        elif not present:
             if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
                 cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
                 s.task.status = 'Opinion'
@@ -75,6 +135,65 @@ class CertificationTesting(TaskHandler):
             if s.task.status != 'Fix Released':
                 s.task.status = 'Fix Released'
                 retval = True
+
+        else:
+            result = None
+            try:
+                observer = TestObserverResults()
+                result = None
+                existing = s.bug.group_get("test-observer", "proposed")
+                if existing is not None:
+                    result = observer.lookup_result(existing)
+                    cinfo("TO direct result={}".format(result))
+                if result is None:
+                    results = observer.lookup_results(
+                        "deb",
+                        series=s.bug.source.series.codename,
+                        stage="proposed",
+                        version=s.bug.debs.package_version_exact("meta"),
+                    )
+                    cinfo("TO results={}".format(results))
+                    for current in results:
+                        if s.match_result(current, s.bug.source):
+                            cinfo("TO deb match result={}".format(current))
+                            s.bug.group_set("test-observer", "proposed", current.get("id"))
+                            result = current
+                            break
+                if result is not None:
+                    status = result.get("status", "UNKNOWN")
+                    tstatus = {
+                        "UNDECIDED": "Triaged",
+                        "APPROVED": "Fix Released",
+                    }.get(status, "Incomplete")
+                    assignee = (result.get("assignee") or {}).get("launchpad_handle")
+                    if status == "UNDECIDED" and assignee is not None:
+                        tstatus = "In Progress"
+                    if s.task.assignee is None or s.task.assignee.name != assignee:
+                        lp_assignee = s.lp.people[assignee] if assignee is not None else s.lp.people["canonical-hw-cert"]
+                        s.task.assignee = lp_assignee
+                    cinfo("TO deb result-status={} task-status={}".format(status, tstatus))
+                    if s.task.status != tstatus:
+                        s.task.status = tstatus
+                        retval = True
+            except TestObserverError as e:
+                s.bug.refresh_at(
+                    datetime.now(timezone.utc) + timedelta(minutes=30),
+                    "polling due to test-observer failure",
+                )
+                raise WorkflowBugTaskError(str(e))
+
+            if result:
+                s.bug.monitor_add({
+                    "type": "test-observer",
+                    "id": result.get("id"),
+                    "status": result.get("status"),
+                    "assignee": (result.get("assignee") or {}).get("launchpad_handle"),
+                })
+            else:
+                s.bug.refresh_at(
+                    datetime.now(timezone.utc) + timedelta(minutes=30),
+                    "polling waiting for initial status",
+                )
 
         if s.task.status == 'Fix Released':
             pass

@@ -159,10 +159,11 @@ class Cmdline:
         self.cfg['app_name'] = argv[0]
         self.cfg['archive-versions'] = False
         self.cfg['series'] = []
+        self.cfg['cache'] = None
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'series=', 'archive-versions']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'series=', 'archive-versions', 'cache=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -183,6 +184,9 @@ class Cmdline:
 
                 elif opt in ('--archive-versions'):
                     self.cfg['archive-versions'] = True
+
+                elif opt in ('--cache'):
+                    self.cfg['cache'] = val
 
             if result:  # No errors yet
 

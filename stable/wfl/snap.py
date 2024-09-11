@@ -9,11 +9,17 @@ except ImportError:
 
 import os
 import json
+from copy import copy
 from .errors import ShankError
 from datetime import datetime
+import subprocess
+
+from lazr.restfulclient.errors import NotFound
+
+from ktl.msgq import MsgQueueCkct
 
 from wfl.git_tag                                import GitTagsSnap
-from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
+from wfl.log                                    import center, cleave, cinfo, cerror, cdebug, centerleave
 
 from .context                                   import ctx
 from .secrets                                   import Secrets
@@ -52,73 +58,106 @@ class SnapStore:
         """
         s.snap = snap
         s._channel_map = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
+        s._revision_map = None  # dictionary with {<revision}: {<version>,<revision>}}
         s.secrets = Secrets(os.path.expanduser("~/.swm-secrets.yaml")).get('snaps')
 
     # channel_map_lookup
     #
     def channel_map_lookup(s):
         """
-        Query the snap store URL to get the information about the kernel snap
-        publishing.
+        Probe the snap publishing records in the store.
 
         :return: publishing array
         """
         cdebug("    snap.name={}".format(s.snap.name))
         cdebug("    snap.publish_to={}".format(s.snap.publish_to))
 
-        result = {}
-        try:
-            headers = s.common_headers
+        channels = {}
+        revisions = {}
+        for arch, tracks in s.snap.publish_to.items():
+            actions = []
+            for track in tracks:
+                # XXX: we should be a little more dynamic with streams perhaps.
+                for risk in [
+                    "edge", "edge/stream2",
+                    "beta", "beta/stream2",
+                    "candidate", "candidate/stream2",
+                    "stable"
+                ]:
+                    channel = "{}/{}".format(track, risk)
+                    actions.append({
+                        "action": "download",
+                        "instance-key": channel,
+                        "name": s.snap.name,
+                        "channel": channel,
+                    })
+            data = {
+                "context": [],
+                "actions": actions,
+                "fields": ["name","revision","type","version"],
+            }
+            try:
+                headers = copy(s.common_headers)
+                store_id = s.secrets.get(s.snap.name, {}).get("store-id")
+                if store_id is not None:
+                    cdebug("SnapStore: {} using snap specific store-id")
+                    headers["Snap-Device-Store"] = store_id
+                headers["Snap-Device-Architecture"] = arch
+                headers["Content-Type"] = 'application/json'
 
-            params = urlencode({'fields': 'revision,version'})
-            store_id = s.secrets.get(s.snap.name, {}).get('store-id')
-            if store_id is not None:
-                cdebug('SnapStore: {} using snap specific store-id')
-                headers['Snap-Device-Store'] = store_id
-            url = "{}?{}".format(urljoin(s.base_url, s.snap.name), params)
-            req = Request(url, headers=headers)
-            with urlopen(req) as resp:
-                raw_data = resp.read().decode('utf-8')
-                cinfo("SNAP JSON: {}".format(raw_data))
-                response = json.loads(raw_data)
-                cdebug(response)
-                for channel_rec in response['channel-map']:
-                    channel = (channel_rec['channel']['architecture'],
-                        channel_rec['channel']['track'] + '/' +
-                        channel_rec['channel']['risk'])
-                    entry = {}
-                    entry['version'] = channel_rec['version']
-                    entry['revision'] = channel_rec['revision']
-                    entry['released-at'] = channel_rec['channel']['released-at']
-                    result[channel] = entry
+                url = "https://api.snapcraft.io/v2/snaps/refresh"
+                req = Request(url, headers=headers, method="POST", data=bytes(json.dumps(data), "ascii"))
+                with urlopen(req) as resp:
+                    raw_data = resp.read().decode('utf-8')
+                    cdebug("SNAP JSON: {}".format(raw_data))
+                    response = json.loads(raw_data)
+                    cdebug(response)
+                    for result in response["results"]:
+                        if "error" in result:
+                            cdebug("SNAP RESULT: arch={} channel={} error.code={}".format(arch, result["instance-key"], result["error"]["code"]))
+                            continue
+                        # XXX: should be checking for individual channel errors.
+                        cdebug("SNAP RESULT: channel={} version={} revision={} released-at={}".format(result["instance-key"], result["snap"]["version"], result["snap"]["revision"], result["released-at"]))
+                        entry = {}
+                        entry['version'] = result["snap"]["version"]
+                        entry['revision'] = result["snap"]["revision"]
+                        entry['released-at'] = result["released-at"]
+                        channels[(arch, result["instance-key"])] = entry
+                        revisions[entry["revision"]] = entry
 
-        except HTTPError as e:
-            # Error 404 is returned if the snap has never been published
-            # to the given channel.
-            store_err = False
-            if hasattr(e, 'code') and e.code == 404:
+            except HTTPError as e:
+                # Error 404 is returned if the snap has never been published
+                # to the given channel.
+                store_err = False
                 ret_body = e.read().decode()
-                ret_data = json.loads(ret_body)
-                cinfo("SNAP 404: {}".format(ret_data))
-                for error in ret_data.get('error-list', []):
-                    cinfo("SNAP ERROR: code={} message={}".format(error['code'], error['message']))
-                    if error['code'] == 'resource-not-found':
+                cdebug("SNAP ERROR: ret_body={}".format(ret_body))
+                if hasattr(e, 'code') and e.code == 404:
+                    ret_data = json.loads(ret_body)
+                    cinfo("SNAP 404: {}".format(ret_data))
+                    for error in ret_data.get('error-list', []):
+                        cinfo("SNAP ERROR: code={} message={}".format(error['code'], error['message']))
+                        if error['code'] == 'resource-not-found':
+                            store_err = True
+                    # XXX: convert to something sane in the above loop.
+                    store_err_str = 'has no published revisions in the given context'
+                    if store_err_str in ret_body:
                         store_err = True
-                # XXX: convert to something sane in the above loop.
-                store_err_str = 'has no published revisions in the given context'
-                if store_err_str in ret_body:
-                    store_err = True
-            if not store_err:
-                raise SnapStoreError('failed to retrieve store URL (%s)' % str(e))
-        except (URLError, KeyError) as e:
-            raise SnapStoreError('failed to retrieve store URL (%s: %s)' %
-                                 (type(e), str(e)))
-        return result
+                if not store_err:
+                    raise SnapStoreError('failed to retrieve store URL (%s)' % str(e))
+            except (URLError, KeyError) as e:
+                raise SnapStoreError('failed to retrieve store URL (%s: %s)' %
+                                     (type(e), str(e)))
+        return channels, revisions
 
     def channel_map(s):
         if s._channel_map is None:
-            s._channel_map = s.channel_map_lookup()
+            s._channel_map, s._revision_map = s.channel_map_lookup()
         return s._channel_map
+
+    def revision_map(s):
+        if s._revision_map is None:
+            s._channel_map, s._revision_map = s.channel_map_lookup()
+        return s._revision_map
 
     # channel_version
     #
@@ -132,33 +171,31 @@ class SnapStore:
         key = (arch, channel)
         return s.channel_map().get(key, {}).get('revision', None)
 
-    @property
-    def last_published(self):
-        data = self.channel_map()
+    # revision_version
+    #
+    def revision_version(s, revision):
+        return s.revision_map().get(revision, {}).get("version", None)
 
+    def _last_published(self, data):
         last_published = None
-        for arch, tracks in self.snap.publish_to.items():
-            for track in tracks:
-                for risk in self.snap.promote_to:
-                    channel = "{}/{}".format(track, risk)
-                    #print("?", self.snap.name, arch, channel)
-                    key = (arch, channel)
-                    if key not in data:
-                        continue
+        for key, entry in data.items():
+            # Convert the iso8601 format timestring into one
+            # which strptime actually can parse.
+            released_at = entry['released-at']
+            released_at = released_at[:-3] + released_at[-2:]
+            #print("D?", released_at)
 
-                    # Convert the iso8601 format timestring into one
-                    # which strptime actually can parse.
-                    released_at = data[key]['released-at']
-                    released_at = released_at[:-3] + released_at[-2:]
-                    #print("D?", released_at)
-
-                    date_published = datetime.strptime(released_at,
-                        "%Y-%m-%dT%H:%M:%S.%f%z")
-                    cinfo("SNAP-RELEASED-AT {} -> {} > {}".format(data[key]['released-at'], date_published, last_published))
-                    if last_published is None or date_published > last_published:
-                        last_published = date_published
+            date_published = datetime.strptime(released_at,
+                "%Y-%m-%dT%H:%M:%S.%f%z")
+            cinfo("SNAP-RELEASED-AT {} -> {} > {}".format(entry['released-at'], date_published, last_published))
+            if last_published is None or date_published > last_published:
+                last_published = date_published
 
         return last_published
+
+    @property
+    def last_published(self):
+        return self._last_published(self.channel_map())
 
 
 # SnapDebs
@@ -173,6 +210,8 @@ class SnapDebs:
         s.snap_info = None
         s._snap_store = None
         s._git_repo = False
+        s.is_v2 = False
+        s.is_v2v = False
 
         if s.bug.variant == 'snap-debs':
             # We take our version from the debs we are snapping up
@@ -196,12 +235,17 @@ class SnapDebs:
                 cinfo("tracker version has changed resetting tracker {} -> {}".format(clamp, s.bug.version))
                 s.bug.clamp_assign('self', s.bug.version)
                 # XXX: likely we should be pulling tasks back here.
+                for taskname, task in s.bug.tasks_by_name.items():
+                    if taskname.startswith('snap-') and task.status != 'New':
+                        cinfo("pulling {} to New".format(taskname))
+                        task.status = 'New'
 
             # Expect this bug to have the data we need to identify the
             # snap.
             snap_name = s.bug.bprops.get('snap-name')
             if snap_name is None:
                 raise SnapError("snap-name not provided")
+            s.name = snap_name
             source = s.bug.source
             if source is not None:
                 s.snap_info = source.lookup_snap(snap_name)
@@ -209,6 +253,23 @@ class SnapDebs:
                     raise SnapError("{}: snap does not appear in kernel-series for that source".format(snap_name))
 
             s.bug.update_title(suffix='snap-debs snap:' + snap_name)
+
+            # V2: attempt to locate the "edge" "stream=1" recipe.
+            recipe_edge = s.lookup_recipe_v2("edge", stream=1, probe_2v=True)
+            if recipe_edge is not None:
+                s.is_v2 = True
+                s.is_v2v = True
+            else:
+                recipe_edge = s.lookup_recipe_v2("edge", stream=1)
+                if recipe_edge is not None:
+                    s.is_v2 = True
+            cdebug("SNAP is_v2={} is_v2v={}".format(s.is_v2, s.is_v2v))
+
+            # Use our parents stream as soon as it comes ready.  Match our parent in
+            # the normal form.
+            if s.is_v2 and parent_wb is not None and parent_wb.built_in != s.bug.built_in:
+                s.bug.built_in = parent_wb.built_in
+                cinfo("APW: STREAM2 -- SNAP stream set to {}".format(s.bug.built_in))
 
         elif s.bug.variant == 'combo':
             # For a combo bug take versioning from our title.
@@ -223,23 +284,101 @@ class SnapDebs:
                         s.snap_info = snap
                         break
 
+            # Our name is our snap name.
+            if s.snap_info is not None:
+                s.name = s.snap_info.name
+
+        else:
+            s.name = s.bug.name
+
         # Pick up versions from our bug as needed.
         s.series = s.bug.series
-        s.name = s.bug.name
         s.version = s.bug.version
         s.source = s.bug.source
         s.kernel = s.bug.kernel
         s.abi = s.bug.abi
-
-        # Our name is our snap name.
-        if s.snap_info is not None:
-            s.name = s.snap_info.name
 
     @property
     def snap_store(s):
         if s._snap_store is None:
             s._snap_store = SnapStore(s.snap_info)
         return s._snap_store
+
+    @centerleave
+    def recover_request_v2(self, handle):
+        if handle is None:
+            return None
+        lp = ctx.lp
+        recipe = lp.load(handle)
+        return recipe
+
+    def lookup_recipe_v2(self, risk, stream=None, probe_2v=None):
+        if stream is None:
+            stream = self.bug.built_in
+        if probe_2v is None:
+            probe_2v = self.is_v2v
+
+        if stream is None:
+            return None
+
+        risk_clamp = "edge" if risk == "edge" else "beta"
+        variant = "+2v" if probe_2v else "+2"
+        # mantic--linux--pc-kernel--edge--1
+        recipe_name = "{}--{}--{}--{}--{}{}".format(
+            self.bug.series,
+            self.bug.source.name,
+            self.name,
+            risk_clamp,
+            stream,
+            variant,
+        )
+        cdebug("lookup_recipe_manual({}) recipe_name={}".format(risk, recipe_name))
+
+        # Lookup our team snap recipies.
+        lp = ctx.lp
+        # XXX: we should really move these to the right team instead.
+        if self.bug.source.series.esm:
+            owner = lp.people['canonical-kernel-esm']
+        else:
+            path = '~' + self.snap_info.repo.url.split('~')[1]
+            lp_repo = lp.git_repositories.getByPath(path=path)
+            if lp_repo is None:
+                return None
+            owner = lp_repo.owner
+        cdebug("lookup_recipe_manual({}) owner={}".format(risk, owner))
+
+        try:
+            lp_snap = lp.snaps.getByName(owner=owner, name=recipe_name)
+        except NotFound as e:
+            lp_snap = None
+        cdebug("lookup_recipe_manual({}) lp_snap={}".format(risk, lp_snap))
+
+        return lp_snap
+
+    @centerleave
+    def snap_request(self, risk):
+        recipe = self.lookup_recipe_v2(risk)
+        cinfo("snap_request: lookup_recipe_v2({}) = {}".format(risk, recipe))
+        if recipe is None:
+            return False
+
+        # Request a snap build and return the request.
+        request = recipe.requestBuilds(
+            archive=recipe.auto_build_archive,
+            pocket=recipe.auto_build_pocket,
+            channels=recipe.auto_build_channels,
+        )
+        cinfo("snap_request: recipe.requestBuilds(archive={}, pocket={}, channels={}) = {}".format(
+            recipe.auto_build_archive,
+            recipe.auto_build_pocket,
+            recipe.auto_build_channels,
+            request,
+        ))
+        if request is None:
+            return None
+
+        request = request.self_link.split("/devel/")[-1]
+        return request
 
     @property
     def last_published(self):
@@ -469,3 +608,232 @@ class SnapDebs:
 
         return state
 
+    # snap_validate_request
+    #
+    @centerleave
+    def snap_validate_request(self, request, version):
+        request = self.recover_request_v2(request)
+
+        # If the request is not yet complete return inconclusive result.
+        if request is None:
+            cinfo("snap_validate_request: no request")
+            return None
+        if request.status != "Completed":
+            cinfo("snap_validate_request: request.status={}".format(request.status))
+            return None
+
+        publish_to = self.snap_info.publish_to
+        good = True
+        for build in request.builds:
+            if build.arch_tag not in publish_to:
+                self.bug.flag_assign("error-snap-extra-arch", True)
+                continue
+            rev = build.store_upload_revision
+            if rev is None:
+                cinfo("snap_validate_request: build={} no rev recorded".format(build))
+                return None
+            rev_version = self.snap_store.revision_version(rev)
+            cinfo("snap_validate_request: arch={} version={} rev={} rev_version={}".format(build.arch_tag, version, rev, rev_version))
+            if rev_version != version:
+                good = False
+
+        return good
+
+    # snap_status_request
+    #
+    @centerleave
+    def snap_status_request(s, request):
+        request = s.recover_request_v2(request)
+
+        # If the request is not yet implemented report it.
+        if request is None:
+            return "REQUEST-MISSING"
+        if request.status != "Completed":
+            return "REQUEST-" + request.status.upper()
+
+        # Run the list of builds for this snap and see if we have one for the sha
+        # we care about.  If so take the first build in each arch as the current
+        # status.  Accumulate the build and upload stati into a single status
+        # for this snap build and upload phase.
+        status = set()
+        status.add('BUILD-MISSING')
+
+        for build in request.builds:
+            cinfo("snap build complete: {} {} {} {}".format(build, build.arch_tag, build.buildstate, build.revision_id))
+
+            #print(build, arch_tag, build.revision_id, build.buildstate, build.store_upload_status)
+
+            if build.buildstate in (
+                    'Needs building',
+                    'Currently building',
+                    'Uploading build'):
+                status.add('BUILD-ONGOING')
+
+            elif build.buildstate == 'Dependency wait':
+                status.add('BUILD-DEPWAIT')
+
+            elif build.buildstate == 'Successfully built':
+                status.add('BUILD-COMPLETE')
+
+            else:
+                status.add('BUILD-FAILED')
+                # Anything else is a failure, currently:
+                #  Failed to build
+                #  Dependency wait
+                #  Chroot problem
+                #  Build for superseded Source
+                #  Failed to upload
+                #  Cancelling build
+                #  Cancelled build
+
+            if build.buildstate == 'Successfully built':
+                if build.store_upload_status == 'Unscheduled':
+                    status.add('UPLOAD-DISABLED')
+
+                elif build.store_upload_status == 'Pending':
+                    status.add('UPLOAD-PENDING')
+
+                elif build.store_upload_status == 'Uploaded':
+                    status.add('UPLOAD-COMPLETE')
+
+                else:
+                    status.add('UPLOAD-FAILED')
+                    # Anything else is a failure, currently:
+                    #  Failed to upload
+                    #  Failed to release to channels
+
+        # Find the 'worst' state and report that for everything.
+        for state in (
+                'BUILD-FAILED', 'UPLOAD-FAILED', 'UPLOAD-DISABLED',                  # Errors: earliest first
+                'BUILD-PENDING', 'BUILD-DEPWAIT', 'BUILD-ONGOING', 'UPLOAD-PENDING', # Pending: earliest first
+                'UPLOAD-COMPLETE', 'BUILD-COMPLETE',                                 # Finished: latest first
+                'BUILD-MISSING'):
+            if state in status:
+                break
+
+        # XXX: enable when snap builds are not scheduling.
+        #if state == "BUILD-MISSING":
+        #    s.bug.reasons['snap-start'] = "Stalled -s {}".format(lp_snap)
+
+        cdebug("snap_status_request: build/upload stati {} {}".format(status, state))
+
+        return state
+
+    def risk_stream(self, risk, stream):
+        risk_branch = risk
+        if stream != 1 and risk != "stable":
+            risk_branch += "/stream{}".format(stream)
+        return risk_branch
+
+    @centerleave
+    def is_in_risk_request(self, risk, request):
+        request = self.recover_request_v2(request)
+        risk_branch = self.risk_stream(risk, self.bug.built_in)
+
+        # Identify expected revisions.
+        revisions = {}
+        if request is not None:
+            for build in request.builds:
+                revisions[build.arch_tag] = build.store_upload_revision
+                cinfo("is_in_risks_request: arch={} revision={}".format(build.arch_tag, build.store_upload_revision))
+
+        # Scan and report on revision missmatches.
+        good = True
+        partial = False
+        broken = []
+        publish_to = self.snap_info.publish_to
+        #promote_to = self.snap_info.promote_to
+        for arch in sorted(publish_to):
+            expected_revision = revisions.get(arch)
+            cinfo("is_in_risks_request: arch={} expected_revision={}".format(arch, expected_revision))
+            if expected_revision is None:
+                good = False
+            for track in publish_to[arch]:
+                channel = "{}/{}".format(track, risk_branch)
+                revision = self.snap_store.channel_revision(arch, channel)
+                cinfo("is_in_risks_request: arch={} channel={} revision={}".format(arch, channel, revision))
+                entry = "arch={}:channel={}".format(arch, channel)
+                if expected_revision is not None:
+                    entry += ":rev={}".format(expected_revision)
+                if revision is not None and expected_revision != revision:
+                    entry += ":badrev={}".format(revision)
+                if expected_revision != revision:
+                    good = False
+                if revision is not None and expected_revision == revision:
+                    partial = True
+                broken.append(entry)
+
+        return good, partial, broken
+
+    @centerleave
+    def revisions_request(self, request):
+        request = self.recover_request_v2(request)
+
+        # Identify expected revisions.
+        revisions = {}
+        if request is not None:
+            for build in request.builds:
+                revisions[build.arch_tag] = build.store_upload_revision
+                cinfo("is_in_risks_request: arch={} revision={}".format(build.arch_tag, build.store_upload_revision))
+        return revisions
+
+    def update_version(self, risk, version):
+        # Usage: $0 <tracker> <repo-url> <repo-branch> <build-branch> <version>
+
+        cmd = [
+            os.path.join(os.path.dirname(__file__), "..", "snap-set-version"),
+            str(self.bug.lpbug.id),
+            self.snap_info.repo.url,
+            self.snap_info.repo.branch,
+            risk,
+            str(self.bug.built_in),
+            version,
+        ]
+        cinfo("repo_update_version: cmd={}".format(cmd))
+        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        for line in proc.stdout.split(b"\n"):
+            cinfo("repo_update_version: {}".format(line))
+
+        return proc.returncode == 0
+
+    # send_testing_request
+    #
+    def send_testing_request(s, op="sru", risk="beta"):
+        cdebug("send_testing_request: op={}".format(op))
+
+        who = {
+            2: "s2",
+            3: "s3",
+        }.get(s.bug.built_in, "kernel")
+
+        track = None
+        for arch, tracks in s.snap_info.publish_to.items():
+            arch_track = tracks[0]
+            if track is None:
+                track = arch_track
+            elif track != arch_track:
+                raise SnapError("snap has inconsistent initial track between architectures")
+
+        # Send a message to the message queue. This will kick off testing of
+        # the kernel packages in the -proposed pocket.
+        #
+        msg = {
+            "key"            : "kernel.testing.request.snap",
+            "op"             : op,
+            "who"            : [who],
+            "bug-id"         : str(s.bug.lpbug.id),
+            "date"           : str(datetime.utcnow()),
+            "sru-cycle"      : s.bug.sru_spin_name,
+            "series-name"    : s.series,
+            "package"        : s.source.name,
+            "snap-pkg"       : s.name,
+            "kernel-version" : s.version,
+            "channel"        : track + "/" + s.risk_stream(risk, s.bug.built_in),
+        }
+
+        cinfo("APW: snapDebs send_testing_request {}".format(msg))
+        mq = MsgQueueCkct()
+        mq.publish(msg['key'], msg)
+
+        subject = "[" + s.series + "] " + s.name + " " + track + "/..."  + " " + s.version
+        s.bug.announce('swm-testing-started', subject=subject, body=json.dumps(msg, sort_keys=True, indent=4))

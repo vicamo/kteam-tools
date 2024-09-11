@@ -1,0 +1,7 @@
+#!/usr/bin/bash
+
+here=$(dirname "$(readlink -f "${0}")")
+
+cd $here || exit
+
+"$here/24hrs-of-bugs"

@@ -1,5 +1,5 @@
 
-from wfl.log                            import center, cleave, cinfo, cdebug
+from wfl.log                            import center, cleave, cinfo, cdebug, centerleave
 from .promoter                          import Promoter
 
 class PromoteToUpdates(Promoter):
@@ -21,6 +21,79 @@ class PromoteToUpdates(Promoter):
         s.jumper['Fix Committed'] = s._verify_promotion
 
         cleave(s.__class__.__name__ + '.__init__')
+
+
+    @centerleave
+    def _ready_to_promote(s):
+            # Confirm we think we are in proposed.
+            if s.bug.task_status('promote-to-proposed') != 'Fix Released':
+                return False
+
+            # There is no point in considering prerequisites before we are
+            # at least in proposed.
+            if not s.bug.debs.all_built_in_src_dst('Proposed', 'Updates'):
+                cdebug("promote-to-updates not all built")
+                reason = 'Stalled -- promote-to-proposed complete but not all packages are reporting built'
+                detail = s.bug.debs.all_built_in_src_dst_detail("Proposed", "Updates")
+                if len(detail):
+                    if len(detail) > 3:
+                        detail = detail[0:2] + ['(+{} others)'.format(len(detail) - 2)]
+                    reason += ": " + ", ".join(detail)
+                s.task.reason = reason
+                return False
+
+            # Note this will set appropriate reasons.
+            prerequisites = s._prerequisites_released()
+
+            # If testing is not complete, we are not ready to release.
+            if not s._testing_completed():
+                cdebug("promote-to-updates testing not complete")
+                return False
+
+            # See if we are blocked by a derivative.
+            blocks = s.bug.block_present('hold-promote-to-updates')
+            if blocks is not None:
+                cinfo("promote-to-updates held {}".format(blocks))
+                s.task.reason = blocks
+                return False
+
+            if not prerequisites and not s.bug.manual_unblock("prerequisites"):
+                s.task.reason = 'Pending -- prerequisites not ready'
+                return False
+
+            if s.bug.debs.older_tracker_in_proposed_any and not s.bug.manual_unblock("earlier-spin"):
+                # This is more serious if the cycle is actually ready to release.
+                severity = "Stalled" if s._cycle_ready() else "Holding"
+                s.task.reason = severity + ' -- waiting for earlier spin to move to Updates'
+                return False
+
+            if s.bug.manual_block("promote-to-updates") or s._kernel_block():
+                s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
+                return False
+
+            if s._in_blackout():
+                s.task.reason = 'Holding -- package in development blackout'
+                return False
+
+            if not s._all_signoffs_verified():
+                # Note this will set an appropriate reason.
+                cdebug("promote-to-updates signoffs not verified")
+                return False
+
+            if not s._cycle_ready() and not s._kernel_manual_release():
+                s.task.reason = 'Holding -- cycle not ready to release'
+                return False
+
+            if s._britney_freeze(s.bug.series) and not s._kernel_manual_release():
+                s.task.reason = 'Holding -- cycle not ready to release (britney block)'
+                return False
+
+            if s.bug.master_bug is not None:
+                if not s.master_bug_ready() and not s._kernel_manual_release():
+                    s.task.reason = 'Holding -- parent tracker not ready for release'
+                    return False
+
+            return True
 
     # _ready_for_updates
     #
@@ -46,63 +119,9 @@ class PromoteToUpdates(Promoter):
                 retval = True
                 break
 
-            # Confirm we think we are in proposed.
-            if s.bug.task_status('promote-to-proposed') != 'Fix Released':
+            # Confirm we are ready to promote.
+            if not s._ready_to_promote():
                 break
-
-            # There is no point in considering prerequisites before we are
-            # at least in proposed.
-            if not s.bug.debs.all_built_in_src_dst('Proposed', 'Updates'):
-                cdebug("promote-to-updates not all built")
-                s.task.reason = 'Stalled -- promote-to-proposed complete but not all packages are reporting built'
-                break
-
-            # Note this will set appropriate reasons.
-            prerequisites = s._prerequisites_released()
-
-            # If testing is not complete, we are not ready to release.
-            if not s._testing_completed():
-                cdebug("promote-to-updates testing not complete")
-                break
-
-            # See if we are blocked by a derivative.
-            blocks = s.bug.block_present('hold-promote-to-updates')
-            if blocks is not None:
-                cinfo("promote-to-updates held {}".format(blocks))
-                s.task.reason = blocks
-                break
-
-            if not prerequisites:
-                s.task.reason = 'Pending -- prerequisites not ready'
-                break
-
-            if s.bug.debs.older_tracker_in_proposed_any and not s.bug.manual_unblock("earlier-spin"):
-               # This is more serious if the cycle is actually ready to release.
-               severity = "Stalled" if s._cycle_ready() else "Holding"
-               s.task.reason = severity + ' -- waiting for earlier spin to move to Updates'
-               break
-
-            if s._kernel_block():
-                s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
-                break
-
-            if s._in_blackout():
-                s.task.reason = 'Holding -- package in development blackout'
-                break
-
-            if not s._all_signoffs_verified():
-                # Note this will set an appropriate reason.
-                cdebug("promote-to-updates signoffs not verified")
-                break
-
-            if not s._cycle_ready() and not s._kernel_manual_release():
-                s.task.reason = 'Holding -- cycle not ready to release'
-                break
-
-            if s.bug.master_bug is not None:
-                if not s.master_bug_ready() and not s._kernel_manual_release():
-                    s.task.reason = 'Holding -- parent tracker not ready for release'
-                    break
 
             # Record what is missing as we move to Confirmed.
             delta = s.bug.debs.built_in_src_dst_delta('Proposed', 'Updates')
@@ -125,49 +144,7 @@ class PromoteToUpdates(Promoter):
             if s.task.status not in ('Confirmed'):
                 break
 
-            pull_back = False
-
-            if s._kernel_manual_release():
-                break
-
-            if s.bug.master_bug is not None:
-                if not s.master_bug_ready():
-                    cinfo('            Master bug no longer ready pulling back from Confirmed', 'yellow')
-                    pull_back = True
-
-            blocks = s.bug.block_present('hold-promote-to-updates')
-            if blocks is not None:
-                cinfo("promote-to-updates held {}".format(blocks))
-                cinfo('            A hold-promote-to-updates present ({}) on this tracking bug pulling back from Confirmed'.format(blocks), 'yellow')
-                pull_back = True
-
-            # Note this will set appropriate reasons.
-            prerequisites = s._prerequisites_released()
-            if not prerequisites and not s.bug.manual_unblock("prerequisites"):
-                cinfo("            Prerequisites not reported available pulling back from Confirmed", 'yellow')
-                pull_back = True
-
-            if s.bug.debs.older_tracker_in_proposed_any and not s.bug.manual_unblock("earlier-spin"):
-                cinfo("            Earlier spin active in Proposed pulling back from Confirmed", 'yellow')
-                pull_back = True
-
-            if s._kernel_block():
-                cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
-                pull_back = True
-
-            if s._in_blackout():
-                cinfo('            Package now in development blackout pulling back from Confirmed', 'yellow')
-                pull_back = True
-
-            if not s._all_signoffs_verified():
-                # Note this will set an appropriate reason.
-                pull_back = True
-
-            if not s._cycle_ready():
-                cinfo('            Cycle no longer ready for release pulling back from Confirmed', 'yellow')
-                pull_back = True
-
-            if pull_back:
+            if not s._ready_to_promote():
                 s.task.status = 'New'
                 retval = True
 
@@ -184,14 +161,39 @@ class PromoteToUpdates(Promoter):
                         s.task.status = 'Incomplete'
                         retval = True
                     break
+                elif s.task.status == "Incomplete":
+                    s.task.status = "New"
+                    retval = True
+                    break
 
                 if s.task.status == 'Confirmed':
                     s.task.reason = 'Pending -- ready to copy'
+                elif (s.task.status == 'Fix Committed'
+                    and s.bug.debs.all_in_pocket("Updates")
+                    and s.bug.debs.any_superseded_in_pocket("Updates")
+                ):
+                    s.task.reason = 'Stalled -- packages published with superseded binaries'
                 else:
                     s.task.reason = 'Ongoing -- packages not yet published'
                 break
 
             cinfo('    All components are now in -updates', 'magenta')
+            if (
+                "-aws" in s.bug.name
+                or "-azure" in s.bug.name
+                or "-gcp" in s.bug.name
+                or "-ibm" in s.bug.name
+                or "-oracle" in s.bug.name
+            ):
+                s.bug.announce(
+                    "cloud-transition-updates",
+                    subject="[LP#{id}](https://launchpad.net/bugs/{id}) {cycle} {series}:{source} in updates".format(
+                        id=s.bug.lpbug.id,
+                        cycle=s.bug.sru_spin_name,
+                        series=s.bug.series,
+                        source=s.bug.name,
+                    )
+                )
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
             retval = True

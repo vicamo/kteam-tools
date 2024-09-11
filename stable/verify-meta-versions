@@ -14,17 +14,20 @@ from ktl.kernel_series import KernelSeries
 
 def get_meta_version(handle, dbg=False):
     version = None
-    cmd = 'cranky rmadison -s {}'.format(handle)
+    cmd = 'cranky rmadison -p updates -s {}'.format(handle)
     try:
         rc, out = run_command(cmd, dbg=dbg)
     except:
         cerror('Failed to run {}'.format(cmd))
 
+    # cranky rmadison emits the various destinations in the updates
+    # route in order.  The first is where updates are published.
     for line in out:
         parts = line.rstrip().split()
         if len(parts) < 1 or 'meta' not in parts[0]:
             continue
         version = parts[1]
+        break
 
     return version
 
@@ -74,9 +77,6 @@ than those of the respective master.
             if not ks_source1.supported:
                 continue
 
-            if ks_source1.name == 'linux-hwe' or ks_source1.name.startswith('linux-lts-'):
-                continue
-
             variants1 = ks_source1.variants
             variants2 = ks_source2.variants
 
@@ -94,6 +94,8 @@ than those of the respective master.
             src_version = get_meta_version(src_handle)
             tgt_version = get_meta_version(tgt_handle)
 
+            print(src_version, tgt_version)
+
             if src_version is None or tgt_version is None:
                 cwarn('WARN: {} ?? {} (no version)'.format(src_version, tgt_version), 'yellow')
                 continue
@@ -102,15 +104,23 @@ than those of the respective master.
                 cinfo('PASS: {} is unique'.format(src_version))
                 continue
 
-            bits = src_version.split('.')
-            src_base = '.'.join(bits[0:3])
-            src_abi = int(bits[3])
-            src_upload = int(bits[4])
+            if "-" in src_version:
+                cinfo('PASS: {} is using new form'.format(src_version))
+                continue
 
-            bits = tgt_version.split('.')
-            tgt_base = '.'.join(bits[0:3])
-            tgt_abi = int(bits[3])
-            tgt_upload = int(bits[4])
+            src_bits = src_version.split('.')
+            src_base = '.'.join(src_bits[0:3])
+            src_abi = int(src_bits[3])
+            src_upload = int(src_bits[4])
+
+            tgt_bits = tgt_version.split('.')
+            tgt_base = '.'.join(tgt_bits[0:3])
+            tgt_abi = int(tgt_bits[3])
+            tgt_upload = int(tgt_bits[4])
+
+            if len(src_bits) > len(tgt_bits):
+                cinfo('PASS: {} using additional digit'.format(src_version))
+                continue
 
             if src_base != tgt_base:
                 cerror('FAIL: Version numbers inconsistent for backport')

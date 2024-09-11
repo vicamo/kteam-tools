@@ -61,11 +61,12 @@ class PromoteToRelease(Promoter):
                 s.task.reason = blocks
                 break
 
-            if not prerequisites:
-                s.task.reason = 'Pending -- prerequisites not ready'
-                break
+            # Note for now we are just calling these warnings for development.
+            #if not prerequisites and not s.bug.manual_unblock("prerequisites"):
+            #    s.task.reason = 'Pending -- prerequisites not ready'
+            #    break
 
-            if s._kernel_block():
+            if s.bug.manual_block("promote-to-release") or s._kernel_block():
                 s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
                 break
 
@@ -100,14 +101,23 @@ class PromoteToRelease(Promoter):
         retval = False
 
         while not retval:
-            if s.task.status not in ('Confirmed'):
+            if s.task.status not in ('Confirmed', 'Triaged'):
                 break
 
             pull_back = False
+
+            if s._kernel_manual_release():
+                break
+
             if s.bug.master_bug is not None:
                 if not s.master_bug_ready():
                     cinfo('            Master bug no longer ready pulling back from Confirmed', 'yellow')
                     pull_back = True
+
+            # Note this will set appropriate reasons.
+            prerequisites = s._prerequisites_released()
+
+            # XXX: we are not checking the prerequisites just reporting them.
 
             blocks = s.bug.block_present('hold-promote-to-updates')
             if blocks is not None:
@@ -115,7 +125,7 @@ class PromoteToRelease(Promoter):
                 cinfo('            A hold-promote-to-updates present ({}) on this tracking bug pulling back from Confirmed'.format(blocks), 'yellow')
                 pull_back = True
 
-            if s._kernel_block():
+            if s.bug.manual_block("promote-to-release") or s._kernel_block():
                 cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
 

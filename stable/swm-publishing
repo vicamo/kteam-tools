@@ -7,11 +7,13 @@
 
 import os
 import sys
+from collections import namedtuple
 from copy import copy
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from subprocess import Popen
 from time import time, perf_counter
+
 #from logging import DEBUG, INFO, WARNING, basicConfig
 from urllib.error import HTTPError
 from urllib.parse import urlsplit, urlunsplit
@@ -35,11 +37,85 @@ from wfl.launchpad import LaunchpadDirect
 from wfl.snap import SnapStore, SnapStoreError
 from wfl.wft.regression_testing import RegressionTestingResults, RegressionTestingResultsError
 from wfl.wft.automated_testing import AutomatedTestingResults, AutomatedTestingResultsError
+from wfl.test_observer import TestObserverResults, TestObserverError
 from wfl.work import SwmWork
 
 
 class MonitorIncompatible(Exception):
     pass
+
+
+class Change:
+    def __init__(self, cmd, tracker, priority=4, reason=None, scanned=None):
+        self.cmd = cmd
+        self.tracker = tracker
+        self.priority = priority
+        self.reason = reason
+        self.scanned = scanned
+
+    def encode(self):
+        return {
+            "cmd": self.cmd,
+            "tracker": self.tracker,
+            "priority": self.priority,
+            "reason": self.reason,
+            "scanned": self.scanned,
+        }
+
+    @classmethod
+    def decode(self, data):
+        if isinstance(data, list):
+            return Change(data[0], data[1], priority=data[2], reason=data[3], scanned=data[4])
+        return Change(
+            data["cmd"],
+            data["tracker"],
+            priority=data["priority"],
+            reason=data["reason"],
+            scanned=data["scanned"],
+        )
+
+
+class Changes:
+    def __init__(self):
+        self.changes = {}
+
+    def add(self, cmd, tracker, priority=4, reason=None, scanned=None):
+        key = (cmd, tracker)
+
+        current_change = self.changes.get(key)
+        if current_change is None:
+            current_change = Change(cmd, tracker, priority=priority, reason=reason, scanned=scanned)
+            self.changes[key] = current_change
+
+        # If this is a higher priority command, replace it and the reason.
+        if current_change.priority < priority:
+            current_change.priority = priority
+            current_change.reason = reason
+
+        # If we are offered a scan date, accumulate the newest date.
+        if scanned is not None:
+            if current_change.scanned is None or scanned > current_change.scanned:
+                current_change.scanned = scanned
+
+    def add_change(self, change):
+        self.add(change.cmd, change.tracker, priority=change.priority, reason=change.reason, scanned=change.scanned)
+
+    def update(self, other):
+        if not isinstance(other, Changes):
+            raise ValueError("other not Changes")
+
+        for key, change in other.changes.items():
+            self.add_change(change)
+
+    def __iter__(self):
+        for key, change in self.changes.items():
+            yield change
+
+    def __len__(self):
+        return len(self.changes)
+
+    def __str__(self):
+        return " ".join([change.cmd + "/" + change.tracker for change in self])
 
 
 class MonitorStore:
@@ -195,15 +271,16 @@ class MonitorLaunchpadProject:
         # Now that we have the latest update, check through the activity
         # log for each bug and consider whether it has been changed by
         # swm, if so then we can ignore it.
-        changed = set()
+        instantiate = set()
+        changed = Changes()
         for bug_id, bug in bugs.items():
             dup = bug.duplicate_of
             if dup is not None:
                 dup_id = bug.duplicate_of.id
                 print("D", dup_id, '<-', bug_id)
                 # Add both ends as SWM may have triggered the duplication.
-                changed.add(('shank', str(dup_id)))
-                changed.add(('shank', str(bug_id)))
+                changed.add('shank', str(dup_id), reason="duplicate of")
+                changed.add('shank', str(bug_id), reason="duplicate target")
             for activity in bug.activity:
                 activity_date = activity.datechanged
 
@@ -226,7 +303,7 @@ class MonitorLaunchpadProject:
                 elif activity.person_link.endswith("/~ubuntu-kernel-bot"):
                     continue
                 print("Y", bug_id, activity, activity.person_link)
-                changed.add(('shank', str(bug_id)))
+                changed.add('shank', str(bug_id), reason="bug activity")
                 break
 
         # Trackers in Confirmed are uninstantiated and need to be built,
@@ -240,9 +317,13 @@ class MonitorLaunchpadProject:
                 continue
             print("TASK ({})".format(task.status), task, bug, bug.date_last_updated)
             if task.status == 'Confirmed':
-                changed.add(('instantiate', str(bug.id)))
+                instantiate.add(str(bug.id))
+                if len(instantiate) <= 10:
+                    changed.add('instantiate', str(bug.id), reason="nascent tracker")
+                else:
+                    print("DELAYING instantiate", str(bug.id))
             else:
-                changed.add(('shank', str(bug.id)))
+                changed.add('shank', str(bug.id), reason="new tracker")
 
         return changed
 
@@ -286,7 +367,7 @@ class MonitorLaunchpadQueues:
     def changed(self):
         start_date = self.last_date #- timedelta(hours=1)
 
-        changed = set()
+        changed = Changes()
         notices = list()
 
         for series in self.ks.series:
@@ -313,7 +394,7 @@ class MonitorLaunchpadQueues:
                     # If this is new to the queue then trigger it.
                     if date_created > start_date:
                         source_key = "{}:{}".format(series.codename, self.source_packages[package_key])
-                        changed.add(('shank', source_key))
+                        changed.add('shank', source_key, reason="newly queued")
 
                     # Anything on the queue is interesting for summary notification.
                     notices.append([status, series.codename, upload.pocket, package_name])
@@ -360,7 +441,7 @@ class MonitorKernelSeries:
         return self.factory.ks
 
     def changed(self):
-        changed = set()
+        changed = Changes()
 
         for ks_series in self.ks.series:
             for ks_source in ks_series.sources:
@@ -371,7 +452,7 @@ class MonitorKernelSeries:
                 previous_owner = self.owners.get(handle)
                 if previous_owner is not None:
                     if previous_owner != ks_owner:
-                        changed.add(('shank', handle))
+                        changed.add('shank', handle, reason="kernel-series owner changed")
                 self.owners[handle] = ks_owner
 
         #print("REFRESH", changed)
@@ -408,7 +489,7 @@ class MonitorStatusSwmStatus:
             datetime.utcnow() - timedelta(days=10*365), bug_id)
 
     def changed(self):
-        changed = set()
+        changed = Changes()
         #start_date = datetime.utcnow() # - timedelta(minutes=60)
         start_date = datetime.now(timezone.utc)
 
@@ -427,9 +508,9 @@ class MonitorStatusSwmStatus:
                 #print("APW", bug_data['refresh-time'] - start_date, bug_data['refresh-time'] < start_date)
                 if when < start_date:
                     #print("APW", bug_id, bug_data['refresh-time'], "READY")
-                    changed.add(('shank', bug_id))
+                    changed.add('shank', bug_id, reason="refresh time passed ({})".format(why))
 
-            sru_cycle = self.sc.lookup_cycle(bug_data.get('cycle'))
+            sru_cycle = self.sc.lookup_spin(bug_data.get('cycle'))
             cycle_complete = sru_cycle is not None and sru_cycle.complete
             tracker_complete = bug_data.get('task', {}).get('kernel-sru-workflow', {}).get('status', 'Invalid') == 'Fix Committed'
             scanned = bug_data.get('manager', {}).get('time-scanned')
@@ -449,7 +530,7 @@ class MonitorStatusSwmStatus:
         print("SCANNER trackers={} lagging={} limit={}".format(len(status.trackers), len(lagging), limit))
         for scan_refresh, delta, bug_id in sorted(lagging):
             print("LAGGER {} time={} delta={}".format(bug_id, scan_refresh, delta))
-            changed.add(('shank', bug_id))
+            changed.add('shank', bug_id, reason="routine rescan")
 
             limit -= 1
             if limit == 0:
@@ -515,7 +596,31 @@ class MonitorSwmStatusMonitor:
         print("automated_testing: existing={} current={} change={}".format(existing, current, existing != current))
         return existing != current
 
+    def test_observer(self, bug_id, bug_data, monitor):
+        to_id = monitor.get('id')
+        existing_status = monitor.get('status')
+        existing_assignee = monitor.get('assignee')
+
+        try:
+                observer = TestObserverResults()
+                result = observer.lookup_result(to_id)
+        except TestObserverError as e:
+            print("test_observer: data not available ({}) change={}".format(str(e), False))
+            return False
+
+        # If the artifact is no longer known, assume it has changed.
+        if result is None:
+            return True
+
+        current_status = result.get("status")
+        current_assignee = (result.get('assignee') or {}).get('launchpad_handle')
+        change = existing_status != current_status or existing_assignee != current_assignee
+        print("test_observer: existing_status={} current_status={} existing_assignee={} current_assignee={} change={}".format(
+            existing_status, current_status, existing_assignee, current_assignee, change))
+        return change
+
     def snap_publishing(self, bug_id, bug_data, monitor):
+        sru_cycle = bug_data.get('cycle')
         series = bug_data.get('series')
         source = bug_data.get('source')
         snap = bug_data.get('snap-name')
@@ -523,7 +628,13 @@ class MonitorSwmStatusMonitor:
         if last_published is not None:
             last_published = last_published.replace(tzinfo=timezone.utc)
 
-        ks_series = self.ks.lookup_series(codename=series)
+        ks = KernelSeries.for_spin(sru_cycle)
+        if ks is None:
+            # XXX: for_spin should handle the "d" mappings.
+            ks = KernelSeries.for_spin(None)
+        if ks is None:
+            return False
+        ks_series = ks.lookup_series(codename=series)
         if ks_series is None:
             return False
         ks_source = ks_series.lookup_source(source)
@@ -537,7 +648,7 @@ class MonitorSwmStatusMonitor:
             return False
 
         current_published = snap_store.last_published
-        print("snap_publishing: last_published={} current_published={} change={}".format(last_published, current_published, current_published != last_published))
+        print("snap_publishing: snap={} last_published={} current_published={} change={}".format(snap, last_published, current_published, current_published != last_published))
         return current_published != last_published
 
     def launchpad_source(self, bug_id, bug_data, monitor):
@@ -677,7 +788,7 @@ class MonitorSwmStatusMonitor:
         return bug_scanned < watch_modified
 
     def changed(self):
-        changed = set()
+        changed = Changes()
 
         status = self.ss
 
@@ -689,6 +800,7 @@ class MonitorSwmStatusMonitor:
                 handler = {
                     'regression-testing':   self.regression_testing,
                     'automated-testing':    self.automated_testing,
+                    'test-observer':        self.test_observer,
                     'snap-publishing':      self.snap_publishing,
                     'launchpad-source':     self.launchpad_source,
                     'launchpad-nobuilds':   self.launchpad_nobuilds,
@@ -699,7 +811,7 @@ class MonitorSwmStatusMonitor:
                     'tracker-modified':     self.tracker_modified,
                     }.get(monitor.get("type"))
                 if handler is not None and handler(bug_id, bug_data, monitor):
-                    changed.add(('shank', bug_id))
+                    changed.add('shank', bug_id, reason="monitor {} triggered".format(monitor.get("type")))
                     break
             sys.stdout.flush()
         print("REFRESH", changed)
@@ -784,20 +896,19 @@ class FilterSwmStatus:
 
         self.factory.bs.attach(self.factory.ss_file, self)
 
-    last_scanned = MonitorStoreAttr(default={})
+    last_changes = MonitorStoreAttr(default=[])
 
     @property
     def ss(self):
         return self.factory.ss
 
-    def filter(self, trackers):
-        changed = set()
+    def filter(self, changes):
+        changed = Changes()
 
         status = self.ss
 
-        trackers_mapped = set()
-        for item in trackers:
-            (command, tracker) = item
+        for change in changes:
+            tracker = change.tracker
             if ':' in tracker:
                 # We will search for <series>:<source>:<target>
                 # if target is missing imply it from source.
@@ -812,46 +923,37 @@ class FilterSwmStatus:
                         search_data.get('target', '-')]
                     search_phase = search_data.get('phase', 'unknown')
                     if bits == search_key and search_phase != "Complete":
-                        trackers_mapped.add((command, search_id))
+                        changed.add(change.cmd, search_id, priority=change.priority, reason=change.reason)
             else:
-                trackers_mapped.add(item)
+                changed.add_change(change)
 
-        print("MAPPED", len(trackers_mapped), trackers_mapped)
+        print("MAPPED", len(changed), changed)
 
-        tracker_delta = {}
-        for item in trackers_mapped:
-            command, tracker = item
-            item_key = command + '--' + tracker
-            tracker_delta[tracker] = '+'
-            #print("NEEDS SCANNING {}".format(tracker))
-            self.last_scanned[item_key] = status.trackers.get(tracker, {}).get('manager', {}).get('time-scanned', False)
+        # Record when the previous change for each of these was.
+        for change in changed:
+            change.scanned = status.trackers.get(change.tracker, {}).get('manager', {}).get('time-scanned')
 
-        for item_key in list(self.last_scanned):
-            command, tracker = item_key.split('--')
-            last_scanned = self.last_scanned[item_key]
-            if isinstance(last_scanned, datetime):
-                last_scanned = last_scanned.replace(tzinfo=None)
-            curr_scanned = status.trackers.get(tracker, {}).get('manager', {}).get('time-scanned', False)
-            if last_scanned == curr_scanned:
-                if tracker not in tracker_delta:
-                    tracker_delta[tracker] = '!'
-                    print("RECOVERED {} {} {}".format(tracker, last_scanned, curr_scanned))
-                else:
-                    print("NEW {} {} {}".format(tracker, last_scanned, curr_scanned))
-                changed.add((command, tracker))
+        # Look at the changes we think we submitted before and recover any which appear to have not been
+        # completed.
+        for last in self.last_changes:
+            change = Change.decode(last)
+            curr_scanned = status.trackers.get(change.tracker, {}).get('manager', {}).get('time-scanned', False)
+            if change.scanned == curr_scanned:
+                print("RECOVERED {} {} {} {}".format(change.cmd, change.tracker, change.scanned, curr_scanned))
+                changed.add_change(change)
             else:
-                tracker_delta[tracker] = '-'
-                print("ALREADY-SCANNED {} {} {}".format(tracker, last_scanned, curr_scanned))
-                del self.last_scanned[item_key]
+                print("COMPLETE {} {} {} {}".format(change.cmd, change.tracker, change.scanned, curr_scanned))
 
-        print("DELTA ", ' '.join(["{}{}".format(x, y) for y,x in sorted([(y,x) for x,y in tracker_delta.items()])]))
+        # Record the updated scan list for the next run.
+        last_changes = []
+        for change in changed:
+            last_changes.append(change.encode())
+        self.last_changes = last_changes
 
         return changed
 
     def commit(self):
-        print("SUCCESS PURGING")
-        for tracker in list(self.last_scanned):
-            del self.last_scanned[tracker]
+        pass
 
     def __str__(self):
         return "Filter SwmStatus"
@@ -872,7 +974,7 @@ if __name__ == '__main__':
     updates_before = perf_counter()
 
     # Look for updates in each monitor.
-    changed = set()
+    changed = Changes()
     for monitor in monitors:
         print("***", monitor)
         sys.stdout.flush()
@@ -883,10 +985,10 @@ if __name__ == '__main__':
         #    print(monitor, "CHANGED", list(new))
         print(monitor, "changed={} time={}".format(new, after - before))
         sys.stdout.flush()
-        changed = changed | new
+        changed.update(new)
 
     updates_after = perf_counter()
-    print("CHANGED changed={} time={} wall={}".format(changed, updates_after - updates_before, time()))
+    print("CHANGED {} {} time={} wall={}".format(len(changed), changed, updates_after - updates_before, time()))
 
     swm_filter = FilterSwmStatus(factory=factory)
     changed = swm_filter.filter(changed)
@@ -902,14 +1004,15 @@ if __name__ == '__main__':
         cmd_before = perf_counter()
         ss = factory.ss
         swm_work = SwmWork(config="~/.kernel-swm-worker.yaml")
-        for cmd, tracker in changed:
-            print("QUEUE: {} {}".format(cmd, tracker))
-            if cmd == 'shank':
-                scanned = ss.trackers.get(tracker,{}).get('manager', {}).get('time-scanned')
-                swm_work.send_shank(tracker, scanned=scanned)
-            elif cmd == 'instantiate':
-                swm_work.send_instantiate(tracker)
-        swm_work.send_barrier()
+        group_shank = swm_work.new_group()
+        group_instantiate = swm_work.new_group()
+        for change in changed:
+            if change.cmd == 'shank':
+                print("QUEUE #1: {} {} ({})".format(change.cmd, change.tracker, change.reason))
+                group_shank.send_shank(change.tracker, scanned=change.scanned)
+            elif change.cmd == 'instantiate':
+                print("QUEUE #2: {} {} ({})".format(change.cmd, change.tracker, change.reason))
+                group_instantiate.send_instantiate(change.tracker)
         cmd_after = perf_counter()
         print("COMMAND COMPLETE time={} wall={}".format(cmd_after - cmd_before, time()))
 

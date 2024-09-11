@@ -7,6 +7,8 @@ import sys
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, WARNING, INFO
 import traceback
+import threading, sys, traceback
+import signal
 
 from wfl.log                            import Clog, center, cleave, cdebug
 from wfl.manager                        import WorkflowManager
@@ -14,7 +16,22 @@ from wfl.bugmail                        import BugMailConfigFileMissing
 from wfl.bug                            import WorkflowBug
 from wfl.task                           import WorkflowBugTask
 
+
+def dumpstacks(signal, frame):
+    id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
+    code = []
+    for threadId, stack in sys._current_frames().items():
+        code.append("\n# Thread: %s(%d)" % (id2name.get(threadId,""), threadId))
+        for filename, lineno, name, line in traceback.extract_stack(stack):
+            code.append('File: "%s", line %d, in %s' % (filename, lineno, name))
+            if line:
+                code.append("  %s" % (line.strip()))
+    print("\n".join(code))
+
+
 if __name__ == '__main__':
+    signal.signal(signal.SIGQUIT, dumpstacks)
+
     # Command line argument setup and initial processing
     #
     app_description = '''

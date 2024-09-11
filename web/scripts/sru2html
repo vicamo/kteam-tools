@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 
 from sys                                import argv
@@ -32,7 +32,8 @@ class Cmdline:
     # error
     #
     def error(self, e, defaults):
-        if e != '': print e
+        if e != '':
+            print(e)
         self.usage(defaults)
 
     # usage
@@ -95,7 +96,7 @@ class Cmdline:
                 if len(args) > 0:
                     self.cfg['sru'] = args[0]
 
-        except GetoptError, error:
+        except GetoptError as error:
             print(error, defaults)
             raise CmdlineError('')
 
@@ -197,8 +198,7 @@ class SruReport:
             if len(self.data['releases'][rls]) == 0:
                 retval += "                    <div class=\"l2-section-heading\">%s</div>\n<div class=\"section\">                    No packages in proposed.</div>\n" % rls
             else:
-                pkg_keys = self.data['releases'][rls].keys()
-                pkg_keys.sort(key=self.package_type_key)
+                pkg_keys = sorted(self.data['releases'][rls].keys(), key=self.package_type_key)
 
                 retval += "                <div class=\"l2-section-heading\">%s</div>\n" % rls
                 retval += '            <div class="section">\n'
@@ -236,7 +236,7 @@ class SruReport:
                         tmp = lpurl + proposed_version
                         retval += '                            <td width="200" valign="top"><a href="%s" >%s</a> (-proposed)</td>\n' % (tmp, self.data['releases'][rls][pkg]['Proposed'])
                     retval += '                            <td>&nbsp;</td>\n'
-                    if 'age' not in self.data['releases'][rls][pkg]:
+                    if 'age' not in self.data['releases'][rls][pkg] or self.data['releases'][rls][pkg]['age'] == 0:
                         retval += '                            <td width="10">&nbsp</td>\n'
                     else:
                         retval += '                            <td width="10">%s</td>\n' % (self.data['releases'][rls][pkg]['age'])
@@ -290,6 +290,10 @@ class SruReport:
                                     colour = '#ffff00' # Yellow
                                     img    = 'img/zoom.png'
                                     msg    = 'This is a packaging-tracking bug, not needing verification'
+                                elif state == 'parent-validated':
+                                    colour = '#ffff00' # Yellow
+                                    img    = None
+                                    msg    = 'This bug is being verified against our parent tracker'
                                 else:
                                     colour = '#ffffff'
                                     img    = 'img/tux.png'
@@ -298,6 +302,10 @@ class SruReport:
                                 # Special handling of the current tracker bug because some people seem to find it difficult
                                 # to find.
                                 #
+                                if img is not None:
+                                    col2 = '<img src="%s"></img>' % (img, )
+                                else:
+                                    col2 = '&mdash;'
                                 if (proposed_version != None) and (proposed_version in self.data['releases'][rls][pkg]['bugs'][bug]['title']) and ('-proposed tracker' in self.data['releases'][rls][pkg]['bugs'][bug]['title']):
                                     retval += '                                       <td width="20" title="Current -proposed tracking bug" align="center"><img src="img/star.png"></img></a></td>\n'
                                     retval += '                                           &nbsp;\n'
@@ -307,7 +315,7 @@ class SruReport:
                                     retval += '                                           &nbsp;\n'
                                     retval += '                                       </td>\n'
 
-                                retval += '                                       <td width="20" title="%s" align="center"><img src="%s"></img></a></td>\n' % (msg, img)
+                                retval += '                                       <td width="20" title="%s" align="center">%s</a></td>\n' % (msg, col2)
                                 retval += '                                       <td width="20" valign="top">\n'
                                 tmp = "http://launchpad.net/bugs/%s" % bug
                                 retval += '                                           <a href="%s">%s</a>\n' % (tmp, bug)
@@ -389,7 +397,10 @@ class Sru2Html(StdApp):
                 with open(self.cfg['sru'], 'r') as f:
                     sru = json.load(f)
 
-            print unicode(SruReport(sru)).encode("utf-8")
+            #report = str(SruReport(sru))
+            #print(report.encode("utf-8"))
+            #print(str(SruReport(sru)).encode("utf-8"))
+            print(SruReport(sru))
 
         # Handle the user presses <ctrl-C>.
         #

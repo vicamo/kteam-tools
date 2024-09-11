@@ -52,14 +52,21 @@ class SynPreparePackages(TaskHandler):
             block = s.bug.source_block_present()
             ready = s.bug.debs.ready_to_prepare()
             older = s.bug.debs.older_tracker_in_ppa
+            unprepared = s.bug.debs.older_tracker_unprepared
             if block is not None:
                 s.task.reason = 'Stalled -- blocked via ' + block
 
-            elif ready and older is not None:
-                s.task.reason = 'Stalled -- tracker for earlier spin still active in PPA'
-                s.bug.monitor_add({
-                    "type": "tracker-modified",
-                    "watch": str(older)})
+            elif ready and (older is not None or unprepared is not None):
+                if older is not None:
+                    s.task.reason = 'Stalled -- tracker for earlier spin still active in PPA'
+                    s.bug.monitor_add({
+                        "type": "tracker-modified",
+                        "watch": str(older)})
+                if unprepared is not None:
+                    s.task.reason = 'Holding -b Not ready to be cranked -- earlier spin needs preparation'
+                    s.bug.monitor_add({
+                        "type": "tracker-modified",
+                        "watch": str(unprepared)})
 
             else:
                 s.task.reason = 'Holding -b Not ready to be cranked'
@@ -71,10 +78,7 @@ class SynPreparePackages(TaskHandler):
             failures = None
             if s.bug.version is not None:
                 # Work on the assumption that eventually we end up in -proposed.
-                delta = s.bug.debs.delta_src_dst("ppa", "Proposed")
-                # XXX: we need to figure out how to represent this.
-                if "lrs" in delta and "lrg" not in delta:
-                    delta.append("lrg")
+                delta = s.bug.debs.delta_src_dst("ppa", "Proposed", pair_signing=True)
                 failures = s.bug.debs.delta_failures_in_pocket(delta, "ppa", ignore_all_missing=True)
             if failures is None:
                 if s.bug.flag('jira-in-review'):
@@ -94,7 +98,8 @@ class SynPreparePackages(TaskHandler):
                         every=timedelta(hours=24),
                     )
                 else:
-                    s.task.reason = 'Ongoing -b Being cranked by: {}'.format(s.task.assignee.username)
+                    assignee = s.task.assignee.name if s.task.assignee is not None else "Unassigned"
+                    s.task.reason = 'Ongoing -b Being cranked by: {}'.format(assignee)
             else:
                 building = False
                 state = 'Ongoing'
@@ -103,7 +108,7 @@ class SynPreparePackages(TaskHandler):
                         state = 'Pending'
                     #if failure == 'building':
                     #    building = True
-                if 'failed' in failures:
+                if 'failed' in failures or 'superseded' in failures:
                     state = 'Stalled'
                 # If something is building elide any depwaits.  These are almost cirtainly waiting
                 # for that build to complete.  Only show them when nothing else is showing.
@@ -126,7 +131,7 @@ class SynPreparePackages(TaskHandler):
         # Record what we are currently built from (based on recorded versions).  This
         # is used by external processes to detect updates to packages which may invalidate
         # their processing.
-        s.bug.debs.built_set('from', s.bug.debs.prepare_id)
+        s.bug.built_set('from', s.bug.debs.prepare_id)
 
         cleave(s.__class__.__name__ + '._common')
         return retval

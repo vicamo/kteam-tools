@@ -134,7 +134,9 @@ class LaunchpadCache(Launchpad):
 
     @classmethod
     def login_application(cls, application, service_root='production'):
-        cred_file = os.path.join(os.path.expanduser("~/.config"), application, "credentials-" + service_root)
+        cred_dir = os.path.join(os.path.expanduser("~/.config"), application)
+        os.makedirs(cred_dir, exist_ok=True)
+        cred_file = os.path.join(cred_dir, "credentials-" + service_root)
         authorization_engine = AuthorizeRequestTokenWithURL(service_root=service_root, consumer_name=application)
         return cls.login_with(service_root=service_root, version='devel',
             authorization_engine=authorization_engine, credentials_file=cred_file)

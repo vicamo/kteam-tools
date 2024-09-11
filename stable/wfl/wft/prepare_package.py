@@ -70,12 +70,14 @@ class PreparePackage(TaskHandler):
             # Confirm whether this package is actually valid.
             if not s.bug.valid_package(pkg):
                 s.task.status = 'Invalid'
+                cdebug("prepare: mark invalid")
                 retval = True
                 break
 
             # Are we blocked.
             block = s.bug.source_block_present()
             if block is not None:
+                cdebug("prepare: blocked")
                 break
 
             # For derivative bugs we wait until the parent has at least got its
@@ -84,12 +86,18 @@ class PreparePackage(TaskHandler):
             if not s.bug.debs.ready_to_prepare():
                 if pkg == 'main' or not s.bug.valid_package('main'):
                     s.task.reason = 'Holding -- waiting for parent tracker'
+                cdebug("prepare: not read to prepare")
                 break
 
             # Check for blocking trackers in a previous cycle.
             if s.bug.debs.older_tracker_in_ppa:
+                cdebug("prepare: older tracker in PPA")
+                break
+            if s.bug.debs.older_tracker_unprepared:
+                cdebug("prepare: older tracker unprepared")
                 break
 
+            # If we are not the primary-package and there is a primary package
             # If we are not the primary-package and there is a primary package
             # hold us until the primary is handled, this keeps the todo list
             # short and sweet.  The very first thing we need to do is to set
@@ -97,6 +105,7 @@ class PreparePackage(TaskHandler):
             if (pkg != 'main' and s.bug.valid_package('main') and
                 not s.bug.is_valid
                ):
+                cdebug("prepare primary: {} {} {}".format(pkg, s.bug.valid_package('main'), not s.bug.is_valid))
                 retval = False
                 break
 
@@ -128,7 +137,7 @@ class PreparePackage(TaskHandler):
                 subject="@{owner} [LP#{id}](https://launchpad.net/bugs/{id}) {cycle} {series}:{source} crankable".format(
                     owner=s.bug.owner,
                     id=s.task.bug.lpbug.id,
-                    cycle=s.task.bug.sru_cycle,
+                    cycle=s.task.bug.sru_spin_name,
                     series=s.task.bug.series,
                     source=s.task.bug.name,
                 ),
@@ -146,6 +155,9 @@ class PreparePackage(TaskHandler):
                 pull_back = True
             if s.bug.debs.older_tracker_in_ppa:
                 cinfo('            A previous cycle tracker is in PPA pulling back from Confirmed', 'yellow')
+                pull_back = True
+            if s.bug.debs.older_tracker_unprepared:
+                cinfo('            A previous cycle tracker is unprepared pulling back from Confirmed', 'yellow')
                 pull_back = True
 
             if pull_back:
@@ -192,6 +204,10 @@ class PreparePackage(TaskHandler):
             if s.bug.debs.routing('ppa'):
                 # Confirm that this package is uploaded.
                 upload_present = s.bug.debs.uploaded(pkg)
+                if not upload_present:
+                    pkg_for = s.bug.debs.generate_package_for(pkg)
+                    if pkg_for:
+                        upload_present = s.bug.debs.signed(pkg_for)
                 if upload_present:
                     # If we have any uploads create an empty versions dictionary
                     # which will escalate all miss messages.
@@ -236,14 +252,24 @@ class PreparePackage(TaskHandler):
             # If we have a ppa route, then we should check these packages were
             # uploaded.
             if s.bug.debs.routing('ppa'):
-                # Hold prepare-package open until the package is built.
+                # Hold prepare-package open until the package is built, or the packages
+                # which would have depended on us are past signing (as we must have existed).
                 if not s.bug.debs.built_and_in_pocket_or_after(pkg, 'ppa'):
-                    s.task.reason = 'Ongoing -- {} package not yet fully built'.format(pkg)
-                    break
+                    pkg_for = s.bug.debs.generate_package_for(pkg)
+                    for_present = False
+                    if pkg_for:
+                        for_present = s.bug.debs.signed(pkg_for)
+                    if not for_present:
+                        s.task.reason = 'Ongoing -- {} package not yet fully built'.format(pkg)
+                        break
 
             # If we have a no ppa route, then we should consider duplicates now.
             if not s.bug.debs.routing('ppa'):
                 s.bug.dup_replaces()
+
+            # If we have ppa routing then we should check binaries.
+            if pkg == "meta" and s.bug.debs.routing('ppa'):
+                s.bug.debs.meta_check()
 
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
@@ -286,6 +312,15 @@ class PreparePackage(TaskHandler):
             upload_present = s.bug.debs.uploaded(pkg)
             if upload_present:
                 break
+
+            # If we are a generate package for another package then we may
+            # consider the package as present (in absence) if our signing
+            # result is so present.
+            pkg_for = s.bug.debs.generate_package_for(pkg)
+            if pkg_for:
+                upload_present = s.bug.debs.signed(pkg_for)
+                if upload_present:
+                    break
 
             # The package is no longer found in the build route, this
             # means we cannot any longer claim to be prepared.  Pull

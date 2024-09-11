@@ -16,12 +16,12 @@ class WorkflowBugTask(object):
     # __init__
     #
     def __init__(s, lp_task, task_name, package, bug):
-        s.__status   = None
+        s.__modified = False
+        s.__status   = False
         s.__assignee = False
         setattr(s, 'name', task_name)
         setattr(s, 'importance', lp_task.importance)
         setattr(s, 'lp_task', lp_task)
-        s.__modified = False
         s.bug = bug
         s.package = package
 
@@ -33,6 +33,24 @@ class WorkflowBugTask(object):
     def no_assignments(s):
         return WorkflowBugTask.no_assignments
 
+    def save(s):
+        dirty = []
+        if s.__status is not False and s.lp_task.status != s.__status:
+            dirty.append("status {} -> {}".format(s.lp_task.status, s.__status))
+            s.lp_task.status = s.__status
+            s.__status = False
+        if s.__assignee is not False and s.lp_task.assignee != s.__assignee:
+            dirty.append("assignee {} -> {}".format(s.lp_task.assignee, s.__assignee))
+            s.lp_task.assignee = s.__assignee
+            s.__assignee = False
+
+        if len(dirty) > 0:
+            if not s.dryrun and not s.no_assignments:
+                s.lp_task.lp_save()
+                cinfo('    {} -- task modified ({}), saved'.format(s.name, ", ".join(dirty)))
+            else:
+                cinfo('    {} -- task modified ({})'.format(s.name, ", ".join(dirty)))
+
     # status
     #
     @property
@@ -40,7 +58,7 @@ class WorkflowBugTask(object):
         '''
         Property: Gets the status for the task.
         '''
-        if s.__status is None:
+        if s.__status is False:
             s.__status = s.lp_task.status
         return s.__status
 
@@ -51,17 +69,11 @@ class WorkflowBugTask(object):
         '''
         center(s.__class__.__name__ + '.status')
         cdebug('    val : %s' % val)
-        if s.dryrun or WorkflowBugTask.no_status_changes:
-            if s.status != val:
-                cinfo('    dryrun - Set task %s to state %s (from %s)' % (s.name, val, s.status), 'red')
-            else:
-                cinfo('    dryrun - Set task %s to state %s (already %s)' % (s.name, val, s.status), 'yellow')
-        else:
-            if s.status != val:
-                cinfo('    Task %s status changing from %s to %s' % (s.name, s.__status, val), 'yellow')
-                s.__modified = True
-                s.lp_task.status = val
-                s.__status = None
+        if s.__status != val:
+            cinfo('    Task %s status changing from %s to %s' % (s.name, s.__status, val), 'yellow')
+            s.__modified = True
+            s.__status = val
+            s.bug.task_updated()
         cleave(s.__class__.__name__ + '.status')
 
     # reason
@@ -98,34 +110,18 @@ class WorkflowBugTask(object):
         Property: Sets the assignee for the task.
         '''
         center(s.__class__.__name__ + '.assignee')
-        if s.dryrun or s.no_assignments:
-            cinfo('    dryrun - Assign task %s to %s' % (s.name, val), 'red')
-        else:
-            # FIXME bjf: Turns out that due to s.assignee having never returned an assignee
-            #            the following code didn't work as intended. This should be fixed.
-            #            In the mean time, just don't try to optimize it.
-            #
-            # new_assignee = None
-            # current_assignee = s.assignee
-            # if current_assignee and current_assignee.username != val.name:
-            #     new_assignee = val
-            # elif not current_assignee:
-            #     new_assignee = val
-            # if new_assignee:
-            #     cdebug('            Task %s assigned to: %s' % (s.name, val), 'red')
-            #     s.lp_task.assignee = val
-            #     s.__assignee = None
-            # else:
-            #     cdebug('            Task %s already assigned to %s' % (s.name, val), 'red')
-            s.lp_task.assignee = val
-            s.__assignee = False
+        if s.__assignee != val:
             cinfo('    Task %s assigned to %s' % (s.name, val), 'yellow')
+            s.__modified = True
+            s.__assignee = val
         cleave(s.__class__.__name__ + '.assignee')
 
     # reason_state
     #
     def reason_state(s, ok_state, acceptable):
         task_start = s.lp_task.date_left_new
+        if task_start is None:
+            return 'Stalled'
         now = datetime.now(timezone.utc)
         cdebug("{} stall check {} {}".format(s.name, now, now - task_start, now - task_start > acceptable))
         state = ok_state
@@ -137,7 +133,17 @@ class WorkflowBugTask(object):
 
     @property
     def date_confirmed(self):
-        return self.lp_task.date_confirmed.replace(tzinfo=None)
+        confirmed = self.lp_task.date_confirmed
+        if confirmed is None:
+            return None
+        return confirmed.replace(tzinfo=None)
+
+    @property
+    def date_fix_committed(self):
+        fix_committed = self.lp_task.date_fix_committed
+        if fix_committed is None:
+            return None
+        return fix_committed.replace(tzinfo=None)
 
     # modified
     #
@@ -191,6 +197,7 @@ class WorkflowBugTaskSynthetic(WorkflowBugTask):
     @status.setter
     def status(self, val):
         self.__status = val
+        s.bug.task_updated()
 
     # assignee
     #
@@ -201,6 +208,9 @@ class WorkflowBugTaskSynthetic(WorkflowBugTask):
     @assignee.setter
     def assignee(self, val):
         self.__assignee = val
+
+    def save(self):
+        pass
 
 
 class WorkflowBugTaskSynPreparePackages(WorkflowBugTaskSynthetic):

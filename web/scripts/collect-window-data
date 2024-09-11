@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # This script is to maintain a database of new bug information. That bug
 # information is relative to a specific length of time, such as the last
@@ -8,7 +8,7 @@
 from sys                                import argv
 from os                                 import path
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, error, date_to_string, o2ascii, stde
+from ktl.utils                          import stdo, error, date_to_string, stde
 from ktl.bugs                           import Bugs, DeltaTime
 from ktl.std_app                        import StdApp
 from lpltk.LaunchpadService             import LaunchpadService
@@ -322,7 +322,7 @@ class CollectRegressionsData(StdApp):
                                 self.verbose("    Adding package '%s' to packages\n" % (package_name))
                                 bugs_db['packages'][package_name] = {}
                                 bugs_db['packages'][package_name]['bugs'] = {}
-                            bid = o2ascii(bug.id)
+                            bid = str(bug.id)
                             if bid in bugs_db['packages'][package_name]['bugs']:
                                 del bugs_db['packages'][package_name]['bugs'][bid]
                             try:
@@ -338,7 +338,7 @@ class CollectRegressionsData(StdApp):
                     #
                     if package_name in bugs_db_packages and 'bugs' in bugs_db_packages[package_name]:
                         for bug_id in bugs_db_packages[package_name]['bugs']:
-                            bug_id = o2ascii(bug_id)
+                            bug_id = str(bug_id)
                             try:
                                 bug = KernelBug(self.lp.get_bug(bug_id))
                             except KeyError:

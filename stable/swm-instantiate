@@ -28,16 +28,13 @@ from wfl.work import SwmWork
 
 class TrackerProduction:
 
-    def __init__(self, project, lp=None, ks=None, wf=None):
+    def __init__(self, project, lp=None, wf=None):
         if lp is None:
             lp = LaunchpadDirect.login_application('swm-instantiate')
-        if ks is None:
-            ks = KernelSeries()
         if wf is None:
             wf = Workflow()
 
         self.lp = lp
-        self.ks = ks
         self.wf = wf
         self.project_name = project
         self.project = self.lp.projects[project]
@@ -52,9 +49,19 @@ class TrackerProduction:
 
         (series_name, source_name) = (match.group(1), match.group(2))
 
-        cinfo("series_name<{}> source_name<{}>".format(series_name, source_name))
+        spin = None
+        for tag in bug.tags:
+            if tag.startswith('kernel-sru-cycle-'):
+                spin = tag.replace('kernel-sru-cycle-', '')
+                break
 
-        series = self.ks.lookup_series(codename=series_name)
+        cinfo("spin<{}> series_name<{}> source_name<{}>".format(spin, series_name, source_name))
+
+        ks = KernelSeries.for_spin(spin)
+        if ks is None:
+            ks = KernelSeries.tip()
+
+        series = ks.lookup_series(codename=series_name)
         if series is None:
             raise ValueError("{}: series not in kernel-series".format(bug_id))
         source = series.lookup_source(source_name)
@@ -67,7 +74,10 @@ class TrackerProduction:
 
     def load_properties(self, bug):
         description = bug.description
-        return yaml.safe_load(description.split('-- swm properties --')[-1])
+        bits = description.split('-- swm properties --')
+        if len(bits) != 2:
+            return None
+        return yaml.safe_load(bits[-1])
 
     def lp_task_update(self, lp_task, status=None, importance=None, assignee=None):
         changed = []
@@ -103,8 +113,16 @@ class TrackerProduction:
         # Figure out the package we are instantiating for.
         ks_source = self.lookup_source(bug_id, lp_bug)
         swm_props = self.load_properties(lp_bug)
+        if swm_props is None:
+            return False
         variant = swm_props.get('variant', 'combo')
         master = swm_props.get('master-bug', swm_props.get('kernel-stable-master-bug'))
+
+        # If this is not a valid source we actually cannot instantiate it.  Drop it from
+        # the queue and assume it will be re-requested again later.
+        if ks_source is None:
+            cinfo("Invalid source.")
+            return False
 
         # Pick up the invalidation hints from kernel-series.
         ks_invalid_tasks = []
@@ -125,9 +143,10 @@ class TrackerProduction:
         # First add all of the required workflow tasks
         for wf_task in self.project.series_collection:
             cinfo(wf_task)
-            if not self.wf.is_task_valid(wf_task, ks_source, variant, snap_name=swm_props.get('snap-name')):
-                continue
             wf_name = wf_task.display_name
+            if not self.wf.is_task_valid(wf_task, ks_source, variant, snap_name=swm_props.get('snap-name')):
+                cdebug('    invalid: %s' % wf_name)
+                continue
             cdebug('    adding: %s' % wf_name)
             if wf_task.self_link not in lp_tasks:
                 lp_tasks[wf_task.self_link] = lp_bug.addTask(target=wf_task)
@@ -192,6 +211,14 @@ class TrackerProduction:
             lp_bug.tags = tags
             lp_bug.lp_save()
 
+        # If this is *:linux.
+        if ks_source.name == 'linux':
+            cinfo('requesting early testing')
+            tags = lp_bug.tags
+            tags.append('kernel-regression-testing-early')
+            lp_bug.tags = tags
+            lp_bug.lp_save()
+
         # All done, mark ready.
         lp_task = lp_tasks[self.project.self_link]
         cdebug("liven workflow task")
@@ -225,8 +252,8 @@ class TrackerProduction:
             lockf(lockfd, LOCK_UN, 1, int(what))
 
     def request_shank(self, bug_id):
-        work = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml"))
-        work.send_shank(bug_id, priority=3)
+        group = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml")).rescan_group()
+        group.send_shank(bug_id, priority=6)
 
     def instantiate_one(self, bug_id):
         try:
@@ -255,7 +282,11 @@ examples:
 
     # If logging parameters were set on the command line, handle them
     # here.
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        level=logging.DEBUG if args.debug else logging.INFO,
+    )
     logger = logging.getLogger('swm-instantiate')
     logger.setLevel(level=logging.DEBUG if args.debug else logging.INFO)
 

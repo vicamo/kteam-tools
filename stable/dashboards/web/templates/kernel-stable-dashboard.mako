@@ -158,6 +158,7 @@ def __status_bites(bug, attrs):
 
     # debs: testing status mashup (early phase Touch Testing)
     boot_testing_status = __task_status(bug, 'boot-testing')
+    abi_testing_status = __task_status(bug, 'abi-testing')
     promote_to_proposed_status = __task_status(bug, 'promote-to-proposed')
     sru_review_status = __task_status(bug, 'sru-review')
     new_review_status = __task_status(bug, 'new-review')
@@ -166,10 +167,12 @@ def __status_bites(bug, attrs):
         new_review_status = 'New'
     testing_valid = (
             boot_testing_status not in test_set_invalid or
+            abi_testing_status not in test_set_invalid or
             new_review_status not in test_set_invalid or
             sru_review_status not in test_set_invalid)
     testing_complete = (
             boot_testing_status in test_set_complete and
+            abi_testing_status in test_set_complete and
             new_review_status in test_set_complete and
             sru_review_status in test_set_complete)
     if testing_valid and not testing_complete:
@@ -178,7 +181,9 @@ def __status_bites(bug, attrs):
         color = __testing_status_colors[boot_testing_status]
         boot_testing_status = __testing_status_text.get(boot_testing_status, boot_testing_status)
         retval += tagged_block_valid('bt:', boot_testing_status, color)
-        retval += tagged_block('', '')
+        color = __testing_status_colors[abi_testing_status]
+        abi_testing_status = __testing_status_text.get(abi_testing_status, abi_testing_status)
+        retval += tagged_block_valid('At:', abi_testing_status, color)
         color = __review_status_colors[sru_review_status]
         sru_review_status = __review_status_text.get(sru_review_status, sru_review_status)
         retval += tagged_block_valid('sr:', sru_review_status, color)
@@ -344,6 +349,7 @@ def __status_bites(bug, attrs):
 <%
 import re
 import urllib.parse
+from datetime import datetime, timezone
 
 def cycle_key(cycle):
     # Move any cycle type prefix character to the end.
@@ -392,6 +398,16 @@ for bid in sorted(swm_trackers):
 
     sn = b.get('series') or 'unknown'
 
+    abi_testing = b.get('comments', {}).get('abi-testing')
+    for pocket, prefix in (
+        ('proposed', '/debs/'),
+        ('beta', '/snaps/'),
+    ):
+        ct_testing = b.get('test-observer', {}).get(pocket)
+        if ct_testing is not None:
+            ct_testing = prefix + str(ct_testing)
+            break
+
     if cycle not in cadence:
         cadence[cycle] = {}
     if sn not in cadence[cycle]:
@@ -402,11 +418,16 @@ for bid in sorted(swm_trackers):
     # Pull together any suplemental links etc we need.
     attrs = {}
     attrs['at:'] = 'http://kernel.ubuntu.com/adt-matrix/{}-{}.html'.format(sn, package.replace('linux', 'linux-meta'))
+    if abi_testing is not None:
+        attrs['At:'] = 'https://bugs.launchpad.net/kernel-sru-workflow/+bug/{}/comments/{}'.format(bid, abi_testing)
+    if ct_testing is not None:
+        attrs['ct:'] = 'https://test-observer.canonical.com/#{}'.format(ct_testing)
     attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html#{}--{}'.format(sn, package)
     attrs['rt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html#{}:{}:{}:sru'.format(cycle, sn, package, urllib.parse.quote_plus(version))
     attrs['bt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html#{}:{}:{}:boot'.format(cycle, sn, package, urllib.parse.quote_plus(version))
 
     attrs['tooltip-at:'] = 'Automated Testing'
+    attrs['tooltip-At:'] = 'ABI Testing'
     attrs['tooltip-ct:'] = 'Certification Testing'
     attrs['tooltip-rt:'] = 'Regression Testing'
     attrs['tooltip-vt:'] = 'Verification Testing'
@@ -447,14 +468,14 @@ for bid in sorted(swm_trackers):
             row_class.append('phase-snap-promotions')
             break
 
-    for testing_task in ('boot-testing', 'automated-testing',
+    for testing_task in ('boot-testing', 'abi-testing', 'automated-testing',
             'certification-testing', 'regression-testing', 'verification-testing'):
         status = __task_status(b, testing_task)
         if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
             row_class.append('phase-testing')
             break
 
-    for testing_task in ('boot-testing', 'automated-testing',
+    for testing_task in ('boot-testing', 'abi-testing', 'automated-testing',
             'certification-testing', 'regression-testing', 'verification-testing',
             'snap-certification-testing', 'snap-qa-testing'):
         status = __task_status(b, testing_task)
@@ -509,6 +530,13 @@ for bid in sorted(swm_trackers):
             color: green;
             background-color: transparent;
             text-decoration: none;
+        }
+
+        .overdue a:link {
+            color: red;
+        }
+        .overdue a:visited {
+            color: red;
         }
 
         .master a:link {
@@ -582,6 +610,7 @@ for bid in sorted(swm_trackers):
                                         <option value="snap-promotions">snap-promotions</option>
                                         <option value="testing">testing</option>
                                         <option value="boot-testing">&nbsp;&nbsp;boot-testing</option>
+                                        <option value="abi-testing">&nbsp;&nbsp;abi-testing</option>
                                         <option value="automated-testing">&nbsp;&nbsp;automated-testing</option>
                                         <option value="certification-testing">&nbsp;&nbsp;certification-testing</option>
                                         <option value="regression-testing">&nbsp;&nbsp;regression-testing</option>
@@ -602,6 +631,7 @@ for bid in sorted(swm_trackers):
                                         releases = data['releases']
                                         releases['00.00'] = 'unknown'
                                         cycle_first = True
+                                        now = datetime.now(timezone.utc).date()
                                     %>
                                     % for cycle in sorted(cycles, key=cycle_key):
                                         % if cycle_first is False:
@@ -645,13 +675,17 @@ for bid in sorted(swm_trackers):
                                                                 cell_stream = bug['stream']
                                                                 row_number += 1
                                                             row_style = ' background: #f6f6f6;' if row_number % 2 == 0 else ''
+                                                            if sru_cycle is not None and now > sru_cycle.release_date:
+                                                                overdue = " overdue"
+                                                            else:
+                                                                overdue = ""
                                                         %>
                                                         % if row_number == 1 and bug['bug'] is not None:
                                                             <tr class="entry-any owner-any phase-any cycle-${cycle}">
                                                                 <td colspan="7" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
                                                             </tr>
                                                         % endif
-                                                        <tr class="${bug['row-class']}" style="line-height: 100%;${row_style}">
+                                                        <tr class="${bug['row-class']}${overdue}" style="line-height: 100%;${row_style}">
                                                             <td>&nbsp;</td>
                                                             <td width="120" align="right" class="${bug['master-class']}">${cell_version}</td>
                                                             <td class="${bug['master-class']}">${cell_package}</a></td>

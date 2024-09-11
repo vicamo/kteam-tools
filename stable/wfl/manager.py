@@ -16,9 +16,8 @@ from ktl.sru_cycle                      import SruCycle
 
 from .context                           import ctx
 from .errors                            import WorkflowCrankError, WorkflowCorruptError
-from .log                               import center, cleave, cdebug, cinfo, cerror, cinstance
-from .launchpad                         import Launchpad
-from .launchpad_stub                    import LaunchpadStub
+from .log                               import center, cleave, cdebug, cinfo, cerror, centerleave, cinstance
+from .launchpad                         import LaunchpadDirect
 from .bug                               import WorkflowBug, WorkflowBugError, WorkflowBugTaskError
 from .package                           import PackageError, SeriesLookupFailure
 from .snap                              import SnapError
@@ -39,6 +38,11 @@ class WorkflowManager():
         s._lp = None
         s._task_map = {
             'kernel-sru-workflow'       : wfl.wft.Workflow,
+            'canonical-signing-jobs'    : wfl.wft.CanonicalSigningJobs,
+            'canonical-signing-jobs/task00' : wfl.wft.CanonicalSigningJobs,
+            'canonical-signing-jobs/task01' : wfl.wft.CanonicalSigningJobs,
+            'canonical-signing-jobs/task02' : wfl.wft.CanonicalSigningJobs,
+            'canonical-signing-jobs/task03' : wfl.wft.CanonicalSigningJobs,
             'upload-to-ppa-dnu'         : wfl.wft.IgnoreInvalid,
             'prepare-package'           : wfl.wft.PreparePackage,
             'prepare-package-lbm'       : wfl.wft.PreparePackage,
@@ -48,6 +52,7 @@ class WorkflowManager():
             'prepare-package-meta'      : wfl.wft.PreparePackage,
             'prepare-package-ports-meta': wfl.wft.PreparePackage,
             'prepare-package-signed'    : wfl.wft.PreparePackage,
+            'prepare-package-generate'  : wfl.wft.PreparePackage,
             'prepare-package-extra'     : wfl.wft.PreparePackage,
             'prepare-package-extra2'    : wfl.wft.PreparePackage,
             'prepare-package-extra3'    : wfl.wft.PreparePackage,
@@ -60,11 +65,13 @@ class WorkflowManager():
             'certification-testing'     : wfl.wft.CertificationTesting,
             'regression-testing'        : wfl.wft.RegressionTesting,
             'boot-testing'              : wfl.wft.BootTesting,
+            'abi-testing'               : wfl.wft.AbiTesting,
             'promote-to-updates'        : wfl.wft.PromoteToUpdates,
             'promote-to-security'       : wfl.wft.PromoteToSecurity,
             'promote-to-release'        : wfl.wft.PromoteToRelease,
             'security-signoff'          : wfl.wft.SecuritySignoff,
             'snap-prepare'              : wfl.wft.SnapPrepare,
+            'snap-prepare-signed'       : wfl.wft.SnapPrepareSigned,
             'snap-release-to-edge'      : wfl.wft.SnapReleaseToEdge,
             'snap-release-to-beta'      : wfl.wft.SnapReleaseToBeta,
             'snap-release-to-candidate' : wfl.wft.SnapReleaseToCandidate,
@@ -98,7 +105,6 @@ class WorkflowManager():
         # us cleansing bugs which were newly created and shanked by other
         # instances.
         s.status_path = 'status.json'
-        s.status_altpath = 'status.yaml'
         s.status_validator = None
         s.Status_current = None
         with s.lock_status():
@@ -133,6 +139,7 @@ class WorkflowManager():
         with s.lock_bug(3, block=False):
             yield
 
+    @centerleave
     def status_get(s, bugid, summary=False, modified=None):
         with s.lock_status():
             status = s.status_load()
@@ -174,8 +181,9 @@ class WorkflowManager():
         isoformat = obj.get('_isoformat')
         if isoformat is not None:
             #return datetime.fromisoformat(isoformat)
-            # XXX: before python 3.6 fromisoformat is not available.
-            if isoformat[-3] == ':':
+            # XXX: before python 3.6 fromisoformat is not available -- detect and remove
+            # the non-standard : in a timezone offset.
+            if isoformat[-5] in ("+", "-") and isoformat[-3] == ':':
                 isoformat = isoformat[0:-3] + isoformat[-2:]
             for fmt in (
                     '%Y-%m-%dT%H:%M:%S.%f%z',
@@ -191,6 +199,7 @@ class WorkflowManager():
                 raise ValueError("isoformat: {} invalid format".format(isoformat))
         return obj
 
+    @centerleave
     def status_load(s):
         status = {}
         if os.path.exists(s.status_path):
@@ -211,6 +220,7 @@ class WorkflowManager():
             return { '_isoformat': obj.isoformat() }
         raise TypeError('Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj)))
 
+    @centerleave
     def status_save(s, status):
         # Use a top-level trackers collection to allow us to extend with
         # non-tracker information later.
@@ -219,10 +229,6 @@ class WorkflowManager():
         with open(s.status_path + '.new', 'w') as wfd:
             json.dump(data, fp=wfd, default=s._json_object_encode, separators=(',', ':'))
         os.rename(s.status_path + '.new', s.status_path)
-
-        with open(s.status_altpath + '.new', 'w') as wfd:
-            yaml.dump(data, wfd, default_flow_style=False)
-        os.rename(s.status_altpath + '.new', s.status_altpath)
 
         # We are writing the file, update our cache.
         stat = os.stat(s.status_path)
@@ -253,9 +259,11 @@ class WorkflowManager():
 
         # Follow the master-bug links we have recorded back up the hierachy
         # counting the number of levels.
+        seen = set()
         master_bug = bug_nr
         depth = 0
-        while master_bug != '0':
+        while master_bug != '0' and master_bug not in seen:
+            seen.add(master_bug)
             master_bug = str(s.status_start.get(master_bug, {}).get('master-bug', 0))
             depth += 1
 
@@ -306,13 +314,15 @@ class WorkflowManager():
             t_series = tracker_data.get('series', 'unknown')
             t_source = tracker_data.get('source', 'unknown')
             t_target = tracker_data.get('target', 'unknown')
-            t_phase = tracker_data.get('phase', 'unknown')
+            t_status = tracker_data.get('task', {}).get('kernel-sru-workflow', {}).get('status', 'Invalid')
 
-            if (series == t_series and
-                source == t_source and
-                target == t_target and
-                t_phase != 'Complete'):
-                    result.append((tracker_nr, tracker_data))
+            if (
+                series == t_series
+                and source == t_source
+                and target == t_target
+                and t_status not in ("Fix Committed", "Fix Released")
+            ):
+                result.append((tracker_nr, tracker_data))
 
         return sorted(result, key=s.cycle_key)
 
@@ -418,14 +428,14 @@ class WorkflowManager():
             if status_modified:
                 s.status_save(status_all)
 
-    @property
-    def lp(s):
-        if s._lp is None:
-            if s.test_mode is True:
-                s._lp = LaunchpadStub(s.args)
-            else:
-                s._lp = Launchpad(False)
-        return s._lp
+    #@property
+    #def lp(s):
+    #    if s._lp is None:
+    #        if s.test_mode is True:
+    #            s._lp = LaunchpadStub(s.args)
+    #        else:
+    #            s._lp = Launchpad(False)
+    #    return s._lp
 
     @property
     def buglist(s):
@@ -464,7 +474,7 @@ class WorkflowManager():
                     cerror('    {}: bugid format unknown'.format(bugid), 'red')
 
             for bugid in bugs:
-                lpbug = s.lp.default_service.get_bug(bugid)
+                lpbug = ctx.lp.bugs[bugid]
                 cinfo('    LP: #%s - %s' % (lpbug.id, lpbug.title), 'magenta')
                 retval[bugid] = lpbug.title
         elif not s.args.dependants_only:
@@ -474,7 +484,7 @@ class WorkflowManager():
                 search_tags_combinator = "All"
                 search_status          = ["Triaged", "In Progress", "Incomplete", "Fix Committed"] # A list of the bug statuses that we care about
                 search_since           = datetime(year=2013, month=1, day=1)
-                lp_project = s.lp.default_service.projects[project]
+                lp_project = ctx.lp.projects[project]
                 tasks = lp_project.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
 
                 for task in tasks:
@@ -490,7 +500,7 @@ class WorkflowManager():
     def initialise_context(self):
         # We use lambda here to convert the expression into a callable
         # so that we can delay instantiating it until first use.
-        ctx.lp = lambda : self.lp.default_service.launchpad # XXX: this is the raw connection.
+        ctx.lp = lambda : LaunchpadDirect.login_application('swm-engine')
         ctx.sc = lambda : SruCycle()
         ctx.ks = lambda : KernelSeries()
 
@@ -527,22 +537,34 @@ class WorkflowManager():
         buglist = list(set(buglist))
         buglist = list(sorted(buglist, key=self.tracker_key))
 
-        work = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml"))
+        group = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml")).rescan_group()
 
         with self.lock_status():
             status = self.status_load()
 
-        for bugid in buglist:
-            manager = status.get(bugid,{}).get('manager', {})
-            scanned = manager.get('time-scanned')
+            submitted = 0
+            for bugid in buglist:
+                manager = status.get(bugid,{}).get('manager', {})
+                scanned = manager.get('time-scanned')
+                requested = manager.get('time-requested')
 
-            cinfo("queuing shank {} {}".format(bugid, scanned))
-            work.send_shank(bugid, scanned=scanned, priority=priority)
+                if requested is not None and scanned == requested:
+                    cinfo("queuing shank {} {} -- already requested, ignored".format(bugid, scanned))
+                    continue
 
-        if dependants:
-            # If we had anything todo, ask for a rescan at low-priority.
-            cinfo("queuing barrier")
-            work.send_barrier(priority=priority)
+                cinfo("queuing shank {} {}".format(bugid, scanned))
+                group.send_shank(bugid, scanned=scanned, priority=priority)
+                submitted += 1
+
+                manager['time-requested'] = scanned
+
+            if submitted > 0:
+                self.status_save(status)
+
+    # bug_url
+    #
+    def bug_url(s, bugid):
+        return "https://bugs.launchpad.net/bugs/" + bugid
 
     # manage_payload
     #
@@ -587,7 +609,7 @@ class WorkflowManager():
                     bugs_scanned += 1
                     with cinstance("LP#" + bugid), s.lock_bug(bugid):
                         cinfo('')
-                        cinfo("Processing ({}/{} pass={} total={}): {} ({})".format(bugs_scanned, bugs_total, bugs_pass, bugs_overall, bugid, s.lp.bug_url(bugid)))
+                        cinfo("Processing ({}/{} pass={} total={}): {} ({})".format(bugs_scanned, bugs_total, bugs_pass, bugs_overall, bugid, s.bug_url(bugid)))
 
                         buglist_rescan += s.crank(bugid)
 
@@ -656,17 +678,18 @@ class WorkflowManager():
                     cinfo('    LP: #{} (already scanned {} {})'.format(bugid, validator, scanned), 'magenta')
                     return []
 
-            lpbug = s.lp.default_service.get_bug(bugid)
+            lpbug = ctx.lp.bugs[bugid]
             if lpbug is None:
                 cinfo('    LP: #{} (INVALID BUGID)'.format(bugid), 'magenta')
                 s.status_set(bugid, None)
                 raise WorkflowBugError('is invalid, skipping (and dropping)')
-            bug = WorkflowBug(s.lp.default_service, bug=lpbug, manager=s)
+            bug = WorkflowBug(bug=lpbug, manager=s)
             if bug.error is not None:
                 raise bug.error
             if lpbug.duplicate_of is not None:
                 cinfo('    LP: #{} (DUPLICATE)'.format(bugid), 'magenta')
                 bug.close()
+                bug.save()
                 status = None if bug.is_purgable else bug.status_summary()
                 s.status_set(bugid, status, modified=False)
                 s.live_duplicates_mark(str(bugid), str(lpbug.duplicate_of.id))
@@ -674,7 +697,7 @@ class WorkflowManager():
             if bug.is_closed:
                 # Update linkage.
                 bug.add_live_children(s.live_children(bugid))
-                bug.transient_reset_all()
+                bug.transient_reset_all(keep_refresh=True)
                 bug.save()
                 status = None if bug.is_purgable else bug.status_summary()
                 s.status_set(bugid, status, modified=False)
@@ -778,21 +801,14 @@ class WorkflowManager():
 
         # Determine this bugs project.
         #
-        for task in bug.lpbug.tasks:
-            task_name = task.bug_target_name
-            if task_name in WorkflowBug.projects_tracked:
-                s.projectname = task_name
-                break
+        s.projectname = bug.workflow_project
 
         retval = False
         for workflow_task_name in sorted(bug.tasks_by_name):
             task = bug.tasks_by_name[workflow_task_name]
             cinfo('')
-            username = task.assignee.username if task.assignee is not None else None
+            username = task.assignee.name if task.assignee is not None else None
             cinfo("        %-25s  %15s  %10s  %s (%s)" % (task.name, task.status, task.importance, username, workflow_task_name), 'magenta')
-
-            therest = task_name[len(s.projectname) + 1:].strip()
-            task_name = therest
 
             if workflow_task_name not in s._task_map:
                 task.reason = 'Stalled -- unknown workflow task'
@@ -800,7 +816,7 @@ class WorkflowManager():
                 continue
 
             try:
-                cls = s._task_map[workflow_task_name](s.lp, task, bug)
+                cls = s._task_map[workflow_task_name](ctx.lp, task, bug)
                 if cls.evaluate_status(task.status) and not s.args.dryrun:
                     retval = True
                     cinfo('        True')

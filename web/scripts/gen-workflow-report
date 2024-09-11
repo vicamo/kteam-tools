@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 from __future__ import print_function
 
@@ -7,6 +7,7 @@ from os                                 import path
 from getopt                             import getopt, GetoptError
 from datetime                           import datetime
 import json
+import re
 
 from ktl.utils                          import stdo, stde, error, dump, string_to_date
 from ktl.dbg                            import Dbg
@@ -16,7 +17,7 @@ from ktl.bugs                           import DeltaTime
 
 # Exit
 #
-class Exit():
+class Exit(Exception):
     """
     If an error message has already been displayed and we want to just exit the app, this
     exception is raised.
@@ -112,7 +113,7 @@ class Cmdline:
                 if len(args) > 0:
                     cfg['database-file'] = args[0]
 
-        except GetoptError, error:
+        except GetoptError as error:
             raise CmdlineError(error)
 
         return cfg
@@ -307,13 +308,14 @@ class GenWorkflowReport():
         retval += '    <tr>\n'
 
         title = bug['title']
-        package, other = (title.split(':') + ['?a', '?b'])[:2]
-        if '/' in package:
-            (_, package) = package.split('/')
-        other = other.strip()
-        # Extract the extra detail from the title to help identify the bug.
-        detail = (title.split(None, 2) + [ '?c', '?d' ])[2]
-        version, other = (other.split(' ', 1) + ['?e', '?f'])[:2]
+
+        title2spvd_rc = re.compile(r'^(?:(\S+)/)?(\S+): (?:(\d+\.\d+\.\S+)|<version to be filled>) (.*)')
+        match = title2spvd_rc.search(title)
+        if match:
+            series, package, version, detail = match.groups()
+        else:
+            series, package, version, detail = "?", "?", "?", "?"
+
         retval += '        <td width="210" style="font-weight: bold; font-size:14px;" >%s &nbsp; %s &nbsp; (%s)</td>\n' % (package, version, detail)
 
         retval += '        <td width="30"><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                       # Bug

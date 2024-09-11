@@ -5,6 +5,8 @@ from datetime                           import datetime, timedelta, timezone
 from textwrap                           import fill
 import yaml
 import re
+from urllib.error                       import HTTPError
+from ktl.kernel_series                  import KernelSeries
 from ktl.utils                          import date_to_string, string_to_date
 from .log                               import cdebug, center, cleave, cinfo, cerror
 from .package                           import Package, PackageError
@@ -60,18 +62,17 @@ class WorkflowBug():
 
     # __init__
     #
-    def __init__(s, lp, bugid=None, bug=None, manager=None):
+    def __init__(s, bugid=None, bug=None, manager=None):
         '''
         When instantiated the bug's title is processed to find out information about the
         related package. This information is cached.
         '''
-        s.lp = lp
         if bug is not None:
             s.lpbug = bug
 
         elif bugid is not None:
             try:
-                s.lpbug = s.lp.get_bug(bugid)
+                s.lpbug = ctx.lp.bugs[bugid]
             except KeyError:
                 s.is_valid = False
                 cdebug('Failed to get bug #%s' % bugid, 'red')
@@ -104,6 +105,7 @@ class WorkflowBug():
         s.stage = None
         s.is_development_series = False
         s._master_bug = False
+        s._sru_spin_name = False
         s._sru_spin = False
         s.is_valid = True
         s._target_trackers = None
@@ -111,13 +113,14 @@ class WorkflowBug():
         s.snap = None
         s._tasks_by_name = False
         s.load_bug_properties()
+        s.task_updates = 0
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
         s.check_is_valid()
         if not s.is_workflow:
             raise WorkflowBugError('Bug is not a workflow bug')
-        s.properties = s.lpbug.properties
+        ##s.properties = s.lpbug.properties
 
         # If this tracker is_closed drop out quietly and quickly.
         if s.is_gone:
@@ -133,6 +136,7 @@ class WorkflowBug():
             s.debs = None
             if s.variant in ('debs', 'combo'):
                 s.debs = Package(s)
+                s.is_debs = True
             s.snap = None
             if s.variant in ('snap-debs', 'combo'):
                 s.snap = SnapDebs(s)
@@ -162,7 +166,7 @@ class WorkflowBug():
             return
 
         s.is_development_series = s.source.series.development
-        s.is_development = s.source.development or s.sru_cycle[0] == 'd'
+        s.is_development = s.source.development or s.sru_spin_name[0] == 'd'
 
         # If we have no version after instantiation of the variant,
         # this is not generally crankable.
@@ -177,6 +181,8 @@ class WorkflowBug():
         cinfo('                    version: "{}"'.format(s.version), 'blue')
         cinfo('                     series: "{}"'.format(s.series), 'blue')
         cinfo('      is development series: {}'.format(s.is_development_series), 'blue')
+
+        cinfo("           KernelSeries url: {}".format(s.kernel_series.url))
 
         if s.debs is not None:
             for p in s.debs.pkgs:
@@ -197,11 +203,30 @@ class WorkflowBug():
             for prop in props_dump:
                 cinfo('        {}'.format(prop), 'magenta')
 
+        if s.debs is not None:
+            old_flavours = sorted(s.debs.test_flavours())
+            new_flavours = sorted([ x.name for x in s.source.testable_flavours ])
+            if old_flavours != new_flavours:
+                cinfo("APW-TEST-FLAVOURS: {} {} {} {}".format(s.series, s.name, str(old_flavours), str(new_flavours)))
+
+    @property
+    def has_debs(self):
+        return self.debs is not None
+
+    @property
+    def has_snap(self):
+        return self.snap is not None
+
     @property
     def tasks_by_name(s):
         if s._tasks_by_name is False:
             s._tasks_by_name = s._create_tasks_by_name_mapping()
         return s._tasks_by_name
+
+    def task_updated(s):
+        s.task_updates += 1
+        if s.task_updates > 100:
+            raise WorkflowBugError("runaway task updates")
 
     @property
     def sc(self):
@@ -209,7 +234,13 @@ class WorkflowBug():
 
     @property
     def kernel_series(self):
-        return ctx.ks
+        cycle = self.sru_spin.cycle
+        if cycle[0] == "d":
+            cycle = None
+        ks = KernelSeries.for_cycle(cycle)
+        if ks is None:
+            ks = KernelSeries.tip()
+        return ks
 
     @property
     def sc(self):
@@ -331,11 +362,13 @@ class WorkflowBug():
     # save
     #
     def save(s):
+        for taskname, task in s.tasks_by_name.items():
+            task.save()
         s.save_bug_properties()
         s._remove_live_tag()
         if s.tracker_modified:
             cinfo("Tracker modified, saving")
-            s.lpbug.lpbug.lp_save()
+            s.lpbug.lp_save()
             s.tracker_modified = False
 
     # close
@@ -408,12 +441,12 @@ class WorkflowBug():
         if s._master_bug is False:
             if s.is_derivative_package:
                 try:
-                    master = WorkflowBug(s.lp, s.master_bug_id)
+                    master = WorkflowBug(s.master_bug_id)
                     # check if our master is a duplicate, and if so follow the chain.
-                    duplicate_of = master.lpbug.lpbug.duplicate_of
+                    duplicate_of = master.lpbug.duplicate_of
                     if duplicate_of is not None:
                         cinfo("master-bug link points to a duplicated bug, following {} -> {}".format(s.master_bug_id, duplicate_of.id))
-                        master = WorkflowBug(s.lp, duplicate_of.id)
+                        master = WorkflowBug(duplicate_of.id)
                     error = None
 
                     if master.is_gone:
@@ -460,14 +493,29 @@ class WorkflowBug():
             return
         dup_id = dup_pointer.split()[1]
         try:
-            dup_wb = WorkflowBug(s.lp, dup_id)
+            dup_wb = WorkflowBug(dup_id)
         except WorkflowBugError:
             raise WorkflowBugError("invalid replaces pointer {}".dup_id)
+
+        # For debs trackers do not duplicate between streams.  Ignore the the
+        # replaces directive where our streams differ.  Where we do not yet
+        # have a local stream for comparison and the replaced tracker does
+        # ignore but retain the directive, otherwise drop it.
+        keep = False
+        if (s.debs is not None
+            and dup_wb.debs is not None
+            and s.built_in != dup_wb.built_in
+        ):
+            keep = True
+            if s.built_in is None:
+                cinfo("replaces={} stream disparity detected {} != {} -- no local stream, holding".format(dup_pointer, s.built_in, dup_wb.built_in))
+            else:
+                cinfo("replaces={} stream disparity detected {} != {} -- dropping replaces directive".format(dup_pointer, s.built_in, dup_wb.built_in))
+                del s.bprops['replaces']
 
         # If we have no testing tasks active then there is is no value in
         # holding the duplication till later.  For variant debs we also trigger
         # duplication when we are ready to to promote the replacement tracker.
-        keep = False
         if inactive_only:
             cinfo("replaces={} detected checking target inactive".format(dup_pointer))
             trash = False
@@ -493,9 +541,8 @@ class WorkflowBug():
         # If we deem this ready for duplication wack it.
         if not keep:
             cinfo("replaces={} detected duplicating {} to {}".format(dup_pointer, dup_wb.lpbug.id, s.lpbug.id))
-            # XXX: lpltk does not a allow access to the duplicates.
-            dup_wb.lpbug.lpbug.duplicate_of = s.lpbug.lpbug
-            dup_wb.lpbug.lpbug.lp_save()
+            dup_wb.lpbug.duplicate_of = s.lpbug
+            dup_wb.lpbug.lp_save()
 
             del s.bprops['replaces']
 
@@ -563,10 +610,28 @@ class WorkflowBug():
         else:
             s.bprops['issue'] = issue_key
 
+        # Track changes to messages.
+        date_message_prev = s.private_group_get("tracker", "last-message")
+        date_message_curr = str(s.lpbug.date_last_message)
+        abi_testing_msg = None
+        if date_message_prev != date_message_curr:
+            for message in s.lpbug.messages:
+                if message.subject == "ABI testing":
+                    abi_testing_msg = int(message.self_link.rsplit("/", 1)[-1])
+            s.group_set("comments", "abi-testing", abi_testing_msg)
+            s.private_group_set("tracker", "last-message", date_message_curr)
+
         # XXX: TRANSITION -- copy sru-review clamp over to new-review clamp if present.
         clamp = s.clamp('new-review')
         if clamp is None:
             s.clamp_assign('new-review', s.clamp('sru-review'))
+
+        # XXX: TRANSITION -- mirror base flags into the flags field.
+        for flag in ('boot-testing-requested', 'proposed-testing-requested',
+                'proposed-announcement-sent', 'bugs-spammed'):
+            if flag in s.bprops:
+                s.flag_assign(flag, s.bprops[flag])
+                del s.bprops[flag]
 
         cleave(s.__class__.__name__ + '.load_bug_properties')
 
@@ -638,13 +703,14 @@ class WorkflowBug():
 
     # transient_reset_all
     #
-    def transient_reset_all(s):
+    def transient_reset_all(s, keep_refresh=False):
         '''
         Reset all existing transient data (reasons etc) for this bug.
         '''
         if 'reason' in s.bprops:
             del s.bprops['reason']
-        s._refresh = [None, None]
+        if not keep_refresh:
+            s._refresh = [None, None]
         s._monitor = []
         s.interlocks = {}
 
@@ -712,6 +778,15 @@ class WorkflowBug():
 
         return False
 
+    def manual_unblock(s, task):
+        tag = 'kernel-unblock-' + task
+
+        if tag in s.tags:
+            cinfo("{} manual task unblock present".format(task))
+            return True
+
+        return False
+
     def block_present(s, block):
         if block not in s.blockers:
             return None
@@ -721,6 +796,9 @@ class WorkflowBug():
             return None
 
         return s.blockers[block]
+
+    def accept_present(s, accept):
+        return 'kernel-accept-' + accept in s.tags
 
     def flag_assign(s, flag, value):
         flags = s.bprops.setdefault('flag', {})
@@ -736,19 +814,70 @@ class WorkflowBug():
     def flag(s, flag):
         return s.bprops.get('flag', {}).get(flag)
 
-    def clamp_assign(s, clamp, value):
-        clamps = s.private_props.setdefault('clamps', {})
+    # private_group_set
+    #
+    def private_group_set(s, group, field, value):
+        hold = s.private_props.get(group) or {}
+        s.private_props[group] = hold
         if value is not None:
-            clamps[clamp] = value
+            hold[field] = value
 
-        elif clamp in clamps:
-            del clamps[clamp]
+        elif field in hold:
+            del hold[field]
 
-        if len(clamps) == 0:
-            del s.private_props['clamps']
+        if len(hold) == 0:
+            del s.private_props[group]
+
+    # private_group_get
+    #
+    def private_group_get(s, group, field):
+        return (s.private_props.get(group) or {}).get(field)
+
+    def clamp_assign(s, clamp, value):
+        s.private_group_set('clamps', clamp, value)
 
     def clamp(s, clamp):
-        return s.private_props.get('clamps', {}).get(clamp)
+        return s.private_group_get('clamps', clamp)
+
+    # group_set
+    #
+    def group_set(s, group, field, value):
+        hold = s.bprops.get(group) or {}
+        s.bprops[group] = hold
+        if value is not None:
+            hold[field] = value
+
+        elif field in hold:
+            del hold[field]
+
+        if len(hold) == 0:
+            del s.bprops[group]
+
+    # built_get
+    #
+    def group_get(s, group, field):
+        return (s.bprops.get(group) or {}).get(field)
+
+    # built_set
+    #
+    def built_set(s, field, value):
+        s.group_set('built', field, value)
+
+    # built_get
+    #
+    def built_get(s, field):
+        return s.group_get('built', field)
+
+    # built_in
+    #
+    @property
+    def built_in(self):
+        return self.built_get('route-entry')
+
+    @built_in.setter
+    def built_in(self, route):
+        if self.built_get('route-entry') is None:
+            self.built_set('route-entry', route)
 
     def _source_block_present(s):
         if 'kernel-block-source' in s.tags:
@@ -820,13 +949,13 @@ class WorkflowBug():
                 }
             assignee = s.tasks_by_name[taskname].assignee
             if assignee is not None:
-                task[taskname]['assignee'] = assignee.username
+                task[taskname]['assignee'] = assignee.name
                 # Record the overall owner if we have one.
                 if taskname == 'kernel-sru-workflow':
-                    owner = assignee.username
+                    owner = assignee.name
                 # XXX: lpltk does not expose `is_team` so just bodge it.
-                elif taskname == 'prepare-package' and assignee.username != 'canonical-kernel-team':
-                    owner_pp = assignee.username
+                elif taskname == 'prepare-package' and assignee.name != 'canonical-kernel-team':
+                    owner_pp = assignee.name
 
             # XXX: ownership of tasks should be more obvious, but this is
             # only needed while we have combo bugs in reality.
@@ -868,7 +997,7 @@ class WorkflowBug():
             status['stage'] = s.stage
 
         try:
-            status['cycle'] = s.sru_cycle
+            status['cycle'] = s.sru_spin_name
             status['series'] = s.series
             status['source'] = s.name
             status['package'] = s.name # XXX: legacy
@@ -880,6 +1009,19 @@ class WorkflowBug():
                 status['target'] = target
         except Exception as e:
             cerror("status failed {}".format(e))
+
+        if s.debs is not None:
+            occupancy = s.debs.occupancy
+            status['occupancy'] = list(sorted(occupancy))
+
+        # test-observer deadlines
+        if 'test-observer' in status:
+            spin = s.sru_spin
+            if spin is not None:
+                release_date = spin.release_date
+                if release_date is not None:
+                    due_date = datetime.combine(release_date - timedelta(days=5), datetime.min.time())
+                    status['test-observer']['due-date'] = due_date.strftime('%Y-%m-%d')
 
         # Do not expose this API error.
         master_bug = s.master_bug_property_name
@@ -908,7 +1050,8 @@ class WorkflowBug():
         s.is_gone = False
         s.is_purgable = False
         s.is_duplicate = s.lpbug.duplicate_of is not None
-        for t in s.lpbug.tasks:
+        date_fix_committed = None
+        for t in s.lpbug.bug_tasks:
             task_name       = t.bug_target_name
 
             if task_name in WorkflowBug.projects_tracked:
@@ -921,6 +1064,7 @@ class WorkflowBug():
                     s.is_crankable = True
                 elif t.status == 'Fix Committed':
                     s.is_closed = True
+                    date_fix_committed = t.date_fix_committed
                 elif t.status == 'Fix Released':
                     s.is_closed = True
                     s.is_purgable = True
@@ -933,17 +1077,26 @@ class WorkflowBug():
 
         # Consider if we are in a closed cycle and ready for final
         # closure.
-        sru_cycle = s.sc.lookup_cycle(s.sru_cycle)
+        sru_cycle = s.sc.lookup_spin(s.sru_spin_name)
         cycle_complete = sru_cycle is not None and sru_cycle.complete
+        if sru_cycle is None and s.sru_spin_name[0] == "d" and date_fix_committed is not None:
+            date_full_close = date_fix_committed.replace(tzinfo=timezone.utc) + timedelta(days=10)
+            cinfo("workflow closed in development cycle: closed={} date_full_close={}".format(date_fix_committed, date_full_close))
+            if date_full_close >= datetime.now(timezone.utc):
+                s.refresh_at(date_full_close, "Development tracker full-close")
+            else:
+                cycle_complete = True
+
         if not cycle_complete:
             return
 
-        for task in s.lpbug.tasks:
+        for task in s.lpbug.bug_tasks:
             task_name       = task.bug_target_name
 
             if task_name in WorkflowBug.projects_tracked:
                 if task.status == 'Fix Committed':
                     task.status = 'Fix Released'
+                    task.lp_save()
                     s.is_purgable = True
                 break
 
@@ -953,12 +1106,13 @@ class WorkflowBug():
         if not self.is_new:
             return
 
-        for t in self.lpbug.tasks:
+        for t in self.lpbug.bug_tasks:
             task_name       = t.bug_target_name
 
             if task_name in WorkflowBug.projects_tracked:
                 cinfo("accept_new: Triaged tracker now tracked flipping In Progress")
                 t.status = 'In Progress'
+                t.lp_save()
                 break
 
         self.check_is_valid()
@@ -977,10 +1131,13 @@ class WorkflowBug():
 
         synthesise = set()
 
-        for t in s.lpbug.tasks:
+        for t in s.lpbug.bug_tasks:
             task_name       = t.bug_target_name
 
-            if task_name.startswith(s.workflow_project):
+            if task_name.startswith("canonical-signing-jobs"):
+                tasks_by_name[task_name] = WorkflowBugTask(t, task_name, s.debs, s)
+
+            elif task_name.startswith(s.workflow_project):
                 if '/' in task_name:
                     task_name = task_name[len(s.workflow_project) + 1:].strip()
                 tasks_by_name[task_name] = WorkflowBugTask(t, task_name, s.debs, s)
@@ -997,7 +1154,7 @@ class WorkflowBug():
         redo = False
         if 'sru-review' in tasks_by_name and 'new-review' not in tasks_by_name:
             cinfo("    new-review missing")
-            tasks_by_name['new-review'] = s.lpbug.lpbug.addTask(target='/kernel-sru-workflow/new-review')
+            tasks_by_name['new-review'] = s.lpbug.addTask(target='/kernel-sru-workflow/new-review')
             task_sr = tasks_by_name['sru-review']
             task_nr = tasks_by_name['new-review']
 
@@ -1008,9 +1165,16 @@ class WorkflowBug():
 
             redo = True
 
+        # TRANSITION: add any missing abi-testing tasks.
+        if s.variant in ('debs', 'combo') and 'abi-testing' not in tasks_by_name:
+            tasks_by_name['abi-testing'] = s.lpbug.addTask(target='/kernel-sru-workflow/abi-testing')
+
+            cinfo("    abi-testing added {}".format(tasks_by_name['abi-testing']))
+            redo = True
+
         if redo:
             cinfo('    Re-scanning bug tasks:', 'cyan')
-            for t in s.lpbug.tasks:
+            for t in s.lpbug.bug_tasks:
                 task_name       = t.bug_target_name
 
                 if task_name.startswith(s.workflow_project):
@@ -1037,6 +1201,10 @@ class WorkflowBug():
 
         return tasks_by_name
 
+    def add_task(self, task_name):
+        task = self.lpbug.addTask(target='/kernel-sru-workflow/' + task_name)
+        self._tasks_by_name[task_name] = WorkflowBugTask(task, task_name, self.debs, self)
+
     # valid_package
     #
     def valid_package(s, pkg):
@@ -1045,7 +1213,7 @@ class WorkflowBug():
         # XXX: this is not deb related.
         retval = pkg in s.debs.pkgs
 
-        cleave(s.__class__.__name__ + '.valid_package')
+        cleave(s.__class__.__name__ + '.valid_package ({})'.format(retval))
         return retval
 
     def published_tag(s, pkg):
@@ -1064,7 +1232,7 @@ class WorkflowBug():
                 package_package = package
                 break
         if package_package is not None:
-            version = s.debs.package_version(pkg)
+            version = s.debs.package_version_exact(pkg)
             if version is None:
                 published = False
             else:
@@ -1095,8 +1263,7 @@ class WorkflowBug():
         '''
         retval = True
 
-        bi = s.debs.build_info
-        for pkg in bi:
+        for pkg in s.debs.dependent_packages():
             if not s.published_tag(pkg):
                 cinfo('        %s missing tag.' % (pkg), 'yellow')
                 retval = False
@@ -1152,6 +1319,11 @@ class WorkflowBug():
         if taskname in s.tasks_by_name:
             return s.tasks_by_name[taskname].status
         return "Invalid"
+
+    # task_reason
+    #
+    def task_reason(s, taskname):
+        return s.bprops.get('reason', {}).get(taskname)
 
     # phase
     #
@@ -1212,26 +1384,24 @@ class WorkflowBug():
     @property
     def sru_spin(s):
         if s._sru_spin is False:
-            spin = None
-            for t in s.tags:
-                if t.startswith('kernel-sru-cycle-'):
-                    spin = t.replace('kernel-sru-cycle-', '')
+            spin = s.sru_spin_name
             if spin is not None:
                 spin = s.sc.lookup_spin(spin, allow_missing=True)
             s._sru_spin = spin
 
         return s._sru_spin
 
-    # sru_cycle
+    # sru_spin_name
     #
     @property
-    def sru_cycle(s):
-        spin = s.sru_spin
-        if spin is not None:
-            spin = spin.name
-        else:
-            spin = '1962.11.02-00'
-        return spin
+    def sru_spin_name(s):
+        if s._sru_spin_name is False:
+            spin = None
+            for t in s.tags:
+                if t.startswith('kernel-sru-cycle-'):
+                    spin = t.replace('kernel-sru-cycle-', '')
+            s._sru_spin_name = spin
+        return s._sru_spin_name
 
     def send_email(s, subject, body, to):
         from .bugmail import BugMail
@@ -1323,7 +1493,7 @@ class WorkflowBug():
             cdebug('')
         else:
             cdebug('Adding comment to tracking bug')
-            s.lpbug.add_comment(body, subject)
+            s.lpbug.newMessage(content=body, subject=subject)
         cleave(s.__class__.__name__ + '.add_comment')
 
     # timestamp
@@ -1362,13 +1532,12 @@ class WorkflowBug():
     def workflow_duplicates(s):
         retval = []
 
-        # XXX: XXX: lpltk does NOT let me get to the duplicate list!?!?!?!
-        duplicates = s.lpbug.lpbug.duplicates
+        duplicates = s.lpbug.duplicates
         #duplicates = [ s.lp.get_bug('1703532') ]
         for dup in duplicates:
             cdebug("workflow_duplicates: checking {}".format(dup.id))
             try:
-                dup_wb = WorkflowBug(s.lp, dup.id)
+                dup_wb = WorkflowBug(dup.id)
             except WorkflowBugError as e:
                 cinfo("workflow_duplicates: duplicate {} threw a {} exception, ignored".format(dup.id, e.__class__.__name__))
                 for l in e.args:

@@ -19,14 +19,28 @@ from logging                            import basicConfig, DEBUG
 from ktl.log                            import cdebug, cerror
 
 
+# BugEntry
+#
+class BugEntry:
+
+    def __init__(self, lp_bug):
+        self.title = lp_bug.title
+        self.tags = list(lp_bug.tags)
+        self.owner = lp_bug.owner.display_name
+
+
 # SruReport
 #
 class SruReport:
     # __init__
     #
-    def __init__(self, cfg={}, lp_service=None):
+    def __init__(self, cfg={}, lp_service=None, lp=None):
         self.cfg = cfg
-        self.lp_service = lp_service
+
+        if lp_service is not None:
+            self.lp = lp_service.launchpad
+        else:
+            self.lp = lp
 
         self.archive_root = 'http://archive.ubuntu.com/ubuntu'
         self.ports_root   = 'http://ports.ubuntu.com/ubuntu-ports'
@@ -43,6 +57,12 @@ class SruReport:
             log_format = "%(levelname)s - %(message)s"
             basicConfig(level=DEBUG, format=log_format)
 
+        self._changelog_cache = {}
+        self._changelog_cache_out = {}
+        if self.cfg.get("cache") is not None and os.path.exists(self.cfg["cache"]):
+            with open(self.cfg["cache"]) as cfd:
+                self._changelog_cache = json.load(cfd)
+
     def _dbg(self, system, msg):
         if 'debug' in self.cfg:
             if system in self.cfg['debug']:
@@ -57,9 +77,9 @@ class SruReport:
         self.changelog_bug_pattern = re.compile(r'(?:lp(?::| |#)+|href="/bugs/)([0-9]+)')
         self.published_date_pattern = re.compile(r'Published.*\n.*on ([-0-9]+)')
 
-        if self.lp_service is None:
+        if self.lp is None:
             self.cfg['launchpad_client_name'] = 'kernel-team-sru-report'
-            self.lp_service = LaunchpadService(self.cfg)
+            self.lp = LaunchpadService(self.cfg).launchpad
 
         if self.cfg['archive-versions']:
             ar = Archive()
@@ -116,7 +136,7 @@ class SruReport:
 
     # _get_changelog_info
     #
-    def _get_changelog_info(self, url):
+    def _get_changelog_info_direct(self, url):
         '''Parse LP per-version/per-release page URL and return tuple (date, bugs)
         with a publishing date (time record) and a bug list string.'''
 
@@ -145,6 +165,33 @@ class SruReport:
                 bugnums.append(bug)
 
         return (date, bugnums)
+
+    def _get_changelog_info(self, url):
+        if url not in self._changelog_cache:
+            self._dbg('cache', "_get_changelog_info({}) (MISS)".format(url))
+            self._changelog_cache[url] = self._get_changelog_info_direct(url)
+        else:
+            self._dbg('cache', "_get_changelog_info({}) (HIT)".format(url))
+        date, bugs = self._changelog_cache[url]
+        if isinstance(date, list):
+            date = time.struct_time(date)
+        self._changelog_cache_out[url] = (date, bugs)
+        return date, bugs
+
+    def cache_save(self):
+        if "cache" in self.cfg:
+            with open(self.cfg["cache"] + ".new", "w") as cfd:
+                json.dump(self._changelog_cache_out, cfd, sort_keys=True, indent=4)
+                os.rename(self.cfg["cache"] + ".new", self.cfg["cache"])
+
+    _bug_cache = {}
+    def bug_data(self, bug):
+        if bug not in self._bug_cache:
+            self._dbg('cache', "bug_data({}) (MISS)".format(bug))
+            self._bug_cache[bug] = BugEntry(self.lp.bugs[bug])
+        else:
+            self._dbg('cache', "bug_data({}) (HIT)".format(bug))
+        return self._bug_cache[bug]
 
     # generate
     #
@@ -258,11 +305,19 @@ class SruReport:
                         results['releases'][rls][pkg]['age']  = age
                         results['releases'][rls][pkg]['bugs'] = {}
 
+                        self._dbg('cache', "rls={} package={}".format(rls, pkg))
                         for bug in bugs:
                             self._dbg('core', "        bug: '%s'" % (bug))
                             results['releases'][rls][pkg]['bugs'][bug] = {}
+                            spammed_v1 = 'kernel-spammed-{}-{}'.format(rls, pkg)
+                            spammed_v2 = spammed_v1 + "-v2"
                             try:
-                                lp_bug = self.lp_service.get_bug(bug)
+                                lp_bug = self.bug_data(bug)
+                                if spammed_v1 in lp_bug.tags:
+                                    key = rls
+                                else:
+                                    key = rls + "-" + pkg
+
                                 state = 'missing'
                                 if   'kernel-tracking-bug'          in lp_bug.tags: state = 'release-tracker'
                                 elif 'kernel-release-tracker'       in lp_bug.tags: state = 'release-tracker'
@@ -275,14 +330,18 @@ class SruReport:
                                 # By making these checks separately and after the previous ones, we
                                 # can add the correct state for tracking bugs.
                                 #
-                                if 'verification-failed-%s' % rls in lp_bug.tags: state = 'failed'
-                                elif 'verification-reverted-%s' % rls in lp_bug.tags: state = 'reverted'
-                                elif 'verification-done-%s'   % rls in lp_bug.tags: state = 'verified'
-                                elif 'verification-needed-%s' % rls in lp_bug.tags: state = 'needed'
+                                if 'verification-failed-%s' % key in lp_bug.tags: state = 'failed'
+                                elif 'verification-reverted-%s' % key in lp_bug.tags: state = 'reverted'
+                                elif 'verification-done-%s'   % key in lp_bug.tags: state = 'verified'
+                                elif 'verification-needed-%s' % key in lp_bug.tags: state = 'needed'
                                 elif 'verification-done' in lp_bug.tags: state = 'verified'
 
+                                # If this was not spammed in our name by SWM then it is being validated in our parent.
+                                if not state.endswith('-tracker') and spammed_v1 not in lp_bug.tags and spammed_v2 not in lp_bug.tags:
+                                    state = 'parent-validated'
+
                                 results['releases'][rls][pkg]['bugs'][bug]['title'] = lp_bug.title
-                                results['releases'][rls][pkg]['bugs'][bug]['owner'] = lp_bug.owner.display_name
+                                results['releases'][rls][pkg]['bugs'][bug]['owner'] = lp_bug.owner
                                 results['releases'][rls][pkg]['bugs'][bug]['state'] = state
 
                                 results['releases'][rls][pkg]['bugs'][bug]['tags']  = []
@@ -293,6 +352,8 @@ class SruReport:
                                 results['releases'][rls][pkg]['bugs'][bug]['owner'] = "unknown"
                                 results['releases'][rls][pkg]['bugs'][bug]['state'] = "unknown"
                                 results['releases'][rls][pkg]['bugs'][bug]['tags']  = []
+
+            self.cache_save()
 
             results['updated'] = datetime.utcnow().strftime("%A, %d. %B %Y %H:%M UTC")
             results['releases_order'] = self.requested_series

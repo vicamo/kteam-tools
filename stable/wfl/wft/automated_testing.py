@@ -151,7 +151,12 @@ class AutomatedTesting(TaskHandler):
             if not s.bug.debs.ready_for_testing_as_proposed:
                 break
 
-            s.task.status = 'Confirmed'
+            route_archive, route_pocket = s.bug.debs.pocket_route("Proposed")
+            cinfo("APW route_archive={}".format(route_archive.reference))
+            if route_archive.reference == "ubuntu":
+                s.task.status = "Confirmed"
+            else:
+                s.task.status = "Invalid"
             retval = True
             break
 
@@ -166,7 +171,14 @@ class AutomatedTesting(TaskHandler):
             promote_status = s.bug.task_status('promote-to-release')
 
         present = s.bug.debs.all_built_and_in_pocket_or_after('Proposed')
-        if not present:
+
+        # If we have no routing for Proposed then there is nothing to test.
+        if s.bug.debs.routing('Proposed') is None:
+            cinfo("automated-testing invalid with no Proposed route")
+            s.task.status = 'Invalid'
+            retval = True
+
+        elif not present:
             if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
                 cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
                 s.task.status = 'Opinion'
