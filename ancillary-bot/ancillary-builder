@@ -18,7 +18,7 @@ ignore="IGNORE-BUILD"
 [ ! -f "$ignore" ] && touch "$ignore"
 
 "$here/ancillary-lookup" "$ppa" "$ppa_ps" "$ignore" | \
-while read id source urls
+while read id source upload_to visibility urls
 do
 	if [ "$urls" = '-' ]; then
 		if [ -d "$id" ]; then
@@ -45,11 +45,15 @@ do
 			for upload in *_source.changes
 			do
 				case "$upload" in
-				linux-generate*)	upload_to="$ppa"; upload_name="public" ;;
-				*)			upload_to="$ppa_ps"; upload_name="private" ;;
+				linux-restricted-*)
+					if [ "$visibility" != "private" ]; then
+						echo "ERROR: $id: attempting to upload $upload to $visibility PPA" 1>&2
+						exit 1
+					fi
+					;;
 				esac
-				echo "$id: re-uploading $upload (to $upload_name $upload_to) ..."
-				dput ${ANCILLARY_DPUTCF:+-c $ANCILLARY_DPUTCF} "$upload_to" "$upload"
+				echo "$id: re-uploading $upload (to $visibility $upload_to) ..."
+				timeout 5m dput ${ANCILLARY_DPUTCF:+-c $ANCILLARY_DPUTCF} "$upload_to" "$upload"
 			done
 		)
 		arc="$?"
@@ -104,10 +108,14 @@ do
 		for upload in *_source.changes
 		do
 			case "$upload" in
-			linux-generate*)	upload_to="$ppa"; upload_name="public" ;;
-			*)			upload_to="$ppa_ps"; upload_name="private" ;;
+			linux-restricted-*)
+				if [ "$visibility" != "private" ]; then
+					echo "ERROR: $id: attempting to upload $upload to $visibility PPA" 1>&2
+					exit 1
+				fi
+				;;
 			esac
-			echo "$id: uploading $upload (to $upload_name $upload_to) ..."
+			echo "$id: uploading $upload (to $visibility $upload_to) ..."
 			timeout 5m dput ${ANCILLARY_DPUTCF:+-c $ANCILLARY_DPUTCF} "$upload_to" "$upload"
 		done
 	)

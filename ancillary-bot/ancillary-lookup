@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import json
 import os
+import shlex
 import sys
 
 from launchpadlib.credentials import AuthorizeRequestTokenWithURL
@@ -89,7 +90,7 @@ for prime_type, prime_prefix in ancillary_config:
         source_name = prime.source_package_name.replace(prime_prefix, 'linux')
         ks_series = ks.lookup_series(codename=series_name)
         ancillary_names = []
-        ancillary_ppa = None
+        ancillary_ref, ancillary_ppa = None, None
         if ks_series is not None:
             ks_source = ks_series.lookup_source(source_name)
             if ks_source is None:
@@ -104,7 +105,10 @@ for prime_type, prime_prefix in ancillary_config:
                     if ancillary_for is not None:
                         if ancillary_for.type == prime_type:
                             ancillary_names.append(ks_package.name)
-                            ancillary_ppa = adjunct if ks_package.adjunct else primary
+                            if ks_package.adjunct:
+                                ancillary_ref, ancillary_ppa = adjunct_ref, adjunct
+                            else:
+                                ancillary_ref, ancillary_ppa = primary_ref, primary
         if not len(ancillary_names):
             continue
         if ancillary_ppa is None:
@@ -145,4 +149,5 @@ for prime_type, prime_prefix in ancillary_config:
                 wanted = ' '.join(urls)
                 break
 
-        print(prime_id, prime.source_package_name, wanted)
+        private = "private" if ancillary_ppa.private else "public"
+        print(prime_id, prime.source_package_name, ancillary_ref, private, wanted)
