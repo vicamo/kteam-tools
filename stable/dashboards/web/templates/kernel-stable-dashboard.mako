@@ -563,48 +563,28 @@ for bid in sorted(swm_trackers):
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
     <head>
         <style>
-        .name a:link {
+        .name a {
             color: green;
-            background-color: transparent;
-            text-decoration: none;
-        }
-        .name a:visited {
-            color: green;
-            background-color: transparent;
+            #background-color: transparent;
             text-decoration: none;
         }
 
-        .overdue .name a:link {
+        .master a {
+            color: darkblue;
+            #background-color: transparent;
+            text-decoration: none;
+        }
+
+        .overdue .name a {
             color: red;
         }
-        .overdue .name a:visited {
-            color: red;
-        }
 
-        .master a:link {
-            color: darkblue;
-            background-color: transparent;
-            text-decoration: none;
-        }
-        .master a:visited {
-            color: darkblue;
-            background-color: transparent;
-            text-decoration: none;
-        }
-
-        .archive, a:link
-        .archive,a:visited {
+        a.archive {
             color: inherit;
-            background-color: transparent;
             text-decoration: none;
         }
 
-        .note a:link {
-            color: black;
-            background-color: transparent;
-            text-decoration: none;
-        }
-        .note a:visited {
+        .note a {
             color: black;
             background-color: transparent;
             text-decoration: none;
