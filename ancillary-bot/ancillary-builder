@@ -14,10 +14,12 @@ here=$(dirname $(readlink -f "$0"))
 
 echo "II: scanning $ppa $ppa_ps ..."
 
+uploaded="UPLOADED"
+[ ! -f "$uploaded" ] && touch "$uploaded"
 ignore="IGNORE-BUILD"
 [ ! -f "$ignore" ] && touch "$ignore"
 
-"$here/ancillary-lookup" "$ppa" "$ppa_ps" "$ignore" | \
+"$here/ancillary-lookup" "$ppa" "$ppa_ps" "$uploaded" "$ignore" | \
 while read id source upload_to visibility urls
 do
 	if [ "$urls" = '-' ]; then
@@ -25,13 +27,12 @@ do
 			echo "$id: ancillaries confirmed uploaded"
 			rm -rf "$id"
 		fi
+		if [ $(egrep -c "^$id\$" "$uploaded") -ne 0 ]; then
+			echo "$id" >>"$uploaded"
+		fi
 		continue
 	fi
 
-	if [ $(egrep -c "^$id\$" "$ignore") -ne 0 ]; then
-		echo "$id: non-ancillary form, ignored"
-		continue
-	fi
 	if [ -d "$id" ]; then
 		if [ -f "$id/ignore" ]; then
 			echo "$id: non-ancillary form, ignored"
