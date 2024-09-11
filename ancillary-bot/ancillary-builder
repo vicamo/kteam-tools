@@ -14,9 +14,9 @@ here=$(dirname $(readlink -f "$0"))
 
 echo "II: scanning $ppa $ppa_ps ..."
 
-uploaded="UPLOADED"
+uploaded="state.uploaded"
 [ ! -f "$uploaded" ] && touch "$uploaded"
-ignore="IGNORE-BUILD"
+ignore="state.ignored"
 [ ! -f "$ignore" ] && touch "$ignore"
 
 "$here/ancillary-lookup" "$ppa" "$ppa_ps" "$uploaded" "$ignore" | \
@@ -27,7 +27,7 @@ do
 			echo "$id: ancillaries confirmed uploaded"
 			rm -rf "$id"
 		fi
-		if [ $(egrep -c "^$id\$" "$uploaded") -ne 0 ]; then
+		if [ $(egrep -c "^$id\$" "$uploaded") -eq 0 ]; then
 			echo "$id" >>"$uploaded"
 		fi
 		continue
