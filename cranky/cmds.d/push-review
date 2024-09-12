@@ -167,9 +167,12 @@ EOF
 				fi
 			fi
 		else
-			# We actually want the tilde to be expanded after ssh, not in current shell
-			# shellcheck disable=SC2088
-			ssh "${host}" git init --bare "~/${remote_path}"
+			pr_info "Initializing git repo in ${host}:~/${remote_path}"
+			if [ "${dry_run}" -eq 0 ] ; then
+				# We actually want the tilde to be expanded after ssh, not in current shell
+				# shellcheck disable=SC2088
+				ssh "${host}" git init --bare "~/${remote_path}"
+			fi
 		fi
 	fi
 done
