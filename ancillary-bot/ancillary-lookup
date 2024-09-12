@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import json
 import os
+import shlex
 import sys
 
 from launchpadlib.credentials import AuthorizeRequestTokenWithURL
@@ -22,12 +23,14 @@ lp = Launchpad.login_with(service_root='production', version='devel',
 me_name = lp.me.name
 me = lp.people[me_name]
 
-primary_ref, adjunct_ref, ignore_list = sys.argv[1:]
+primary_ref, adjunct_ref, uploaded_list, broken_list = sys.argv[1:]
 
 primary = lp.archives.getByReference(reference=primary_ref)
 if primary is None:
     raise ValueError("primary reference {} invalid".format(primary_ref))
-adjunct = None
+
+# If we have an adjunct specified then grab a reference and double check
+# the PPA is private.
 if adjunct_ref != "-":
     adjunct = lp.archives.getByReference(reference=adjunct_ref)
     if adjunct is None:
@@ -35,10 +38,20 @@ if adjunct_ref != "-":
     if not adjunct.private:
         raise ValueError("adjunct archive {} not private".format(adjunct_ref))
 
+# If the primary PPA is private then we can use it as the adjunct.
+elif primary.private:
+    adjunct_ref = primary_ref
+    adjunct = primary
+
+# Otherwise we do not have one.
+else:
+    adjunct = None
+
 ignore_builds = set()
-with open(ignore_list) as ilfd:
-    for ignore in ilfd:
-        ignore_builds.add(ignore.strip())
+for ignore_list in (uploaded_list, broken_list):
+    with open(ignore_list) as ilfd:
+        for ignore in ilfd:
+            ignore_builds.add(ignore.strip())
 
 ks = KernelSeries()
 
@@ -73,12 +86,17 @@ for prime_type, prime_prefix in ancillary_config:
     primaries += list(primary.getPublishedSources(source_name=prime_prefix, status='Published', order_by_date=True))
     primaries += list(primary.getPublishedSources(source_name=prime_prefix, status='Pending', order_by_date=True))
     for prime in primaries:
+        prime_id = os.path.basename(prime.self_link)
+        if prime_id in ignore_builds:
+            #print(prime_id, prime.source_package_name, "ignore")
+            continue
+
         # Find the appropriate kernel in kernel-series based on the package name.
         series_name = prime.distro_series_link.split('/')[-1]
         source_name = prime.source_package_name.replace(prime_prefix, 'linux')
         ks_series = ks.lookup_series(codename=series_name)
         ancillary_names = []
-        ancillary_ppa = None
+        ancillary_ref, ancillary_ppa = None, None
         if ks_series is not None:
             ks_source = ks_series.lookup_source(source_name)
             if ks_source is None:
@@ -93,18 +111,16 @@ for prime_type, prime_prefix in ancillary_config:
                     if ancillary_for is not None:
                         if ancillary_for.type == prime_type:
                             ancillary_names.append(ks_package.name)
-                            ancillary_ppa = adjunct if ks_package.adjunct else primary
+                            if ks_package.adjunct:
+                                ancillary_ref, ancillary_ppa = adjunct_ref, adjunct
+                            else:
+                                ancillary_ref, ancillary_ppa = primary_ref, primary
         if not len(ancillary_names):
             continue
         if ancillary_ppa is None:
             raise ValueError("adjunct archive required for private ancillaries".format(adjunct_ref))
 
         #print(series_name, source_name, ancillary_ppa.reference, ancillary_names)
-
-        prime_id = os.path.basename(prime.self_link)
-        if prime_id in ignore_builds:
-            #print(prime_id, prime.source_package_name, "ignore")
-            continue
 
         wanted = '-'
         ancillary_version = prime.source_package_version
@@ -134,4 +150,5 @@ for prime_type, prime_prefix in ancillary_config:
                 wanted = ' '.join(urls)
                 break
 
-        print(prime_id, prime.source_package_name, wanted)
+        private = "private" if ancillary_ppa.private else "public"
+        print(prime_id, prime.source_package_name, ancillary_ref, private, wanted)
