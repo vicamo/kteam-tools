@@ -96,7 +96,7 @@ def tagged_block_valid(key, value, colour):
             block = '<a href="{}">{}</a>'.format(attrs[key], block)
         return block
 
-def add_in(thing_in, where, state):
+def add_in(thing_in, where, state, href=None):
     in_colours = {
         'New'           : 'silver',
         'Confirmed'     : 'silver',
@@ -109,11 +109,40 @@ def add_in(thing_in, where, state):
     if colour is not None:
         if colour != 'default':
             where = __coloured(where, colour)
+        if href:
+            where = '<a href="{}" class="archive">{}</a>'.format(href, where)
         thing_in.append(where)
+
+
+def route_href(ks_package, route, stream="1"):
+    if stream == "-":
+        stream = "1"
+    stream = int(stream)
+
+    if ks_package.routing is None:
+        return None
+    ks_route = ks_package.routing.lookup_route(route)
+    if ks_route is None:
+        return None
+    if len(ks_route) < stream:
+        return None
+    reference = ks_route[stream - 1].reference
+
+    url = None
+    if reference == "ubuntu":
+        url = f"https://launchpad.net/ubuntu/+source/{ks_package.name}/{version}/+publishinghistory"
+
+    elif reference.startswith("ppa:"):
+        package_filter = ks_package.name.replace("linux-", "", 1)
+        url = reference.replace("/", "/+archive/", 1)
+        url = url.replace("ppa:", "https://launchpad.net/~", 1)
+        url += f"/+packages?field.name_filter={package_filter}&field.series_filter={ks_package.series.codename}"
+
+    return url
 
 # status_bites
 #
-def __status_bites(bug, attrs):
+def __status_bites(bug, attrs, ks_package=None):
     bites = []
 
     thing_prefix = '?:'
@@ -139,18 +168,21 @@ def __status_bites(bug, attrs):
         if proposed_status in ('n/a', 'Invalid'):
             add_in(thing_in, 'source-only', prep_status)
         else:
-            add_in(thing_in, 'ppa', prep_status)
-            add_in(thing_in, 'proposed', proposed_status)
-            add_in(thing_in, 'updates', updates_status)
-            add_in(thing_in, 'security', security_status)
-            add_in(thing_in, 'release', release_status)
+            add_in(thing_in, 'ppa', prep_status, href=route_href(ks_package, 'build', stream=stream))
+            add_in(thing_in, 'proposed', proposed_status, href=route_href(ks_package, 'proposed', stream=stream))
+            add_in(thing_in, 'updates', updates_status, href=route_href(ks_package, 'updates'))
+            add_in(thing_in, 'security', security_status, href=route_href(ks_package, 'security'))
+            add_in(thing_in, 'release', release_status, href=route_href(ks_package, 'release'))
 
     # Report Snap release progress.
     if bug.get('variant') == 'snap-debs':
         thing_prefix = 's:'
         for risk in ['edge', 'beta', 'candidate', 'stable']:
             status = __task_status(bug, 'snap-release-to-' + risk)
-            add_in(thing_in, risk, status)
+            href = None
+            if "snap-name" in b:
+                href = f"https://snapcraft.io/{b['snap-name']}/releases"
+            add_in(thing_in, risk, status, href=href)
 
     # State sets.
     test_set_invalid = ('n/a', 'New', 'Invalid')
@@ -439,7 +471,17 @@ for bid in sorted(swm_trackers):
     attrs['tooltip-nr:'] = 'New Review'
     attrs['tooltip-sr:'] = 'SRU Review'
 
-    status_list, thing_in = __status_bites(b, attrs)
+    # Look the current package up in the appropriate cycle.
+    ks_package = None
+    ks = data["kernel-series"].for_cycle(cycle)
+    if ks is None:
+        ks = data["kernel-series"].tip()
+    if ks is not None:
+        ks_series = ks.lookup_series(codename=sn)
+        if ks_series is not None:
+            ks_package = ks_series.lookup_source(package)
+
+    status_list, thing_in = __status_bites(b, attrs, ks_package=ks_package)
     first = True
     #row_style = ' background: #f0f0f0;' if row_number % 2 == 0 else ''
     row_class = ['entry-any']
@@ -521,41 +563,28 @@ for bid in sorted(swm_trackers):
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
     <head>
         <style>
-        a:link {
+        .name a {
             color: green;
-            background-color: transparent;
-            text-decoration: none;
-        }
-        a:visited {
-            color: green;
-            background-color: transparent;
+            #background-color: transparent;
             text-decoration: none;
         }
 
-        .overdue a:link {
+        .master a {
+            color: darkblue;
+            #background-color: transparent;
+            text-decoration: none;
+        }
+
+        .overdue .name a {
             color: red;
         }
-        .overdue a:visited {
-            color: red;
-        }
 
-        .master a:link {
-            color: darkblue;
-            background-color: transparent;
-            text-decoration: none;
-        }
-        .master a:visited {
-            color: darkblue;
-            background-color: transparent;
+        a.archive {
+            color: inherit;
             text-decoration: none;
         }
 
-        .note a:link {
-            color: black;
-            background-color: transparent;
-            text-decoration: none;
-        }
-        .note a:visited {
+        .note a {
             color: black;
             background-color: transparent;
             text-decoration: none;
@@ -687,8 +716,8 @@ for bid in sorted(swm_trackers):
                                                         % endif
                                                         <tr class="${bug['row-class']}${overdue}" style="line-height: 100%;${row_style}">
                                                             <td>&nbsp;</td>
-                                                            <td width="120" align="right" class="${bug['master-class']}">${cell_version}</td>
-                                                            <td class="${bug['master-class']}">${cell_package}</a></td>
+                                                            <td width="120" align="right" class="${bug['master-class']} name">${cell_version}</td>
+                                                            <td class="${bug['master-class']} name">${cell_package}</a></td>
                                                             <td style="color: grey">${cell_spin}</td>
                                                             <td>${bug['phase']}</td>
                                                             <td>${cell_stream}</td>
