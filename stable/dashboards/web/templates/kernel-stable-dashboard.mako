@@ -130,7 +130,7 @@ def route_href(ks_package, route, stream="1"):
 
     url = None
     if reference == "ubuntu":
-        url = f"https://launchpad.net/ubuntu/+source/{ks_package.name}"
+        url = f"https://launchpad.net/ubuntu/+source/{ks_package.name}/{version}/+publishinghistory"
 
     elif reference.startswith("ppa:"):
         package_filter = ks_package.name.replace("linux-", "", 1)
