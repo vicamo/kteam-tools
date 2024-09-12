@@ -92,28 +92,31 @@ class VerificationTesting(TaskHandler):
     def _verification_status(self):
         center(self.__class__.__name__ + '._verification_status')
 
-        # Grab a list of our bugs (as found in the changes file).
-        sru_bugs = self.bug.debs.bugs
+        sru_bugs = self.bug.group_get("testing", "verification-bugs")
         if sru_bugs is None:
-            spam_needed = "needed"
-            cleave(self.__class__.__name__ + '._verification_status retval={}'.format(spam_needed))
-            return spam_needed
-        cdebug("SPAM-V sru_bugs {} {}".format(len(sru_bugs), sru_bugs))
+            # Grab a list of our bugs (as found in the changes file).
+            sru_bugs = self.bug.debs.bugs
+            if sru_bugs is None:
+                spam_needed = "needed"
+                cleave(self.__class__.__name__ + '._verification_status retval={}'.format(spam_needed))
+                return spam_needed
+            cdebug("SPAM-V sru_bugs {} {}".format(len(sru_bugs), sru_bugs))
 
-        # If we have a parent tracker then we ask for its list of bugs and subtract those from ours
-        master_key = None
-        master_bug = self.bug.master_bug
-        if master_bug is not None:
-            master_key = master_bug.series + '-' + master_bug.name
-            master_bugs = master_bug.debs.bugs
-            if master_bugs is None:
-                master_bugs = []
-            cdebug("SPAM-V master_bugs {} {}".format(len(master_bugs), master_bugs))
+            # If we have a parent tracker then we ask for its list of bugs and subtract those from ours
+            master_key = None
+            master_bug = self.bug.master_bug
+            if master_bug is not None:
+                master_bugs = master_bug.debs.bugs
+                if master_bugs is None:
+                    master_bugs = []
+                cdebug("SPAM-V master_bugs {} {}".format(len(master_bugs), master_bugs))
 
-            if not set(sru_bugs).issuperset(set(master_bugs)):
-                cdebug("SPAM-V sru_bugs is not supperset of master_bugs")
+                if not set(sru_bugs).issuperset(set(master_bugs)):
+                    cdebug("SPAM-V sru_bugs is not superset of master_bugs")
 
-            sru_bugs = list(set(sru_bugs) - set(master_bugs))
+                sru_bugs = [int(bug) for bug in set(sru_bugs) - set(master_bugs)]
+
+            self.bug.group_set("testing", "verification-bugs", sru_bugs)
         cdebug("SPAM-V final_bugs {} {}".format(len(sru_bugs), sru_bugs))
 
         # See if we have any trackers that need verification.
@@ -139,20 +142,13 @@ class VerificationTesting(TaskHandler):
                 elif 'kernel-stable-tracking-bug'       in lp_bug.tags: state = 'stable-tracker'
                 elif 'kernel-packaging-tracking-bug'    in lp_bug.tags: state = 'packaging-tracker'
 
-                # By making these checks separately and after the previous ones, we
-                # can add the correct state for tracking bugs.
-                for key in (bug_key, master_key):
-                    if key is None:
-                        continue
-                    if 'verification-failed-%s' % key       in lp_bug.tags: state = 'failed'
-                    elif 'verification-reverted-%s' % key   in lp_bug.tags: state = 'reverted'
-                    elif 'verification-done-%s'   % key     in lp_bug.tags: state = 'verified'
-                    elif 'verification-needed-%s' % key     in lp_bug.tags: state = 'needed'
-                    #elif 'verification-done'                in lp_bug.tags: state = 'verified'
+                if 'verification-failed-%s' % bug_key   in lp_bug.tags: state = 'failed'
+                elif 'verification-reverted-%s' % bug_key in lp_bug.tags: state = 'reverted'
+                elif 'verification-done-%s'   % bug_key in lp_bug.tags: state = 'verified'
+                elif 'verification-needed-%s' % bug_key in lp_bug.tags: state = 'needed'
+                #elif 'verification-done'                in lp_bug.tags: state = 'verified'
 
-                    cdebug("SPAM-V bug={} state={} for={}".format(bug, state, key))
-                    if state not in ("needed", "missing"):
-                        break
+                cdebug("SPAM-V bug={} state={} for={}".format(bug, state, bug_key))
 
                 if spammed_v1 not in lp_bug.tags and spammed_v2 not in lp_bug.tags:
                     spam = True
