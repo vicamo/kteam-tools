@@ -2211,6 +2211,7 @@ class Package():
             cdebug("BUGS: CHANGES: url={}".format(changes_url))
             changes_data = self.changes_data(changes_url)
             if changes_data is None:
+                cdebug("BUGS: CHANGES: url={} no data".format(changes_url))
                 continue
 
             updates_version = None
@@ -2246,8 +2247,9 @@ class Package():
                             bugs_version = list(bugs)
                     for match in bug_re.finditer(line):
                         bugs.append(match.group(1))
+            cinfo("BUGS: bugs_fallback={}".format(bugs_fallback))
             cinfo("BUGS: bugs_version={}".format(bugs_version))
-            return bugs_version if bugs_version is not None else bugs_fallback
+            return bugs_version if bugs_version not in (None, []) else bugs_fallback
         return None
 
     @property
