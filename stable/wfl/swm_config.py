@@ -99,3 +99,7 @@ class SwmConfig:
     def testing_ppas(self):
         """Returns a list of addition PPA references needed when testing."""
         return self._data.get('testing-ppas', None)
+
+    @property
+    def gpu_overrides(self):
+        return self._data.get('gpu-overrides', [])
