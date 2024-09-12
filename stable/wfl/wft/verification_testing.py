@@ -106,7 +106,6 @@ class VerificationTesting(TaskHandler):
             master_key = None
             master_bug = self.bug.master_bug
             if master_bug is not None:
-                master_key = master_bug.series + '-' + master_bug.name
                 master_bugs = master_bug.debs.bugs
                 if master_bugs is None:
                     master_bugs = []
@@ -143,20 +142,13 @@ class VerificationTesting(TaskHandler):
                 elif 'kernel-stable-tracking-bug'       in lp_bug.tags: state = 'stable-tracker'
                 elif 'kernel-packaging-tracking-bug'    in lp_bug.tags: state = 'packaging-tracker'
 
-                # By making these checks separately and after the previous ones, we
-                # can add the correct state for tracking bugs.
-                for key in (bug_key, master_key):
-                    if key is None:
-                        continue
-                    if 'verification-failed-%s' % key       in lp_bug.tags: state = 'failed'
-                    elif 'verification-reverted-%s' % key   in lp_bug.tags: state = 'reverted'
-                    elif 'verification-done-%s'   % key     in lp_bug.tags: state = 'verified'
-                    elif 'verification-needed-%s' % key     in lp_bug.tags: state = 'needed'
-                    #elif 'verification-done'                in lp_bug.tags: state = 'verified'
+                if 'verification-failed-%s' % bug_key   in lp_bug.tags: state = 'failed'
+                elif 'verification-reverted-%s' % bug_key in lp_bug.tags: state = 'reverted'
+                elif 'verification-done-%s'   % bug_key in lp_bug.tags: state = 'verified'
+                elif 'verification-needed-%s' % bug_key in lp_bug.tags: state = 'needed'
+                #elif 'verification-done'                in lp_bug.tags: state = 'verified'
 
-                    cdebug("SPAM-V bug={} state={} for={}".format(bug, state, key))
-                    if state not in ("needed", "missing"):
-                        break
+                cdebug("SPAM-V bug={} state={} for={}".format(bug, state, bug_key))
 
                 if spammed_v1 not in lp_bug.tags and spammed_v2 not in lp_bug.tags:
                     spam = True
