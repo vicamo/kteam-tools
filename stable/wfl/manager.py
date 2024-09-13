@@ -686,6 +686,10 @@ class WorkflowManager():
             bug = WorkflowBug(bug=lpbug, manager=s)
             if bug.error is not None:
                 raise bug.error
+            if not bug.is_workflow:
+                cinfo('    LP: #{} (NOT-WORKFLOW)'.format(bugid), 'magenta')
+                s.status_set(bugid, None)
+                raise WorkflowBugError('not a workflow bug, skipping (and dropping)')
             if lpbug.duplicate_of is not None:
                 cinfo('    LP: #{} (DUPLICATE)'.format(bugid), 'magenta')
                 bug.close()

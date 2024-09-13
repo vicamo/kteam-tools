@@ -119,7 +119,7 @@ class WorkflowBug():
         #
         s.check_is_valid()
         if not s.is_workflow:
-            raise WorkflowBugError('Bug is not a workflow bug')
+            return
         ##s.properties = s.lpbug.properties
 
         # If this tracker is_closed drop out quietly and quickly.
