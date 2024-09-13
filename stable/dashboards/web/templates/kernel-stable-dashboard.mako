@@ -455,8 +455,8 @@ for bid in sorted(swm_trackers):
     if ct_testing is not None:
         attrs['ct:'] = 'https://test-observer.canonical.com/#{}'.format(ct_testing)
     attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html#{}--{}'.format(sn, package)
-    attrs['rt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html#{}:{}:{}:sru'.format(cycle, sn, package, urllib.parse.quote_plus(version))
-    attrs['bt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html#{}:{}:{}:boot'.format(cycle, sn, package, urllib.parse.quote_plus(version))
+    attrs['rt:'] = 'http://test-results.kernel/{}/rtr-lvl1.html#{}:{}:{}:sru'.format(cycle, sn, package, urllib.parse.quote_plus(version))
+    attrs['bt:'] = 'http://test-results.kernel/{}/rtr-lvl1.html#{}:{}:{}:boot'.format(cycle, sn, package, urllib.parse.quote_plus(version))
 
     attrs['tooltip-at:'] = 'Automated Testing'
     attrs['tooltip-At:'] = 'ABI Testing'
