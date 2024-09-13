@@ -14,7 +14,7 @@ class RegressionTestingResultsError(ShankError):
 
 class RegressionTestingResultsCycle:
 
-    _url = "http://10.246.75.167/{cycle}/summarized-results.json"
+    _url = "http://test-results.kernel/{cycle}/summarized-results.json"
 
     def __init__(self, cycle, url=None, data=None):
         if url is None:
