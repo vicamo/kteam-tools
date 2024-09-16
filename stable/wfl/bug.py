@@ -626,6 +626,7 @@ class WorkflowBug():
 
                 elif message.subject == "Kernel requires additional signoff":
                     comments["kernel-signoff"] = int(message.self_link.rsplit("/", 1)[-1])
+                    comments["signing-signoff"] = int(message.self_link.rsplit("/", 1)[-1])
             s.bprops["comments"] = comments
             s.private_group_set("tracker", "last-message", date_message_curr)
 
