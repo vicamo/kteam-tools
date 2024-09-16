@@ -432,6 +432,7 @@ for bid in sorted(swm_trackers):
 
     abi_testing = b.get('comments', {}).get('abi-testing')
     kernel_signoff = b.get('comments', {}).get('kernel-signoff')
+    signing_signoff = b.get('comments', {}).get('signing-signoff')
     for pocket, prefix in (
         ('proposed', '/debs/'),
         ('beta', '/snaps/'),
@@ -455,6 +456,8 @@ for bid in sorted(swm_trackers):
         attrs['At:'] = 'https://bugs.launchpad.net/kernel-sru-workflow/+bug/{}/comments/{}'.format(bid, abi_testing)
     if kernel_signoff is not None:
         attrs['ks:'] = 'https://bugs.launchpad.net/kernel-sru-workflow/+bug/{}/comments/{}'.format(bid, kernel_signoff)
+    if signing_signoff is not None:
+        attrs['xs:'] = 'https://bugs.launchpad.net/kernel-sru-workflow/+bug/{}/comments/{}'.format(bid, signing_signoff)
     if ct_testing is not None:
         attrs['ct:'] = 'https://test-observer.canonical.com/#{}'.format(ct_testing)
     attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html#{}--{}'.format(sn, package)
