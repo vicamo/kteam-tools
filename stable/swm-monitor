@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+#
+from __future__             import print_function
+
+import argparse
+import os
+import sys
+import yaml
+
+from launchpadlib.launchpad import Launchpad
+
+from ktl.swm_status import SwmStatus
+
+
+class SwmMaintenance:
+
+    _lp = None
+    @property
+    def lp(self):
+        if self._lp is None:
+            self._lp = Launchpad.login_with('swm-maintenance', 'production', version='devel')
+
+        return self._lp
+
+    def bug_prefix(self, bugid):
+        if bugid != '':
+            bugid = 'LP: #' + str(bugid)
+        else:
+            bugid = '--  --'
+        return bugid
+
+    def main(self):
+        parser = argparse.ArgumentParser(description='SWM monitor tool')
+        #parser.add_argument('--list', help='Display monitor records',
+        #    action='store_true', default=False)
+
+        # XXX: exclusive group
+        args = parser.parse_args()
+
+        self.status = SwmStatus()
+
+        results = []
+
+        for bug_id, bug_data in self.status.trackers.items():
+            what = "{}:{}".format(bug_data["series"], bug_data["source"])
+            if bug_data["target"] != bug_data["source"]:
+                what += ":" + bug_data["target"]
+
+            refresh = bug_data.get('refresh')
+            if refresh is not None:
+                fmt = "{bug_id:13} {cycle:15} {what:35} {type:10} {params}"
+                print(fmt.format(
+                    bug_id=self.bug_prefix(bug_id),
+                    cycle=bug_data['cycle'],
+                    what=what,
+                    type="REFRESH",
+                    params=refresh))
+
+            monitor_records = bug_data.get('monitor', [])
+            for monitor in monitor_records:
+                fmt = "{bug_id:13} {cycle:15} {what:25} {type:10}"
+                detail = {}
+
+                monitor_type = monitor.get("type", "--")
+                params = []
+                for name, value in monitor.items():
+                    if name == "type":
+                        continue
+                    params.append("{}={}".format(name, value))
+
+                fmt = "{bug_id:13} {cycle:15} {what:35} {type:10} {params}"
+                print(fmt.format(
+                    bug_id=self.bug_prefix(bug_id),
+                    cycle=bug_data['cycle'],
+                    what=what,
+                    type=monitor_type,
+                    params=params))
+
+
+if __name__ == '__main__':
+    SwmMaintenance().main()
