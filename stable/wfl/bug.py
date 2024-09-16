@@ -739,6 +739,10 @@ class WorkflowBug():
         return s._monitor
 
     def monitor_add(s, what):
+        # Shorten lp-api elements to save space.
+        lp_api = what.get("lp-api")
+        if lp_api is not None and lp_api[0] != "/":
+            what["lp-api"] = lp_api.replace("https://api.launchpad.net/devel", "", 1)
         if what not in s._monitor:
             cdebug("new monitor: {}".format(what))
             s._monitor.append(what)
