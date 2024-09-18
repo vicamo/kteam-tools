@@ -178,6 +178,10 @@ else
 fi
 
 SOURCE=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SSource)
+SERIES=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution)
+if [ "${SERIES}" = "UNRELEASED" ] ; then
+	SERIES=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution -o1 -c1)
+fi
 
 RC=0
 
@@ -196,11 +200,7 @@ echo
 
 if [ ${RC} -ne 0 ] ; then
 	echo "EE: Some checks failed" >&2
-	series=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution)
-	if [ "${series}" = "UNRELEASED" ] ; then
-		series=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution -o1 -c1)
-	fi
-	case "${series}" in
+	case "${SERIES}" in
 		trusty|xenial|bionic|focal|jammy|noble)
 			echo "WW: Please fix the reported packaging issues and/or report them to the kernel owner." >&2
 			echo "WW: This is currently just a warning but will be turned into an error in the future." >&2
