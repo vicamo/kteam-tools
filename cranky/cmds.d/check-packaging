@@ -124,6 +124,16 @@ function check_invalid_do_flags()
 	fi
 }
 
+function check_obsolete_files()
+{
+	echo "  - Check obsolete packaging files (see LP: #2081030)"
+
+	if [ -e "${DEBIAN}"/etc/kernelconfig ] ; then
+		echo "EE: ${DEBIAN}/etc/kernelconfig is no longer required" >&2
+		RC=1
+	fi
+}
+
 function usage()
 {
     cat << EOF
@@ -195,6 +205,15 @@ check_unused_do_flags
 if [ "${SOURCE}" != "linux" ] && [ ${is_backport} -eq 0 ] ; then
 	check_invalid_do_flags
 fi
+
+case "${SERIES}" in
+	trusty|xenial|bionic|focal|jammy) ;;
+	*)
+		echo
+		echo "Check obsolete/invalid packaging files"
+		check_obsolete_files
+		;;
+esac
 
 echo
 
