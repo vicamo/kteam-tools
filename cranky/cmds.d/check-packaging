@@ -134,6 +134,18 @@ function check_obsolete_files()
 	fi
 }
 
+function check_backport_files()
+{
+	echo "  - Check backport packaging files for non-backport kernels (see LP: #2080970)"
+
+	for f in "${DEBIAN}"/rules.d/hooks.mk "${DEBIAN}"/scripts/helpers/copy-files "${DEBIAN}"/scripts/helpers/local-mangle ; do
+		if [ -e "${f}" ] ; then
+			echo "EE: ${f} should not exist in this tree" >&2
+			RC=1
+		fi
+	done
+}
+
 function usage()
 {
     cat << EOF
@@ -212,6 +224,9 @@ case "${SERIES}" in
 		echo
 		echo "Check obsolete/invalid packaging files"
 		check_obsolete_files
+		if [ ${is_backport} -eq 0 ] ; then
+			check_backport_files
+		fi
 		;;
 esac
 
