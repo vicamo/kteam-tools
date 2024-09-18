@@ -11,7 +11,7 @@ cd "$here" || exit 1
 
 export http_proxy="http://squid.internal:3128"
 export https_proxy="https://squid.internal:3128"
-export no_proxy="launchpad.net,.launchpad.net,kernel.ubuntu.com,.canonical.com,10.246.75.167"
+export no_proxy="launchpad.net,.launchpad.net,kernel.ubuntu.com,.canonical.com,test-results.kernel"
 
 set -o pipefail
 exec "$here/$which" "$@"
