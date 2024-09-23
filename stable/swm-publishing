@@ -810,6 +810,10 @@ class MonitorSwmStatusMonitor:
                     'launchpad-task':       self.launchpad_thing_status,
                     'tracker-modified':     self.tracker_modified,
                     }.get(monitor.get("type"))
+                # We shorten lp-api to save space.  If we are an absolute path restore the prefix.
+                lp_api = monitor.get("lp-api")
+                if lp_api is not None and lp_api[0] == "/":
+                    monitor["lp-api"] = "https://api.launchpad.net/devel" + lp_api
                 if handler is not None and handler(bug_id, bug_data, monitor):
                     changed.add('shank', bug_id, reason="monitor {} triggered".format(monitor.get("type")))
                     break
