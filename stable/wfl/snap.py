@@ -634,8 +634,12 @@ class SnapDebs:
                 return None
             rev_version = self.snap_store.revision_version(rev)
             cinfo("snap_validate_request: arch={} version={} rev={} rev_version={}".format(build.arch_tag, version, rev, rev_version))
-            if rev_version != version:
+            if rev_version is None:
+                good = None
+                self.bug.reasons[f"snap-rev{rev}"] = f"Stalled -s revision {rev} not published -- likely manual review"
+            elif rev_version != version:
                 good = False
+                self.bug.reasons[f"snap-rev{rev}"] = f"Stalled -s bad version {rev_version} != {version}"
 
         return good
 
