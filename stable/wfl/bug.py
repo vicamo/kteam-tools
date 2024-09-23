@@ -613,12 +613,20 @@ class WorkflowBug():
         # Track changes to messages.
         date_message_prev = s.private_group_get("tracker", "last-message")
         date_message_curr = str(s.lpbug.date_last_message)
-        abi_testing_msg = None
+        expected_tasks = ["abi-testing", "kernel-signoff", "signing-signoff"]
+        comments = {}
         if date_message_prev != date_message_curr:
             for message in s.lpbug.messages:
-                if message.subject == "ABI testing":
-                    abi_testing_msg = int(message.self_link.rsplit("/", 1)[-1])
-            s.group_set("comments", "abi-testing", abi_testing_msg)
+                task_name = message.subject.split(":")[0]
+                if task_name in expected_tasks:
+                    comments[task_name] = int(message.self_link.rsplit("/", 1)[-1])
+
+                elif message.subject == "ABI testing":
+                    comments["abi-testing"] = int(message.self_link.rsplit("/", 1)[-1])
+
+                elif message.subject == "Kernel requires additional signoff":
+                    comments["kernel-signoff"] = int(message.self_link.rsplit("/", 1)[-1])
+            s.bprops["comments"] = comments
             s.private_group_set("tracker", "last-message", date_message_curr)
 
         # XXX: TRANSITION -- copy sru-review clamp over to new-review clamp if present.

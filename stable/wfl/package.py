@@ -3197,15 +3197,20 @@ class Package():
             if not dry_run:
                 self.bug.add_task("signing-signoff")
 
-        messages = []
+        signing_messages = []
         if signing_signoff and not previously_published:
-            messages.append("New kernel with signed kernels; signing-review required.")
+            signing_messages.append("New kernel with signed kernels; signing-review required.")
         elif signing_signoff:
-            messages.append("Major kernel version bump with signed kernels; signing-review required.")
+            signing_messages.append("Major kernel version bump with signed kernels; signing-review required.")
+
+        signoff_messages = []
         if variant_change:
-            messages.append("linux-image name changes detected, review variant/flavour changes; kernel-signoff required.")
+            signoff_messages.append("linux-image name changes detected, review variant/flavour changes; kernel-signoff required.")
         if version_change:
-            messages.append("linux-image major version change detected, upgrade testing required; kernel-signoff required.")
-        if len(messages) > 0:
-            if not dry_run:
-                self.bug.add_comment("Kernel requires additional signoff", "\n".join(messages))
+            signoff_messages.append("linux-image major version change detected, upgrade testing required; kernel-signoff required.")
+
+        if len(signing_messages) > 0 and not dry_run:
+            self.bug.add_comment("signing-signoff: Kernel requires additional testing and signoff", "\n".join(signing_messages))
+
+        if len(signoff_messages) > 0 and not dry_run:
+            self.bug.add_comment("kernel-signoff: Kernel requires additional testing and signoff", "\n".join(signoff_messages))
