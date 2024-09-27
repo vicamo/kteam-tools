@@ -108,6 +108,16 @@ class SwmAdditionalCreate:
 
         # Close out any linux-ucNN trackers in stream#2 as these exist purely to
         # provide binaries for the trackers above which we are closing out.
+        # Also close our a selection of manually curated kernels which serve the
+        # same purpose.
+        snap_only = set([
+            "focal:linux-iot",
+            "focal:linux-denver",
+            "focal:linux-ein",
+            "focal:linux-havana",
+            "focal:linux-nuremberg",
+            "focal:linux-shiner",
+        ])
         for tracker_id, tracker in self.ss.trackers.items():
             cycle = tracker.get("cycle")
             series = tracker.get("series")
@@ -115,7 +125,10 @@ class SwmAdditionalCreate:
             target = tracker.get("target")
             parent = tracker.get("master-bug")
 
-            if not source.startswith("linux-uc2"):
+            if (
+                not source.startswith("linux-uc2")
+                and not f"{series}:{source}" in snap_only
+            ):
                 continue
 
             prepare_package = tracker.get("task", {}).get("prepare-package", {})
