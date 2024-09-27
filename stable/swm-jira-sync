@@ -56,16 +56,6 @@ if __name__ == '__main__':
             jira_id_cache[email] = jira_id
         return jira_id_cache[email]
 
-    def users_find_email_by_name(name):
-        if name is None:
-            return None
-
-        for _, extra_info in users.items():
-            if extra_info["name"] == name:
-                return extra_info["email"]
-
-        return None
-
     def find_kernel_source(summary):
         if summary is None:
             return None
@@ -98,8 +88,10 @@ if __name__ == '__main__':
 
         # Assign only if the current assignee is different or None
         current_assignee = issue.fields.assignee
-        current_assignee_email = users_find_email_by_name(str(current_assignee))
-        current_assignee_id = email_to_jira_id(current_assignee_email)
+        current_assignee_email, current_assignee_id = None, None
+        if current_assignee is not None:
+            current_assignee_email = current_assignee.emailAddress
+            current_assignee_id = email_to_jira_id(current_assignee_email)
         if current_assignee_id is None or current_assignee_id != assignee_jira_id:
             print("ASSIGN {} from {} to {}".format(issue, current_assignee_email, assignee_email))
             jira.assign_issue(issue, assignee_email)
