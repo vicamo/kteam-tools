@@ -42,6 +42,9 @@ if __name__ == '__main__':
 
     jira_id_cache = {}
     def email_to_jira_id(email):
+        if email is None:
+            return None
+
         if email not in jira_id_cache:
             jira_id = None
             print("LOOKUP", email)
@@ -54,6 +57,9 @@ if __name__ == '__main__':
         return jira_id_cache[email]
 
     def users_find_email_by_name(name):
+        if name is None:
+            return None
+
         for _, extra_info in users.items():
             if extra_info["name"] == name:
                 return extra_info["email"]
@@ -87,14 +93,18 @@ if __name__ == '__main__':
         assignee_email = users[assignee].get('email')
         assignee_jira_id = email_to_jira_id(assignee_email)
         if assignee_jira_id is None:
-            print("ASSIGN:", issue, assignee_email, "FAILED")
+            print("Could not find jira_id for {}".format(assignee_email))
             return
 
-        # Assign only if the current assignee is different
+        # Assign only if the current assignee is different or None
         current_assignee = issue.fields.assignee
-        current_assignee_id = users_find_email_by_name(current_assignee)
+        current_assignee_email = users_find_email_by_name(str(current_assignee))
+        current_assignee_id = email_to_jira_id(current_assignee_email)
         if current_assignee_id is None or current_assignee_id != assignee_jira_id:
+            print("ASSIGN {} from {} to {}".format(issue, current_assignee_email, assignee_email))
             jira.assign_issue(issue, assignee_email)
+        else:
+            print("No need to reassign {}".format(issue))
 
     def transition_issue(issue, transition=None):
         transition_id = transition_ids.get(transition)
@@ -443,6 +453,16 @@ if __name__ == '__main__':
                         promote_complete = False
 
             starting_state = str(issue.fields.status)
+
+            # Copy over any ownership information.
+            # For the Kernel Peer Review state, the ownership is handled later
+            if starting_state != 'Kernel Peer Review':
+                if tracker_owner is not None and tracker_owner in users:
+                    # Assign to the tracker_owner only if the jira issue is
+                    # not assigned or if the jira owner is different
+                    # than the tracker_owner
+                    assign_jira(issue, tracker_owner)
+
             while True:
                 # We can only follow the workflow so determine our starting point.
                 target_state = starting_state
@@ -576,26 +596,6 @@ if __name__ == '__main__':
                 if label_with not in issue.fields.labels:
                     print(issue, "adding label", label_with)
                     issue.add_field_value('labels', label_with)
-
-            # Copy over any ownership information.
-            #print("OWNERS:", issue, tracker_owner, users.get(tracker_owner))
-            if tracker_owner is not None and tracker_owner in users:
-                jira_assignee = issue.fields.assignee
-                if jira_assignee is None:
-                    owner_email = users[tracker_owner].get('email')
-                    owner_jira_id = email_to_jira_id(owner_email)
-                    if owner_jira_id is not None:
-                        print("ASSIGN:", issue, jira_assignee, owner_email, owner_jira_id)
-                        jira.assign_issue(issue, owner_email)
-                    else:
-                        print("ASSIGN:", issue, jira_assignee, owner_email, "FAILED")
-                    # Not all users have accounts, if we cannot find the account by email
-                    # assignment would creater, skip it.
-                    #jira_users = jira.search_users(user_email)
-                    #if len(jira_users) == 1:
-                    #    jira.assign_issue(issue, user_email)
-                    #else:
-                    #    print("ASSIGN:", issue, jira_assignee, user_email, "FAILED")
 
             # Linkage for respins.
             #print(issue.fields.issuelinks)
