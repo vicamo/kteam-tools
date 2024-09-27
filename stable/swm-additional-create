@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from argparse import ArgumentParser
 from copy import deepcopy
 
 from ktl.kernel_series import KernelSeries
@@ -13,7 +14,7 @@ class SwmAdditionalCreate:
         self.ss = SwmStatus()
         self.ks = KernelSeries.tip()
 
-    def fix_snap_to_snap_linkage(self):
+    def fix_snap_to_snap_linkage(self, dry_run=True):
         snap_parent = {}
         snap_link = []
         for tracker_id, tracker in self.ss.trackers.items():
@@ -26,20 +27,21 @@ class SwmAdditionalCreate:
                 if target == "intel-iotg-kernel":
                     snap_parent[cycle] = str(tracker_id)
                 elif target == "intel-kernel":
-                    snap_link.append((str(tracker_id), cycle, str(parent)))
+                    snap_link.append((str(tracker_id), cycle, series, source, target, str(parent)))
 
         tbs = None
-        for tracker_id, cycle, parent in snap_link:
+        for tracker_id, cycle, series, source, target, parent in snap_link:
             want_parent = snap_parent[cycle]
             if parent != want_parent:
-                print(tracker_id, cycle, parent, want_parent)
+                print(f"{tracker_id}: {cycle} {series} {source} {target} update parent {parent} -> {want_parent}")
                 if tbs is None:
                     tbs = TrackingBugs()
                 tb = tbs.add(tracker_id)
-                tb.wf_set_property('kernel-stable-master-bug', int(want_parent))
-                tb.save()
+                if not dry_run:
+                    tb.wf_set_property('kernel-stable-master-bug', int(want_parent))
+                    tb.save()
 
-    def fix_esm_stream(self):
+    def fix_esm_stream(self, dry_run=True):
         tbs = None
         for tracker_id, tracker in self.ss.trackers.items():
             cycle = tracker.get("cycle")
@@ -63,7 +65,6 @@ class SwmAdditionalCreate:
             if stream_id != 2:
                 continue
 
-            print(cycle, tracker_id, series, "ESM unprepared stream#2")
             if tbs is None:
                 tbs = TrackingBugs()
             tb = tbs.add(tracker_id)
@@ -71,11 +72,12 @@ class SwmAdditionalCreate:
             built = deepcopy(built_old)
             built["route-entry"] = 1
             if built_old != built:
-                print(" updating stream to #1")
-                tb.wf_set_property("built", built)
-                tb.save()
+                print(f"{tracker_id}: {cycle} {series} {source} ESM unprepared stream#2 updating to stream#1")
+                if not dry_run:
+                    tb.wf_set_property("built", built)
+                    tb.save()
 
-    def fix_snaps_on_stream_2(self):
+    def fix_snaps_on_stream_2(self, dry_run=True):
         tbs = None
 
         # Close out any snap-debs tracker in stream#2.  Certification cannot
@@ -103,11 +105,22 @@ class SwmAdditionalCreate:
             if built.get("route-entry") != 2:
                 continue
 
-            print(cycle, tracker_id, series, source, target, "snap unprepared stream#2")
-            tb.invalidate()
+            print(f"{tracker_id}: {cycle} {series} {source} {target} snap unprepared stream#2")
+            if not dry_run:
+                tb.invalidate()
 
         # Close out any linux-ucNN trackers in stream#2 as these exist purely to
         # provide binaries for the trackers above which we are closing out.
+        # Also close our a selection of manually curated kernels which serve the
+        # same purpose.
+        snap_only = set([
+            "focal:linux-iot",
+            "focal:linux-denver",
+            "focal:linux-ein",
+            "focal:linux-havana",
+            "focal:linux-nuremberg",
+            "focal:linux-shiner",
+        ])
         for tracker_id, tracker in self.ss.trackers.items():
             cycle = tracker.get("cycle")
             series = tracker.get("series")
@@ -115,7 +128,10 @@ class SwmAdditionalCreate:
             target = tracker.get("target")
             parent = tracker.get("master-bug")
 
-            if not source.startswith("linux-uc2"):
+            if (
+                not source.startswith("linux-uc2")
+                and not f"{series}:{source}" in snap_only
+            ):
                 continue
 
             prepare_package = tracker.get("task", {}).get("prepare-package", {})
@@ -134,14 +150,19 @@ class SwmAdditionalCreate:
             if built.get("route-entry") != 2:
                 continue
 
-            print(cycle, tracker_id, series, source, target, "snap (linux-ucNN) unprepared stream#2")
-            tb.invalidate()
+            print(f"{tracker_id}: {cycle} {series} {source} {target} snap (linux-ucNN) unprepared stream#2")
+            if not dry_run:
+                tb.invalidate()
 
 
     def main(self):
-        self.fix_snap_to_snap_linkage()
-        self.fix_esm_stream()
-        self.fix_snaps_on_stream_2()
+        parser = ArgumentParser()
+        parser.add_argument("--dry-run", action="store_true", help="List changes rather than perform")
+        args = parser.parse_args()
+
+        self.fix_snap_to_snap_linkage(dry_run=args.dry_run)
+        self.fix_esm_stream(dry_run=args.dry_run)
+        self.fix_snaps_on_stream_2(dry_run=args.dry_run)
 
 
 if __name__ == "__main__":
