@@ -697,6 +697,10 @@ class KernelSeriesEntry:
         return self._data.get('esm', False)
 
     @property
+    def esm_legacy(self):
+        return self._data.get('esm-legacy', False)
+
+    @property
     def old_releases(self):
         return self._data.get('old-releases', False)
 

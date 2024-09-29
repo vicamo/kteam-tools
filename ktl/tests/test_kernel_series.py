@@ -275,6 +275,35 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
 
         self.assertEqual(series.esm, False)
 
+    def test_esm_legacy_present_true(self):
+        data = """
+        '18.04':
+            esm-legacy: true
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+
+        self.assertEqual(series.esm_legacy, True)
+
+    def test_esm_legacy_present_false(self):
+        data = """
+        '18.04':
+            esm-legacy: false
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+
+        self.assertEqual(series.esm_legacy, False)
+
+    def test_esm_legacy_absent_false(self):
+        data = """
+        '18.04':
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+
+        self.assertEqual(series.esm_legacy, False)
+
     def test_opening_allow_present_empty(self):
         data = """
         '18.04':
