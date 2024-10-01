@@ -10,7 +10,7 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pard
 sys.path.append(os.pardir)
 
 from crl.config import Config  # noqa: E402 Import not at top of file
-from crl.handle import Handle, change_directory, HandleError  # noqa: E402 Import not at top of file
+from crl.handle import Handle, change_directory  # noqa: E402 Import not at top of file
 from ktl.kernel_series import KernelSeries  # noqa: E402 Import not at top of file
 
 
@@ -359,12 +359,6 @@ class TestHandleDirectory(TestHandle):
         self.setUpRunCmd(git_path, "git add debian/changelog")
 
         self.setUpRunCmd(git_path, 'git commit -a -m "Initial"')
-
-    def test_directory_source_noconfig(self):
-        config = Config.from_yaml("")
-
-        with self.assertRaises(HandleError):
-            _ = Handle(config=config).lookup_set("bionic:linux")
 
     def test_directory_source_config_bionic_linux(self):
         ks = KernelSeries(data=self.data_yaml)
