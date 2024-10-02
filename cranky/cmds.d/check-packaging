@@ -22,10 +22,10 @@ function out()
 
 function must_produce()
 {
-	local package=${1} note=${2:-}
+	local package=${1}
 
 	if ! grep -qP "^Package:\s*${package}$" debian/control ; then
-		echo "EE: debian/control is missing package stanza${note}:" >&2
+		echo "EE: debian/control is missing package stanza:" >&2
 		echo "EE:   - Package: ${package}" >&2
 		RC=1
 	fi
@@ -33,10 +33,10 @@ function must_produce()
 
 function must_not_produce()
 {
-	local package=${1} note=${2:-}
+	local package=${1}
 
 	if grep -qP "^Package:\s*${package}$" debian/control ; then
-		echo "EE: debian/control contains invalid package stanza${note}:" >&2
+		echo "EE: debian/control contains invalid package stanza:" >&2
 		echo "EE:   - Package: ${package}" >&2
 		RC=1
 	fi
@@ -44,7 +44,7 @@ function must_not_produce()
 
 function check_linux_source()
 {
-	echo "  - Check linux-source package stanza"
+	echo "  - Check linux-source package stanza (LP: #2052439)"
 
 	if [ "${SOURCE}" = "linux" ] ; then
 		must_produce "linux-source-\d+\.\d+\.\d+"
@@ -56,35 +56,29 @@ function check_linux_source()
 
 function check_linux_tools()
 {
-	local note
-
-	echo "  - Check linux-*-tools-common and linux-*-tools-host package stanzas"
-
-	note=" (see LP: #2048183)"
+	echo "  - Check linux-*-tools-common and linux-*-tools-host package stanzas (LP: #2048183)"
 
 	if [ "${SOURCE}" = "linux" ] ; then
-		must_produce "linux-tools-common" "${note}"
-		must_produce "linux-cloud-tools-common" "${note}"
-		must_produce "linux-tools-host" "${note}"
+		must_produce "linux-tools-common"
+		must_produce "linux-cloud-tools-common"
+		must_produce "linux-tools-host"
 	else
-		must_not_produce "linux-tools-common" "${note}"
-		must_not_produce "${SOURCE}-tools-common" "${note}"
+		must_not_produce "linux-tools-common"
+		must_not_produce "${SOURCE}-tools-common"
 
-		must_not_produce "linux-cloud-tools-common" "${note}"
-		must_not_produce "${SOURCE}-cloud-tools-common" "${note}"
+		must_not_produce "linux-cloud-tools-common"
+		must_not_produce "${SOURCE}-cloud-tools-common"
 
-		must_not_produce "linux-tools-host" "${note}"
-		must_not_produce "${SOURCE}-tools-host" "${note}"
+		must_not_produce "linux-tools-host"
+		must_not_produce "${SOURCE}-tools-host"
 	fi
 }
 
 function check_unused_do_flags()
 {
-	local note first line flag
+	local first line flag
 
-	echo "  - Check unused do_* build flags in ${DEBIAN}/rules.d/*.mk"
-
-	note=" (see LP: #2077306)"
+	echo "  - Check unused do_* build flags in ${DEBIAN}/rules.d/*.mk (LP: #2077306)"
 
 	first=1
 	while IFS= read -r line ; do
@@ -99,7 +93,7 @@ function check_unused_do_flags()
 				if ! grep -qE "\b${flag}\b" debian/rules debian/rules.d/* ; then
 					if [ ${first} -eq 1 ] ; then
 						first=0
-						echo "EE: Unused flags in rule files${note}" >&2
+						echo "EE: Unused flags in rule files" >&2
 					fi
 					RC=1
 					echo "EE:   - ${line}" >&2
@@ -110,18 +104,39 @@ function check_unused_do_flags()
 
 function check_invalid_do_flags()
 {
-	local note flags
+	local flags
 
-	echo "  - Check invalid do_* build flags in ${DEBIAN}/rules.d/*.mk"
+	echo "  - Check invalid do_* build flags in ${DEBIAN}/rules.d/*.mk (LP: #2048183)"
 
-	note=" (see LP: #2048183)"
 	flags="do_tools_common|do_tools_host"
 
 	if grep -qE "\b(${flags})\b" "${DEBIAN}"/rules.d/*.mk ; then
-		echo "EE: Invalid/unnecessary flags in rule files${note}:" >&2
+		echo "EE: Invalid/unnecessary flags in rule files:" >&2
 		grep -E "\b(${flags})\b" "${DEBIAN}"/rules.d/*.mk | sed 's,^,EE:   - ,' >&2
 		RC=1
 	fi
+}
+
+function check_obsolete_files()
+{
+	echo "  - Check obsolete packaging files (LP: #2081030)"
+
+	if [ -e "${DEBIAN}"/etc/kernelconfig ] ; then
+		echo "EE: ${DEBIAN}/etc/kernelconfig is no longer required" >&2
+		RC=1
+	fi
+}
+
+function check_backport_files()
+{
+	echo "  - Check backport packaging files for non-backport kernels (LP: #2080970)"
+
+	for f in "${DEBIAN}"/rules.d/hooks.mk "${DEBIAN}"/scripts/helpers/copy-files "${DEBIAN}"/scripts/helpers/local-mangle ; do
+		if [ -e "${f}" ] ; then
+			echo "EE: ${f} should not exist in this tree" >&2
+			RC=1
+		fi
+	done
 }
 
 function usage()
@@ -178,6 +193,10 @@ else
 fi
 
 SOURCE=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SSource)
+SERIES=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution)
+if [ "${SERIES}" = "UNRELEASED" ] ; then
+	SERIES=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution -o1 -c1)
+fi
 
 RC=0
 
@@ -192,15 +211,23 @@ if [ "${SOURCE}" != "linux" ] && [ ${is_backport} -eq 0 ] ; then
 	check_invalid_do_flags
 fi
 
+case "${SERIES}" in
+	trusty|xenial|bionic|focal|jammy) ;;
+	*)
+		echo
+		echo "Check obsolete/invalid packaging files"
+		check_obsolete_files
+		if [ ${is_backport} -eq 0 ] ; then
+			check_backport_files
+		fi
+		;;
+esac
+
 echo
 
 if [ ${RC} -ne 0 ] ; then
 	echo "EE: Some checks failed" >&2
-	series=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution)
-	if [ "${series}" = "UNRELEASED" ] ; then
-		series=$(dpkg-parsechangelog -l"${DEBIAN}"/changelog -SDistribution -o1 -c1)
-	fi
-	case "${series}" in
+	case "${SERIES}" in
 		trusty|xenial|bionic|focal|jammy|noble)
 			echo "WW: Please fix the reported packaging issues and/or report them to the kernel owner." >&2
 			echo "WW: This is currently just a warning but will be turned into an error in the future." >&2
