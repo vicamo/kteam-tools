@@ -1,0 +1,189 @@
+#!/usr/bin/python3
+
+import sys
+from argparse import ArgumentParser
+from collections import namedtuple
+
+from launchpadlib.launchpad import Launchpad
+
+from ktl.kernel_series import KernelSeries
+
+
+class ApplicationError(Exception):
+    pass
+
+
+class Application:
+
+    def __init__(self, lp=None, ks=None):
+        if lp is None:
+            lp = Launchpad.login_with("snap-recipe-create", "production", version="devel")
+        if ks is None:
+            ks = KernelSeries()
+
+        self.lp = lp
+        self.ks = ks
+
+    def main(self):
+        parser = ArgumentParser()
+        parser.add_argument("--dry-run", action="store_true", help="dry-run only")
+        parser.add_argument("--v2v", action="store_true", help="select old-style v2v")
+        parser.add_argument("--owner", help="owning team for new-recipe")
+        parser.add_argument("--project", help="project for new-recipe")
+        parser.add_argument("--architecture", action="append", help="build architecture for new-recipe")
+        parser.add_argument("--information-type", help="information type for new-recipe")
+        parser.add_argument("--old-recipe", help="old-recipe to convert")
+        parser.add_argument("target")
+        args = parser.parse_args()
+
+        # Decode target and confirm it exists and map it using kernel-series.
+        bits = args.target.split(":")
+        if len(bits) != 3:
+            raise ApplicationError("target malformed, expecting series:source:snap")
+        series_name, source_name, snap_name = bits
+        series = self.ks.lookup_series(codename=series_name)
+        if series is None:
+            raise ApplicationError("series not found in kernel-series.yaml")
+        source = series.lookup_source(source_name)
+        if source is None:
+            raise ApplicationError("source not found in {} in kernel-series.yaml".format(series_name))
+        snap = source.lookup_snap(snap_name)
+        if snap is None:
+            raise ApplicationError("snap not found in {}:{} in kernel-series.yaml".format(series_name, source_name))
+        if snap.repo is None:
+            raise ApplicationError("snap does not have have a repo")
+
+        args.distro_series = None
+        args.auto_build_channels = {
+            "snapcraft": "latest/stable",
+            "snapd": "latest/stable",
+        }
+
+        # Find the existing old-form recipe.
+        if args.old_recipe:
+            #recipe_path = args.old_recipe
+            recipe_path = "~" + args.old_recipe.split("~", 1)[-1]
+            recipe = self.lp.load(recipe_path)
+
+            # XXX: Determine any "associated" project -- this is the first URL
+            # segment after the owner and before /+snap/.
+            project = recipe.self_link[len(recipe.owner.self_link):-(len(recipe.name) + 7)] # /+snap/
+            if project == '':
+                project = None
+            if args.owner is None:
+                args.owner = recipe.owner.name
+            if args.project is None:
+                args.project = project
+            if args.information_type is None:
+                args.information_type = recipe.information_type
+            if args.architecture is None:
+                args.architecture = [processor.name for processor in recipe.processors]
+
+            args.distro_series = recipe.distro_series
+            args.auto_build_channels = recipe.auto_build_channels
+
+        # Standardise form for owners/teams/projects etc.
+        if args.owner is not None and not args.owner.startswith("/~"):
+            args.owner = "/~" + args.owner
+        if args.project is not None and not args.project.startswith("/"):
+            args.project = "/" + args.project
+        if args.information_type is None:
+            args.information_type = "Public"
+        if args.architecture is None:
+            args.architecture = sorted(snap.publish_to.keys())
+
+        #processors = [self.lp.processors.getByName(name=processor) for processor in args.architecture]
+
+        # Find launchpad's object for our repo.
+        repo_path = "~" + snap.repo.url.split("~", 1)[-1]
+        git_repo = self.lp.git_repositories.getByPath(path=repo_path)
+        if git_repo is None:
+            raise ApplicationError("git repository {} not known to launchpad".format(repo_path))
+
+        if args.owner is None:
+            args.owner = git_repo.owner
+
+        name_fmt = "{series}--{source}--{snap}--{risk}--{stream}+2"
+        if args.v2v:
+            name_fmt += "v"
+        for risk, routes in (
+            ("edge", ["build"]),
+            ("beta", ["as-proposed", "proposed"]),
+        ):
+            for stream in (1, 2):
+                route_entry = None
+                for route_name in routes:
+                    route = source.routing.lookup_route(route_name)
+                    if route is None:
+                        continue
+                    if len(route) < stream:
+                        continue
+                    route_entry = route[stream - 1]
+                    break
+                if route_entry is None:
+                    raise ApplicationError("source does not have a {} route".format(route_name))
+
+                for reference in (route_entry.reference + "-snap", route_entry.reference):
+                    print(reference)
+                    archive = self.lp.archives.getByReference(reference=reference)
+                    if archive is not None:
+                        break
+
+                if args.v2v:
+                    git_ref_path = "refs/heads/" + snap.repo.branch + "--" + risk + "--" + str(stream)
+                else:
+                    git_ref_path = "refs/heads/" + snap.repo.branch
+                git_ref = git_repo.getRefByPath(path=git_ref_path)
+                if git_ref is None:
+                    raise ApplicationError("git repo {} branch {} not known to launchpad".format(repo_path, git_ref_path))
+
+                # XXX: check they are consistent
+                arch, tracks = sorted(snap.publish_to.items())[0]
+
+                channels = []
+                for track in tracks:
+                    channel = track + "/" + risk
+                    if stream != 1:
+                        channel += "/stream" + str(stream)
+                    channels.append(channel)
+
+                new_recipe = {}
+                new_recipe.update(
+                    name=name_fmt.format(
+                        series=series_name,
+                        source=source_name,
+                        snap=snap_name,
+                        risk=risk,
+                        stream=stream,
+                    ),
+                    owner=args.owner,
+
+                    #private=recipe.private,
+                    information_type=args.information_type,
+                    distro_series=args.distro_series,
+                    project=args.project,
+                    #processors=args.architecture,
+                    processors = [self.lp.processors.getByName(name=processor).self_link for processor in args.architecture],
+
+                    #git_repository=git_repo,
+                    git_ref=git_ref,
+
+                    auto_build=False,
+                    auto_build_archive=archive,
+                    auto_build_pocket=route_entry.pocket,
+                    #auto_build_channels=recipe.auto_build_channels, # XXX: new cannot apply these.
+
+                    store_name=snap_name,
+                    store_series="/+snappy-series/16",
+                    store_channels=channels,
+                    store_upload=True,
+                )
+                print(new_recipe)
+                if not args.dry_run:
+                    new_recipe = self.lp.snaps.new(**new_recipe)
+                    new_recipe.auto_build_channels = args.auto_build_channels
+                    new_recipe.lp_save()
+
+
+if __name__ == "__main__":
+    Application().main()
