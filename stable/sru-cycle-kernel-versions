@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 #
 
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from ktl.kernel_series                  import KernelSeries
-import json
-import requests
 import re
+
+from argparse                   import ArgumentParser, RawDescriptionHelpFormatter
+from ktl.kernel_series          import KernelSeries
+from ktl.swm_status             import SwmStatus
 
 # TheApp
 #
@@ -18,79 +18,64 @@ class TheApp(object):
     def main(s, args):
         retval = 0
         ks     = KernelSeries()
+        status = SwmStatus()
 
-        #                   .- series name (optional)
-        #                  /                .- package name
-        #                 /                /                .- kernel version
-        #                /                /                /                         .- separator
-        #               /                /                /                         /
-        ver_str  = r'(?P<series>\S+/)?(?P<source>\S+): (?P<version>\d+\.\d+\.\d+)(?P<sep>[-\.])'
-        ver_str += r'(?P<abi>\d+)\.(?P<upload>\d+)(?P<bpextra>[~a-z\d.]*)'
-        #               \             \              \
-        #                \             \              - backport extension
-        #                 \             - upload number
-        #                  - abi number
-        ver_rc     = re.compile(ver_str)
-
-        y = {}
-        r = requests.get('http://kernel.ubuntu.com/sru/kernel-sru-workflow.json')
-        trackers = json.loads(r.text)
-
-        for project in ['kernel-sru-workflow']:
-            if project not in trackers['bug-collections']:
+        #
+        # For now this makes no attempt to figure out which is the latest cycle as
+        # it assumes the trackers to be lister in bug ID order. Usually we create the
+        # security cycle trackers first, so they would be listed before the SRU cycle
+        # data. Which would then end with the latest SRU cycle version.
+        # If that turns out to be a problem we might refine this.
+        #
+        kernels = {}
+        for bug_id, bug_data in status.trackers.items():
+            series = bug_data.get('series', None)
+            if series is None:
                 continue
-            for x in trackers['bug-collections'][project]['bugs']:
-                bug = trackers['bug-collections'][project]['bugs'][x]
-                title = bug['title']
+            ks_series = ks.lookup_series(codename=series)
+            if ks_series is None:
+                continue
+            if args.no_devel and ks_series.development:
+                continue
+            if args.no_esm and ks_series.esm:
+                continue
 
-                m = ver_rc.search(title)
-                if m is not None:
-                    if m.group('source') != 'linux' and \
-                       not m.group('source').startswith('linux-lts') and \
-                       not m.group('source').startswith('linux-hwe'):
-                        continue
+            source = bug_data.get('source', '-')
+            if source != 'linux' and \
+               not (source.startswith('linux-hwe') or source.startswith('linux-lts')):
+                continue
 
-                    series = ks.lookup_series(codename=bug['series name'])
+            #
+            # For the HWE kernels, if there is no version yet, assume it to be the version
+            # of its parent with the backport suffix. Add a hint to the version, that this
+            # is only a prediction.
+            #
+            version = bug_data.get('version', '<TBD>')
+            if version == '<TBD>':
+                ks_source = ks_series.lookup_source(source)
+                if ks_source is not None and source != 'linux':
+                    ks_parent = ks_source.derived_from
+                    if ks_parent is not None:
+                        ks_ps   = ks_parent.series
+                        ks_pscn = ks_ps.codename
+                        if ks_pscn in kernels:
+                            if ks_parent.name in kernels[ks_pscn]:
+                                pv = kernels[ks_pscn][ks_parent.name]
+                                version = '{}~{}.1 (predicted)'.format(pv, ks_ps.name)
 
-                    if args.no_devel and series.development:
-                        continue
-
-                    if args.no_esm and series.esm:
-                        continue
-
-                    source = series.lookup_source(m.group('source'))
-
-                    if args.no_devel and source.development:
-                        continue
-
-                    # one of the tags is kernel-sru-cycle-<cycle-no>-<respin-no>
-                    cycle=""
-                    for tag in bug['tags']:
-                        if "kernel-sru-cycle" in tag:
-                            # remove the 'kernel-sry-cycle' bit
-                            cycle = tag[17:]
-                            break
-                    if cycle.startswith('s'):
-                        # we don't do announcement for security cycles for now
-                        continue
-
-                    version = '{}{}{}.{}{}'.format(m.group('version'), m.group('sep'),
-                                                   m.group('abi'), m.group('upload'),
-                                                   m.group('bpextra'))
-
-                    if bug['series name'] not in y:
-                        y[bug['series name']] = {}
-                    y[bug['series name']][m.group('source')] = version
+            if not series in kernels:
+                kernels[series] = {}
+            kernels[series][source] = version
 
         print('Kernel Versions')
         print('====================================================================')
         for series in sorted(ks.series, key=ks.key_series_name, reverse=True):
             cn = series.codename
-            if cn not in y:
+            if cn not in kernels:
                 continue
             print('%s:' % cn)
-            for p in sorted(y[cn]):
-                print('    %-20s %s' % (p + ':', y[cn][p]))
+            for p in sorted(kernels[cn]):
+                print('    %-20s %s' % (p + ':', kernels[cn][p]))
 
         return retval
 
