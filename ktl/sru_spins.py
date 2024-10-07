@@ -12,10 +12,12 @@ from urllib.request import pathname2url, urljoin, urlopen
 # SruSpinsDataHandle
 #
 class SruSpinsDataHandle:
-    def __init__(self, spin, data):
+    def __init__(self, spin, data, full_versions=None):
         self.spin = spin
         self.tracker = data.get("tracker")
         self.versions = data.get("versions")
+
+        self.full_versions = self.versions
 
 
 # SruSpinsData
@@ -42,14 +44,29 @@ class SruSpinsIndex:
             self._cycles[cycle] = cycle_data
         return cycle_data
 
+    def _populate_spin(self, handle, cycle, cycle_data, spin=None):
+        result = None
+        full_versions = {}
+        for spin_no, spin_data in sorted(cycle_data.items(), key=self.spin_key, reverse=True):
+            if handle in spin_data:
+                result = SruSpinsDataHandle(f"{cycle}-{spin_no}", spin_data[handle])
+                full_versions.update(result.versions)
+                result.full_versions = full_versions
+            #print(spin_no, spin_data, result)
+
+            if spin is not None and spin == spin_no:
+                break
+
+        if spin is not None and spin != spin_no:
+            return None
+
+        return result
+
     def handle_cycle(self, handle, cycle):
         cycle_data = self.cycle(cycle)
         if cycle_data is None:
             return None
-        for spin_no, spin_data in sorted(cycle_data.items(), key=self.spin_key, reverse=True):
-            if handle in spin_data:
-                return SruSpinsDataHandle(f"{cycle}-{spin_no}", spin_data[handle])
-        return None
+        return self._populate_spin(handle, cycle, cycle_data)
 
     def handle_spin(self, handle, spin):
         try:
@@ -59,12 +76,7 @@ class SruSpinsIndex:
         cycle_data = self.cycle(cycle)
         if cycle_data is None:
             return None
-        spin_data = cycle_data.get(spin_no)
-        if spin_data is None:
-            return None
-        if handle in spin_data:
-            return SruSpinsDataHandle(spin, spin_data[handle])
-        return None
+        return self._populate_spin(handle, cycle, cycle_data, spin_no=spin_no)
 
     def handle_spin_update(self, handle, spin, data):
         self._updater(spin, handle, data)
