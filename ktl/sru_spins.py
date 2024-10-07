@@ -52,7 +52,10 @@ class SruSpinsIndex:
         return None
 
     def handle_spin(self, handle, spin):
-        cycle, spin_no = spin.rsplit("-", 1)
+        try:
+            cycle, spin_no = spin.rsplit("-", 1)
+        except ValueError:
+            return None
         cycle_data = self.cycle(cycle)
         if cycle_data is None:
             return None
