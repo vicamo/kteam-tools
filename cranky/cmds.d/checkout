@@ -4,18 +4,18 @@
 #
 
 import argparse
+import datetime
 import logging
 import os
-import sys
-import datetime
 import shutil
+import sys
 
-from ktl.log import cerror, cnotice, Clog
+from ktl.log import Clog, cerror, cnotice
 
-from crl.git import GitHandleSet, GitError
 from crl.config import Config
 from crl.cycle_ref import CycleRef
 from crl.exceptions import CrankyException
+from crl.git import GitError, GitHandleSet
 from crl.handle import HandleError
 
 
