@@ -204,23 +204,29 @@ Configuration file:
       default: ~/git/ubuntu/{series}/{package}
 """
 
-    formatter = argparse.RawDescriptionHelpFormatter
-    parser = argparse.ArgumentParser(description=desc, formatter_class=formatter, epilog=epilog, prog="cranky checkout")
+    parser = argparse.ArgumentParser(
+        description=desc,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=epilog,
+        prog="cranky checkout",
+    )
 
     parser.add_argument(
         "handle",
-        help="Handle to a kernel source tree in <series>:<package> format.",
+        help="""Handle to a kernel source tree in <series>:<package>
+format.""",
     )
 
     parser.add_argument(
         "-r",
         "--reference",
         default=expanduser(config_cmd.get("reference", None)),
-        help="""
-Obtain objects from an existing local repository to speed up the cloning
-process. This is a git clone option, check 'git help clone' for more details.
-Note that without using --dissociate, the referenced repo *must not* be deleted
-otherwise the cranky checkout'd repo will get corrupted.
+        help="""Obtain objects from an existing local repository to
+speed up the cloning process. This is a git clone
+option, check 'git help clone' for more details. Note
+that without using --dissociate, the referenced repo
+*must not* be deleted otherwise the cranky checkout'd
+repo will get corrupted.
 """,
     )
 
@@ -229,9 +235,9 @@ otherwise the cranky checkout'd repo will get corrupted.
         "--dissociate",
         action="store_true",
         default=config_cmd.get("dissociate", False),
-        help="""
-Borrow the objects from the referenced local repository only to reduce network
-traffic. This is a git clone option, check 'git help clone' for more details.
+        help="""Borrow the objects from the referenced local repository
+only to reduce network traffic. This is a git clone
+option, check 'git help clone' for more details.
 """,
     )
 
@@ -246,15 +252,18 @@ traffic. This is a git clone option, check 'git help clone' for more details.
         "--crd",
         default=None,
         type=datetime.date.fromisoformat,
-        help="Checks out branches as CRD-{DATE}+{BRANCH} and sets upstream to 'security'.",
+        help="""
+Checks out branches as CRD-{DATE}+{BRANCH} and sets
+upstream to 'security'.""",
     )
 
     parser.add_argument(
         "--nc",
         action="store_true",
         default=False,
-        help="""No Colour. By default the debug output that is printed comes out in
-multiple colours to help with the debugging. This option disables that.
+        help="""No Colour. By default the debug output that is printed
+comes out in multiple colours to help with the
+debugging. This option disables that.
 """,
     )
 
@@ -262,11 +271,9 @@ multiple colours to help with the debugging. This option disables that.
         "--cycle",
         help="""
 Checks out the repo as it was for the specified cycle.
-Example:
-    --cycle 2022.08.08
-
-    Will checkout create a branch cranky/$cycle at the newest tag belonging
-    to this cycle.
+Example: --cycle 2022.08.08 will checkout create a
+branch cranky/$cycle at the newest tag belonging to
+this cycle.
 """,
     )
 
@@ -274,8 +281,9 @@ Example:
         "--cleanup",
         action="store_true",
         default=False,
-        help="""Remove everything from top level directory except repos checked out
-(such as unused lrm/signed and artifacts).""",
+        help="""Remove everything from top level directory except repos
+checked out (such as unused lrm/signed and artifacts).
+""",
     )
 
     parser.add_argument(
