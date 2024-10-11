@@ -469,15 +469,13 @@ class SnapPrepare:
         return SnapPrepareV1(lp, task, bug)
 
 
-class SnapReleaseToEdge(KernelSnapBase):
-    '''
-    '''
+class SnapReleaseTo(KernelSnapBase):
 
     # __init__
     #
     def __init__(s, lp, task, bug):
         center(s.__class__.__name__ + '.__init__')
-        super(SnapReleaseToEdge, s).__init__(lp, task, bug)
+        super().__init__(lp, task, bug)
 
         s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._verify_release
@@ -487,6 +485,59 @@ class SnapReleaseToEdge(KernelSnapBase):
         s.jumper['Fix Released']  = s._verify_release
 
         cleave(s.__class__.__name__ + '.__init__')
+
+    # _new
+    #
+    def _new(s):
+        center(s.__class__.__name__ + '._new')
+        retval = False
+
+        while not retval:
+            # Check if this snap is valid in this risk.
+            if s.bug.snap.promote_to_risk(s.risk):
+                break
+
+            cinfo(f'    snap not valid in {s.risk} risk', 'yellow')
+            s.task.status = 'Invalid'
+            retval = True
+            break
+
+        # The snap should be released to edge and beta channels after
+        # the package hits -proposed.
+        while not retval:
+            if not s._ready_for_confirmed():
+                break
+
+            s.task.status = 'Confirmed'
+            s.task.timestamp('started')
+
+            retval = True
+            break
+
+        cleave(s.__class__.__name__ + '._new (%s)' % (retval))
+        return retval
+
+    # _verify_release
+    #
+    def _verify_release(s):
+        center(s.__class__.__name__ + '._verify_release')
+        retval = False
+
+        if s.task.status == 'Confirmed' and not s._ready_for_confirmed():
+            cinfo(f'    snap-release-to-{s.risk} no-longer ready for Confirmed, pulling back to New')
+            s.task.status = 'New'
+            retval = True
+
+        if not retval:
+            retval = s.do_verify_release(s.risk)
+
+        cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
+        return retval
+
+
+class SnapReleaseToEdge(SnapReleaseTo):
+
+    risk = "edge"
 
     def _ready_for_confirmed(s):
         if s.bug.task_status('snap-prepare') not in ('Fix Released', 'Invalid'):
@@ -524,73 +575,10 @@ class SnapReleaseToEdge(KernelSnapBase):
 
         return True
 
-    # _new
-    #
-    def _new(s):
-        center(s.__class__.__name__ + '._new')
-        retval = False
 
-        while not retval:
-            # Check if this snap is valid in this risk.
-            if s.bug.snap.promote_to_risk('edge'):
-                break
+class SnapReleaseToBeta(SnapReleaseTo):
 
-            cinfo('    snap not valid in beta risk', 'yellow')
-            s.task.status = 'Invalid'
-            retval = True
-            break
-
-        # The snap should be released to edge and beta channels after
-        # the package hits -proposed.
-        while not retval:
-            if not s._ready_for_confirmed():
-                break
-
-            s.task.status = 'Confirmed'
-            s.task.timestamp('started')
-
-            retval = True
-            break
-
-        cleave(s.__class__.__name__ + '._new (%s)' % (retval))
-        return retval
-
-    # _verify_release
-    #
-    def _verify_release(s):
-        center(s.__class__.__name__ + '._verify_release')
-        retval = False
-
-        if s.task.status == 'Confirmed' and not s._ready_for_confirmed():
-            cinfo('    snap no-longer ready for Confirmed, pulling back to New')
-            s.task.status = 'New'
-            retval = True
-
-        if not retval:
-            retval = s.do_verify_release('edge')
-
-        cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
-        return retval
-
-
-class SnapReleaseToBeta(KernelSnapBase):
-    '''
-    '''
-
-    # __init__
-    #
-    def __init__(s, lp, task, bug):
-        center(s.__class__.__name__ + '.__init__')
-        super(SnapReleaseToBeta, s).__init__(lp, task, bug)
-
-        s.jumper['New']           = s._new
-        s.jumper['Confirmed']     = s._verify_release
-        s.jumper['Triaged']       = s._verify_release
-        s.jumper['In Progress']   = s._verify_release
-        s.jumper['Fix Committed'] = s._verify_release
-        s.jumper['Fix Released']  = s._verify_release
-
-        cleave(s.__class__.__name__ + '.__init__')
+    risk = "beta"
 
     def _ready_for_confirmed(s):
         if s.is_v2:
@@ -624,73 +612,10 @@ class SnapReleaseToBeta(KernelSnapBase):
 
         return True
 
-    # _new
-    #
-    def _new(s):
-        center(s.__class__.__name__ + '._new')
-        retval = False
 
-        while not retval:
-            # Check if this snap is valid in this risk.
-            if s.bug.snap.promote_to_risk('beta'):
-                break
+class SnapReleaseToCandidate(SnapReleaseTo):
 
-            cinfo('    snap not valid in beta risk', 'yellow')
-            s.task.status = 'Invalid'
-            retval = True
-            break
-
-        # The snap should be released to edge and beta channels after
-        # the package hits -proposed.
-        while not retval:
-            if not s._ready_for_confirmed():
-                break
-
-            s.task.status = 'Confirmed'
-            s.task.timestamp('started')
-
-            retval = True
-            break
-
-        cleave(s.__class__.__name__ + '._new (%s)' % (retval))
-        return retval
-
-    # _verify_release
-    #
-    def _verify_release(s):
-        center(s.__class__.__name__ + '._verify_release')
-        retval = False
-
-        if s.task.status == 'Confirmed' and not s._ready_for_confirmed():
-            cinfo('    snap no-longer ready for Confirmed, pulling back to New')
-            s.task.status = 'New'
-            retval = True
-
-        if not retval:
-            retval = s.do_verify_release('beta')
-
-        cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
-        return retval
-
-
-class SnapReleaseToCandidate(KernelSnapBase):
-    '''
-    '''
-
-    # __init__
-    #
-    def __init__(s, lp, task, bug):
-        center(s.__class__.__name__ + '.__init__')
-        super(SnapReleaseToCandidate, s).__init__(lp, task, bug)
-
-        s.jumper['New']           = s._new
-        s.jumper['Confirmed']     = s._verify_release
-        s.jumper['Triaged']       = s._verify_release
-        s.jumper['In Progress']   = s._verify_release
-        s.jumper['Fix Committed'] = s._verify_release
-        s.jumper['Fix Released']  = s._verify_release
-
-        cleave(s.__class__.__name__ + '.__init__')
+    risk = "candidate"
 
     def _ready_for_confirmed(s):
         if s.bug.tasks_by_name['snap-release-to-beta'].status != 'Fix Released':
@@ -708,73 +633,10 @@ class SnapReleaseToCandidate(KernelSnapBase):
 
         return True
 
-    # _new
-    #
-    def _new(s):
-        center(s.__class__.__name__ + '._new')
-        retval = False
 
-        while not retval:
-            # Check if this snap is valid in this risk.
-            if s.bug.snap.promote_to_risk('candidate'):
-                break
+class SnapReleaseToStable(SnapReleaseTo):
 
-            cinfo('    snap not valid in candidate risk', 'yellow')
-            s.task.status = 'Invalid'
-            retval = True
-            break
-
-        # The snap is released to candidate channel after it's on beta channel
-        # and passes HW certification tests (or the task is set to invalid).
-        while not retval:
-            if not s._ready_for_confirmed():
-                break
-
-            s.task.status = 'Confirmed'
-            s.task.timestamp('started')
-
-            retval = True
-            break
-
-        cleave(s.__class__.__name__ + '._new (%s)' % (retval))
-        return retval
-
-    # _verify_release
-    #
-    def _verify_release(s):
-        center(s.__class__.__name__ + '._verify_release')
-        retval = False
-
-        if s.task.status == 'Confirmed' and not s._ready_for_confirmed():
-            cinfo('    snap no-longer ready for Confirmed, pulling back to New')
-            s.task.status = 'New'
-            retval = True
-
-        if not retval:
-            retval = s.do_verify_release('candidate')
-
-        cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
-        return retval
-
-
-class SnapReleaseToStable(KernelSnapBase):
-    '''
-    '''
-
-    # __init__
-    #
-    def __init__(s, lp, task, bug):
-        center(s.__class__.__name__ + '.__init__')
-        super(SnapReleaseToStable, s).__init__(lp, task, bug)
-
-        s.jumper['New']           = s._new
-        s.jumper['Confirmed']     = s._verify_release
-        s.jumper['Triaged']       = s._verify_release
-        s.jumper['In Progress']   = s._verify_release
-        s.jumper['Fix Committed'] = s._verify_release
-        s.jumper['Fix Released']  = s._verify_release
-
-        cleave(s.__class__.__name__ + '.__init__')
+    risk = "stable"
 
     def _ready_for_confirmed(s):
         if s.bug.tasks_by_name['snap-release-to-candidate'].status != 'Fix Released':
@@ -812,55 +674,6 @@ class SnapReleaseToStable(KernelSnapBase):
             return False
 
         return True
-
-    # _new
-    #
-    def _new(s):
-        center(s.__class__.__name__ + '._new')
-        retval = False
-
-        while not retval:
-            # Check if this snap is valid in this risk.
-            if s.bug.snap.promote_to_risk('stable'):
-                break
-
-            cinfo('    snap not valid in stable risk', 'yellow')
-            s.task.status = 'Invalid'
-            retval = True
-            break
-
-        # The snap is released to stable channel after it's on candidate channel,
-        # passes QA tests (or the task is set to invalid) and the deb is promoted
-        # to -updates or -security.
-        while not retval:
-            if not s._ready_for_confirmed():
-                break
-
-            s.task.status = 'Confirmed'
-            s.task.timestamp('started')
-
-            retval = True
-            break
-
-        cleave(s.__class__.__name__ + '._new (%s)' % (retval))
-        return retval
-
-    # _verify_release
-    #
-    def _verify_release(s):
-        center(s.__class__.__name__ + '._verify_release')
-        retval = False
-
-        if s.task.status == 'Confirmed' and not s._ready_for_confirmed():
-            cinfo('    snap no-longer ready for Confirmed, pulling back to New')
-            s.task.status = 'New'
-            retval = True
-
-        if not retval:
-            retval = s.do_verify_release('stable')
-
-        cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
-        return retval
 
 
 class SnapQaTesting(KernelSnapBase):
