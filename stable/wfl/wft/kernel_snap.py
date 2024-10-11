@@ -662,6 +662,22 @@ class SnapReleaseToCandidate(KernelSnapBase):
 
         cleave(s.__class__.__name__ + '.__init__')
 
+    def _ready_for_confirmed(s):
+        if s.bug.tasks_by_name['snap-release-to-beta'].status != 'Fix Released':
+            cinfo('    task snap-release-to-beta is not \'Fix Released\'', 'yellow')
+            return False
+
+        if (s.bug.tasks_by_name.get('snap-certification-testing', None) is not None
+                and s.bug.tasks_by_name['snap-certification-testing'].status not in ['Fix Released', 'Invalid']):
+            cinfo('    task snap-certification-testing is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
+            return False
+
+        if s.bug.manual_block("snap-release-to-candidate"):
+            s.task.reason = "Stalled -- promotion manually blocked"
+            return False
+
+        return True
+
     # _new
     #
     def _new(s):
@@ -681,17 +697,7 @@ class SnapReleaseToCandidate(KernelSnapBase):
         # The snap is released to candidate channel after it's on beta channel
         # and passes HW certification tests (or the task is set to invalid).
         while not retval:
-            if s.bug.tasks_by_name['snap-release-to-beta'].status != 'Fix Released':
-                cinfo('    task snap-release-to-beta is not \'Fix Released\'', 'yellow')
-                break
-
-            if (s.bug.tasks_by_name.get('snap-certification-testing', None) is not None
-                    and s.bug.tasks_by_name['snap-certification-testing'].status not in ['Fix Released', 'Invalid']):
-                cinfo('    task snap-certification-testing is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
-                break
-
-            if s.bug.manual_block("snap-release-to-candidate"):
-                s.task.reason = "Stalled -- promotion manually blocked"
+            if not s._ready_for_confirmed():
                 break
 
             s.task.status = 'Confirmed'
@@ -707,7 +713,16 @@ class SnapReleaseToCandidate(KernelSnapBase):
     #
     def _verify_release(s):
         center(s.__class__.__name__ + '._verify_release')
-        retval = s.do_verify_release('candidate')
+        retval = False
+
+        if s.task.status == 'Confirmed' and not s._ready_for_confirmed():
+            cinfo('    snap no-longer ready for Confirmed, pulling back to New')
+            s.task.status = 'New'
+            retval = True
+
+        if not retval:
+            retval = s.do_verify_release('candidate')
+
         cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
         return retval
 
