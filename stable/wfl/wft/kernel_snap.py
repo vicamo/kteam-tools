@@ -488,6 +488,42 @@ class SnapReleaseToEdge(KernelSnapBase):
 
         cleave(s.__class__.__name__ + '.__init__')
 
+    def _ready_for_confirmed(s):
+        if s.bug.task_status('snap-prepare') not in ('Fix Released', 'Invalid'):
+            cinfo('    task snap-prepare is not \'Fix Released\'', 'yellow')
+            return False
+
+        # Legacy handling of we have no snap-prepare task.
+        elif s.bug.task_status('snap-prepare') == 'Invalid':
+            if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
+                cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
+                s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
+                return False
+
+            if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
+                cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\'', 'yellow')
+                s.task.reason = 'Holding -- waiting for debs to promote-signing-to-proposed'
+                return False
+
+            # Attempt to apply replaces as we are ready to promote.
+            s.bug.dup_replaces()
+
+            # Check if this is the oldest tracker for this target.
+            older, reason = s.oldest_tracker()
+            if older is not None:
+                cinfo('    snap has an older active tracker', 'yellow')
+                s.task.reason = 'Stalled -- tracker for earlier spin still active, ' + reason
+                s.bug.monitor_add({
+                    "type": "tracker-modified",
+                    "watch": str(older)})
+                return False
+
+        if s.bug.manual_block("snap-release-to-edge"):
+            s.task.reason = "Stalled -- promotion manually blocked"
+            return False
+
+        return True
+
     # _new
     #
     def _new(s):
@@ -507,37 +543,7 @@ class SnapReleaseToEdge(KernelSnapBase):
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
         while not retval:
-            if s.bug.task_status('snap-prepare') not in ('Fix Released', 'Invalid'):
-                cinfo('    task snap-prepare is not \'Fix Released\'', 'yellow')
-                break
-
-            # Legacy handling of we have no snap-prepare task.
-            elif s.bug.task_status('snap-prepare') == 'Invalid':
-                if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
-                    cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
-                    s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
-                    break
-
-                if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
-                    cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\'', 'yellow')
-                    s.task.reason = 'Holding -- waiting for debs to promote-signing-to-proposed'
-                    break
-
-                # Attempt to apply replaces as we are ready to promote.
-                s.bug.dup_replaces()
-
-                # Check if this is the oldest tracker for this target.
-                older, reason = s.oldest_tracker()
-                if older is not None:
-                    cinfo('    snap has an older active tracker', 'yellow')
-                    s.task.reason = 'Stalled -- tracker for earlier spin still active, ' + reason
-                    s.bug.monitor_add({
-                        "type": "tracker-modified",
-                        "watch": str(older)})
-                    break
-
-            if s.bug.manual_block("snap-release-to-edge"):
-                s.task.reason = "Stalled -- promotion manually blocked"
+            if not s._ready_for_confirmed():
                 break
 
             s.task.status = 'Confirmed'
@@ -553,7 +559,16 @@ class SnapReleaseToEdge(KernelSnapBase):
     #
     def _verify_release(s):
         center(s.__class__.__name__ + '._verify_release')
-        retval = s.do_verify_release('edge')
+        retval = False
+
+        if s.task.status == 'Confirmed' and not s._ready_for_confirmed():
+            cinfo('    snap no-longer ready for Confirmed, pulling back to New')
+            s.task.status = 'New'
+            retval = True
+
+        if not retval:
+            retval = s.do_verify_release('edge')
+
         cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
         return retval
 
