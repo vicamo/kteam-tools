@@ -812,7 +812,7 @@ class SnapReleaseToStable(KernelSnapBase):
             retval = True
 
         if not retval:
-             retval = s.do_verify_release('stable')
+            retval = s.do_verify_release('stable')
 
         cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
         return retval
