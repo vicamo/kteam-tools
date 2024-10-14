@@ -15,6 +15,7 @@ echo "$(date --utc '+%Y-%m-%d %H:%M:%S'): starting"
 
 	"$here/gather-releases" > "supported-releases.json"
 	"$here/gather-releases" --all > "all-releases.json"
+	curl -s https://kernel.ubuntu.com/swm/cycle-info/readme.json --output readme.json.new && mv readme.json.new readme.json
 	"$here/generate-dashboard" "kernel-stable-dashboard.rc" >"$payload.tmp" && mv "$payload.tmp" "$payload"
 )
 
