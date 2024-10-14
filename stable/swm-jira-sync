@@ -111,6 +111,37 @@ if __name__ == '__main__':
 
         jira.transition_issue(issue, transition=transition_id)
 
+    def readme_public_html(issue):
+        div_ends_re = re.compile(r"(<div[^>]*>|</div>)")
+
+        # We ask for an HTML rendered version of the fields when we search.
+        # Look at the rendered form and pick out the relevant public section.
+        issue_html = issue.renderedFields.description
+
+        # The {panel} is rendered as:
+        #   <div class="panelContent" style="background-color: green;">
+        depth = 0
+        start = None
+        end = None
+        for match in div_ends_re.finditer(issue_html):
+            tag = match.group(0)
+            if tag.startswith("<div"):
+                if 'class="panelContent"' in tag and 'style="background-color: #e3fcef;"' in tag:
+                    start = match.end(0)
+                if start is not None:
+                    depth += 1
+            elif tag.startswith("</div"):
+                if depth is not None:
+                    depth -= 1
+                    if depth == 0:
+                        end = match.start(0)
+                        break
+        if start is None or end is None:
+            return None
+
+        return issue_html[start:end].strip()
+
+
     parser = argparse.ArgumentParser(description='SWM JIRA card syncer')
     args = parser.parse_args()
 
@@ -209,6 +240,8 @@ if __name__ == '__main__':
 
     issuelink_want = {}
 
+    cycle_readme = {}
+
     for cycle in sorted(cycles):
         print("Cycle:", cycle)
         trackers = cycle_trackers.get(cycle, {})
@@ -236,7 +269,7 @@ if __name__ == '__main__':
         chunk_size = 50
         cycle_owner = None
         while True:
-            issues = jira.search_issues('project="{}" and cf[{}]={}'.format(project_key, custom_sprint, jira_cycle.id), startAt=chunk_offset, maxResults=chunk_size)
+            issues = jira.search_issues('project="{}" and cf[{}]={}'.format(project_key, custom_sprint, jira_cycle.id), startAt=chunk_offset, maxResults=chunk_size, expand="renderedFields")
             chunk_offset += chunk_size
             if len(issues) == 0:
                 break
@@ -256,6 +289,9 @@ if __name__ == '__main__':
                     continue
 
                 summary = issue.fields.summary
+
+                if summary == "Cycle README":
+                    cycle_readme[cycle] = readme_public_html(issue)
 
                 match = crank_re.match(summary)
                 if match:
@@ -673,6 +709,12 @@ if __name__ == '__main__':
             description += '\n'.join(bits)
             if issue.fields.summary != summary or issue.fields.description != description:
                 issue.update(summary=summary, description=description, notify=False)
+
+    # Drop out the full readme.json.
+    readme_file = os.path.join("cycle-info", "readme.json")
+    with open(readme_file + ".new", "w") as rfd:
+        print(json.dumps(cycle_readme), file=rfd)
+    os.rename(readme_file + ".new", readme_file)
 
     # Update the Launchpad tracker to record jira blocks and jira issue linkage.
     blocked_add = blocked_want - blocked_seen

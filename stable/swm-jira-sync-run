@@ -23,4 +23,7 @@ else
 	(cd kernel-versions && git pull)
 fi
 
+# Make sure we can record the cycle-info.
+mkdir -p "cycle-info"
+
 "$here/swm-jira-sync" "$@"
