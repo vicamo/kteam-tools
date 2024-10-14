@@ -1,0 +1,39 @@
+= Snap Recipes =
+
+We trigger snap builds from SWM against the `snap-prepare` and
+`snap-prepare-signed` tasks.
+
+The `snap-prepare` task tracks builds against the build route and is published
+to `edge` risk.  This allows us to test an unsigned kernel and integrates with
+`boot-testing`.
+
+The `snap-prepare-signed` task tracks builds against the proposed route and is
+published to `beta` risk.  These are the final binaries we will promote to
+later risk levels.
+
+Each of these require a separate build recipe.  Further there are separate
+recipes for each stream, two for each such stream.  Each recipe is connected to
+a git-repository branch which contains the snapcraft.yaml for the build.  The
+recipes are located on the same team that owns this git-repository.  These recipes
+are located by their names which _must_ have the following form:
+
+    <series>--<source>--<snap-name>--<risk>--<stream>+<recipe-version>
+    oracular--linux--pc-kernel--edge--1+2
+
+The recipe-version tells SWM how to drive the recipe.  For +2 recipes the snap
+recipe may simply be triggered.  For +2v recipes the snapcraft.yaml must be
+updated with an approprite kernel version before triggering.  This is done via
+the `snap-set-version` support script in SWM; which creates and maintains a
+separate recipe specific branch for each recipe based on the official branch.
+
+== snap-recipe-create ==
+
+The simplest way to make the stream/channel specific recipes is to use
+`snap-recipe-create`.  This will validate branches and the like and then create
+the relevant recipes.  It can also be use to update those recipes when things
+like routing changes.  At its simplest it can initiated against a handle-target:
+
+    ./snap-recipe-create oracular:linux:pc-kernel
+
+This will make two recipes per stream.  The only manual operation required
+is to approve the uploads on each.
