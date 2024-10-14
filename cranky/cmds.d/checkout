@@ -4,18 +4,18 @@
 #
 
 import argparse
+import datetime
 import logging
 import os
-import sys
-import datetime
 import shutil
+import sys
 
-from ktl.log import cerror, cnotice, Clog
+from ktl.log import Clog, cerror, cnotice
 
-from crl.git import GitHandleSet, GitError
 from crl.config import Config
 from crl.cycle_ref import CycleRef
 from crl.exceptions import CrankyException
+from crl.git import GitError, GitHandleSet
 from crl.handle import HandleError
 
 
@@ -204,64 +204,94 @@ Configuration file:
       default: ~/git/ubuntu/{series}/{package}
 """
 
-    help_handle = """
-Handle to a kernel source tree in <series>:<package> format.
-"""
-
-    help_reference = """
-Obtain objects from an existing local repository to speed up the cloning
-process. This is a git clone option, check 'git help clone' for more details.
-Note that without using --dissociate, the referenced repo *must not* be deleted
-otherwise the cranky checkout'd repo will get corrupted.
-"""
-
-    HELP_CLEANUP = """
-Remove everything from top level directory except repos checked out (such as unused lrm/signed and artifacts).
-"""
-
-    help_dissociate = """
-Borrow the objects from the referenced local repository only to reduce network
-traffic. This is a git clone option, check 'git help clone' for more details.
-"""
-
-    help_nc = """No Colour. By default the debug output that is printed comes out in
-multiple colours to help with the debugging. This option disables that.
-"""
-
-    help_depth = """
-Perform a shallow clone with --depth <int>
-"""
-
-    help_crd = """
-Checks out branches as CRD-{DATE}+{BRANCH} and sets upstream to 'security'.
-"""
-
-    help_cycle = """
-Checks out the repo as it was for the specified cycle.
-Example:
-    --cycle 2022.08.08
-
-    Will checkout create a branch cranky/$cycle at the newest tag belonging
-    to this cycle.
-"""
-
-    HELP_PRISTINE = """
-Remove uncommited/untracked files from repos.
-"""
-
-    formatter = argparse.RawDescriptionHelpFormatter
-    parser = argparse.ArgumentParser(description=desc, formatter_class=formatter, epilog=epilog, prog="cranky checkout")
-    parser.add_argument("handle", help=help_handle)
-    parser.add_argument("-r", "--reference", default=expanduser(config_cmd.get("reference", None)), help=help_reference)
-    parser.add_argument(
-        "-d", "--dissociate", action="store_true", default=config_cmd.get("dissociate", False), help=help_dissociate
+    parser = argparse.ArgumentParser(
+        description=desc,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=epilog,
+        prog="cranky checkout",
     )
-    parser.add_argument("--depth", default=None, help=help_depth)
-    parser.add_argument("-C", "--crd", default=None, type=datetime.date.fromisoformat, help=help_crd)
-    parser.add_argument("--nc", action="store_true", default=False, help=help_nc)
-    parser.add_argument("--cycle", help=help_cycle)
-    parser.add_argument("--cleanup", action="store_true", default=False, help=HELP_CLEANUP)
-    parser.add_argument("--pristine", action="store_true", default=False, help=HELP_PRISTINE)
+
+    parser.add_argument(
+        "handle",
+        help="""Handle to a kernel source tree in <series>:<package>
+format.""",
+    )
+
+    parser.add_argument(
+        "-r",
+        "--reference",
+        default=expanduser(config_cmd.get("reference", None)),
+        help="""Obtain objects from an existing local repository to
+speed up the cloning process. This is a git clone
+option, check 'git help clone' for more details. Note
+that without using --dissociate, the referenced repo
+*must not* be deleted otherwise the cranky checkout'd
+repo will get corrupted.
+""",
+    )
+
+    parser.add_argument(
+        "-d",
+        "--dissociate",
+        action="store_true",
+        default=config_cmd.get("dissociate", False),
+        help="""Borrow the objects from the referenced local repository
+only to reduce network traffic. This is a git clone
+option, check 'git help clone' for more details.
+""",
+    )
+
+    parser.add_argument(
+        "--depth",
+        default=None,
+        help="Perform a shallow clone with --depth <int>",
+    )
+
+    parser.add_argument(
+        "-C",
+        "--crd",
+        default=None,
+        type=datetime.date.fromisoformat,
+        help="""
+Checks out branches as CRD-{DATE}+{BRANCH} and sets
+upstream to 'security'.""",
+    )
+
+    parser.add_argument(
+        "--nc",
+        action="store_true",
+        default=False,
+        help="""No Colour. By default the debug output that is printed
+comes out in multiple colours to help with the
+debugging. This option disables that.
+""",
+    )
+
+    parser.add_argument(
+        "--cycle",
+        help="""
+Checks out the repo as it was for the specified cycle.
+Example: --cycle 2022.08.08 will checkout create a
+branch cranky/$cycle at the newest tag belonging to
+this cycle.
+""",
+    )
+
+    parser.add_argument(
+        "--cleanup",
+        action="store_true",
+        default=False,
+        help="""Remove everything from top level directory except repos
+checked out (such as unused lrm/signed and artifacts).
+""",
+    )
+
+    parser.add_argument(
+        "--pristine",
+        action="store_true",
+        default=False,
+        help="Remove uncommited/untracked files from repos.",
+    )
 
     try:
         checkout_repos(**vars(parser.parse_args()))
