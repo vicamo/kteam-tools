@@ -44,6 +44,7 @@ python-jira			git://git.launchpad.net/~canonical-kernel-team/+git/python-jira  h
 EOL
 
 ln -sf $(realpath --relative-to=stable $DEPLOY_DEPS/python-jira/jira) stable
+ln -sf $(realpath --relative-to=stable $DEPLOY_DEPS/python-jira/jira) proceedures
 
 ln -sf $(realpath --relative-to=announce $DEPLOY_DEPS/python-mattermost-driver/src/mattermostdriver) announce
 ln -sf $(realpath --relative-to=announce $DEPLOY_DEPS/python-jira/jira) announce
