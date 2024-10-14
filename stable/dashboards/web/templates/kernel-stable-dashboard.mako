@@ -595,6 +595,37 @@ for bid in sorted(swm_trackers):
             background-color: transparent;
             text-decoration: none;
         }
+
+        /* Tooltip container */
+        .tooltip {
+          position: relative;
+          display: inline-block;
+        }
+
+        /* Tooltip text */
+        .tooltip .tooltiptext {
+          visibility: hidden;
+          width: 600px;
+          background-color: black;
+          color: #fff;
+          text-align: left;
+          padding: 10px;
+          border-radius: 6px;
+
+          /* Position the tooltip text. */
+          position: absolute;
+          z-index: 1;
+          top: 10px;
+          right: 105%;
+        }
+
+        /* Show the tooltip text when you mouse over the tooltip container */
+        .tooltip:hover .tooltiptext {
+          visibility: visible;
+        }
+        .tooltip:focus .tooltiptext{
+          visibility: visible;
+        }
         </style>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <!-- <meta http-equiv="refresh" content="60" /> -->
@@ -679,10 +710,15 @@ for bid in sorted(swm_trackers):
                                             sru_cycle = data['sru-cycle'].lookup_cycle(cycle)
                                             cycle_notes = ""
                                             cycle_readme = ""
+                                            cycle_readme_public = data['readme'].get(cycle)
                                             if sru_cycle is not None:
                                                 cycle_notes = "{} to {}".format(sru_cycle.start_date, sru_cycle.release_date)
                                                 if sru_cycle.notes_link is not None:
-                                                    cycle_readme = '<a href="https://warthogs.atlassian.net/browse/' + sru_cycle.notes_link + '">Notes</a>'
+                                                    if cycle_readme_public is not None:
+                                                        cycle_readme += '<div class="tooltip" tabindex="1">Notes<span class="tooltiptext">' + cycle_readme_public + '</span></div>'
+                                                else:
+                                                    cycle_readme += '<span style="color: grey;">Notes</span>'
+                                                cycle_readme += '<a href="https://warthogs.atlassian.net/browse/' + sru_cycle.notes_link + '">&thinsp;&copysr;</a>'
                                         %>
                                         <tr class="entry-any owner-any phase-any cycle-${cycle}" style="background: #ffffc0; font-size: 140%;">
                                             <td colspan="1" >${cycle}</td><td colspan="4" class="note" style="text-align: right;">${cycle_readme}</td><td colspan="2" style="text-align: right;">${cycle_notes}</td>
