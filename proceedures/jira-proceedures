@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+#
+from __future__             import print_function
+
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+
+import argparse
+import os
+import re
+import sys
+import yaml
+
+from datetime import datetime, timedelta, timezone
+
+from jira import JIRA
+
+# GreenHopperResource has been renamed to AgileResource in Jira 3.3.0, make
+# sure to support both classes.
+try:
+    from jira.resources import AgileResource
+except ImportError:
+    from jira.resources import GreenHopperResource as AgileResource
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='JIRA proceedure automation')
+    args = parser.parse_args()
+
+    print(datetime.now(), "starting")
+
+    # Connect us to JIRA.
+    jira = JIRA('https://warthogs.atlassian.net/',
+        options={'agile_rest_path': AgileResource.AGILE_BASE_REST_PATH})
+
+    # Lookup custom fields we are going to use.
+    #for field in jira.fields():
+    #    if field['name'] == 'Epic Link':
+    #        custom_epic_link = field['key']
+    #    if field['name'] == 'Sprint':
+    #        custom_sprint = field['key']
+
+    # Transition id.
+    transition_ids = {}
+
+    project_key, component_name = 'KERN', 'SPOC'
+
+    chunk_offset = 0
+    chunk_size = 50
+    while True:
+        issues = jira.search_issues('project="{}" and component="{}" and status in ("Untriaged", "Triaged") and "epic link" is not empty'.format(project_key, component_name), startAt=chunk_offset, maxResults=chunk_size)
+        chunk_offset += chunk_size
+        if len(issues) == 0:
+            break
+        for issue in issues:
+            summary = issue.fields.summary
+            ready = True
+            for link in issue.fields.issuelinks:
+                blocker = getattr(link, "inwardIssue", None)
+                if blocker is None or link.type.name != 'Blocks':
+                    continue
+                print(issue, blocker, blocker.fields.status)
+                if str(blocker.fields.status) != "Done":
+                    ready = False
+            if ready:
+                new_state = 'Triaged'
+            else:
+                new_state = 'Untriaged'
+            if new_state != str(issue.fields.status):
+                print(" ", issue, issue.fields.status, "->", new_state)
+                transition_id = transition_ids.get(new_state)
+                if transition_id is None:
+                    transitions = jira.transitions(issue)
+                    for trans in transitions:
+                        if trans["to"]["name"] == new_state:
+                            transition_id = trans["id"]
+                            break
+                    transition_ids[new_state] = transition_id
+
+                jira.transition_issue(issue, transition=transition_id)
+
+
+    print(datetime.now(), "complete")
