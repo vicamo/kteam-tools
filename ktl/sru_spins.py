@@ -96,7 +96,7 @@ class SruSpins:
         cycle, spin_no = spin.rsplit("-", 1)
 
         # Lock the index so we can perform the update.
-        path = os.path.join(path_base, "index.json")
+        path = os.path.join(path_base, ".index.lck")
         with open(path, "a") as lfd:
             lockf(lfd, LOCK_EX, 1, 0)
 
