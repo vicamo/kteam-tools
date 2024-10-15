@@ -45,21 +45,22 @@ class Git:
 
 def make_tag_prefix(handle):
     pkg = handle.package
-    sep = "." if pkg.type == "meta" else "-"
     prefix = pkg.source.name.replace("linux", "Ubuntu")
     upstream = pkg.source.versions[-1]
     # FIXME: find out backports suffix (sans "upload" number)
-    suffix = ""
-    tag_prefix = prefix + "-" + upstream + sep + "*" + suffix
+    tag_prefix = prefix + "-" + upstream
     return tag_prefix
 
 
 def read_cycle(git, tag):
     """Return debian folder for this handle"""
     tracking_bug_contents = ""
-    if git(f"ls-files {tag} debian/debian.env", split="\n"):
+    try:
         debian_env = git(f"show {tag}:debian/debian.env", split="\n")
+    except CrankyException:
+        debian_env = None
 
+    if debian_env is not None:
         debian_dir = "debian.master"
         for line in debian_env:
             if "DEBIAN=" in line:
@@ -153,18 +154,24 @@ class CycleRef:
             # packages in a HandleSet *should* have the same prefix
             # but we'll generate the prefix for each tree just in case.
             tag_prefix = make_tag_prefix(tree)
-            cdebug(f"Using tag prefix {tag_prefix}")
+            rtags_prefix = f"refs/rtags/{remote}"
+            cdebug(f"Using tag prefix {tag_prefix} remote prefix {rtags_prefix}")
 
             #
             # Ensure we have all the latest tags if a remote is specified
             this_git = Git(tree.directory)
             if remote:
-                cnotice(f"Fetching tags from {remote} in {os.path.basename(tree.directory)}")
-                this_git(f"fetch {remote} 'refs/tags/{tag_prefix}:refs/tags/{tag_prefix}'")
+                cnotice(f"Fetching tags from {remote} in {os.path.basename(tree.directory)} under {rtags_prefix}")
+                this_git(f"fetch {remote} 'refs/tags/{tag_prefix}:{rtags_prefix}/{tag_prefix}'")
 
             #
             # Locate all tags from oldest to newest so latest respin is observed last
-            tags = this_git(f"tag --list --sort=creatordate {tag_prefix}*", split="\n")
+            tags = []
+            for current_prefix in (tag_prefix + "-*", tag_prefix + ".*"):
+                tags += this_git(
+                    f"for-each-ref --sort=creatordate --format=%(refname) {rtags_prefix}/{current_prefix}",
+                    split="\n",
+                )
             tree_git_tags[tree] = this_git, tags
 
         #

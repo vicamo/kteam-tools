@@ -403,11 +403,15 @@ class UbuntuTag(_Comparable):
         if not self.raw_tag:
             throw("Tag is empty")
 
+        tag_name = self.raw_tag.split("/")[-1]
+        if not tag_name:
+            throw("Unable to extract tag name")
+
         #
         # Anchor to the kernel version because the package
         # name might contain a kernel version and the ubuntu
         # version might have 3 segments.
-        match = re.search(self.RE_TAG, self.raw_tag)
+        match = re.search(self.RE_TAG, tag_name)
         if not match or not match.group(1):
             throw("Kernel version not found")
         try:
@@ -419,12 +423,12 @@ class UbuntuTag(_Comparable):
         # Prefix is everything before the kernel version excluding
         # any leading or trailing dashes. We do not assigned semantic
         # value to this portion.
-        prefix = self.raw_tag[: match.start()]
+        prefix = tag_name[: match.start()]
         if not prefix.startswith(self.prefix):
             throw(f"Invalid tag prefix, expected '{self.prefix}")
         self._package = prefix.lstrip(self.prefix).strip("-")
 
-        self._raw_version = self.raw_tag[match.start() :]
+        self._raw_version = tag_name[match.start() :]
 
         #
         # The Ubuntu version contains an ABI and upload number.
