@@ -12,10 +12,12 @@ from urllib.request import pathname2url, urljoin, urlopen
 # SruSpinsDataHandle
 #
 class SruSpinsDataHandle:
-    def __init__(self, spin, data):
+    def __init__(self, spin, data, full_versions=None):
         self.spin = spin
         self.tracker = data.get("tracker")
         self.versions = data.get("versions")
+
+        self.full_versions = self.versions
 
 
 # SruSpinsData
@@ -23,48 +25,63 @@ class SruSpinsDataHandle:
 class SruSpinsIndex:
     @classmethod
     def from_loader(cls, loader, updater=None):
-        return SruSpinsIndex(loader("index"), loader, updater=updater)
+        return SruSpinsIndex(loader("handles"), loader, updater=updater)
 
-    def __init__(self, cycles, loader=None, updater=None):
-        self._cycles = cycles
+    def __init__(self, handles, loader=None, updater=None):
+        self._handles = handles
         self._loader = loader
         self._updater = updater
 
     def spin_key(self, data):
         return int(data[0]), data[1]
 
-    def cycle(self, cycle):
-        cycle_data = self._cycles.get(cycle)
-        if cycle_data is None:
+    def handle(self, handle):
+        handle_data = self._handles.get(handle)
+        if handle_data is None:
             return None
-        if cycle_data is True:
-            cycle_data = self._loader(cycle)
-            self._cycles[cycle] = cycle_data
-        return cycle_data
+        if handle_data is True:
+            handle_data = self._loader(handle)
+            self._handles[handle] = handle_data
+        return handle_data
 
-    def handle_cycle(self, handle, cycle):
-        cycle_data = self.cycle(cycle)
+    def _populate_spin(self, handle_data, cycle, spin=None):
+        result = None
+        full_versions = {}
+        cycle_data = handle_data.get(cycle)
         if cycle_data is None:
             return None
         for spin_no, spin_data in sorted(cycle_data.items(), key=self.spin_key, reverse=True):
-            if handle in spin_data:
-                return SruSpinsDataHandle(f"{cycle}-{spin_no}", spin_data[handle])
-        return None
+            result = SruSpinsDataHandle(f"{cycle}-{spin_no}", spin_data)
+            full_versions.update(result.versions)
+            result.full_versions = full_versions
+            #print(spin_no, spin_data, result)
+
+            if spin is not None and spin == spin_no:
+                break
+
+        if spin is not None and spin != spin_no:
+            return None
+
+        return result
+
+    def handle_cycle(self, handle, cycle):
+        handle_data = self.handle(handle)
+        if handle_data is None:
+            return None
+        return self._populate_spin(handle_data, cycle)
 
     def handle_spin(self, handle, spin):
-        cycle, spin_no = spin.rsplit("-", 1)
-        cycle_data = self.cycle(cycle)
-        if cycle_data is None:
+        try:
+            cycle, spin_no = spin.rsplit("-", 1)
+        except ValueError:
             return None
-        spin_data = cycle_data.get(spin_no)
-        if spin_data is None:
+        handle_data = self.handle(handle)
+        if handle_data is None:
             return None
-        if handle in spin_data:
-            return SruSpinsDataHandle(spin, spin_data[handle])
-        return None
+        return self._populate_spin(handle_data, cycle, spin_no=spin_no)
 
     def handle_spin_update(self, handle, spin, data):
-        self._updater(spin, handle, data)
+        self._updater(handle, spin, data)
 
 
 # SruSpins
@@ -92,32 +109,39 @@ class SruSpins:
         os.rename(path + ".new", path)
 
     @classmethod
-    def _update_path(cls, path_base, spin, handle, data):
+    def _update_path(cls, path_base, handle, spin, data):
         cycle, spin_no = spin.rsplit("-", 1)
 
         # Lock the index so we can perform the update.
-        path = os.path.join(path_base, "index.json")
+        path = os.path.join(path_base, ".index.lck")
         with open(path, "a") as lfd:
             lockf(lfd, LOCK_EX, 1, 0)
 
-            index_data = cls._load_path(path_base, "index")
-            index_data_before = deepcopy(index_data)
-            if cycle not in index_data:
-                index_data[cycle] = True
-                cycle_data = {}
+            handles_data = cls._load_path(path_base, "handles")
+            handles_data_before = deepcopy(handles_data)
+            if handle not in handles_data:
+                handles_data[handle] = True
+                handle_data = {}
             else:
-                cycle_data = cls._load_path(path_base, cycle)
-            cycle_data_before = deepcopy(cycle_data)
+                handle_data = cls._load_path(path_base, handle)
+            handle_data_before = deepcopy(handle_data)
+
+            cycles_data = cls._load_path(path_base, "cycles")
+            cycles_data_before = deepcopy(cycles_data)
+            if cycle not in cycles_data:
+                cycles_data[cycle] = True
 
             # Update the entry.
-            entry = cycle_data.setdefault(spin_no, {}).setdefault(handle, {})
+            entry = handle_data.setdefault(cycle, {}).setdefault(spin_no, {})
             entry.update(data)
 
             # If the data is changed, update it.
-            if cycle_data != cycle_data_before:
-                cls._write_path(path_base, cycle, cycle_data)
-            if index_data != index_data_before:
-                cls._write_path(path_base, "index", index_data)
+            if handle_data != handle_data_before:
+                cls._write_path(path_base, handle, handle_data)
+            if cycles_data != cycles_data_before:
+                cls._write_path(path_base, "cycles", cycles_data)
+            if handles_data != handles_data_before:
+                cls._write_path(path_base, "handles", handles_data)
 
             lockf(lfd, LOCK_UN, 1, 0)
 
@@ -125,7 +149,7 @@ class SruSpins:
     def from_path(cls, path):
         return SruSpinsIndex.from_loader(
             lambda cycle: cls._load_path(path, cycle),
-            updater=lambda spin, handle, data: cls._update_path(path, spin, handle, data),
+            updater=lambda handle, spin, data: cls._update_path(path, handle, spin, data),
         )
 
     @classmethod
