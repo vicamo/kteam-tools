@@ -4,6 +4,8 @@
 # on your local system.
 #
 
+$(warning The cranky cheatsheet is deprecated. It may break or be removed in the future.)
+
 TARGETS=cranking-the-kernel.cheatsheet.html cranking-the-kernel.html crank-turning-setup.html hinting-tests.html sru-cycles.html verification-testing.html
 CHEATSHEET_TARGETS=cranking-the-kernel.cheatsheet.md
 

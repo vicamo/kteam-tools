@@ -30,6 +30,7 @@ def cheatsheet_generator(data):
 
 
 def main():
+    print("WARNING: The cranky cheatsheet is deprecated. It may break or be removed in the future.", file=sys.stderr)
     for line in cheatsheet_generator(sys.stdin):
         print(line.strip())
 
