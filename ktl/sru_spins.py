@@ -25,7 +25,7 @@ class SruSpinsDataHandle:
 class SruSpinsIndex:
     @classmethod
     def from_loader(cls, loader, updater=None):
-        return SruSpinsIndex(loader("index"), loader, updater=updater)
+        return SruSpinsIndex(loader("handles"), loader, updater=updater)
 
     def __init__(self, handles, loader=None, updater=None):
         self._handles = handles
@@ -117,14 +117,19 @@ class SruSpins:
         with open(path, "a") as lfd:
             lockf(lfd, LOCK_EX, 1, 0)
 
-            index_data = cls._load_path(path_base, "index")
-            index_data_before = deepcopy(index_data)
-            if handle not in index_data:
-                index_data[handle] = True
+            handles_data = cls._load_path(path_base, "handles")
+            handles_data_before = deepcopy(handles_data)
+            if handle not in handles_data:
+                handles_data[handle] = True
                 handle_data = {}
             else:
                 handle_data = cls._load_path(path_base, handle)
             handle_data_before = deepcopy(handle_data)
+
+            cycles_data = cls._load_path(path_base, "cycles")
+            cycles_data_before = deepcopy(cycles_data)
+            if cycle not in cycles_data:
+                cycles_data[cycle] = True
 
             # Update the entry.
             entry = handle_data.setdefault(cycle, {}).setdefault(spin_no, {})
@@ -133,8 +138,10 @@ class SruSpins:
             # If the data is changed, update it.
             if handle_data != handle_data_before:
                 cls._write_path(path_base, handle, handle_data)
-            if index_data != index_data_before:
-                cls._write_path(path_base, "index", index_data)
+            if cycles_data != cycles_data_before:
+                cls._write_path(path_base, "cycles", cycles_data)
+            if handles_data != handles_data_before:
+                cls._write_path(path_base, "handles", handles_data)
 
             lockf(lfd, LOCK_UN, 1, 0)
 
