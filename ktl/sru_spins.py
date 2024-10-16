@@ -27,31 +27,33 @@ class SruSpinsIndex:
     def from_loader(cls, loader, updater=None):
         return SruSpinsIndex(loader("index"), loader, updater=updater)
 
-    def __init__(self, cycles, loader=None, updater=None):
-        self._cycles = cycles
+    def __init__(self, handles, loader=None, updater=None):
+        self._handles = handles
         self._loader = loader
         self._updater = updater
 
     def spin_key(self, data):
         return int(data[0]), data[1]
 
-    def cycle(self, cycle):
-        cycle_data = self._cycles.get(cycle)
-        if cycle_data is None:
+    def handle(self, handle):
+        handle_data = self._handles.get(handle)
+        if handle_data is None:
             return None
-        if cycle_data is True:
-            cycle_data = self._loader(cycle)
-            self._cycles[cycle] = cycle_data
-        return cycle_data
+        if handle_data is True:
+            handle_data = self._loader(handle)
+            self._handles[handle] = handle_data
+        return handle_data
 
-    def _populate_spin(self, handle, cycle, cycle_data, spin=None):
+    def _populate_spin(self, handle_data, cycle, spin=None):
         result = None
         full_versions = {}
+        cycle_data = handle_data.get(cycle)
+        if cycle_data is None:
+            return None
         for spin_no, spin_data in sorted(cycle_data.items(), key=self.spin_key, reverse=True):
-            if handle in spin_data:
-                result = SruSpinsDataHandle(f"{cycle}-{spin_no}", spin_data[handle])
-                full_versions.update(result.versions)
-                result.full_versions = full_versions
+            result = SruSpinsDataHandle(f"{cycle}-{spin_no}", spin_data)
+            full_versions.update(result.versions)
+            result.full_versions = full_versions
             #print(spin_no, spin_data, result)
 
             if spin is not None and spin == spin_no:
@@ -63,23 +65,23 @@ class SruSpinsIndex:
         return result
 
     def handle_cycle(self, handle, cycle):
-        cycle_data = self.cycle(cycle)
-        if cycle_data is None:
+        handle_data = self.handle(handle)
+        if handle_data is None:
             return None
-        return self._populate_spin(handle, cycle, cycle_data)
+        return self._populate_spin(handle_data, cycle)
 
     def handle_spin(self, handle, spin):
         try:
             cycle, spin_no = spin.rsplit("-", 1)
         except ValueError:
             return None
-        cycle_data = self.cycle(cycle)
-        if cycle_data is None:
+        handle_data = self.handle(handle)
+        if handle_data is None:
             return None
-        return self._populate_spin(handle, cycle, cycle_data, spin_no=spin_no)
+        return self._populate_spin(handle_data, cycle, spin_no=spin_no)
 
     def handle_spin_update(self, handle, spin, data):
-        self._updater(spin, handle, data)
+        self._updater(handle, spin, data)
 
 
 # SruSpins
@@ -107,7 +109,7 @@ class SruSpins:
         os.rename(path + ".new", path)
 
     @classmethod
-    def _update_path(cls, path_base, spin, handle, data):
+    def _update_path(cls, path_base, handle, spin, data):
         cycle, spin_no = spin.rsplit("-", 1)
 
         # Lock the index so we can perform the update.
@@ -117,20 +119,20 @@ class SruSpins:
 
             index_data = cls._load_path(path_base, "index")
             index_data_before = deepcopy(index_data)
-            if cycle not in index_data:
-                index_data[cycle] = True
-                cycle_data = {}
+            if handle not in index_data:
+                index_data[handle] = True
+                handle_data = {}
             else:
-                cycle_data = cls._load_path(path_base, cycle)
-            cycle_data_before = deepcopy(cycle_data)
+                handle_data = cls._load_path(path_base, handle)
+            handle_data_before = deepcopy(handle_data)
 
             # Update the entry.
-            entry = cycle_data.setdefault(spin_no, {}).setdefault(handle, {})
+            entry = handle_data.setdefault(cycle, {}).setdefault(spin_no, {})
             entry.update(data)
 
             # If the data is changed, update it.
-            if cycle_data != cycle_data_before:
-                cls._write_path(path_base, cycle, cycle_data)
+            if handle_data != handle_data_before:
+                cls._write_path(path_base, handle, handle_data)
             if index_data != index_data_before:
                 cls._write_path(path_base, "index", index_data)
 
@@ -140,7 +142,7 @@ class SruSpins:
     def from_path(cls, path):
         return SruSpinsIndex.from_loader(
             lambda cycle: cls._load_path(path, cycle),
-            updater=lambda spin, handle, data: cls._update_path(path, spin, handle, data),
+            updater=lambda handle, spin, data: cls._update_path(path, handle, spin, data),
         )
 
     @classmethod
