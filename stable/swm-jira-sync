@@ -139,7 +139,12 @@ if __name__ == '__main__':
         if start is None or end is None:
             return None
 
-        return issue_html[start:end].strip()
+        public_html = issue_html[start:end]
+
+        # Drop the Public Information header.
+        public_html = public_html.replace("<p>Public Information</p>", "")
+
+        return public_html.strip()
 
 
     parser = argparse.ArgumentParser(description='SWM JIRA card syncer')
