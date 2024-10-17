@@ -94,6 +94,27 @@ def option_color(default=True):
     return wrapper
 
 
+def option_deprecated_warn(cmd, opt):
+    log.warning(
+        f"Option '{opt}' is deprecated and will be removed soon. Check 'cranky {cmd} --help' for more information."
+    )
+
+
+def option_deprecated(*args, **kwargs):
+    """Generic decorator for deprecated options"""
+    new = kwargs.pop("new_option", None)
+    if new:
+        prefix = f"(DEPRECATED, use '{new}' instead)"
+    else:
+        prefix = "(DEPRECATED)"
+    kwargs["help"] = prefix + " " + kwargs.get("help", "")
+
+    def wrapper(func):
+        return click.option(*args, **kwargs)(func)
+
+    return wrapper
+
+
 def _add_argument_help(func, metavar, help):
     """Append an argument help line to the function's docstring"""
     doc = func.__doc__.split("\n")
