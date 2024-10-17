@@ -1,6 +1,7 @@
 import os
 import json
 import yaml
+
 try:
     from urllib.request import urlopen
 except ImportError:
@@ -26,32 +27,32 @@ class SigningConfigStreamLevel:
 
 class SigningConfig:
     def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_SIGNING_CONFIG", False)):
-        self._url = 'https://kernel.ubuntu.com/info/signing-config.yaml'
+        self._url = "https://kernel.ubuntu.com/info/signing-config.yaml"
         try:
             import ckt_info
+
             _local = ckt_info.abspath("info/signing-config.yaml")
         except ImportError:
-            _local = os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                   '..', 'info', 'signing-config.yaml'))
-        self._url_local = 'file://' + _local
+            _local = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "info", "signing-config.yaml"))
+        self._url_local = "file://" + _local
 
         if data is None:
             if url is None:
                 url = self._url_local if use_local else self._url
-            #print("URL", url)
-            if url.startswith('file://'):
+            # print("URL", url)
+            if url.startswith("file://"):
                 with open(url[7:], "rb") as lfd:
                     data = lfd.read()
             else:
                 response = urlopen(url)
                 data = response.read()
             if isinstance(data, bytes):
-                data = data.decode('utf-8')
+                data = data.decode("utf-8")
 
         if isinstance(data, dict):
             self._data = data
 
-        elif data.startswith('{'):
+        elif data.startswith("{"):
             self._data = json.loads(data)
 
         else:
@@ -82,4 +83,6 @@ class SigningConfig:
         else:
             variant = stream
 
-        return SigningConfigStreamLevel(stream, level, variant, self._streams.get(stream, {}).get(int(level), {}).get(variant))
+        return SigningConfigStreamLevel(
+            stream, level, variant, self._streams.get(stream, {}).get(int(level), {}).get(variant)
+        )

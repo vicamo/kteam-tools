@@ -1,88 +1,97 @@
 #!/usr/bin/env python3
-'''
+"""
 Abstraction class to work with Launchpad bugs which represent kernels
 being processed through the kernel-team SRU workflow.
-'''
+"""
 
 # Option
 import copy
 import os
 import sys
-LIBDIR=os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'libs'))
+
+LIBDIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "libs"))
 if LIBDIR not in sys.path:
     sys.path.append(LIBDIR)
 
-from ktl.workflow                       import Workflow, DefaultAssigneeMissing
-from ktl.kernel_series                  import KernelSeries
-from lpltk.LaunchpadService             import LaunchpadService
-from lpltk.bug                          import Bug
+from ktl.workflow import Workflow, DefaultAssigneeMissing
+from ktl.kernel_series import KernelSeries
+from lpltk.LaunchpadService import LaunchpadService
+from lpltk.bug import Bug
 import re
 import yaml
 
-from ktl.log                            import cdebug, cinfo, cerror, cwarn, center, cleave
-from logging                            import basicConfig
+from ktl.log import cdebug, cinfo, cerror, cwarn, center, cleave
+from logging import basicConfig
 
-'''
+"""
 The launchpad projects which are used on launchpad to represent the
 SRU workflow. (FIXME: This probably should be inherited from the
 ktl.workflow module).
-'''
+"""
 TRACKINGBUG_PROJECTS = [
-    'kernel-sru-workflow',
-    'kernel-development-workflow',
+    "kernel-sru-workflow",
+    "kernel-development-workflow",
 ]
 TRACKINGBUG_DEFAULT_PROJECT = TRACKINGBUG_PROJECTS[0]
 
+
 class TrackingBugError(Exception):
-    '''
+    """
     An exception which is thrown on failures when creating TrackingBug
     objects.
-    '''
+    """
+
     def __init__(self, error):
         self.msg = error
 
+
 class TrackingBugDefines(object):
-    '''
+    """
     Data which is needed by TrackingBug() and TrackingBugs() objects.
-    '''
-    desc_tmpl = 'This bug will contain status and test results related to ' \
-                'a kernel source (or snap) as stated in the title.\n\n' \
-                'For an explanation of the tasks and the associated ' \
-                'workflow see:\n  ' \
-                'https://wiki.ubuntu.com/Kernel/kernel-sru-workflow\n'
-    no_version = '<version to be filled>'
+    """
+
+    desc_tmpl = (
+        "This bug will contain status and test results related to "
+        "a kernel source (or snap) as stated in the title.\n\n"
+        "For an explanation of the tasks and the associated "
+        "workflow see:\n  "
+        "https://wiki.ubuntu.com/Kernel/kernel-sru-workflow\n"
+    )
+    no_version = "<version to be filled>"
     # FIXME: Maybe better change into one dict with valid and valid-test
     # as keys.
     tag_names = {
-        'default': {
-            'valid':        'kernel-release-tracking-bug-live',
-            'cycle':        'kernel-sru-cycle-',
-            'derivative':   'kernel-sru-derivative-of-',
-            'backport':     'kernel-sru-backport-of-',
+        "default": {
+            "valid": "kernel-release-tracking-bug-live",
+            "cycle": "kernel-sru-cycle-",
+            "derivative": "kernel-sru-derivative-of-",
+            "backport": "kernel-sru-backport-of-",
         },
-        'testing': {
-            'valid':        'kernel-release-tracking-bug-test',
-            'cycle':        'kernel-sru-cycle-',
-            'derivative':   'kernel-sru-derivative-of-',
-            'backport':     'kernel-sru-backport-of-',
+        "testing": {
+            "valid": "kernel-release-tracking-bug-test",
+            "cycle": "kernel-sru-cycle-",
+            "derivative": "kernel-sru-derivative-of-",
+            "backport": "kernel-sru-backport-of-",
         },
     }
 
+
 class TrackingBug(object):
-    '''
+    """
     A single TrackingBug represents the SRU status of a set of packages for
     one kernel (currently this would be kernel, signed, and meta).
     Each task of the tracking bug represents a phase of the workflow and its
     current state.
-    '''
+    """
+
     # Shared between all instances
     __tbd = TrackingBugDefines()
 
     def __replace_pfx_tag(s, prefix, new_tag):
-        '''
+        """
         Internal helper to replace a tag that starts with <prefix> with
         a <new_tag>.
-        '''
+        """
         present = False
         for tag in s.__bug.tags:
             if tag == new_tag:
@@ -94,31 +103,31 @@ class TrackingBug(object):
             s.__bug.tags.append(new_tag)
 
     def __parse_lpbug(s):
-        '''
+        """
         Internal helper to set/refresh tracking bug properties from
         the information contained in the launchpad bug.
-        '''
+        """
         bug = s.__bug
-        lp  = bug.service.launchpad
+        lp = bug.service.launchpad
 
         # The embedded bug title encodes <package>: <version> -proposed tracker
         #   <version> initially is the string "<version to be filled>"
         s._target_series = None
-        package, remainder = bug.title.split(' ', 1)
-        if '/' in package:
-            (s._target_series, package) = package.split('/')
-        if not package.endswith(':'):
-            msg = 'invalid title string ({})'.format(bug.title)
+        package, remainder = bug.title.split(" ", 1)
+        if "/" in package:
+            (s._target_series, package) = package.split("/")
+        if not package.endswith(":"):
+            msg = "invalid title string ({})".format(bug.title)
             raise TrackingBugError(msg)
         s._target_package = package[:-1]
         if remainder.startswith(s.__tbd.no_version):
-            magic = remainder[len(s.__tbd.no_version)+1:]
+            magic = remainder[len(s.__tbd.no_version) + 1 :]
         else:
-            s._target_version, magic = remainder.split(' ', 1)
+            s._target_version, magic = remainder.split(" ", 1)
 
         #
         # If the launchpad bug already has tracking bug related info
-        # 
+        #
         for tag in bug.tags:
             # The series is primarily encoded in the tags.
             if s.__kernel_series.lookup_series(codename=tag) is not None:
@@ -126,33 +135,33 @@ class TrackingBug(object):
                 continue
 
             # Check for cycle tag
-            prefix = s.__tbd.tag_names['default']['cycle']
+            prefix = s.__tbd.tag_names["default"]["cycle"]
             if tag.startswith(prefix):
-                cycletag = tag[len(prefix):]
-                if not '-' in cycletag:
+                cycletag = tag[len(prefix) :]
+                if not "-" in cycletag:
                     s._cycle = cycletag
                 else:
-                    s._cycle, spin_str = cycletag.rsplit('-', maxsplit=1)
+                    s._cycle, spin_str = cycletag.rsplit("-", maxsplit=1)
                     s._spin_nr = int(spin_str)
                     if s._spin_nr < 1:
                         s._spin_nr = 1
 
             # Check for master bug reference tag:
             #   "kernel-sru-derivative-of-<master bug id>"
-            prefix = s.__tbd.tag_names['default']['derivative']
+            prefix = s.__tbd.tag_names["default"]["derivative"]
             if tag.startswith(prefix):
-                s._master_bug_id = int(tag[len(prefix):])
-                s.__type = 'derivative'
+                s._master_bug_id = int(tag[len(prefix) :])
+                s.__type = "derivative"
 
             # FIXME: Right now there is a differentiation between derivatives
             # (variant of the master kernel) and backports (variant of some
             # kernel in a different series). Long-term I believe this should
             # all become the same and a derivative is just a relation to
             # some <series>/<kernel>.
-            prefix = s.__tbd.tag_names['default']['backport']
+            prefix = s.__tbd.tag_names["default"]["backport"]
             if tag.startswith(prefix):
-                s._master_bug_id = int(tag[len(prefix):])
-                s.__type = 'backport'
+                s._master_bug_id = int(tag[len(prefix) :])
+                s.__type = "backport"
 
         # The target series name is encoded as a nomination for it on
         # a source package task (either real name or linux if new.
@@ -165,20 +174,20 @@ class TrackingBug(object):
             for task in bug.tasks:
                 tgt_link = task.lp_bug_task.target_link
 
-                if '/ubuntu/' in tgt_link:
-                    if '/ubuntu/+source/' not in tgt_link:
-                        part = tgt_link.partition('/+source/')
+                if "/ubuntu/" in tgt_link:
+                    if "/ubuntu/+source/" not in tgt_link:
+                        part = tgt_link.partition("/+source/")
                         package = part[2]
-                        series_name = part[0].rsplit('/', 1)[1]
+                        series_name = part[0].rsplit("/", 1)[1]
                         s._target_series = series_name
 
         # Everything beyond "-- swm properties --" is supposed to be yaml
         # format. However Launchpad will convert leading spaces after manual
         # updates into non-breaking spaces (0xa0) which breaks yaml parsing.
         desc = bug.description
-        ys   = desc.partition('\n-- swm properties --\n')[2]
-        if ys != '':
-            ys = ys.replace('\xa0', ' ')
+        ys = desc.partition("\n-- swm properties --\n")[2]
+        if ys != "":
+            ys = ys.replace("\xa0", " ")
             try:
                 s.__wf_properties = yaml.safe_load(ys)
             except:
@@ -186,172 +195,172 @@ class TrackingBug(object):
 
         # The information in the SWM properties is supposed to be authorative
         # so if certain tag information differs it needs to be updated.
-        if 'kernel-stable-master-bug' in s.__wf_properties:
-            p_master = int(s.__wf_properties['kernel-stable-master-bug'])
+        if "kernel-stable-master-bug" in s.__wf_properties:
+            p_master = int(s.__wf_properties["kernel-stable-master-bug"])
             if s._master_bug_id is None:
                 # It is possible that at some point we stop using tags for
                 # the bug linking completely. So this would be "normal".
                 s._master_bug_id = p_master
             elif s._master_bug_id != p_master:
-                cwarn('Mismatch : master bug - tag: %s; property: %s  (lp: #%s)' % (s._master_bug_id, p_master, bug.id))
+                cwarn("Mismatch : master bug - tag: %s; property: %s  (lp: #%s)" % (s._master_bug_id, p_master, bug.id))
                 s._master_bug_id = p_master
-                #prefix = 'kernel-sru-%s-of-' % s.__type
-                #s.__update_pfx_tag(prefix, '%s%s' % (prefix, p_master))
+                # prefix = 'kernel-sru-%s-of-' % s.__type
+                # s.__update_pfx_tag(prefix, '%s%s' % (prefix, p_master))
         # Target series might be in properties
-        p_key = 'target-series'
+        p_key = "target-series"
         if p_key in s.__wf_properties:
             if s._target_series is None:
                 s._target_series = s.__wf_properties[p_key]
             elif s._target_series != s.__wf_properties[p_key]:
-                cwarn('Mismatch between target series in task and properties')
-                cwarn('P[target-series]: {}'.format(s.__wf_properties[p_key]))
-                cwarn('T: {}'.format(s._target_series))
+                cwarn("Mismatch between target series in task and properties")
+                cwarn("P[target-series]: {}".format(s.__wf_properties[p_key]))
+                cwarn("T: {}".format(s._target_series))
 
         # Initialize the list of derivative/child tracking bugs from
         # the SWM trackers property. Change the key to be the bug ID
         # for backwards compatibility with previous tb2 versions.
         s._derivative_bug_ids = {}
-        if 'trackers' in s.__wf_properties.keys():
-            for srchandle in s.__wf_properties['trackers']:
+        if "trackers" in s.__wf_properties.keys():
+            for srchandle in s.__wf_properties["trackers"]:
                 bugids = []
                 # Take the highest bug number from the listed set on the assumption
                 # that is newest.  Example:
                 #    linux-oem: bug 123, bug 234
-                for bughandle in s.__wf_properties['trackers'][srchandle].split(','):
-                    bugids.append(int(bughandle.strip().replace('bug ', '')))
+                for bughandle in s.__wf_properties["trackers"][srchandle].split(","):
+                    bugids.append(int(bughandle.strip().replace("bug ", "")))
                 bugid = sorted(bugids)[-1]
                 s._derivative_bug_ids[bugid] = srchandle
 
     def __init__(s, bug, wf_project_name=TRACKINGBUG_DEFAULT_PROJECT):
-        '''
+        """
         Create a new tracking bug object from an existing launchpad bug
         which is passed in as bug number reference.
 
         :param bug: The launchpad bug which is used as a backing store
             for the tracking bug info.
         :type  bug: lpltk.Bug()
-            
+
         :param wf_project_name: Name of the launchpad project to use for
             workflow tasks.
         :type  wf_project_name: str
-        '''
+        """
         lp = bug.service.launchpad
         # Init class data
-        s.__bug                     = bug
-        s.__wf                      = Workflow()
-        s.__wf_project              = lp.projects[wf_project_name]
-        s.__wf_properties           = {}
-        s.__kernel_series           = KernelSeries()
-        s.__modified                = False
-        s.__type                    = 'master'
+        s.__bug = bug
+        s.__wf = Workflow()
+        s.__wf_project = lp.projects[wf_project_name]
+        s.__wf_properties = {}
+        s.__kernel_series = KernelSeries()
+        s.__modified = False
+        s.__type = "master"
 
         # Cached properties which are stored somewhere in the bug
         # report and will be initialiazed through the accessor functions.
-        s._target_series            = None
-        s._target_package           = None
-        s._target_version           = None
-        s._isdev                    = None
-        s._cycle                    = None
-        s._spin_nr                  = 1
-        s._master_bug_id            = None
-        s._derivative_bug_ids       = None
+        s._target_series = None
+        s._target_package = None
+        s._target_version = None
+        s._isdev = None
+        s._cycle = None
+        s._spin_nr = 1
+        s._master_bug_id = None
+        s._derivative_bug_ids = None
 
         s.__parse_lpbug()
 
     def __update_desc(s):
-        '''
+        """
         Internal helper to update the description of the embedded launchpad
         bug with the workflow content.
-        '''
+        """
         new_desc = s.__tbd.desc_tmpl
 
         # For the properties just do a yaml dump
         if len(s.__wf_properties) == 0:
-            new_props = ''
+            new_props = ""
         else:
             new_props = yaml.safe_dump(s.__wf_properties, default_flow_style=False)
-        new_desc += '\n-- swm properties --\n' + new_props.strip()
+        new_desc += "\n-- swm properties --\n" + new_props.strip()
 
         s.__bug.description = new_desc
         s.__modified = False
 
     def __update_cycle_tag(s, new_cycle, new_spin):
-        '''
+        """
         Internal helper to be called whenever new values are assigned to
         the cycle string or spin number.
-        '''
+        """
         if s._cycle == new_cycle and s.spin_nr == new_spin:
             return
         s._cycle = new_cycle
         s._spin_nr = new_spin
 
-        new_tag = 'kernel-sru-cycle-%s-%i' % (new_cycle, new_spin)
-        s.__replace_pfx_tag('kernel-sru-cycle-', new_tag)
+        new_tag = "kernel-sru-cycle-%s-%i" % (new_cycle, new_spin)
+        s.__replace_pfx_tag("kernel-sru-cycle-", new_tag)
 
     @property
     def id(s):
-        '''
+        """
         The bug ID of the underlying launchpad bug (read-only).
 
         :type: int
-        '''
+        """
         return int(s.__bug.id)
 
     @property
     def title(s):
-        '''
+        """
         The title of the underlying launchpad bug (read-only).
 
         :type:  str
-        '''
+        """
         return s.__bug.title
 
     @property
     def cycle(s):
-        '''
+        """
         The cycle tag (if set) for the tracking bug or None. This tag
         is without the spin number.
 
         :type: str
-        '''
+        """
         return s._cycle
 
     @cycle.setter
     def cycle(s, cycle):
         if not isinstance(cycle, str):
-            raise TrackingBugError('Must be a string')
+            raise TrackingBugError("Must be a string")
         s.__update_cycle_tag(cycle, s._spin_nr)
 
     @property
     def spin_nr(s):
-        '''
+        """
         The spin number (default 1) for the tracking bug.
 
         :type: int
-        '''
+        """
         return s._spin_nr
 
     @spin_nr.setter
     def spin_nr(s, spin_nr):
         if not isinstance(spin_nr, int):
-            raise TrackingBugError('Must be an integer')
+            raise TrackingBugError("Must be an integer")
         if spin_nr < 1:
-            raise TrackingBugError('Must be at least 1')
+            raise TrackingBugError("Must be at least 1")
         s.__update_cycle_tag(s._cycle, spin_nr)
 
     @property
     def target_package(s):
-        '''
+        """
         The name of the source package with the tracking bug is
         targetting (read-only).
 
         :type: str
-        '''
+        """
         return s._target_package
 
     @property
     def target_version(s):
-        '''
+        """
         The version number of the source package which is tracked
         by this tracking bug (writeable).
 
@@ -359,81 +368,81 @@ class TrackingBug(object):
         launchpad bug.
 
         :type: str
-        '''
+        """
         return s._target_version
 
     @target_version.setter
     def target_version(s, version):
         s._target_version = version
-        s.__bug.title = '{}/{}: {} -proposed tracker'.format(s._target_series, s._target_package, version)
+        s.__bug.title = "{}/{}: {} -proposed tracker".format(s._target_series, s._target_package, version)
 
     @property
     def target_series(s):
-        '''
+        """
         The (code-) name of the release which the tracked source package
         is targetting (read-only).
 
         :type: str
-        '''
+        """
         return s._target_series
 
     @property
     def master_bug_id(s):
-        '''
+        """
         The launchpad bug ID of the tracking bug of which the current
         tracking bug is a derivative of. Or none if this is a master
         (read-only)
-        '''
+        """
         return s._master_bug_id
 
     def __master_bug_id_set(s, ref_tb):
-        '''
+        """
         Internal helper to set the master bug ID of a derivative tracking
         bug when it gets added to a master tracking bug. If the reference
         is None, then unset the master bug ID.
-        '''
+        """
         if ref_tb is None:
             if s._master_bug_id is not None:
-                tag2del = 'kernel-sru-{}-of-{}'.format(s.__type, str(s._master_bug_id))
+                tag2del = "kernel-sru-{}-of-{}".format(s.__type, str(s._master_bug_id))
                 if tag2del in s.__bug.tags:
                     s.__bug.tags.remove(tag2del)
-            s.__type = 'master'
+            s.__type = "master"
             s._master_bug_id = None
-            del(s.__wf_properties['kernel-stable-master-bug'])
+            del s.__wf_properties["kernel-stable-master-bug"]
             s.__update_desc()
             return
 
         if not isinstance(ref_tb, TrackingBug):
-            raise TrackingBugError('reference must be a TrackingBug object')
+            raise TrackingBugError("reference must be a TrackingBug object")
 
         if s._target_series == ref_tb.target_series:
-            s.__type = 'derivative'
+            s.__type = "derivative"
         else:
-            s.__type = 'backport'
+            s.__type = "backport"
         s._master_bug_id = ref_tb.id
-        s.__wf_properties['kernel-stable-master-bug'] = s._master_bug_id
+        s.__wf_properties["kernel-stable-master-bug"] = s._master_bug_id
         s.__update_desc()
-        prefix = 'kernel-sru-{}-of-'.format(s.__type)
+        prefix = "kernel-sru-{}-of-".format(s.__type)
         s.__replace_pfx_tag(prefix, prefix + str(s._master_bug_id))
-        
+
     @property
     def derivative_bug_ids(s):
-        '''
+        """
         A list of tracking bug IDs which track a derivative source of
         this tacking bug (read-only).
 
         :type: [ int ... ]
-        '''
+        """
         return s._derivative_bug_ids.keys()
 
     @property
     def isdev(s):
-        '''
+        """
         Indicates whether the tracking bug is targetting a development
         series or not (read-only).
 
         :type: Bool()
-        '''
+        """
         if s._isdev is not None:
             return s._isdev
 
@@ -450,23 +459,23 @@ class TrackingBug(object):
 
     @property
     def wf_properties(s):
-        '''
+        """
         A list of SWM properties (keys) defined for this tracking bug
         (read-only). The values can be fetched/set via wf_get_property
         and wf_set_property.
 
         :type: [ str ... ]
-        '''
+        """
         return s.__wf_properties.keys()
 
     @property
     def wf_tasks(s):
-        '''
+        """
         :return: A list of all defined workflow tasks.
         :rtype: [ str ... ]
-        '''
-        wf_name   = s.__wf_project.display_name
-        wf_tasks  = []
+        """
+        wf_name = s.__wf_project.display_name
+        wf_tasks = []
 
         for task in s.__bug.tasks:
             task_name = task.bug_target_display_name
@@ -474,19 +483,19 @@ class TrackingBug(object):
 
             if parts[1] == wf_name:
                 # Skip the main workflow task
-                if parts[0] == '' and parts[2] == '':
+                if parts[0] == "" and parts[2] == "":
                     continue
                 wf_tasks.append(parts[2].strip())
 
         return wf_tasks
 
     def tags_reset(s, testing=False):
-        '''
+        """
         Set the bug up with it's initial set of tags. If this is an existing
         tracking bug and we are resetting it to the default then we should
         remove any/all existing tags.
-        '''
-        center(s.__class__.__name__ + '.tags_reset')
+        """
+        center(s.__class__.__name__ + ".tags_reset")
         tags_to_set = []
 
         # Target series tag
@@ -495,19 +504,19 @@ class TrackingBug(object):
 
         # Query the workflow for the base set of tags
         for itag in s.__wf.initial_tags(s._target_package, s.isdev):
-            if itag == s.__tbd.tag_names['default']['valid'] and testing:
-                itag = s.__tbd.tag_names['testing']['valid']
+            if itag == s.__tbd.tag_names["default"]["valid"] and testing:
+                itag = s.__tbd.tag_names["testing"]["valid"]
             tags_to_set.append(itag)
 
         # If there is a cycle set, also create the cycle tag.
         if s._cycle is not None:
-            itag  = s.__tbd.tag_names['default']['cycle'] + s._cycle
-            itag += '-' + str(s._spin_nr)
+            itag = s.__tbd.tag_names["default"]["cycle"] + s._cycle
+            itag += "-" + str(s._spin_nr)
             tags_to_set.append(itag)
 
         # If master bug ID is set ...
         if s._master_bug_id is not None:
-            itag  = s.__tbd.tag_names[tagset_key][s.__type]
+            itag = s.__tbd.tag_names[tagset_key][s.__type]
             itab += str(s._master_bug_id)
             tags_to_set.append(itag)
 
@@ -524,14 +533,14 @@ class TrackingBug(object):
         for itag in tags_to_set:
             s.__bug.tags.append(itag)
 
-        cleave(s.__class__.__name__ + '.tags_reset')
+        cleave(s.__class__.__name__ + ".tags_reset")
 
     def subscribers_add(s):
-        '''
+        """
         Subscribe teams/individuals based on the target package name to the
         tracking bug.
-        '''
-        center(s.__class__.__name__ + '.subscribers_add')
+        """
+        center(s.__class__.__name__ + ".subscribers_add")
         for subscriber in s.__wf.subscribers(s._target_package, s.isdev):
             try:
                 lp_subscriber = s.__bug.service.launchpad.people[subscriber]
@@ -539,46 +548,46 @@ class TrackingBug(object):
                 cinfo('Cannot subscribe "{}", name not found in Launchpad!'.format(subscriber))
                 continue
             s.__bug.lpbug.subscribe(person=lp_subscriber)
-        cleave(s.__class__.__name__ + '.subscribers_add')
+        cleave(s.__class__.__name__ + ".subscribers_add")
 
     def wf_status_get(s):
-        '''
+        """
         Retrieves the status of the workflow project task.
 
         :rtype: str
-        '''
-        center(s.__class__.__name__ + '.wf_status_get')
+        """
+        center(s.__class__.__name__ + ".wf_status_get")
         wf_name = s.__wf_project.display_name
-        status = ''
+        status = ""
         for task in s.__bug.tasks:
             task_name = task.bug_target_display_name
             parts = task_name.partition(wf_name)
-            if parts[0] == '' and parts[1] == wf_name and parts[2] == '':
+            if parts[0] == "" and parts[1] == wf_name and parts[2] == "":
                 status = task.status
                 break
-        cleave(s.__class__.__name__ + '.wf_status_get')
+        cleave(s.__class__.__name__ + ".wf_status_get")
         return status
 
     def wf_status_set(s, status):
-        '''
+        """
         Sets the status of the workflow project task to the given
         status.
 
         :param status: New status
         :type  status: Valid workflow status string
-        '''
-        center(s.__class__.__name__ + '.wf_status_set')
+        """
+        center(s.__class__.__name__ + ".wf_status_set")
         wf_name = s.__wf_project.display_name
         for task in s.__bug.tasks:
             task_name = task.bug_target_display_name
             parts = task_name.partition(wf_name)
-            if parts[0] == '' and parts[1] == wf_name and parts[2] == '':
+            if parts[0] == "" and parts[1] == wf_name and parts[2] == "":
                 task.status = status
                 task.importance = "Medium"
-        cleave(s.__class__.__name__ + '.wf_status_set')
+        cleave(s.__class__.__name__ + ".wf_status_set")
 
     def wf_task_get(s, task_name):
-        '''
+        """
         Get the task of a workflow task which can then be modified
         directly.
 
@@ -586,21 +595,21 @@ class TrackingBug(object):
         :type  task_name: str
 
         :rtype: lptk.bug_task()
-        '''
-        center(s.__class__.__name__ + '.wf_task_get')
+        """
+        center(s.__class__.__name__ + ".wf_task_get")
         wf_name = s.__wf_project.display_name
         for task in s.__bug.tasks:
             parts = task.bug_target_display_name.partition(wf_name)
 
             if parts[1] == wf_name and parts[2].strip() == task_name:
-                    cleave(s.__class__.__name__ + '.wf_task_get')
-                    return task
+                cleave(s.__class__.__name__ + ".wf_task_get")
+                return task
 
-        cleave(s.__class__.__name__ + '.wf_task_get -> None')
+        cleave(s.__class__.__name__ + ".wf_task_get -> None")
         return None
 
     def derivative_add(s, ref_tb):
-        '''
+        """
         Add the given tracking bug as a derivative/backport of the
         current tracking bug. This also will set the current tracking
         bug as the master of the derivative tracking bug
@@ -608,20 +617,20 @@ class TrackingBug(object):
         :param ref_tb: The tracking bug which should become a derivative
             of the current tracking bug.
         :type  ref_tb: TrackingBug()
-        '''
+        """
         if not isinstance(ref_tb, TrackingBug):
-            raise TrackingBugError('reference must be a tracking bug')
+            raise TrackingBugError("reference must be a tracking bug")
         if ref_tb.id in s._derivative_bug_ids:
             return
-        srchandle = '{}/{}'.format(ref_tb.target_series, ref_tb.target_package)
-        if 'variant' in ref_tb.__wf_properties.keys():
-            if ref_tb.__wf_properties['variant'] == 'snap-debs':
-                srchandle += '/{}'.format(ref_tb.__wf_properties['snap-name'])
+        srchandle = "{}/{}".format(ref_tb.target_series, ref_tb.target_package)
+        if "variant" in ref_tb.__wf_properties.keys():
+            if ref_tb.__wf_properties["variant"] == "snap-debs":
+                srchandle += "/{}".format(ref_tb.__wf_properties["snap-name"])
         s._derivative_bug_ids[int(ref_tb.id)] = srchandle
         ref_tb.__master_bug_id_set(s)
 
     def derivative_remove(s, ref_tb):
-        '''
+        """
         Remove the given tracking bug from being a derivative/backport
         of the current tracking bug. This also unsets the master bug
         reference in the givven tracking bug.
@@ -630,34 +639,34 @@ class TrackingBug(object):
                        derivative tracking bug object linked to the
                        current tracking bug or will raise an exception.
         :type  ref_tb: TrackingBug()
-        '''
+        """
         if not isinstance(ref_tb, TrackingBug):
-            raise TrackingBugError('reference must be a tracking bug')
+            raise TrackingBugError("reference must be a tracking bug")
         if ref_tb.id not in s._derivative_bug_ids:
-            raise TrackingBugError('reference is not a derivative')
-        del(s._derivative_bug_ids[int(ref_tb.id)])
+            raise TrackingBugError("reference is not a derivative")
+        del s._derivative_bug_ids[int(ref_tb.id)]
         ref_tb.__master_bug_id_set(None)
 
     def make_duplicate_of(s, ref_tb):
-        '''
+        """
         Mark the current tracking bug as a duplicate of the given one.
         This does not update any master or derivative references.
 
         :param ref_tb: The tracking bug which the current one should
                        be a duplicate of.
         :type  ref_tb: TrackingBug()
-        '''
+        """
         if not isinstance(ref_tb, TrackingBug):
-            raise TrackingBugError('reference must be a tracking bug')
+            raise TrackingBugError("reference must be a tracking bug")
         if ref_tb.target_series != s._target_series:
-            raise TrackingBugError('reference series mismatch')
+            raise TrackingBugError("reference series mismatch")
         if ref_tb.target_package != s._target_package:
-            raise TrackingBugError('reference source mismatch')
+            raise TrackingBugError("reference source mismatch")
         s.__bug.lpbug.duplicate_of = ref_tb.__bug.lpbug
         s.__bug.lpbug.lp_save()
 
     def invalidate(s, hard=False):
-        '''
+        """
         Invalidate all tasks of the tracking bug and remove all
         search tags.
 
@@ -665,31 +674,31 @@ class TrackingBug(object):
                      finding the bug again while looking for closed tracking bugs
                      of a certain cycle.
         :type  hard: Boolean
-        '''
-        center(s.__class__.__name__ + '.invalidate({}, {})'.format(s.id, hard))
+        """
+        center(s.__class__.__name__ + ".invalidate({}, {})".format(s.id, hard))
         for tag in list(s.__bug.tags):
-            if tag == s.__tbd.tag_names['default']['valid']:
+            if tag == s.__tbd.tag_names["default"]["valid"]:
                 s.__bug.tags.remove(tag)
-            elif tag == s.__tbd.tag_names['testing']['valid']:
+            elif tag == s.__tbd.tag_names["testing"]["valid"]:
                 s.__bug.tags.remove(tag)
-            elif tag.startswith('kernel-sru-cycle') and hard == True:
+            elif tag.startswith("kernel-sru-cycle") and hard == True:
                 s.__bug.tags.remove(tag)
 
         for task in s.__bug.tasks:
             # Leave the signing tasks alone, we are not allowed to change those.
-            if 'canonical-signing-jobs' in task.bug_target_display_name:
+            if "canonical-signing-jobs" in task.bug_target_display_name:
                 continue
             cdebug('Invalidate task "{}"'.format(task.bug_target_display_name))
-            task.status = 'Invalid'
-        cleave(s.__class__.__name__ + '.invalidate')
+            task.status = "Invalid"
+        cleave(s.__class__.__name__ + ".invalidate")
 
     def tasks_reset(s):
-        '''
+        """
         Reset all tasks of the tracking bug to their default values
         (assignee, status).
-        '''
-        center(s.__class__.__name__ + '.tasks_reset')
-        wf_name   = s.__wf_project.display_name
+        """
+        center(s.__class__.__name__ + ".tasks_reset")
+        wf_name = s.__wf_project.display_name
         ct_series = s._target_series.capitalize()
 
         # Fetch the list of invalid tasks according to the kernel-series
@@ -704,99 +713,99 @@ class TrackingBug(object):
 
         # Set task assignments and importance. Main project task must be
         # set to In Progress for the bot to do its processing.
-        cdebug('')
-        cdebug('Setting status and importance', 'blue')
-        cdebug('* series: {}'.format(ct_series))
+        cdebug("")
+        cdebug("Setting status and importance", "blue")
+        cdebug("* series: {}".format(ct_series))
         for task in s.__bug.tasks:
             task_name = task.bug_target_display_name
-            cdebug('* {}'.format(task_name), 'cyan')
+            cdebug("* {}".format(task_name), "cyan")
             parts = task_name.partition(wf_name)
 
-            if not s.isdev and 'linux' in parts[0] and ct_series not in parts[0]:
+            if not s.isdev and "linux" in parts[0] and ct_series not in parts[0]:
                 # The main linux task? [linux (Ubuntu)]
-                task.status = 'Invalid'
-                cdebug('  - is main linux task', 'white')
-                cdebug('  - status: {}; importance: {}'.format(task.status, task.importance), 'green')
-            elif parts[0] == '' and parts[1] == wf_name and parts[2] == '':
+                task.status = "Invalid"
+                cdebug("  - is main linux task", "white")
+                cdebug("  - status: {}; importance: {}".format(task.status, task.importance), "green")
+            elif parts[0] == "" and parts[1] == wf_name and parts[2] == "":
                 # This is the main SRU Workflow task
                 continue
-            elif parts[0] != '':
+            elif parts[0] != "":
                 # The series nomination of the package (linux) task?
-                cdebug('  - is the target series of the linux task', 'white')
+                cdebug("  - is the target series of the linux task", "white")
                 try:
-                    task.importance = 'Medium'
+                    task.importance = "Medium"
                 except:
                     if ct_series not in parts[0]:
                         cwarn('Failed to set the task ({}) importance to "Medium".'.format(task_name))
-                cdebug('  - status: {}; importance: {}'.format(task.status, task.importance))
+                cdebug("  - status: {}; importance: {}".format(task.status, task.importance))
                 continue
             else:
                 # Else, it must be one of the SRU Workflow tasks.
-                cdebug('  - is a SRU workflow task', 'white')
+                cdebug("  - is a SRU workflow task", "white")
 
                 # All workflow tasks are "Medium" importance
-                task.importance = 'Medium'
-                task.status = 'New'
+                task.importance = "Medium"
+                task.status = "New"
 
                 # Determine and set the assignee.
                 task_name = parts[2].strip()
                 try:
                     assignee = s.__wf.assignee_ex(s._target_series, s._target_package, task_name, s.isdev)
                 except DefaultAssigneeMissing as e:
-                    cwarn('  ! {}'.format(str(e)))
+                    cwarn("  ! {}".format(str(e)))
                     continue
                 if assignee is None:
-                    cinfo('Found workflow task ({}) with no default assignee'.format(task_name))
-                    cinfo('Leaving unassigned and setting to invalid')
-                    task.status = 'Invalid'
-                    cdebug('  - status: Invalid')
+                    cinfo("Found workflow task ({}) with no default assignee".format(task_name))
+                    cinfo("Leaving unassigned and setting to invalid")
+                    task.status = "Invalid"
+                    cdebug("  - status: Invalid")
                 else:
                     lp = s.__bug.service.launchpad
                     try:
 
                         task.assignee = lp.people[assignee]
-                        cdebug('  - assigning: {}'.format(task.assignee.display_name))
+                        cdebug("  - assigning: {}".format(task.assignee.display_name))
                     except:
                         cinfo('Cannot assign "{}", not found in Launchpad!'.format(assignee))
 
                 # Determine and mark appropriate tasks Invalid
                 if s._target_version is not None:
-                    lin_ver = re.findall(r'([0-9]+\.[^-]+)', s._target_version)
+                    lin_ver = re.findall(r"([0-9]+\.[^-]+)", s._target_version)
                     if lin_ver:
                         lin_ver = lin_ver[0]
                         if not s.isdev and s.__wf.is_task_invalid(s._target_package, task_name, lin_ver):
-                            task.status = 'Invalid'
-                            cdebug('  - status: Invalid')
+                            task.status = "Invalid"
+                            cdebug("  - status: Invalid")
                             continue
 
                 if task_name in ks_invalid_tasks:
-                    task.status = 'Invalid'
-                    cdebug('  - status: Invalid')
+                    task.status = "Invalid"
+                    cdebug("  - status: Invalid")
                     continue
-#
-#                if not self.new_abi and task_name.startswith('prepare-package-') and task_name != 'prepare-package-signed':
-#                    task.status = "Invalid"
-#                    cdebug('        status: Invalid')
-#
-        cleave(s.__class__.__name__ + '.tasks_reset')
+        #
+        #                if not self.new_abi and task_name.startswith('prepare-package-') and task_name != 'prepare-package-signed':
+        #                    task.status = "Invalid"
+        #                    cdebug('        status: Invalid')
+        #
+        cleave(s.__class__.__name__ + ".tasks_reset")
 
     def save(s):
-        '''
+        """
         Try to write out any pending changes. At this time this would
         be changes to the description section of the underlying Launchpad
         bug (like derivatives/backports list and SWM properties.
-        '''
-        center(s.__class__.__name__ + '.save')
+        """
+        center(s.__class__.__name__ + ".save")
         if s.__modified:
             try:
                 s.__update_desc()
                 s.__modified = False
             except:
                 raise
-        cleave(s.__class__.__name__ + '.save')
+        cleave(s.__class__.__name__ + ".save")
 
     def set_cycle_and_spin(s, cycle, spin_nr):
-        '''
+        """
         Set a new cycle tag and spin number on the tracking bug.
 
         :param cycle: New cycle tag
@@ -804,17 +813,17 @@ class TrackingBug(object):
 
         :param spin_nr: New spin number (>= 1)
         :type  spin_nr: int
-        '''
+        """
         if not isinstance(cycle, str):
-            raise TrackingBugError('Must be a string <cycle>')
+            raise TrackingBugError("Must be a string <cycle>")
         if not isinstance(spin_nr, int):
-            raise TrackingBugError('Must be an integer <spin_nr>')
+            raise TrackingBugError("Must be an integer <spin_nr>")
         if spin_nr < 1:
-            raise TrackingBugError('Must be at least 1 <spin_nr>')
+            raise TrackingBugError("Must be at least 1 <spin_nr>")
         s.__update_cycle_tag(cycle, spin_nr)
 
     def wf_get_property(s, key, default=None):
-        '''
+        """
         Fetch the value of a SWM property (or default if not found).
 
         :param key: Name of the SWM property to get.
@@ -824,11 +833,11 @@ class TrackingBug(object):
         :type  default: Any
 
         :type: opaque
-        '''
-        center(s.__class__.__name__ + '.wf_get_property')
+        """
+        center(s.__class__.__name__ + ".wf_get_property")
         props = s.__wf_properties
 
-        key = key.split('.')
+        key = key.split(".")
         while len(key) > 0:
             if not props:
                 break
@@ -836,11 +845,11 @@ class TrackingBug(object):
         if not props:
             props = default
 
-        cleave(s.__class__.__name__ + '.wf_get_property')
+        cleave(s.__class__.__name__ + ".wf_get_property")
         return props
 
     def wf_set_property(s, key, value):
-        '''
+        """
         Set a SWM property named <key> to <value>. Does not immediately
         update the underlying Launchpad bug, use save() to do that.
 
@@ -849,39 +858,41 @@ class TrackingBug(object):
 
         :param value: Content of the SWM property
         :type  value: opaque
-        '''
+        """
         s.__wf_properties[key] = value
         s.__modified = True
 
-class TrackingBugs():
-    '''
+
+class TrackingBugs:
+    """
     This class represents a collection of tracking bugs. It should be
     the primary interface for every application.
 
     The main interface should resemble a dictionary with the launchpad
     bug ID as its key. But additional methods are provided to allow
     other forms of searches.
-    '''
+    """
+
     __tbd = TrackingBugDefines()
 
     def __add_to_set(s, new_tb):
-        '''
+        """
         Internal helper to add a tracking bug object into the set and update
         indexes.
-        '''
+        """
         if not isinstance(new_tb, TrackingBug):
-            raise TrackingBugError('not a tracking bug object')
+            raise TrackingBugError("not a tracking bug object")
         s.__tbs[int(new_tb.id)] = new_tb
         sd = s.__idx_pkg_by_series.setdefault(new_tb.target_series, {})
 
         sourcename = new_tb.target_package
-        snapname = new_tb.wf_get_property('snap-name')
+        snapname = new_tb.wf_get_property("snap-name")
         if snapname is not None:
-            sourcename = '{}/{}'.format(sourcename, snapname)
+            sourcename = "{}/{}".format(sourcename, snapname)
         sd.setdefault(sourcename, set()).add(int(new_tb.id))
 
     def __init__(s, wf_project_name=TRACKINGBUG_DEFAULT_PROJECT, testing=False, quiet=False, private=False):
-        '''
+        """
         Create a new empty set of tracking bugs.
 
         :param wf_project_name:
@@ -905,12 +916,12 @@ class TrackingBugs():
         :param private:
             All tracking bugs in the set should be private bugs
         :type: Bool
-        '''
+        """
         # Get a new instance of LaunchpadService for each new instance
         # of TrackingBugs().
         try:
             defaults = {
-                'launchpad_client_name' : 'trackingbugs-library',
+                "launchpad_client_name": "trackingbugs-library",
             }
             s.__lps = LaunchpadService(defaults)
         except LaunchpadServiceError as e:
@@ -923,27 +934,27 @@ class TrackingBugs():
         s.__tbs = {}
         s.project = wf_project_name
         s.testing = testing
-        s.quiet   = quiet
+        s.quiet = quiet
         s.private = private
 
     def __len__(s):
-        '''
+        """
         :return: Number of tracking bugs defined in this collection.
         :rtype: int
-        '''
+        """
         return len(s.__tbs)
 
     def __getitem__(s, bug_id):
-        '''
+        """
         TrackingBugs[bug_id] -> TrackingBug() | None
 
         :return: The tracking bug defined under the given launchpad bug ID.
         :rtype: TrackingBug()
-        '''
+        """
         return s.__tbs[bug_id]
 
     def __delitem__(s, bug_id):
-        '''
+        """
         del(TrackingBugs[bug_id])
 
         Removes a tracking bug from the collection of tracking bugs and
@@ -952,18 +963,18 @@ class TrackingBugs():
 
         :param bug_id: The LP bug ID to be removed
         :type  bug_id: int
-        '''
+        """
         tb = s.__tbs[bug_id]
         sd = s.__idx_pkg_by_series[tb.target_series]
         pd = sd[tb.target_package]
         pd.remove(bug_id)
         if len(pd) == 0:
             pd = None
-            del(sd[tb.target_package])
+            del sd[tb.target_package]
             if len(sd) == 0:
                 sd = None
-                del(s.__idx_pkg_by_series[tb.target_series])
-        del(s.__tbs[bug_id])
+                del s.__idx_pkg_by_series[tb.target_series]
+        del s.__tbs[bug_id]
 
     def __iter__(s):
         for tb in s.__tbs:
@@ -971,22 +982,22 @@ class TrackingBugs():
 
     @property
     def bug_ids(s):
-        '''
+        """
         A list of Launchpad bugs (IDs) which are currently part of the
         TrackingBugs() set (read-only).
 
         :type: list()
-        '''
+        """
         return list(s.__tbs)
 
     @property
     def series_names(s):
-        '''
+        """
         A list of series names (codenames of releases) for which
         tracking bugs exist in the current collection (read-only).
 
         :type: list()
-        '''
+        """
         sl = []
 
         for series in sorted(s.__ks.series, key=lambda k: k.name, reverse=True):
@@ -997,12 +1008,12 @@ class TrackingBugs():
 
     @property
     def cycle_tags(s):
-        '''
+        """
         A set of unique cycle tags which are defined in the current
         collection of tracking bugs (read-only).
 
         :type: set()
-        '''
+        """
         cl = set()
 
         for tbid in s.__tbs:
@@ -1012,7 +1023,7 @@ class TrackingBugs():
         return cl
 
     def add(s, bug_id):
-        '''
+        """
         Adds a single tracking bug from an existing launchpad bug and
         refreshes internal indexes. Can throw an exception.
 
@@ -1022,30 +1033,30 @@ class TrackingBugs():
 
         :returns: New tracking bug object
         :rtype: TrackingBug()
-        '''
-        center(s.__class__.__name__ + '.add({})'.format(bug_id))
+        """
+        center(s.__class__.__name__ + ".add({})".format(bug_id))
         if bug_id not in s.__tbs:
             try:
                 tb = TrackingBug(Bug(s.__lps, bug_id))
                 s.__add_to_set(tb)
             except TrackingBugError as e:
-                msg = 'failed to add bug ({})'.format(e.msg)
+                msg = "failed to add bug ({})".format(e.msg)
                 raise TrackingBugError(msg)
 
             if tb.master_bug_id is not None:
                 if tb.master_bug_id not in s.__tbs:
                     mb = s.add(tb.master_bug_id)
                 else:
-                   mb = s.__tbs[tb.master_bug_id]
+                    mb = s.__tbs[tb.master_bug_id]
                 mb.derivative_add(tb)
         else:
             tb = s.__tbs[bug_id]
 
-        cleave(s.__class__.__name__ + '.add')
+        cleave(s.__class__.__name__ + ".add")
         return tb
 
     def load(s, series_filter=[], tag_filter=[], debug=False):
-        '''
+        """
         Load a set of tracking bugs from Launchpad which match
         the given filters (default all live tracking bugs).
 
@@ -1059,30 +1070,29 @@ class TrackingBugs():
 
         :param debug: Print status info while working on the task.
         :type  debug: Bool()
-        '''
-        center(s.__class__.__name__ + '.load')
+        """
+        center(s.__class__.__name__ + ".load")
 
         valid_states = [
-            'New',
-            'Confirmed',
-            'Triaged',
-            'In Progress',
-            'Incomplete',
-            'Fix Committed',
-            'Fix Released',
-            'Invalid',
+            "New",
+            "Confirmed",
+            "Triaged",
+            "In Progress",
+            "Incomplete",
+            "Fix Committed",
+            "Fix Released",
+            "Invalid",
         ]
 
         if len(tag_filter) > 0:
             search_tag = tag_filter
         else:
             if s.testing:
-                search_tag = s.__tbd.tag_names['testing']['valid']
+                search_tag = s.__tbd.tag_names["testing"]["valid"]
             else:
-                search_tag = s.__tbd.tag_names['default']['valid']
+                search_tag = s.__tbd.tag_names["default"]["valid"]
 
-        tasks = s.__lps.launchpad.bugs.searchTasks(
-                    tags=search_tag)
+        tasks = s.__lps.launchpad.bugs.searchTasks(tags=search_tag)
 
         bug_ids = []
         for task in tasks:
@@ -1092,27 +1102,27 @@ class TrackingBugs():
             # Is this a snap-debs task in that case the series is part of the title.
             # To make things not that easy the tasks.title is something in the form:
             #  'Bug #[0-9]+ in Kernel SRU Workflow: "<series>/<source>: ..."'
-            if 'snap-debs' in task.title and tlink.endswith('kernel-sru-workflow'):
-                series = task.title.split('"')[1].split(':')[0].split('/')[0]
+            if "snap-debs" in task.title and tlink.endswith("kernel-sru-workflow"):
+                series = task.title.split('"')[1].split(":")[0].split("/")[0]
                 if len(series_filter) > 0 and series not in series_filter:
                     continue
-                bug_ids.append(task.self_link.split('/')[-1])
+                bug_ids.append(task.self_link.split("/")[-1])
                 continue
 
             # Only interested in the <package> tasks in the ubuntu project
             # because that has info about the target series codename.
-            if '/ubuntu/' not in tlink:
+            if "/ubuntu/" not in tlink:
                 continue
-            if '/ubuntu/+source/' in tlink:
+            if "/ubuntu/+source/" in tlink:
                 continue
-            series = tlink.partition('/+source/')[0].split('/')[-1]
+            series = tlink.partition("/+source/")[0].split("/")[-1]
             if len(series_filter) > 0:
                 if series not in series_filter:
                     continue
-            bug_ids.append(task.self_link.split('/')[-1])
+            bug_ids.append(task.self_link.split("/")[-1])
 
         if debug:
-            print('Gathering details for %i tracking bugs' % len(bug_ids))
+            print("Gathering details for %i tracking bugs" % len(bug_ids))
 
         cnt = 0
         for bug_id in bug_ids:
@@ -1120,18 +1130,18 @@ class TrackingBugs():
                 s.add(bug_id)
                 cnt = cnt + 1
                 if debug:
-                    print('\rInstantiating bugs... %i' % cnt, end='', flush=True)
+                    print("\rInstantiating bugs... %i" % cnt, end="", flush=True)
             except TrackingBugError as e:
-                cerror('LP: #%i: %s (skipped)' % (bug_id, e.msg))
+                cerror("LP: #%i: %s (skipped)" % (bug_id, e.msg))
                 pass
         if debug:
-            print('')
+            print("")
 
-        cleave(s.__class__.__name__ + '.load')
+        cleave(s.__class__.__name__ + ".load")
         return s
 
     def get_series_package(s, series_name, package_name):
-        center(s.__class__.__name__ + '.get_series_package')
+        center(s.__class__.__name__ + ".get_series_package")
         bug_list = []
         if series_name in s.__idx_pkg_by_series:
             sidx = s.__idx_pkg_by_series[series_name]
@@ -1139,20 +1149,20 @@ class TrackingBugs():
                 for bug_id in sidx[package_name]:
                     bug_list.append(bug_id)
 
-        cleave(s.__class__.__name__ + '.get_series_package')
+        cleave(s.__class__.__name__ + ".get_series_package")
         return bug_list
 
     def __wf_task_valid(s, wf_series, ks_source, variant, snap_name=None):
-        '''
+        """
         Internal helper to decide whether a certain workflow task should be
         added to a launchpad bug.
 
         Returns: True (task is valid) or False (otherwise)
-        '''
+        """
         return s.__wf.is_task_valid(s, wf_series, ks_source, variant, snap_name)
 
     def __add_distro_task(s, lp_bug, distro_series, src_name):
-        '''
+        """
         Internal helper which adds a distro task for the package to a launchpad
         bug (for debs and combo variants).
 
@@ -1169,33 +1179,33 @@ class TrackingBugs():
 
         :returns: launchpad toolkit bug object
         :rtype: lptk.bug
-        '''
-        ubuntu_project = s.__lps.projects['ubuntu']
-        lp             = s.__lps.launchpad
-        lp_package     = src_name
-        lptk_bug       = None
+        """
+        ubuntu_project = s.__lps.projects["ubuntu"]
+        lp = s.__lps.launchpad
+        lp_package = src_name
+        lptk_bug = None
 
         # Try to add an Ubuntu task for the source (to be nominated for
         # the target series). This can fail if the source was never published.
         try:
-            target = lp.load(ubuntu_project.self_link + '/+source/' + lp_package)
-            cdebug('Adding {} task.'.format(lp_package), 'blue')
+            target = lp.load(ubuntu_project.self_link + "/+source/" + lp_package)
+            cdebug("Adding {} task.".format(lp_package), "blue")
             task = lp_bug.addTask(target=target)
-            task.status = 'Confirmed'
+            task.status = "Confirmed"
         except:
             cwarn('The {} source was not published. Re-trying with "linux"'.format(src_name))
-            lp_package = 'linux'
-            target     = lp.load(ubuntu_project.self_link + '/+source/' + lp_package)
+            lp_package = "linux"
+            target = lp.load(ubuntu_project.self_link + "/+source/" + lp_package)
 
             try:
-                cdebug('Adding fallback "linux" task.', 'blue')
+                cdebug('Adding fallback "linux" task.', "blue")
                 task = lp_bug.addTask(target=target)
-                task.status = 'Invalid'
+                task.status = "Invalid"
             except:
                 # Invalidate all tasks added so far
                 for task in lp_bug.tasks:
-                    task.status = 'Invalid'
-                msg = 'failed adding the distro task (bug #{})'.format(lp_bug.id)
+                    task.status = "Invalid"
+                msg = "failed adding the distro task (bug #{})".format(lp_bug.id)
                 raise TrackingBugError(msg)
 
         nomination = lp_bug.addNomination(target=distro_series)
@@ -1205,16 +1215,16 @@ class TrackingBugs():
             # Clone the package task status into the now approved nomination task
             # (while we still have the info).
             saved_status = task.status
-            cseries      = distro_series.name.capitalize()
-            lptk_bug     = s.__lps.get_bug(lp_bug.id)
+            cseries = distro_series.name.capitalize()
+            lptk_bug = s.__lps.get_bug(lp_bug.id)
             for task in lptk_bug.tasks:
                 if cseries in task.bug_target_display_name:
                     task.status = saved_status
 
         return lptk_bug
 
-    def create(s, series_name, pkg_name, name=None, variant='combo'):
-        '''
+    def create(s, series_name, pkg_name, name=None, variant="combo"):
+        """
         Create a new tracking bug (and a launchpad bug which backs it). The
         new tracking bug wil not have any of those elements set:
           - cycle tag       -> tb.cycle = <tag without spin_nr>
@@ -1240,64 +1250,63 @@ class TrackingBugs():
 
         :returns: New tracking bug object (added to the set as well).
         :rtype: TrackingBug()
-        '''
-        center(s.__class__.__name__ + '.create')
+        """
+        center(s.__class__.__name__ + ".create")
         new_tb = None
 
-        cdebug('Series:        %s' % series_name)
-        cdebug('Package:       %s' % pkg_name)
-        cdebug('Variant:       %s' % variant)
-        cdebug('Testing:       %s' % s.testing)
+        cdebug("Series:        %s" % series_name)
+        cdebug("Package:       %s" % pkg_name)
+        cdebug("Variant:       %s" % variant)
+        cdebug("Testing:       %s" % s.testing)
 
         #
         # Figure out whether the package name is known
         #
-        lps     = s.__lps
-        lp      = lps.launchpad
-        ubuntu  = lp.distributions['ubuntu']
+        lps = s.__lps
+        lp = lps.launchpad
+        ubuntu = lp.distributions["ubuntu"]
 
         for distro_series in ubuntu.series_collection:
             # cdebug('ubuntu.series: %s' % distro_series.name)
             if distro_series.name == series_name:
                 break
         if distro_series is None or distro_series.name != series_name:
-            err = '{} is no valid series name'.format(series_name)
+            err = "{} is no valid series name".format(series_name)
             raise TrackingBugError(err)
 
         ks_series = s.__ks.lookup_series(codename=series_name)
         if ks_series is None:
-            err = '{} is not defined in KernelSeries'.format(series_name)
+            err = "{} is not defined in KernelSeries".format(series_name)
             raise TrackingBugError(err)
         else:
             ks_source = ks_series.lookup_source(pkg_name)
         if ks_source is None:
-            err = '{} is no defined source in {}'.format(pkg_name, series_name)
+            err = "{} is no defined source in {}".format(pkg_name, series_name)
             raise TrackingBugError(err)
 
         # Title string for launchpad bug
-        if variant in ('debs', 'combo'):
-            description = '-proposed tracker'
+        if variant in ("debs", "combo"):
+            description = "-proposed tracker"
         else:
             description = variant
-        title = '{}/{}: {} {}'.format(series_name, pkg_name, s.__tbd.no_version, description)
+        title = "{}/{}: {} {}".format(series_name, pkg_name, s.__tbd.no_version, description)
         # Initial description
-        desc  = s.__tbd.desc_tmpl
+        desc = s.__tbd.desc_tmpl
 
-        cdebug('Creating bug for {}'.format(s.project), 'blue')
+        cdebug("Creating bug for {}".format(s.project), "blue")
 
         wf_project = lps.projects[s.project]
         target = lp.load(wf_project.self_link)
         try:
-            lp_bug = lp.bugs.createBug(target=target, title=title,
-                           description=desc, tags=[], private=s.private)
-            cdebug('LP: #{} was created'.format(lp_bug.id))
+            lp_bug = lp.bugs.createBug(target=target, title=title, description=desc, tags=[], private=s.private)
+            cdebug("LP: #{} was created".format(lp_bug.id))
         except:
-            raise TrackingBugError('failed to create embedded LP bug')
+            raise TrackingBugError("failed to create embedded LP bug")
 
         # First add all of the workflow tasks
         for wf_task in wf_project.lp_project.series_collection:
             if s.__wf_task_valid(wf_task, ks_source, variant, snap_name=name):
-                cdebug('    adding: %s' % wf_task.display_name)
+                cdebug("    adding: %s" % wf_task.display_name)
                 nomination = lp_bug.addNomination(target=wf_task)
                 if nomination.canApprove():
                     nomination.approve()
@@ -1307,19 +1316,19 @@ class TrackingBugs():
         # This tag prevents the Ubuntu kernel bot from asking for logs.
         # We want that to be set as soon as possible (or at least before
         # there is a linux package task.
-        tags.append('kernel-release-tracking-bug')
+        tags.append("kernel-release-tracking-bug")
         tags.append(series_name)
         lp_bug.tags = tags
         lp_bug.lp_save()
 
         # Then add a package task for the ubuntu project
-        if variant in ('debs', 'combo'):
+        if variant in ("debs", "combo"):
             lptk_bug = s.__add_distro_task(lp_bug, distro_series, src_name)
         else:
             lptk_bug = None
 
         # Finally build a real tracking bug.
-        cdebug('Creating new TrackingBug() object')
+        cdebug("Creating new TrackingBug() object")
         # Convert raw LP bug into LPTK bug for tracking bug creation
         # (if not already done)
         if lptk_bug is None:
@@ -1329,29 +1338,29 @@ class TrackingBugs():
         except:
             # Invalidate all tasks added so far
             for task in lptk_bug.tasks:
-                task.status = 'Invalid'
-            raise TrackingBugError('failed to instantinate tracking bug')
+                task.status = "Invalid"
+            raise TrackingBugError("failed to instantinate tracking bug")
         new_tb.tasks_reset()
         new_tb.tags_reset(testing=s.testing)
         if s.testing is False and s.private is False:
             new_tb.subscribers_add()
 
         # Add the variant tag.
-        if variant != 'combo':
-            new_tb.wf_set_property('variant', variant)
-        if variant == 'snap-debs':
-            new_tb.wf_set_property('snap-name', name)
+        if variant != "combo":
+            new_tb.wf_set_property("variant", variant)
+        if variant == "snap-debs":
+            new_tb.wf_set_property("snap-name", name)
 
         # Ensure any changes are sync'd to the bug.
         new_tb.save()
 
         s.__add_to_set(new_tb)
-        cleave(s.__class__.__name__ + '.create')
+        cleave(s.__class__.__name__ + ".create")
 
         return new_tb
 
-    def create_minimal(s, src_series, src_name, snap_name=None, variant='combo'):
-        '''
+    def create_minimal(s, src_series, src_name, snap_name=None, variant="combo"):
+        """
         Create a minimally populated tracking bug which will get processed
         by SWM later to fill in the details.
 
@@ -1370,67 +1379,66 @@ class TrackingBugs():
 
         :returns: A freshly created minimal tracking bug
         :rtype:   TrackingBug()
-        '''
-        center(s.__class__.__name__ + '.create_minimal')
+        """
+        center(s.__class__.__name__ + ".create_minimal")
 
-        cdebug('Series:        {}'.format(src_series))
-        cdebug('Package:       {}'.format(src_name))
-        cdebug('Variant:       {}'.format(variant))
-        cdebug('Testing:       {}'.format(s.testing))
+        cdebug("Series:        {}".format(src_series))
+        cdebug("Package:       {}".format(src_name))
+        cdebug("Variant:       {}".format(variant))
+        cdebug("Testing:       {}".format(s.testing))
 
         #
         # Figure out whether the package name is known
         #
-        lps     = s.__lps
-        lp      = lps.launchpad
-        ubuntu  = lp.distributions['ubuntu']
-        new_tb  = None
+        lps = s.__lps
+        lp = lps.launchpad
+        ubuntu = lp.distributions["ubuntu"]
+        new_tb = None
 
         for distro_series in ubuntu.series_collection:
             # cdebug('ubuntu.series: %s' % distro_series.name)
             if distro_series.name == src_series:
                 break
         if distro_series is None or distro_series.name != src_series:
-            err = '{} is no valid series name'.format(src_series)
+            err = "{} is no valid series name".format(src_series)
             raise TrackingBugError(err)
 
         ks_series = s.__ks.lookup_series(codename=src_series)
         if ks_series is None:
-            err = '{} is not defined in KernelSeries'.format(src_series)
+            err = "{} is not defined in KernelSeries".format(src_series)
             raise TrackingBugError(err)
         else:
             ks_source = ks_series.lookup_source(src_name)
         if ks_source is None:
-            err = '{} is no defined source in {}'.format(src_name, src_series)
+            err = "{} is no defined source in {}".format(src_name, src_series)
             raise TrackingBugError(err)
 
         # Title string for launchpad bug
-        if variant in ('debs', 'combo'):
-            description = '-proposed tracker'
+        if variant in ("debs", "combo"):
+            description = "-proposed tracker"
         else:
             description = variant
-        title = '{}/{}: {} {}'.format(src_series, src_name, s.__tbd.no_version, description)
+        title = "{}/{}: {} {}".format(src_series, src_name, s.__tbd.no_version, description)
         # Initial description
-        desc  = s.__tbd.desc_tmpl
+        desc = s.__tbd.desc_tmpl
 
         # The first tag prevents the Ubuntu kernel bot from asking for logs.
         # We want that to be set as soon as possible (or at least before
         # there is a linux package task.
-        tags = ['kernel-release-tracking-bug', src_series]
+        tags = ["kernel-release-tracking-bug", src_series]
 
-        cdebug('Creating bug for {}'.format(s.project), 'blue')
+        cdebug("Creating bug for {}".format(s.project), "blue")
 
         wf_project = lps.projects[s.project]
         target = lp.load(wf_project.self_link)
         try:
-            lp_bug = lp.bugs.createBug(target=target, title=title,
-                           description=desc, tags=tags, private=s.private)
-            cdebug('LP: #{} was created'.format(lp_bug.id))
+            lp_bug = lp.bugs.createBug(target=target, title=title, description=desc, tags=tags, private=s.private)
+            cdebug("LP: #{} was created".format(lp_bug.id))
         except:
-            raise TrackingBugError('failed to create embedded LP bug')
+            raise TrackingBugError("failed to create embedded LP bug")
 
         # Finally build a real tracking bug.
-        cdebug('Creating new TrackingBug() object')
+        cdebug("Creating new TrackingBug() object")
         # Convert raw LP bug into LPTK bug for tracking bug creation
         lptk_bug = lps.get_bug(lp_bug.id)
         try:
@@ -1438,62 +1446,61 @@ class TrackingBugs():
         except:
             # Invalidate all tasks added so far
             for task in lptk_bug.tasks:
-                task.status = 'Invalid'
-            msg = 'failed to instantinate tracking bug for LP: #{}'.format(lp_bug.id)
+                task.status = "Invalid"
+            msg = "failed to instantinate tracking bug for LP: #{}".format(lp_bug.id)
             raise TrackingBugError(msg)
 
         new_tb.tags_reset(testing=s.testing)
 
         # Add the variant tag.
-        if variant != 'combo':
-            new_tb.wf_set_property('variant', variant)
-        if variant == 'snap-debs':
-            new_tb.wf_set_property('snap-name', snap_name)
+        if variant != "combo":
+            new_tb.wf_set_property("variant", variant)
+        if variant == "snap-debs":
+            new_tb.wf_set_property("snap-name", snap_name)
 
         # Ensure any changes are sync'd to the bug.
         new_tb.save()
 
         s.__add_to_set(new_tb)
-        cleave(s.__class__.__name__ + '.create_minimal')
+        cleave(s.__class__.__name__ + ".create_minimal")
 
         return new_tb
 
 
-if __name__ == '__main__':
-    print('Begin %s selftests...' % (__file__))
+if __name__ == "__main__":
+    print("Begin %s selftests..." % (__file__))
     pass_count = 0
     fail_count = 0
-    basicConfig(level='DEBUG')
+    basicConfig(level="DEBUG")
 
-    #tbs = TrackingBugs(testing=True).load()
-    #if len(tbs) > 0:
+    # tbs = TrackingBugs(testing=True).load()
+    # if len(tbs) > 0:
     #    print('WW: Expected 0 test tracking bugs bug got %i' % len(tbs))
     #    fail_count += 1
-    #else:
+    # else:
     #    print('II: PASS: 0 test tracking bugs found.')
     #    pass_count += 1
 
-    print('II: Test loading the complete set of live tracking bugs...')
+    print("II: Test loading the complete set of live tracking bugs...")
     try:
         tbs = TrackingBugs().load(debug=True)
-        print('II: PASS')
+        print("II: PASS")
         pass_count += 1
     except:
-        print('EE: FAIL')
+        print("EE: FAIL")
         fail_count += 1
         raise
 
-    #print(tbs.cycle_tags)
+    # print(tbs.cycle_tags)
 
-    #if len(tbs.series_names) > 0:
+    # if len(tbs.series_names) > 0:
     #    sfilter = [ tbs.series_names[0] ]
-    #else:
+    # else:
     #    sfilter = [ 'bionic' ]
 
-    
-    #sfilter = [ 'bionic' ]
-    #print('II: Test loading filtered %s set...' % sfilter)
-    #try:
+    # sfilter = [ 'bionic' ]
+    # print('II: Test loading filtered %s set...' % sfilter)
+    # try:
     #    tbs = TrackingBugs().load(series_filter=sfilter, debug=True)
     #    for tbid in tbs:
     #        tb = tbs[tbid]
@@ -1518,31 +1525,30 @@ if __name__ == '__main__':
 
     #    print('II: PASS')
     #    pass_count += 1
-    #except:
+    # except:
     #    raise
 
-    #if fail_count == 0:
+    # if fail_count == 0:
     #    print('PASS: %i tests passed' % (pass_count))
-    #else:
+    # else:
     #    print('FAIL: %i of %i tests failed' (fail_count, fail_count + pass_count))
     tbs = TrackingBugs(testing=True, private=True)
-    #master = tbs.create('bionic', 'linux')
+    # master = tbs.create('bionic', 'linux')
     master = tbs.add(1808511)
-    #master.reset_tasks()
-    #master.cycle = 't2018.12.14'
-    #master.wf_set_property('target-series', 'bionic')
-    #master.save()
-    #master.tags_reset(testing=True)
-    #derivative = tbs.create('bionic', 'linux-raspi2')
+    # master.reset_tasks()
+    # master.cycle = 't2018.12.14'
+    # master.wf_set_property('target-series', 'bionic')
+    # master.save()
+    # master.tags_reset(testing=True)
+    # derivative = tbs.create('bionic', 'linux-raspi2')
     derivative = tbs.add(1808545)
-    #derivative.tags_reset(testing=tbs.testing)
-    #backport = tbs.create('xenial', 'linux-hwe')
+    # derivative.tags_reset(testing=tbs.testing)
+    # backport = tbs.create('xenial', 'linux-hwe')
     backport = tbs.add(1808548)
-    #master.derivative_add(derivative)
-    #master.derivative_add(backport)
+    # master.derivative_add(derivative)
+    # master.derivative_add(backport)
     print(master.wf_tasks)
     print(master.derivative_bug_ids)
-    print(master.wf_task_get('upload-to-ppa').status)
+    print(master.wf_task_get("upload-to-ppa").status)
 
     sys.exit(fail_count)
-

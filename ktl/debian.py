@@ -1,19 +1,19 @@
-from __future__                         import absolute_import
+from __future__ import absolute_import
 
 # Note: It would be nice to not tie the debian class to the git class but
 #       be able to handle projects that are under bzr as well. But for
 #       now, we need to be practical for now.
 
-from debian.changelog                   import Changelog, get_maintainer
-from email.utils                        import formatdate
-from os                                 import path, listdir, system
-from re                                 import compile, findall, finditer
-from sys                                import stdout
-from glob                               import glob
+from debian.changelog import Changelog, get_maintainer
+from email.utils import formatdate
+from os import path, listdir, system
+from re import compile, findall, finditer
+from sys import stdout
+from glob import glob
 
-from ktl.git                            import Git, GitError
-from ktl.utils                          import debug, run_command
-from ktl.kernel_series                  import KernelSeries
+from ktl.git import Git, GitError
+from ktl.utils import debug, run_command
+from ktl.kernel_series import KernelSeries
 
 
 # DebianError
@@ -24,20 +24,24 @@ class DebianError(Exception):
     def __init__(self, error):
         self.msg = error
 
+
 # Note: Think about cacheing the decoded, changelog dictionary.
 #
+
 
 class Debian:
     verbose = False
     debug = False
-    version_line_rc = compile(r"^(linux[-\S]*) \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~\S]*)\) (\S+); urgency=\S+$")
-    version_rc      = compile(r"^([0-9]+\.[0-9]+\.[0-9]+)[-\.]([0-9]+)\.([0-9]+)([~\S]*)$")
+    version_line_rc = compile(
+        r"^(linux[-\S]*) \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~\S]*)\) (\S+); urgency=\S+$"
+    )
+    version_rc = compile(r"^([0-9]+\.[0-9]+\.[0-9]+)[-\.]([0-9]+)\.([0-9]+)([~\S]*)$")
 
     package_rc = compile(r"^(linux[-\S])*.*$")
-    ver_rc     = compile(r"^linux[-\S]* \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~a-z0-9]*)\).*$")
+    ver_rc = compile(r"^linux[-\S]* \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~a-z0-9]*)\).*$")
     bug_rc = compile(r"LP:\s*#[0-9]+(?:\s*,\s*#[0-9]+)*")
     bug_nr_rc = compile(r"#([0-9]+)")
-    ubuntu_master_re = compile(r'^\s.*\[ Ubuntu: ([0-9.-]*) \]$')
+    ubuntu_master_re = compile(r"^\s.*\[ Ubuntu: ([0-9.-]*) \]$")
 
     parent_bug_section_rc = compile(r"^\s*\[ Ubuntu: .*\]")
     endsection_line_rc = compile(r"^ -- ")
@@ -49,7 +53,7 @@ class Debian:
         Print its output when it fails, and returns its exit status.
         The dry_run option may be used to just print the command that would be run.
         """
-        (status, output) = run_command('fakeroot debian/rules %s' % (cmd), dry_run=dry_run)
+        (status, output) = run_command("fakeroot debian/rules %s" % (cmd), dry_run=dry_run)
         if status:
             print("\n".join(output))
         return status
@@ -83,11 +87,11 @@ class Debian:
         try:
             debian_env = Git.show("debian/debian.env", branch=current_branch)
             for line in debian_env:
-                if 'DEBIAN=' in line:
-                    (var, val) = line.split('=', 1)
+                if "DEBIAN=" in line:
+                    (var, val) = line.split("=", 1)
                     val = val.rstrip()
 
-                    if var == 'DEBIAN':
+                    if var == "DEBIAN":
                         debenv = val
                         break
             debug("SUCCEEDED\n", cls.debug, False)
@@ -107,7 +111,7 @@ class Debian:
             debug("SUCCEEDED\n", cls.debug, False)
         else:
             debug("FAILED\n", cls.debug, False)
-            debdirs += ['debian', 'meta-source/debian']
+            debdirs += ["debian", "meta-source/debian"]
 
         return debdirs
 
@@ -115,18 +119,18 @@ class Debian:
     #
     @classmethod
     def master_changelog(cls):
-        '''
+        """
         The 'changelog' method returns the changelog related to the current branch. This
         method always returns the changelog from the debian.master directory.
-        '''
-        fid = 'debian.master/changelog'
+        """
+        fid = "debian.master/changelog"
         if path.exists(fid):
-            with open(fid, 'r') as f:
+            with open(fid, "r") as f:
                 changelog_contents = f.read()
 
-            retval = cls.changelog_as_list(changelog_contents.split('\n'))
+            retval = cls.changelog_as_list(changelog_contents.split("\n"))
         else:
-            raise DebianError('Failed to find the master changelog.')
+            raise DebianError("Failed to find the master changelog.")
         return retval
 
     # raw_changelog
@@ -141,11 +145,11 @@ class Debian:
         # Check each possible directory for a changelog
         debian_dirs = cls.debian_directories()
         for debdir in debian_dirs:
-            chglog = debdir + '/changelog'
+            chglog = debdir + "/changelog"
             debug("Trying '%s': " % chglog, cls.debug)
             try:
                 if local:
-                    changelog_contents = open(chglog, 'r').read().split('\n')
+                    changelog_contents = open(chglog, "r").read().split("\n")
                 else:
                     changelog_contents = Git.show(chglog, branch=current_branch)
                 return changelog_contents, chglog
@@ -153,7 +157,7 @@ class Debian:
                 debug("FAILED\n", cls.debug, False)
 
         # Not there anywhere, barf
-        raise DebianError('Failed to find the changelog.')
+        raise DebianError("Failed to find the changelog.")
 
     # changelog
     #
@@ -175,11 +179,11 @@ class Debian:
             if cls.debug:
                 m = cls.package_rc.match(changelog_contents[0])
                 if m is None:
-                    debug('The package does not appear to be in a recognized format.\n', cls.debug)
+                    debug("The package does not appear to be in a recognized format.\n", cls.debug)
 
                 m = cls.ver_rc.match(changelog_contents[0])
                 if m is None:
-                    debug('The version does not appear to be in a recognized format.\n', cls.debug)
+                    debug("The version does not appear to be in a recognized format.\n", cls.debug)
 
             raise DebianError("The first line in the changelog is not a version line.")
 
@@ -194,29 +198,29 @@ class Debian:
             if m is not None:
                 version = ""
                 release = ""
-                pocket  = ""
+                pocket = ""
                 package = m.group(1)
                 version = m.group(2)
                 rp = m.group(3)
-                if '-' in rp:
-                    release, pocket = rp.split('-')
+                if "-" in rp:
+                    release, pocket = rp.split("-")
                 else:
                     release = rp
 
                 section = {}
-                section['version'] = version
-                section['release'] = release
-                section['series']  = release
-                section['pocket']  = pocket
-                section['package'] = package
+                section["version"] = version
+                section["release"] = release
+                section["series"] = release
+                section["pocket"] = pocket
+                section["package"] = package
 
                 m = cls.version_rc.match(version)
                 if m is not None:
-                    section['linux-version'] = m.group(1)
-                    section['ABI']           = m.group(2)
-                    section['upload-number'] = m.group(3)
+                    section["linux-version"] = m.group(1)
+                    section["ABI"] = m.group(2)
+                    section["upload-number"] = m.group(3)
                 else:
-                    debug('The version (%s) failed to match the regular expression.\n' % version, cls.debug)
+                    debug("The version (%s) failed to match the regular expression.\n" % version, cls.debug)
 
                 content = []
                 own_content = []
@@ -241,15 +245,15 @@ class Debian:
 
             m = cls.ubuntu_master_re.match(line)
             if m is not None and not section.get("master"):
-                section['master'] = m.group(1)
+                section["master"] = m.group(1)
                 continue
 
             m = cls.endsection_line_rc.match(line)
             if m is not None:
-                section['content'] = content
-                section['own-content'] = own_content
-                section['bugs'] = set(bugs)
-                section['own-bugs'] = set(own_bugs)
+                section["content"] = content
+                section["own-content"] = own_content
+                section["bugs"] = set(bugs)
+                section["own-bugs"] = set(own_bugs)
                 retval.append(section)
 
         return retval
@@ -267,11 +271,11 @@ class Debian:
         debian_dirs = cls.debian_directories()
         retvals = []
         for debdir in debian_dirs:
-            abidir = debdir + '/abi'
+            abidir = debdir + "/abi"
             debug("Trying '%s': \n" % abidir, cls.debug)
             if path.isdir(abidir):
                 debug("  '%s' is a directory\n" % abidir, cls.debug)
-                version = abidir + '/version'
+                version = abidir + "/version"
                 if path.exists(version):
                     debug("  Contains: 'version'\n", cls.debug)
                     with open(version) as fh:
@@ -280,12 +284,12 @@ class Debian:
                     contents = listdir(abidir)
                     for item in contents:
                         debug("  Contains: '%s'\n" % item, cls.debug)
-                        if path.isdir(abidir + '/' + item):
+                        if path.isdir(abidir + "/" + item):
                             retvals.append(item)
                 return retvals
 
         # Not there anywhere, barf
-        raise DebianError('Failed to find the abi files.')
+        raise DebianError("Failed to find the abi files.")
 
     # abi_arch
     #
@@ -302,11 +306,11 @@ class Debian:
         empty = []
         abiarch = []
         for debdir in debian_dirs:
-            abidir = debdir + '/abi'
+            abidir = debdir + "/abi"
             debug("Trying '%s': \n" % abidir, cls.debug)
             if path.isdir(abidir):
                 debug("  '%s' is a directory\n" % abidir, cls.debug)
-                version = abidir + '/version'
+                version = abidir + "/version"
                 if path.exists(version):
                     debug("  Contains: 'version'\n", cls.debug)
                     abisubdirs = listdir(abidir)
@@ -318,8 +322,8 @@ class Debian:
                     contents = listdir(abidir)
                     for item in contents:
                         debug("  Contains: '%s'\n" % item, cls.debug)
-                        if path.isdir(abidir + '/' + item):
-                            abisubdirs = listdir(abidir + '/' + item)
+                        if path.isdir(abidir + "/" + item):
+                            abisubdirs = listdir(abidir + "/" + item)
                             for subdir in abisubdirs:
                                 fullpath = path.join(abidir, item, subdir)
                                 if path.isdir(fullpath):
@@ -332,7 +336,7 @@ class Debian:
                     # as empty files don't work to trigger ABI ignore in the PPA
                     # but will in a test build !!!!!
                     for fname in contents:
-                        if 'ignore' in fname:
+                        if "ignore" in fname:
                             fpath = path.join(archdir, fname)
                             fsize = path.getsize(fpath)
                             if fsize == 0:
@@ -341,7 +345,7 @@ class Debian:
                 return retvals, empty
 
         # Not there anywhere, barf
-        raise DebianError('Failed to find the abi files.')
+        raise DebianError("Failed to find the abi files.")
 
     # get_source_from_kernel_series
     #
@@ -359,9 +363,9 @@ class Debian:
         # Find the first valid entry
         series = package = None
         for centry in changelog:
-            if centry['series'] != 'UNRELEASED':
-                series = centry['series']
-                package = centry['package']
+            if centry["series"] != "UNRELEASED":
+                series = centry["series"]
+                package = centry["package"]
                 break
         # Check if the entry is valid
         if not series:
@@ -375,15 +379,11 @@ class Debian:
             ks = KernelSeries()
         info_series = ks.lookup_series(codename=series)
         if not info_series:
-            raise DebianError("Unknown series: %s. Please check the " +
-                              "info/kernel-series.yaml file." %
-                              series)
+            raise DebianError("Unknown series: %s. Please check the " + "info/kernel-series.yaml file." % series)
         info_package = info_series.lookup_source(package)
         if not info_package:
             print(package)
-            raise DebianError(("Unknown package: %s. Please check the " +
-                              "info/kernel-series.yaml file.") %
-                              package)
+            raise DebianError(("Unknown package: %s. Please check the " + "info/kernel-series.yaml file.") % package)
         return info_package
 
     @classmethod
@@ -426,8 +426,7 @@ class Debian:
             if key is not None:
                 if len(line.split("=", 1)) != 2:
                     continue
-                source.append([line.split("=", 1)[0].strip(" "),
-                               line.split("=", 1)[1]])
+                source.append([line.split("=", 1)[0].strip(" "), line.split("=", 1)[1]])
 
         if key is not None and source is not []:
             upstream[key] = source
@@ -442,10 +441,7 @@ class Debian:
             for upstream in upstreams:
                 try:
                     upstream_contents = open(upstream, "r").read().split("\n")
-                    upstream_source = upstream_source | \
-                                      cls.parse_upstream(upstream_contents)
+                    upstream_source = upstream_source | cls.parse_upstream(upstream_contents)
                 except (OSError, IOError):
                     return None
         return upstream_source
-
-

@@ -72,7 +72,10 @@ class KernelRoutingEntryRoute:
     @property
     def entries(self):
         if self._entries is None:
-            self._entries = [KernelRoutingEntryDestination(self._ks, self, count + 1, entry) for count, entry in enumerate(self._data)]
+            self._entries = [
+                KernelRoutingEntryDestination(self._ks, self, count + 1, entry)
+                for count, entry in enumerate(self._data)
+            ]
         return self._entries
 
     def __len__(self):
@@ -96,11 +99,9 @@ class KernelRoutingEntry:
             # Look the name up in the routing table.
             table = source.series.routing_table
             if table is None:
-                raise ValueError("unable to map routing alias {}, "
-                                 "no series routing table".format(data))
+                raise ValueError("unable to map routing alias {}, " "no series routing table".format(data))
             if data not in table:
-                raise ValueError("unable to map routing alias {}, "
-                                 "not listed in series routing table".format(data))
+                raise ValueError("unable to map routing alias {}, " "not listed in series routing table".format(data))
             data = table[data]
 
         # Clear out any entries that have been overriden to None.
@@ -139,7 +140,9 @@ class KernelRoutingEntry:
 
     def _routes_init(self):
         if self._routes is None:
-            self._routes = {dest: KernelRoutingEntryRoute(self._ks, self, dest, route) for dest, route in self._data.items()}
+            self._routes = {
+                dest: KernelRoutingEntryRoute(self._ks, self, dest, route) for dest, route in self._data.items()
+            }
 
     @property
     def routes(self):
@@ -166,11 +169,11 @@ class KernelRoutingEntry:
 class KernelRepoEntry:
     def __init__(self, ks, owner, data):
         if isinstance(data, list):
-            new_data = {'url': data[0]}
+            new_data = {"url": data[0]}
             if len(data) == 1:
-                new_data['branch'] = 'master'
+                new_data["branch"] = "master"
             elif len(data) == 2:
-                new_data['branch'] = data[1]
+                new_data["branch"] = data[1]
             data = new_data
 
         self._ks = ks
@@ -193,11 +196,11 @@ class KernelRepoEntry:
 
     @property
     def url(self):
-        return self._data['url']
+        return self._data["url"]
 
     @property
     def branch(self):
-        return self._data.get('branch', None)
+        return self._data.get("branch", None)
 
     def __str__(self):
         return "{} {}".format(self.url, self.branch)
@@ -211,34 +214,34 @@ class KernelSnapEntry:
         self._data = data if data else {}
 
         # Convert arches/track to publish-to form.
-        if 'publish-to' not in self._data:
-            if 'arches' in self._data:
+        if "publish-to" not in self._data:
+            if "arches" in self._data:
                 publish_to = {}
-                for arch in self._data['arches']:
-                    publish_to[arch] = [self._data.get('track', 'latest')]
-                self._data['publish-to'] = publish_to
+                for arch in self._data["arches"]:
+                    publish_to[arch] = [self._data.get("track", "latest")]
+                self._data["publish-to"] = publish_to
 
         # Convert stable to promote-to form.
-        if 'promote-to' not in self._data and 'stable' in self._data:
-            if self._data['stable'] is True:
-                self._data['promote-to'] = 'stable'
+        if "promote-to" not in self._data and "stable" in self._data:
+            if self._data["stable"] is True:
+                self._data["promote-to"] = "stable"
             else:
-                self._data['promote-to'] = 'candidate'
+                self._data["promote-to"] = "candidate"
         # Assume no promote-to data to mean just to edge.
-        promote_to = self._data.get('promote-to', 'edge')
+        promote_to = self._data.get("promote-to", "edge")
         if isinstance(promote_to, str):
             expand_promote_to = []
-            for risk in ('edge', 'beta', 'candidate', 'stable'):
+            for risk in ("edge", "beta", "candidate", "stable"):
                 expand_promote_to.append(risk)
                 if risk == promote_to:
                     break
-            self._data['promote-to'] = expand_promote_to
+            self._data["promote-to"] = expand_promote_to
         # Ensure we have stable when promote-to is present.
-        if 'promote-to' in self._data and 'stable' not in self._data:
-            if 'stable' in self._data['promote-to']:
-                self._data['stable'] = True
+        if "promote-to" in self._data and "stable" not in self._data:
+            if "stable" in self._data["promote-to"]:
+                self._data["stable"] = True
             else:
-                self._data['stable'] = False
+                self._data["stable"] = False
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
@@ -262,50 +265,50 @@ class KernelSnapEntry:
 
     @property
     def repo(self):
-        data = self._data.get('repo', None)
+        data = self._data.get("repo", None)
         if not data:
             return None
         return KernelRepoEntry(self._ks, self, data)
 
     @property
     def primary(self):
-        return self._data.get('primary', False)
+        return self._data.get("primary", False)
 
     @property
     def gated(self):
-        return self._data.get('gated', False)
+        return self._data.get("gated", False)
 
     @property
     def stable(self):
-        return self._data.get('stable', False)
+        return self._data.get("stable", False)
 
     @property
     def qa(self):
-        return self._data.get('qa', False)
+        return self._data.get("qa", False)
 
     @property
     def hw_cert(self):
-        return self._data.get('hw-cert', False)
+        return self._data.get("hw-cert", False)
 
     @property
     def arches(self):
         # XXX: should this be []
-        return self._data.get('arches', None)
+        return self._data.get("arches", None)
 
     @property
     def track(self):
-        return self._data.get('track', None)
+        return self._data.get("track", None)
 
     @property
     def publish_to(self):
-        return self._data.get('publish-to', None)
+        return self._data.get("publish-to", None)
 
     @property
     def promote_to(self):
-        return self._data.get('promote-to', None)
+        return self._data.get("promote-to", None)
 
     def promote_to_risk(self, risk):
-        return risk in self._data.get('promote-to', [])
+        return risk in self._data.get("promote-to", [])
 
     def __str__(self):
         return "{} {}".format(str(self.source), self.name)
@@ -319,7 +322,7 @@ class KernelPackageEntry:
         self._data = data if data else {}
 
         package_relations = self._source.package_relations
-        self._defaults = self._ks.defaults.get('package-relations', {}).get(package_relations, {}).get(self.type, {})
+        self._defaults = self._ks.defaults.get("package-relations", {}).get(package_relations, {}).get(self.type, {})
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
@@ -343,7 +346,7 @@ class KernelPackageEntry:
 
     @property
     def type(self):
-        return self._data.get('type', "main")
+        return self._data.get("type", "main")
 
     def _type_to_package(self, ptype):
         if ptype is None:
@@ -352,27 +355,27 @@ class KernelPackageEntry:
 
     @property
     def ancillary_for(self):
-        return self._type_to_package(self._data.get('ancillary-for', self._defaults.get('ancillary-for')))
+        return self._type_to_package(self._data.get("ancillary-for", self._defaults.get("ancillary-for")))
 
     @property
     def adjunct(self):
-        return self._data.get('adjunct', self._defaults.get('adjunct', False))
+        return self._data.get("adjunct", self._defaults.get("adjunct", False))
 
     @property
     def signing_to(self):
-        return self._type_to_package(self._data.get('signing-to', self._defaults.get('signing-to')))
+        return self._type_to_package(self._data.get("signing-to", self._defaults.get("signing-to")))
 
     @property
     def signing_from(self):
-        return self._type_to_package(self._data.get('signing-from', self._defaults.get('signing-from')))
+        return self._type_to_package(self._data.get("signing-from", self._defaults.get("signing-from")))
 
     @property
     def depends(self):
-        return self._type_to_package(self._data.get('depends', self._defaults.get('depends')))
+        return self._type_to_package(self._data.get("depends", self._defaults.get("depends")))
 
     @property
     def repo(self):
-        data = self._data.get('repo', None)
+        data = self._data.get("repo", None)
         if not data:
             return None
         return KernelRepoEntry(self._ks, self, data)
@@ -406,8 +409,8 @@ class KernelSourceEntry:
 
     @property
     def versions(self):
-        if 'versions' in self._data:
-            return self._data['versions']
+        if "versions" in self._data:
+            return self._data["versions"]
 
         derived_from = self.derived_from
         if derived_from is not None:
@@ -429,8 +432,8 @@ class KernelSourceEntry:
 
     @property
     def variants(self):
-        if 'variants' in self._data:
-            return self._data['variants']
+        if "variants" in self._data:
+            return self._data["variants"]
 
         copy_forward = self.copy_forward
         if copy_forward is not None:
@@ -440,37 +443,37 @@ class KernelSourceEntry:
 
     @property
     def development(self):
-        return self._data.get('development', self.series.development)
+        return self._data.get("development", self.series.development)
 
     @property
     def supported(self):
-        return self._data.get('supported', self.series.supported)
+        return self._data.get("supported", self.series.supported)
 
     @property
     def severe_only(self):
-        return self._data.get('severe-only', False)
+        return self._data.get("severe-only", False)
 
     @property
     def owner(self):
-        return self._data.get('owner', None)
+        return self._data.get("owner", None)
 
     @property
     def peer_reviewer(self):
-        return self._data.get('peer-reviewer', None)
+        return self._data.get("peer-reviewer", None)
 
     @property
     def stakeholder(self):
-        return self._data.get('stakeholder', None)
+        return self._data.get("stakeholder", None)
 
     @property
     def package_relations(self):
-        return self._data.get('package-relations', 'default')
+        return self._data.get("package-relations", "default")
 
     @property
     def packages(self):
         # XXX: should this return None when empty
         result = []
-        packages = self._data.get('packages')
+        packages = self._data.get("packages")
         if packages:
             for package_key, package in packages.items():
                 result.append(KernelPackageEntry(self._ks, self, package_key, package))
@@ -479,7 +482,7 @@ class KernelSourceEntry:
     def lookup_package(self, package_key=None, type=None):
         if package_key is None and type is None:
             raise ValueError("package-name/package-type required")
-        packages = self._data.get('packages')
+        packages = self._data.get("packages")
         if not packages:
             return None
         if type is not None:
@@ -495,28 +498,28 @@ class KernelSourceEntry:
     def snaps(self):
         # XXX: should this return None when empty
         result = []
-        snaps = self._data.get('snaps')
+        snaps = self._data.get("snaps")
         if snaps:
             for snap_key, snap in snaps.items():
                 result.append(KernelSnapEntry(self._ks, self, snap_key, snap))
         return result
 
     def lookup_snap(self, snap_key):
-        snaps = self._data.get('snaps')
+        snaps = self._data.get("snaps")
         if not snaps or snap_key not in snaps:
             return None
         return KernelSnapEntry(self._ks, self, snap_key, snaps[snap_key])
 
     @property
     def derived_from(self):
-        if 'derived-from' not in self._data:
+        if "derived-from" not in self._data:
             return None
 
-        if isinstance(self._data['derived-from'][0], list):
+        if isinstance(self._data["derived-from"][0], list):
             # Multiple parents: pick the first for now
-            (series_key, source_key) = self._data['derived-from'][0]
+            (series_key, source_key) = self._data["derived-from"][0]
         else:
-            (series_key, source_key) = self._data['derived-from']
+            (series_key, source_key) = self._data["derived-from"]
 
         series = self._ks.lookup_series(series_key)
         source = series.lookup_source(source_key)
@@ -526,19 +529,18 @@ class KernelSourceEntry:
     @property
     def testable_flavours(self):
         retval = []
-        if (self._data.get('testing') is not None and
-                self._data['testing'].get('flavours') is not None):
+        if self._data.get("testing") is not None and self._data["testing"].get("flavours") is not None:
             # XXX: there should be a KernelSourceTesting object which carries kernel_testing
             # and has a flavours attribute to return this information.
-            kernel_testing = self._data['testing'].get('kernel-testing', False)
+            kernel_testing = self._data["testing"].get("kernel-testing", False)
             if not kernel_testing:
                 # XXX: Fallback to swm.kernel-testing: true/false if not present.
                 # this should be removed once all existing instances are converted.
-                swm_config = self._data.get('swm')
+                swm_config = self._data.get("swm")
                 swm_config = {} if swm_config is None else swm_config
-                kernel_testing = swm_config.get('kernel-testing', False)
-            for flavour in self._data['testing']['flavours'].keys():
-                fdata = self._data['testing']['flavours'][flavour]
+                kernel_testing = swm_config.get("kernel-testing", False)
+            for flavour in self._data["testing"]["flavours"].keys():
+                fdata = self._data["testing"]["flavours"][flavour]
                 # If we have neither arches nor clouds we represent a noop
                 if not fdata:
                     continue
@@ -547,26 +549,26 @@ class KernelSourceEntry:
 
     @property
     def invalid_tasks(self):
-        retval = self._data.get('invalid-tasks', [])
+        retval = self._data.get("invalid-tasks", [])
         if retval is None:
             retval = []
         return retval
 
     @property
     def copy_forward(self):
-        if 'copy-forward' not in self._data:
+        if "copy-forward" not in self._data:
             return None
 
         # XXX: backwards compatibility.
-        if self._data['copy-forward'] is False:
+        if self._data["copy-forward"] is False:
             return None
-        if self._data['copy-forward'] is True:
+        if self._data["copy-forward"] is True:
             derived_from = self.derived_from
             if derived_from is None:
                 return True
             return self.derived_from
 
-        (series_key, source_key) = self._data['copy-forward']
+        (series_key, source_key) = self._data["copy-forward"]
 
         series = self._ks.lookup_series(series_key)
         source = series.lookup_source(source_key)
@@ -575,30 +577,31 @@ class KernelSourceEntry:
 
     @property
     def backport(self):
-        return self._data.get('backport', False)
+        return self._data.get("backport", False)
 
     @property
     def routing(self):
-        default = 'default'
+        default = "default"
         if self.series.development:
-            default = 'devel'
+            default = "devel"
         if self.series.esm:
-            default = 'esm'
-        data = self._data.get('routing', default)
+            default = "esm"
+        data = self._data.get("routing", default)
         if data is None:
             return data
         return KernelRoutingEntry(self._ks, self, data)
 
     @property
     def swm_data(self):
-        return self._data.get('swm')
+        return self._data.get("swm")
 
     @property
     def private(self):
-        return self._data.get('private', False)
+        return self._data.get("private", False)
 
     def __str__(self):
         return "{} {}".format(self.series.name, self.name)
+
 
 class KernelSourceTestingFlavourEntry:
     def __init__(self, name, data, kernel_testing, source=None):
@@ -606,11 +609,11 @@ class KernelSourceTestingFlavourEntry:
         self._data = data
         self._source = source
 
-        self._arches = self._data.get('arches', None)
+        self._arches = self._data.get("arches", None)
         self._arches = self._arches if self._arches is not None else []
-        self._clouds = self._data.get('clouds', None)
+        self._clouds = self._data.get("clouds", None)
         self._clouds = self._clouds if self._clouds is not None else []
-        self._meta_pkg = self._data.get('meta-pkg', None)
+        self._meta_pkg = self._data.get("meta-pkg", None)
 
         if self._meta_pkg is None and kernel_testing:
             self._meta_pkg = "kernel-testing--{}--full--{}".format(self._source.name, name)
@@ -631,12 +634,13 @@ class KernelSourceTestingFlavourEntry:
     def meta_pkg(self):
         return self._meta_pkg
 
+
 class KernelSeriesEntry:
     def __init__(self, ks, name, data):
         self._ks = ks
         self._name = name
         self._data = {}
-        self.defaults = self._ks.defaults.get('series', self._ks.defaults)
+        self.defaults = self._ks.defaults.get("series", self._ks.defaults)
         if self.defaults is not None:
             self._data.update(self.defaults)
         if data is not None:
@@ -656,19 +660,19 @@ class KernelSeriesEntry:
 
     @property
     def codename(self):
-        return self._data.get('codename', None)
+        return self._data.get("codename", None)
 
     @property
     def opening(self):
-        if 'opening' in self._data:
-            if self._data['opening'] is not False:
+        if "opening" in self._data:
+            if self._data["opening"] is not False:
                 return True
         return False
 
     def opening_ready(self, *flags):
-        if 'opening' not in self._data:
+        if "opening" not in self._data:
             return True
-        allow = self._data['opening']
+        allow = self._data["opening"]
         if allow is None:
             return False
         if allow in (True, False):
@@ -678,31 +682,32 @@ class KernelSeriesEntry:
             if flag_allow is None or flag_allow is False:
                 return False
         return True
+
     opening_allow = opening_ready
 
     @property
     def development(self):
-        return self._data.get('development', False)
+        return self._data.get("development", False)
 
     @property
     def supported(self):
-        return self._data.get('supported', False)
+        return self._data.get("supported", False)
 
     @property
     def lts(self):
-        return self._data.get('lts', False)
+        return self._data.get("lts", False)
 
     @property
     def esm(self):
-        return self._data.get('esm', False)
+        return self._data.get("esm", False)
 
     @property
     def esm_legacy(self):
-        return self._data.get('esm-legacy', False)
+        return self._data.get("esm-legacy", False)
 
     @property
     def old_releases(self):
-        return self._data.get('old-releases', False)
+        return self._data.get("old-releases", False)
 
     def __str__(self):
         return "{} ({})".format(self.name, self.codename)
@@ -710,23 +715,22 @@ class KernelSeriesEntry:
     @property
     def sources(self):
         result = []
-        sources = self._data.get('sources')
+        sources = self._data.get("sources")
         if sources:
             for source_key, source in sources.items():
-                result.append(KernelSourceEntry(
-                    self._ks, self, source_key, source))
+                result.append(KernelSourceEntry(self._ks, self, source_key, source))
         return result
 
     @property
     def routing_table(self):
-        return self._data.get('routing-table', None)
+        return self._data.get("routing-table", None)
 
     @property
     def routing_map(self):
-        return self._data.get('routing-map', {})
+        return self._data.get("routing-map", {})
 
     def lookup_source(self, source_key):
-        sources = self._data.get('sources')
+        sources = self._data.get("sources")
         if not sources or source_key not in sources:
             return None
         return KernelSourceEntry(self._ks, self, source_key, sources[source_key])
@@ -744,10 +748,10 @@ class KernelSeriesUrl:
         if data is None:
             response = urlopen(url)
             data = response.read()
-            if data[0:2] == b'\x1f\x8b':
+            if data[0:2] == b"\x1f\x8b":
                 data = gzip_decompress(data)
             if isinstance(data, bytes):
-                data = data.decode('utf-8')
+                data = data.decode("utf-8")
 
         if isinstance(data, dict):
             self._data = data
@@ -767,19 +771,19 @@ class KernelSeriesUrl:
         for series_key, series in self._data.items():
             if not series:
                 continue
-            if series.get('development', False):
+            if series.get("development", False):
                 self._development_series = series_key
-            if 'codename' in series:
-                self._codename_to_series[series['codename']] = series_key
+            if "codename" in series:
+                self._codename_to_series[series["codename"]] = series_key
 
         # Pull out the defaults.
         self.defaults = {}
-        if 'defaults' in self._data:
-            self.defaults = self._data['defaults']
-            del self._data['defaults']
+        if "defaults" in self._data:
+            self.defaults = self._data["defaults"]
+            del self._data["defaults"]
             # Strip the assets as they are only used for YAML instantiation.
-            if 'assets' in self.defaults:
-                del self.defaults['assets']
+            if "assets" in self.defaults:
+                del self.defaults["assets"]
 
     @property
     def xc(self):
@@ -789,8 +793,7 @@ class KernelSeriesUrl:
 
     @property
     def series(self):
-        return [KernelSeriesEntry(self, series_key, series)
-                for series_key, series in self._data.items()]
+        return [KernelSeriesEntry(self, series_key, series) for series_key, series in self._data.items()]
 
     def lookup_series(self, series=None, codename=None, development=False):
         if not series and not codename and not development:
@@ -809,16 +812,14 @@ class KernelSeriesUrl:
 
     @classmethod
     def key_series_name(cls, series):
-        return [int(x) for x in series.name.split('.')]
+        return [int(x) for x in series.name.split(".")]
 
 
 class KernelSeriesCache:
 
     def __init__(self, data_location=None):
         if data_location is None:
-            data_location = os.path.realpath(
-                os.path.join(os.path.dirname(__file__),"..","info")
-            )
+            data_location = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "info"))
 
         self._data_location = data_location
         self.by_url = {}
@@ -826,6 +827,7 @@ class KernelSeriesCache:
     def url_local(self, cycle):
         try:
             import ckt_info
+
             path = ckt_info.abspath("info/kernel-series.yaml")
         except ImportError:
             path = os.path.join(self._data_location, "kernel-series.yaml")
@@ -850,7 +852,9 @@ class KernelSeriesCache:
     def form_url(self, use_local, cycle):
         if use_local is None:
             if os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False):
-                warn('Use of USE_LOCAL_KERNEL_SERIES_YAML environment variable is deprecated, use KERNEL_SERIES_USE=local')
+                warn(
+                    "Use of USE_LOCAL_KERNEL_SERIES_YAML environment variable is deprecated, use KERNEL_SERIES_USE=local"
+                )
                 use_local = True
 
         which = os.getenv("KERNEL_SERIES_USE", "default")
@@ -864,16 +868,21 @@ class KernelSeriesCache:
                 urls = ["https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml"]
             else:
                 urls = [
-                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/" + cycle + "/info/kernel-series.yaml?h=main",
-                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/complete/" + cycle + "/info/kernel-series.yaml?h=main",
-                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h=" + cycle,
+                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/"
+                    + cycle
+                    + "/info/kernel-series.yaml?h=main",
+                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/complete/"
+                    + cycle
+                    + "/info/kernel-series.yaml?h=main",
+                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h="
+                    + cycle,
                 ]
         else:
             if which == "local":
                 urls = self.url_local(cycle)
             elif which == "devel":
                 urls = self.url_local(None)
-            else: # default|json
+            else:  # default|json
                 url = "https://kernel.ubuntu.com/info/kernel-series.json.gz"
                 if cycle is not None:
                     url += "@" + cycle
@@ -938,26 +947,26 @@ class KernelSeries(object):
     key_series_name = KernelSeriesUrl.key_series_name
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     db = KernelSeries()
 
-    series = db.lookup_series('16.04')
-    if series.name != '16.04':
-        print('series.name != 16.04')
-    if series.codename != 'xenial':
-        print('series.codename != xenial')
+    series = db.lookup_series("16.04")
+    if series.name != "16.04":
+        print("series.name != 16.04")
+    if series.codename != "xenial":
+        print("series.codename != xenial")
 
-    series2 = db.lookup_series(codename='xenial')
-    if series2.name != '16.04':
-        print('series2.name != 16.04')
-    if series2.codename != 'xenial':
-        print('series2.codename != xenial')
+    series2 = db.lookup_series(codename="xenial")
+    if series2.name != "16.04":
+        print("series2.name != 16.04")
+    if series2.codename != "xenial":
+        print("series2.codename != xenial")
 
     series3 = db.lookup_series(development=True)
-    if series3.name != '18.04':
-        print('series3.name != 18.04')
-    if series3.codename != 'bionic':
-        print('series3.codename != bionic')
+    if series3.name != "18.04":
+        print("series3.name != 18.04")
+    if series3.codename != "bionic":
+        print("series3.codename != bionic")
 
     print(str(series), str(series2), str(series3))
 
@@ -975,5 +984,3 @@ if __name__ == '__main__':
 
         for snap in source.snaps:
             print("SNAP", str(snap), snap.arches)
-
-

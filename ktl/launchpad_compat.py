@@ -14,9 +14,9 @@ class AuthorizeRequestTokenWithURL(RequestTokenAuthorizationEngine):
         "Please open this authorization page:\n"
         " (%s)\n"
         "in your browser. Use your browser to authorize\n"
-        "this program to access Launchpad on your behalf.")
-    WAITING_FOR_LAUNCHPAD = (
-        "Press Enter after authorizing in your browser.")
+        "this program to access Launchpad on your behalf."
+    )
+    WAITING_FOR_LAUNCHPAD = "Press Enter after authorizing in your browser."
 
     def output(self, message):
         """Display a message.
@@ -34,8 +34,7 @@ class AuthorizeRequestTokenWithURL(RequestTokenAuthorizationEngine):
     def check_end_user_authorization(self, credentials):
         """Check if the end-user authorized"""
         try:
-            credentials.exchange_request_token_for_access_token(
-                self.web_root)
+            credentials.exchange_request_token_for_access_token(self.web_root)
         except HTTPError as e:
             if e.response.status == 403:
                 # The user decided not to authorize this

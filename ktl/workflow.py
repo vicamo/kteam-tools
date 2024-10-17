@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 #
 
-from ktl.kernel_series                  import KernelSeries
-from ktl.log                            import cdebug
+from ktl.kernel_series import KernelSeries
+from ktl.log import cdebug
 
 import re
+
 
 # UbuntuError
 #
@@ -20,8 +21,10 @@ class UbuntuError(Exception):
 class DefaultAssigneeMissing(Exception):
     pass
 
+
 # Methods related to workflow in tracking bugs
 #
+
 
 class Properties:
 
@@ -70,14 +73,14 @@ class Properties:
 
         # Set a name:value pair in a bug description
         olddescr = self.bug.description
-        newdscr = ''
+        newdscr = ""
         re_kvp = re.compile(r"^(\s*)([\.\-\w]+):\s*(.*)$")
-        last_key = {'': 'bar'}
+        last_key = {"": "bar"}
         # copy everything, removing an existing one with this name if it exists
         foundProp = False
         for line in olddescr.split("\n"):
             # Skip empty lines after we start properties
-            if line == '' and foundProp:
+            if line == "" and foundProp:
                 continue
             m = re_kvp.match(line)
             if m:
@@ -88,16 +91,16 @@ class Properties:
                 item = m.group(2)
                 key = item
                 if len(level) > 0:
-                    key = "%s.%s" % (last_key[''], item)
+                    key = "%s.%s" % (last_key[""], item)
                 last_key[level] = item
                 if key in self.newprops:
                     # we're going to be adding this one, remove the existing one
                     continue
-            newdscr = newdscr + line + '\n'
+            newdscr = newdscr + line + "\n"
 
         for k in self.newprops:
             if self.newprops[k]:
-                newdscr = newdscr + '%s:%s\n' % (k, self.newprops[k])
+                newdscr = newdscr + "%s:%s\n" % (k, self.newprops[k])
         self.bug.description = newdscr
         return
 
@@ -123,82 +126,78 @@ class Workflow:
     #   version. The list of kernel versions where the task is invalid
     #   is the value which must be provided
     tdb = {
-        'linux' :  {
-            'task_assignment' : {
-                'snap-prepare'               : 'canonical-kernel-team',
-                'snap-release-to-beta'       : 'canonical-kernel-team',
-                'snap-release-to-candidate'  : 'canonical-kernel-team',
-                'snap-release-to-edge'       : 'canonical-kernel-team',
-                'snap-release-to-stable'     : 'canonical-kernel-team',
-                'snap-qa-testing'            : 'canonical-kernel-team',
-                'snap-publish'               : 'canonical-kernel-team',
-                'snap-certification-testing' : 'canonical-hw-cert',
-                'prepare-package'            : 'canonical-kernel-team',
-                'prepare-package-lbm'        : 'canonical-kernel-team',
-                'prepare-package-lrg'        : 'ubuntu-kernel-bot',
-                'prepare-package-lrm'        : 'canonical-kernel-team',
-                'prepare-package-lrs'        : 'ubuntu-kernel-bot',
-                'prepare-package-lum'        : 'canonical-kernel-team',
-                'prepare-package-meta'       : 'canonical-kernel-team',
-                'prepare-package-ports-meta' : 'canonical-kernel-team',
-                'prepare-package-signed'     : 'canonical-kernel-team',
-                'automated-testing'          : 'canonical-kernel-team',
-                'promote-to-proposed'        : 'ubuntu-sru',
-                'promote-signing-to-proposed': 'ubuntu-sru',
-                'verification-testing'       : 'canonical-kernel-team',
-                'certification-testing'      : 'canonical-hw-cert',
-                'regression-testing'         : 'canonical-kernel-team',
-                'promote-to-updates'         : 'ubuntu-sru',
-                'promote-to-security'        : 'ubuntu-sru',
-                'security-signoff'           : 'canonical-security',
-                'stakeholder-signoff'        : 'canonical-kernel-team',
-                'kernel-signoff'             : 'canonical-kernel-team',
-                'signing-signoff'            : 'canonical-kernel-team',
+        "linux": {
+            "task_assignment": {
+                "snap-prepare": "canonical-kernel-team",
+                "snap-release-to-beta": "canonical-kernel-team",
+                "snap-release-to-candidate": "canonical-kernel-team",
+                "snap-release-to-edge": "canonical-kernel-team",
+                "snap-release-to-stable": "canonical-kernel-team",
+                "snap-qa-testing": "canonical-kernel-team",
+                "snap-publish": "canonical-kernel-team",
+                "snap-certification-testing": "canonical-hw-cert",
+                "prepare-package": "canonical-kernel-team",
+                "prepare-package-lbm": "canonical-kernel-team",
+                "prepare-package-lrg": "ubuntu-kernel-bot",
+                "prepare-package-lrm": "canonical-kernel-team",
+                "prepare-package-lrs": "ubuntu-kernel-bot",
+                "prepare-package-lum": "canonical-kernel-team",
+                "prepare-package-meta": "canonical-kernel-team",
+                "prepare-package-ports-meta": "canonical-kernel-team",
+                "prepare-package-signed": "canonical-kernel-team",
+                "automated-testing": "canonical-kernel-team",
+                "promote-to-proposed": "ubuntu-sru",
+                "promote-signing-to-proposed": "ubuntu-sru",
+                "verification-testing": "canonical-kernel-team",
+                "certification-testing": "canonical-hw-cert",
+                "regression-testing": "canonical-kernel-team",
+                "promote-to-updates": "ubuntu-sru",
+                "promote-to-security": "ubuntu-sru",
+                "security-signoff": "canonical-security",
+                "stakeholder-signoff": "canonical-kernel-team",
+                "kernel-signoff": "canonical-kernel-team",
+                "signing-signoff": "canonical-kernel-team",
             },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
-            'subscribers' :
-                ["sru-verification", "ubuntu-sru", "hardware-certification"],
-            'invalidate_tasks' : {
-                'certification-testing' : ['3.5.0'] # Kernels that are supported but Cert. no longer tests
-            }
+            "initial_bug_tags": ["kernel-release-tracking-bug", "kernel-release-tracking-bug-live"],
+            "subscribers": ["sru-verification", "ubuntu-sru", "hardware-certification"],
+            "invalidate_tasks": {
+                "certification-testing": ["3.5.0"]  # Kernels that are supported but Cert. no longer tests
+            },
         },
-        'default' :  {
-            'task_assignment' : {
-                'snap-prepare'               : 'canonical-kernel-team',
-                'snap-release-to-beta'       : 'canonical-kernel-team',
-                'snap-release-to-candidate'  : 'canonical-kernel-team',
-                'snap-release-to-edge'       : 'canonical-kernel-team',
-                'snap-release-to-stable'     : 'canonical-kernel-team',
-                'snap-qa-testing'            : 'oem-qa',
-                'snap-publish'               : 'canonical-kernel-team',
-                'snap-certification-testing' : 'canonical-hw-cert',
-                'prepare-package'            : 'canonical-kernel-team',
-                'prepare-package-lbm'        : 'canonical-kernel-team',
-                'prepare-package-lrg'        : 'ubuntu-kernel-bot',
-                'prepare-package-lrm'        : 'canonical-kernel-team',
-                'prepare-package-lrs'        : 'ubuntu-kernel-bot',
-                'prepare-package-lum'        : 'canonical-kernel-team',
-                'prepare-package-meta'       : 'canonical-kernel-team',
-                'prepare-package-ports-meta' : 'canonical-kernel-team',
-                'prepare-package-signed'     : 'canonical-kernel-team',
-                'automated-testing'          : 'canonical-kernel-team',
-                'promote-to-proposed'        : 'ubuntu-sru',
-                'verification-testing'       : 'canonical-kernel-team',
-                'certification-testing'      : 'canonical-hw-cert',
-                'regression-testing'         : 'canonical-kernel-team',
-                'promote-to-updates'         : 'ubuntu-sru',
-                'promote-to-security'        : 'ubuntu-sru',
-                'security-signoff'           : 'canonical-security',
-                'stakeholder-signoff'        : 'canonical-kernel-team',
-                'kernel-signoff'             : 'canonical-kernel-team',
-                'signing-signoff'            : 'canonical-kernel-team',
+        "default": {
+            "task_assignment": {
+                "snap-prepare": "canonical-kernel-team",
+                "snap-release-to-beta": "canonical-kernel-team",
+                "snap-release-to-candidate": "canonical-kernel-team",
+                "snap-release-to-edge": "canonical-kernel-team",
+                "snap-release-to-stable": "canonical-kernel-team",
+                "snap-qa-testing": "oem-qa",
+                "snap-publish": "canonical-kernel-team",
+                "snap-certification-testing": "canonical-hw-cert",
+                "prepare-package": "canonical-kernel-team",
+                "prepare-package-lbm": "canonical-kernel-team",
+                "prepare-package-lrg": "ubuntu-kernel-bot",
+                "prepare-package-lrm": "canonical-kernel-team",
+                "prepare-package-lrs": "ubuntu-kernel-bot",
+                "prepare-package-lum": "canonical-kernel-team",
+                "prepare-package-meta": "canonical-kernel-team",
+                "prepare-package-ports-meta": "canonical-kernel-team",
+                "prepare-package-signed": "canonical-kernel-team",
+                "automated-testing": "canonical-kernel-team",
+                "promote-to-proposed": "ubuntu-sru",
+                "verification-testing": "canonical-kernel-team",
+                "certification-testing": "canonical-hw-cert",
+                "regression-testing": "canonical-kernel-team",
+                "promote-to-updates": "ubuntu-sru",
+                "promote-to-security": "ubuntu-sru",
+                "security-signoff": "canonical-security",
+                "stakeholder-signoff": "canonical-kernel-team",
+                "kernel-signoff": "canonical-kernel-team",
+                "signing-signoff": "canonical-kernel-team",
             },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
-            'subscribers' :
-                ["sru-verification", "ubuntu-sru", "hardware-certification"]
-        }
+            "initial_bug_tags": ["kernel-release-tracking-bug", "kernel-release-tracking-bug-live"],
+            "subscribers": ["sru-verification", "ubuntu-sru", "hardware-certification"],
+        },
     }
 
     # Development tasks, tags, etc vary according to the package name.
@@ -215,31 +214,28 @@ class Workflow:
     # * subscribers: launchpad persons or teams to subscribe
     #   automatically to the tracking bugs when they are created
     devel_workflow = {
-        'default' :  {
-            'task_assignment' : {
-                'prepare-package'            : 'canonical-kernel-team',
-                'prepare-package-lbm'        : 'canonical-kernel-team',
-                'prepare-package-meta'       : 'canonical-kernel-team',
-                'prepare-package-signed'     : 'canonical-kernel-team',
-                'automated-testing'          : 'canonical-kernel-team',
-                'promote-to-release'         : 'ubuntu-archive',
-                'promote-to-proposed'        : 'canonical-kernel-team',
-                'regression-testing'         : 'canonical-kernel-team',
+        "default": {
+            "task_assignment": {
+                "prepare-package": "canonical-kernel-team",
+                "prepare-package-lbm": "canonical-kernel-team",
+                "prepare-package-meta": "canonical-kernel-team",
+                "prepare-package-signed": "canonical-kernel-team",
+                "automated-testing": "canonical-kernel-team",
+                "promote-to-release": "ubuntu-archive",
+                "promote-to-proposed": "canonical-kernel-team",
+                "regression-testing": "canonical-kernel-team",
             },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
-            'subscribers' :
-                [],
+            "initial_bug_tags": ["kernel-release-tracking-bug", "kernel-release-tracking-bug-live"],
+            "subscribers": [],
         }
     }
 
     # assignee
     #
     def assignee_ex(self, series_codename, packagename, taskname, devel):
-        '''
-        '''
+        """ """
         retval = None
-        if taskname in ['stakeholder-signoff']:
+        if taskname in ["stakeholder-signoff"]:
             ks = KernelSeries()
             cursor = ks.lookup_series(codename=series_codename)
             cursor = cursor.lookup_source(packagename)
@@ -262,13 +258,13 @@ class Workflow:
             db = self.tdb
 
         if packagename in db:
-            if taskname in db[packagename]['task_assignment']:
-                retval = db[packagename]['task_assignment'][taskname]
+            if taskname in db[packagename]["task_assignment"]:
+                retval = db[packagename]["task_assignment"][taskname]
         else:
             try:
-                retval = db['default']['task_assignment'][taskname]
+                retval = db["default"]["task_assignment"][taskname]
             except KeyError:
-                raise DefaultAssigneeMissing('There is no default assignee in the database for \'%s\'.' % (taskname))
+                raise DefaultAssigneeMissing("There is no default assignee in the database for '%s'." % (taskname))
         return retval
 
     # initial_tags
@@ -283,9 +279,9 @@ class Workflow:
         else:
             db = self.tdb
         if packagename in db:
-                return db[packagename]['initial_bug_tags']
+            return db[packagename]["initial_bug_tags"]
         else:
-                return db['default']['initial_bug_tags']
+            return db["default"]["initial_bug_tags"]
 
     # subscribers
     #
@@ -299,9 +295,9 @@ class Workflow:
         else:
             db = self.tdb
         if packagename in db:
-            return db[packagename]['subscribers']
+            return db[packagename]["subscribers"]
         else:
-            return db['default']['subscribers']
+            return db["default"]["subscribers"]
 
     # is task invalid for that series version
     #
@@ -311,118 +307,118 @@ class Workflow:
         """
         if packagename not in self.tdb:
             return False
-        if 'invalidate_tasks' not in self.tdb[packagename]:
+        if "invalidate_tasks" not in self.tdb[packagename]:
             return False
-        if taskname not in self.tdb[packagename]['invalidate_tasks']:
+        if taskname not in self.tdb[packagename]["invalidate_tasks"]:
             return False
-        version_list = self.tdb[packagename]['invalidate_tasks'][taskname]
-        return (version in version_list)
+        version_list = self.tdb[packagename]["invalidate_tasks"][taskname]
+        return version in version_list
 
     def is_task_valid(s, wf_series, ks_source, variant, snap_name=None):
-        '''
+        """
         Internal helper to decide whether a certain workflow task should be
         added to a launchpad bug.
 
         Returns: True (task is valid) or False (otherwise)
-        '''
+        """
         retval = False
         ks_series = ks_source.series
 
         # Some tasks only really make sense in development or stable series.
         if ks_series.development is True:
-            exclude = 'devel'
+            exclude = "devel"
             exclusions = {
-                    'promote-to-updates': True,
-                    'promote-to-security': True,
-                    'certification-testing': True,
-                    'verification-testing': True,
-                    'security-signoff': True,
-                    'stakeholder-signoff': True,
-                    'kernel-signoff': True,
-                }
+                "promote-to-updates": True,
+                "promote-to-security": True,
+                "certification-testing": True,
+                "verification-testing": True,
+                "security-signoff": True,
+                "stakeholder-signoff": True,
+                "kernel-signoff": True,
+            }
         else:
-            exclude = 'stable'
+            exclude = "stable"
             exclusions = {
-                    'promote-to-release': True,
-                }
+                "promote-to-release": True,
+            }
 
         task_name = wf_series.name
         while True:
             if not wf_series.active:
                 break
-            if task_name in ['trunk', 'latest']:
+            if task_name in ["trunk", "latest"]:
                 break
-            if task_name.endswith('-dnu'):
-                cdebug('    {} marked "do not use"'.format(task_name[:-4]), 'yellow')
+            if task_name.endswith("-dnu"):
+                cdebug('    {} marked "do not use"'.format(task_name[:-4]), "yellow")
                 break
             if task_name in exclusions:
-                cdebug('    off-{} no {} '.format(exclude, task_name), 'yellow')
+                cdebug("    off-{} no {} ".format(exclude, task_name), "yellow")
                 break
 
             # SELECT: drop any series for a different variant.
             if variant in ("debs"):
-                if task_name.startswith('snap-'):
-                    cdebug('    off-variant no {} '.format(task_name), 'yellow')
+                if task_name.startswith("snap-"):
+                    cdebug("    off-variant no {} ".format(task_name), "yellow")
                     break
             elif variant in ("snap-debs"):
-                if not task_name.startswith('snap-'):
-                    cdebug('    off-variant no {}'.format(task_name), 'yellow')
+                if not task_name.startswith("snap-"):
+                    cdebug("    off-variant no {}".format(task_name), "yellow")
                     break
 
             # DEBS: exclusions related to debs.
-            if task_name.startswith('prepare-package-'):
-                pkg_type = task_name.replace('prepare-package-', '')
+            if task_name.startswith("prepare-package-"):
+                pkg_type = task_name.replace("prepare-package-", "")
                 ks_pkg = None
                 for entry in ks_source.packages:
                     if entry.type == pkg_type:
                         ks_pkg = entry
                         break
                 if ks_pkg is None:
-                    cdebug('    no {}'.format(task_name), 'yellow')
+                    cdebug("    no {}".format(task_name), "yellow")
                     break
-            elif task_name == 'stakeholder-signoff':
+            elif task_name == "stakeholder-signoff":
                 if ks_source.stakeholder is None:
-                    cdebug('    no stakeholder-signoff', 'yellow')
+                    cdebug("    no stakeholder-signoff", "yellow")
                     break
-            elif task_name == 'kernel-signoff':
+            elif task_name == "kernel-signoff":
                 if ks_source.derived_from is not None:
-                    cdebug('    no kernel-signoff (manual for derivatives)', 'yellow')
+                    cdebug("    no kernel-signoff (manual for derivatives)", "yellow")
                     break
-            elif task_name == 'signing-signoff':
-                cdebug('    no signing-signoff (manual always)', 'yellow')
+            elif task_name == "signing-signoff":
+                cdebug("    no signing-signoff (manual always)", "yellow")
                 break
-            elif task_name == 'promote-signing-to-proposed':
+            elif task_name == "promote-signing-to-proposed":
                 ks_route = ks_source.routing
                 if ks_route is not None:
-                    ks_dst = ks_route.lookup_destination('signing')
+                    ks_dst = ks_route.lookup_destination("signing")
                 else:
                     ks_dst = None
 
                 if ks_dst is None:
-                    cdebug('    no promote-signing-to-proposed', 'yellow')
+                    cdebug("    no promote-signing-to-proposed", "yellow")
                     break
 
             # SNAPS: exclusions related to snaps.
-            if task_name.startswith('snap-'):
+            if task_name.startswith("snap-"):
                 snap = None
                 for entry in ks_source.snaps:
                     if entry.name == snap_name or (snap_name is None and entry.primary):
                         snap = entry
                         break
                 if snap is None:
-                    cdebug('    no {}'.format(task_name), 'yellow')
+                    cdebug("    no {}".format(task_name), "yellow")
                     break
-                if task_name == 'snap-certification-testing':
+                if task_name == "snap-certification-testing":
                     if not snap.hw_cert:
-                        cdebug('    no {}'.format(task_name), 'yellow')
+                        cdebug("    no {}".format(task_name), "yellow")
                         break
-                elif task_name == 'snap-qa-testing':
+                elif task_name == "snap-qa-testing":
                     if not snap.qa:
-                        cdebug('    no {}'.format(task_name), 'yellow')
+                        cdebug("    no {}".format(task_name), "yellow")
                         break
-                elif task_name == 'snap-publish':
+                elif task_name == "snap-publish":
                     if not snap.gated:
-                        cdebug('    no {}'.format(task_name), 'yellow')
+                        cdebug("    no {}".format(task_name), "yellow")
                         break
 
             retval = True
@@ -430,10 +426,10 @@ class Workflow:
 
         return retval
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     workflow = Workflow()
     db = workflow.tdb
 
-    print(workflow.assignee('linux', 'prepare-package'))
-    print(workflow.assignee('linux', 'nonexistent-task'))
-
+    print(workflow.assignee("linux", "prepare-package"))
+    print(workflow.assignee("linux", "nonexistent-task"))

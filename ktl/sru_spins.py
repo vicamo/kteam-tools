@@ -1,4 +1,3 @@
-
 import argparse
 import json
 import os
@@ -54,7 +53,7 @@ class SruSpinsIndex:
             result = SruSpinsDataHandle(f"{cycle}-{spin_no}", spin_data)
             full_versions.update(result.versions)
             result.full_versions = full_versions
-            #print(spin_no, spin_data, result)
+            # print(spin_no, spin_data, result)
 
             if spin is not None and spin == spin_no:
                 break
@@ -87,8 +86,8 @@ class SruSpinsIndex:
 # SruSpins
 #
 class SruSpins:
-    _url = 'https://kernel.ubuntu.com/swm/spin-info'
-    _local = 'spin-info'
+    _url = "https://kernel.ubuntu.com/swm/spin-info"
+    _local = "spin-info"
 
     @classmethod
     def from_json(cls, json_data):
@@ -158,7 +157,7 @@ class SruSpins:
         response = urlopen(url)
         json_data = response.read()
         if isinstance(json_data, bytes):
-            json_data = json_data.decode('utf-8')
+            json_data = json_data.decode("utf-8")
         return json.loads(json_data)
 
     @classmethod
@@ -173,20 +172,20 @@ class SruSpins:
 
     def __new__(cls):
         return cls.from_url(cls._url)
-        #return cls.from_path(cls._local)
+        # return cls.from_path(cls._local)
 
 
 if __name__ == "__main__":
     sru_spins = SruSpins.from_local()
 
-    #handle_data = sru_spins.handle_cycle("noble:linux", "2024.08.05")
-    #print(handle_data.spin, handle_data.versions)
+    # handle_data = sru_spins.handle_cycle("noble:linux", "2024.08.05")
+    # print(handle_data.spin, handle_data.versions)
 
-    #handle_data = sru_spins.handle_spin("noble:linux", "2024.08.05-3")
-    #print(handle_data.spin, handle_data.versions)
+    # handle_data = sru_spins.handle_spin("noble:linux", "2024.08.05-3")
+    # print(handle_data.spin, handle_data.versions)
 
-    #handle_data = sru_spins.handle_cycle("noble:linux", "2024.06.10")
-    #print(handle_data.spin, handle_data.versions)
+    # handle_data = sru_spins.handle_cycle("noble:linux", "2024.06.10")
+    # print(handle_data.spin, handle_data.versions)
 
     sru_spins.handle_spin_update("noble:linux", "2024.08.05-3", {"versions": {"main": "1.2.3"}})
     sru_spins.handle_spin_update("noble:linux", "2024.08.05-2", {"versions": {"main": "1.2.2"}})

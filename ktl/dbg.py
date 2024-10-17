@@ -1,4 +1,5 @@
-from sys                                import stdout
+from sys import stdout
+
 
 # _o2ascii
 #
@@ -8,12 +9,13 @@ def _o2ascii(obj):
     retval = None
     if type(obj) != str:
         if type(obj) == unicode:
-            retval = obj.encode('ascii', 'ignore')
+            retval = obj.encode("ascii", "ignore")
         else:
             retval = str(obj)
     else:
         retval = obj
     return retval
+
 
 # Dbg
 #
@@ -22,12 +24,13 @@ class Dbg:
     A class which hopefully makes adding debug print statements easier and outputs better
     looking results.
     """
+
     levels = []
     indent_level = 0
 
     @classmethod
     def __print(cls, txt):
-        stdout.write("%*s%s" % (cls.indent_level * 4, ' ', txt))
+        stdout.write("%*s%s" % (cls.indent_level * 4, " ", txt))
         stdout.flush()
 
     @classmethod
@@ -39,7 +42,7 @@ class Dbg:
         """
         Print a debug message preceeded by 'Enter'.
         """
-        if 'enter' in cls.levels:
+        if "enter" in cls.levels:
             cls.__print("Enter: %s\n" % (txt))
             cls.indent_level += 1
 
@@ -48,7 +51,7 @@ class Dbg:
         """
         Print a debug message preceeded by 'Leave'.
         """
-        if 'leave' in cls.levels:
+        if "leave" in cls.levels:
             cls.indent_level -= 1
             cls.__print("Leave: %s\n" % (txt))
 
@@ -57,7 +60,7 @@ class Dbg:
         """
         Print a debug message preceeded by 'Leave'.
         """
-        if 'leave' in cls.levels:
+        if "leave" in cls.levels:
             cls.indent_level -= 1
             cls.__print("Return: %s (%s)\n" % (txt, _o2ascii(result)))
 
@@ -66,7 +69,7 @@ class Dbg:
         """
         Print a debug message preceeded by 'Leave'.
         """
-        if 'verbose' in cls.levels:
+        if "verbose" in cls.levels:
             cls.__print(txt)
 
     @classmethod
@@ -74,7 +77,7 @@ class Dbg:
         """
         Print a debug message preceeded by 'Warning:'.
         """
-        if 'warning' in cls.levels:
+        if "warning" in cls.levels:
             cls.__print("Warning: %s\n" % (txt))
 
     @classmethod
@@ -82,6 +85,5 @@ class Dbg:
         """
         Print a debug message preceeded by 'Error:'.
         """
-        if 'error' in cls.levels:
+        if "error" in cls.levels:
             cls.__print("Error: %s\n" % (txt))
-

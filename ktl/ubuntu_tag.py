@@ -10,12 +10,11 @@ import re
 from abc import abstractmethod
 from typing import Any, List, Tuple
 import apt_pkg
+
 apt_pkg.init()
 
 
-def _group_nth_int_get(
-    match: re.match, group: int, default: Any = 0, raise_value_error: bool = False
-):
+def _group_nth_int_get(match: re.match, group: int, default: Any = 0, raise_value_error: bool = False):
     """Returns match.group(n) or default on error
     :param match: Match object to extract group from
     :param group: Group index (1 base)

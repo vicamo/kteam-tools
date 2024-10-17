@@ -1,15 +1,17 @@
-from sys                    import stdout, stderr
-try:
-    from commands               import getstatusoutput
-except:
-    from subprocess             import getstatusoutput
-from decimal                import Decimal
-import json
-from os.path                import exists, getmtime
-from time                   import time
-from datetime               import datetime
+from sys import stdout, stderr
 
-from ktl.dbg                import Dbg
+try:
+    from commands import getstatusoutput
+except:
+    from subprocess import getstatusoutput
+from decimal import Decimal
+import json
+from os.path import exists, getmtime
+from time import time
+from datetime import datetime
+
+from ktl.dbg import Dbg
+
 
 # o2ascii
 #
@@ -19,7 +21,7 @@ def o2ascii(obj):
     retval = None
     if type(obj) != str:
         if type(obj) == unicode:
-            retval = obj.encode('ascii', 'ignore')
+            retval = obj.encode("ascii", "ignore")
         elif type(obj) == Decimal:
             retval = str(obj)
         elif type(obj) == int:
@@ -27,6 +29,7 @@ def o2ascii(obj):
     else:
         retval = obj
     return retval
+
 
 # fileage
 #
@@ -38,24 +41,26 @@ def fileage(filename):
     # time in seconds since last change to file
     return time() - getmtime(filename)
 
+
 # run_command
 #
 def run_command(cmd, dbg=False, dry_run=False):
-        """
-        Run a command in the shell, returning status and the output.
-        prints a message if there's an error, and raises an exception.
-        """
-        status = ""
-        result = ""
-        if not dry_run:
-            status, result = getstatusoutput(cmd)
-            debug("     cmd: '%s'\n" % cmd, dbg)
-            debug("  status: '%d'\n" % status, dbg)
-            debug("  result: '%s'\n" % result, dbg)
-        else:
-            debug("run_command: '%s'\n" % (cmd), True)
+    """
+    Run a command in the shell, returning status and the output.
+    prints a message if there's an error, and raises an exception.
+    """
+    status = ""
+    result = ""
+    if not dry_run:
+        status, result = getstatusoutput(cmd)
+        debug("     cmd: '%s'\n" % cmd, dbg)
+        debug("  status: '%d'\n" % status, dbg)
+        debug("  result: '%s'\n" % result, dbg)
+    else:
+        debug("run_command: '%s'\n" % (cmd), True)
 
-        return status, result.split('\n')
+    return status, result.split("\n")
+
 
 # error
 #
@@ -64,6 +69,7 @@ def run_command(cmd, dbg=False, dry_run=False):
 def error(out):
     stderr.write("\n ** Error: %s\n" % out)
     stderr.flush()
+
 
 # debug
 #
@@ -74,6 +80,7 @@ def debug(out, dbg=False, prefix=True):
         if prefix:
             stdo("debug: ")
         stdo(out)
+
 
 # eout
 #
@@ -86,6 +93,7 @@ def eout(emsg):
     stderr.write("\n")
     stderr.flush()
 
+
 # stdo
 #
 # My own version of print but won't automatically add a linefeed to the end. And
@@ -96,14 +104,17 @@ def stdo(ostr):
     stdout.flush()
     return
 
+
 def stde(ostr):
     stderr.write(ostr)
     stderr.flush()
     return
 
+
 def dump(obj):
     stdo(json.dumps(obj, sort_keys=True, indent=4))
-    stdo('\n')
+    stdo("\n")
+
 
 # date_to_string
 #
@@ -114,25 +125,28 @@ def date_to_string(date):
     """
     return "None" if date is None else date.strftime("%A, %d. %B %Y %H:%M UTC")
 
+
 # string_to_date
 #
 def string_to_date(date):
     """
     Return a datetime object based on the string in a well known format.
     """
-    return datetime.strptime(date, '%A, %d. %B %Y %H:%M UTC')
+    return datetime.strptime(date, "%A, %d. %B %Y %H:%M UTC")
+
 
 # FileDoesntExist
 #
 class FileDoesntExist(Exception):
-    def __init__(self, file_name=''):
+    def __init__(self, file_name=""):
         self.file_name = file_name
 
     def print_std_error(self):
-        error('The file (%s) does not exist.\n' % self.file_name)
+        error("The file (%s) does not exist.\n" % self.file_name)
 
     def print_std_warning(self):
-        stde('** Warning: The file (%s) does not exist.\n' % self.file_name)
+        stde("** Warning: The file (%s) does not exist.\n" % self.file_name)
+
 
 # json_load
 #
@@ -144,13 +158,14 @@ def json_load(file_name):
 
     retval = None
     if exists(file_name):
-        with open(file_name, 'r') as f:
+        with open(file_name, "r") as f:
             retval = json.load(f)
     else:
         raise FileDoesntExist(file_name)
 
     Dbg.leave("json_load")
     return retval
+
 
 # file_load
 #
@@ -162,12 +177,10 @@ def file_load(file_name):
 
     retval = None
     if exists(file_name):
-        with open(file_name, 'r') as f:
+        with open(file_name, "r") as f:
             retval = f.read()
     else:
         raise FileDoesntExist(file_name)
 
     Dbg.leave("file_load")
     return retval
-
-
