@@ -115,6 +115,21 @@ def option_deprecated(*args, **kwargs):
     return wrapper
 
 
+def option_deprecated_nc():
+    """Common deprecated --nc option decorator"""
+
+    def wrapper(func):
+        return option_deprecated(
+            "--nc",
+            is_flag=True,
+            new_option="--no-color",
+            help="No Colour. By default the debug output that is printed comes out in multiple "
+            + "colours to help with the debugging. This option disables that.",
+        )(func)
+
+    return wrapper
+
+
 def _add_argument_help(func, metavar, help):
     """Append an argument help line to the function's docstring"""
     doc = func.__doc__.split("\n")

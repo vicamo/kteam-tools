@@ -65,9 +65,13 @@ $ cranky push-refs .
 @cli.command(epilog=epilog_push_refs)
 @cli.option_color()
 @cli.option_dry_run(help="Do not push any refs.")
+@cli.option_deprecated_nc()
 @cli.argument_handle()
-def push_refs(color, dry_run, handle):
+def push_refs(color, dry_run, nc, handle):
     """Push the refs (HEAD and tags) to all remotes"""
+    if nc:
+        cli.option_deprecated_warn("push-refs", "--nc")
+        color = False
     Clog.color = color
     try:
         _push_refs(handle, dry_run=dry_run)
