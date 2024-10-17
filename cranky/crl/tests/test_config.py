@@ -61,7 +61,9 @@ class TestConfig(unittest.TestCase):
 
     def test_config_filename_absent(self):
         with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {"HOME": "/non-existant"}):
-            config = Config.from_filename(d.getpath("cranky.conf"))
+            with self.assertWarnsRegex(UserWarning, "Missing configuration, using default config") as _:
+                config = Config.from_filename(d.getpath("cranky.conf"))
+
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
@@ -83,7 +85,9 @@ class TestConfig(unittest.TestCase):
         ):
             d.write(".config/cranky/cranky.yaml", self.data_yaml.encode("utf-8"))
 
-            config = Config.load()
+            with self.assertWarnsRegex(UserWarning, "Using config file") as _:
+                config = Config.load()
+
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
@@ -95,7 +99,9 @@ class TestConfig(unittest.TestCase):
         ):
             d.write(".cranky", self.data_yaml.encode("utf-8"))
 
-            config = Config.load()
+            with self.assertWarnsRegex(UserWarning, "Using config file") as _:
+                config = Config.load()
+
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
@@ -107,7 +113,9 @@ class TestConfig(unittest.TestCase):
         ):
             d.write(".cranky.yaml", self.data_yaml.encode("utf-8"))
 
-            config = Config.load()
+            with self.assertWarnsRegex(UserWarning, "Using config file") as _:
+                config = Config.load()
+
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
@@ -117,7 +125,9 @@ class TestConfig(unittest.TestCase):
         with TempDirectory() as d, unittest.mock.patch.object(xdg, "XDG_CONFIG_HOME", d.path):
             d.write("cranky/cranky.yaml", self.data_yaml.encode("utf-8"))
 
-            config = Config.from_yaml("")
+            with self.assertWarnsRegex(UserWarning, "Missing configuration, using default config") as _:
+                config = Config.from_yaml("")
+
             self.assertNotEqual(config, None)
 
             data = config.lookup("simple")
