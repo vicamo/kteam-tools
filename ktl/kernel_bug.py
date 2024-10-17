@@ -643,4 +643,3 @@ class KernelBug(Bug):
         Dbg.ret('KernelBug.kernel_version', retval)
         return retval
 
-# vi:set ts=4 sw=4 expandtab:

@@ -449,4 +449,3 @@ class Debian:
         return upstream_source
 
 
-# vi:set ts=4 sw=4 expandtab:

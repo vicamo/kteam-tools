@@ -170,5 +170,4 @@ def file_load(file_name):
     Dbg.leave("file_load")
     return retval
 
-# vi:set ts=4 sw=4 expandtab:
 

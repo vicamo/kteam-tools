@@ -365,4 +365,3 @@ class Git:
 
         return cls.log_results
 
-# vi:set ts=4 sw=4 expandtab:

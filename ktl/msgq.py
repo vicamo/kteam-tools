@@ -186,4 +186,3 @@ class MsgQueueCkct(MsgQueueService):
         kwargs.setdefault('service', 'ckct')
         super(MsgQueueCkct, s).__init__(**kwargs)
 
-# vi:set ts=4 sw=4 expandtab:

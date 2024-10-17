@@ -1546,4 +1546,3 @@ if __name__ == '__main__':
 
     sys.exit(fail_count)
 
-# vi:set ts=4 sw=4 expandtab:

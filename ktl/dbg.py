@@ -85,4 +85,3 @@ class Dbg:
         if 'error' in cls.levels:
             cls.__print("Error: %s\n" % (txt))
 
-# vi:set ts=4 sw=4 expandtab:

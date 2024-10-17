@@ -132,4 +132,3 @@ class ClogFilter(logging.Filter):
         return True
 
 
-# vi:set ts=4 sw=4 expandtab syntax=python:

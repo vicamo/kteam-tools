@@ -74,4 +74,3 @@ class StdApp:
         if 'verbosity' in self.cfg and lvl <= self.cfg['verbosity']:
             stdo(msg)
 
-# vi:set ts=4 sw=4 expandtab:

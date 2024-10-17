@@ -276,4 +276,3 @@ class CheckComponent():
         cdebug("CheckComponent::mismatches_list leave")
         return mlist
 
-# vi:set ts=4 sw=4 expandtab:

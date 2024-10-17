@@ -334,4 +334,3 @@ if __name__ == '__main__':
     for p in ubuntu.ksp:
         if p not in ubuntu.kernel_source_packages:
             print('%s is not in ubuntu.kernel_source_packages' % p)
-# vi:set ts=4 sw=4 expandtab:

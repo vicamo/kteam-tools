@@ -437,4 +437,3 @@ if __name__ == '__main__':
     print(workflow.assignee('linux', 'prepare-package'))
     print(workflow.assignee('linux', 'nonexistent-task'))
 
-# vi:set ts=4 sw=4 expandtab:

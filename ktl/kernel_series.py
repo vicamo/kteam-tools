@@ -977,4 +977,3 @@ if __name__ == '__main__':
             print("SNAP", str(snap), snap.arches)
 
 
-# vi:set ts=4 sw=4 expandtab:

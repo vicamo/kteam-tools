@@ -98,4 +98,3 @@ class Cfg():
         Dbg.leave("utils.merge_config_options")
         return cfg
 
-# vi:set ts=4 sw=4 expandtab:
