@@ -6,6 +6,7 @@
         "sru-cycle": "SruCycle",
         "kernel-series": "KernelSeries",
         "releases" : "all-releases.json",
-        "testing": "testing.json"
+        "testing": "testing.json",
+        "readme": "readme.json"
     }
 }
