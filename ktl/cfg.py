@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-
 from os                                 import path
 from os                                 import _exit
 from .dbg                                import Dbg

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-
 from ktl.utils                          import date_to_string
 
 # DeltaTime

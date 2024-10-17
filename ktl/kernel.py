@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-
 from ktl.git                            import Git, GitError
 
 #

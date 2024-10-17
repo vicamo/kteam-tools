@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-
 from ktl.utils                          import error
 import re
 from kernel_versions                    import KernelVersions

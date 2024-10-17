@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-
 from sys                    import stdout, stderr
 try:
     from commands               import getstatusoutput

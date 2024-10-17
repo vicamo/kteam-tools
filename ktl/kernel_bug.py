@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-
 from lpltk.LaunchpadService             import LaunchpadService
 from lpltk.bug                          import Bug
 from ktl.bugs                           import DeltaTime

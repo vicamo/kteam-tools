@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-#
-
 try:
     from urllib.request import urlopen
     from urllib.error import HTTPError, URLError

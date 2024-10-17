@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-
 from sys                                import stdout
 from subprocess                         import Popen, PIPE, STDOUT
 from threading                          import Thread

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-
 from sys                                import stdout
 
 # _o2ascii

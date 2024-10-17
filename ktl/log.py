@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 import logging
 from logging                            import info, debug, exception, warning
 from ktl.termcolor                      import colored

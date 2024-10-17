@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # Copyright (C) 2009-2013  Canonical Ltd.
 # Authors:
 #   Andy Whitcroft <apw@canonical.com>

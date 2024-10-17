@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 from launchpadlib.launchpad import Launchpad
 try:
     from launchpadlib.credentials import AuthorizeRequestTokenWithURL

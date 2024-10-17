@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 from __future__                         import absolute_import
 
 # Note: It would be nice to not tie the debian class to the git class but
