@@ -2,10 +2,7 @@ import os
 import json
 import yaml
 
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib2 import urlopen
+from urllib.request import urlopen
 
 
 class SigningConfigStreamLevel:

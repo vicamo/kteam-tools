@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 #
 
-try:
-    from urllib.request import urlopen
-    from urllib.error import HTTPError, URLError
-except ImportError:
-    from urllib2 import urlopen
-    from urllib2 import HTTPError, URLError
+from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
 
 import errno
 import json
