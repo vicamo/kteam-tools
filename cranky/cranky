@@ -11,6 +11,9 @@ from importlib import import_module
 # HACK: This seems to be required when packaging for the snap
 sys.path.append(os.path.dirname(__file__))
 
+# HACK: Required for importing ktl and the likes :-(
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, "libs"))
+
 from crankylib import cli  # noqa (E402: Module level import not at top of file)
 
 
