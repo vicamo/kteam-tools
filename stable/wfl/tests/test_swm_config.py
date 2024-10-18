@@ -53,7 +53,7 @@ class TestSwmConfig(TestSwmConfigCore):
         sc = SwmConfig(data=data)
 
         self.assertIsNotNone(sc)
-        self.assertIsNone(sc.gke_nvidia_packages)
+        self.assertEqual(sc.gke_nvidia_packages, [])
 
     def test_gke_nvidia_packages_present_empty(self):
         data = "gke-nvidia-packages:"
