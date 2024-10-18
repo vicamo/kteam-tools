@@ -1,6 +1,6 @@
 import unittest
 
-from tests import utils
+import utils
 
 from kconfig.annotations import Annotation, KConfig
 
