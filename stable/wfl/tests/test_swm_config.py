@@ -11,10 +11,7 @@ from testfixtures       import (
 import unittest
 import yaml
 
-#sys.path.append(os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..', '..', 'py3')))
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..')))
-
-from swm_config         import (
+from wfl.swm_config         import (
                             SwmConfig,
                             SwmConfigError,
                             )
