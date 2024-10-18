@@ -2,11 +2,7 @@ import sys
 import unittest
 from testfixtures import (
     TempDirectory,
-    Replace,
-    test_datetime,
 )
-
-from datetime import date
 
 from ktl.swm_status import SwmStatus
 

@@ -1,8 +1,7 @@
 from __future__ import print_function
 
-from ktl.utils import run_command, dump
+from ktl.utils import run_command
 from re import compile, escape
-import json
 
 
 class GitError(Exception):

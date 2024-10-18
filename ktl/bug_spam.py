@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "py3")))
 
 from lpltk.LaunchpadService import LaunchpadService
-from logging import basicConfig, DEBUG, INFO
+from logging import basicConfig, DEBUG
 from ktl.log import cwarn, cdebug
 
 

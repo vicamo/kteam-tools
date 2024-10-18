@@ -1,15 +1,4 @@
-import os
-import json
-
-try:
-    from urllib.request import urlopen, Request
-    from urllib.error import HTTPError
-except ImportError:
-    from urllib2 import urlopen, Request, HTTPError
-
-from .msgq import MsgQueue, MsgQueueService
-from .messaging import Email
-from .cfg import Cfg
+from .msgq import MsgQueueService
 
 
 class Announce:

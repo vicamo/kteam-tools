@@ -1,9 +1,7 @@
 try:
     from urllib.request import urlopen
-    from urllib.error import HTTPError, URLError
 except ImportError:
     from urllib2 import urlopen
-    from urllib2 import HTTPError, URLError
 
 from copy import copy
 from datetime import datetime

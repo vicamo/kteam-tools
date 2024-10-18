@@ -1,13 +1,11 @@
 try:
-    from urllib.request import pathname2url, urljoin, urlopen
+    from urllib.request import urlopen
 
 except ImportError:
-    from urllib2 import pathname2url, urljoin, urlopen
+    from urllib2 import urlopen
 
-import argparse
 import json
 import os
-import sys
 from datetime import datetime
 
 

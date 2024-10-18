@@ -1,11 +1,8 @@
-import argparse
 import json
 import os
-import sys
 from copy import deepcopy
-from datetime import datetime
-from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN
-from urllib.request import pathname2url, urljoin, urlopen
+from fcntl import lockf, LOCK_EX, LOCK_UN
+from urllib.request import urlopen
 
 
 # SruSpinsDataHandle

@@ -5,7 +5,6 @@ being processed through the kernel-team SRU workflow.
 """
 
 # Option
-import copy
 import os
 import sys
 

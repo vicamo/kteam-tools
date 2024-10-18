@@ -1,12 +1,9 @@
-import os
 import re
-import yaml
 
 from collections import namedtuple
-from datetime import datetime, timezone, timedelta
+from datetime import timezone
 
 from jira import JIRA
-from jira.exceptions import JIRAError
 
 # GreenHopperResource has been renamed to AgileResource in Jira 3.3.0, make
 # sure to support both classes.

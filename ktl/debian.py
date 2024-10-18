@@ -6,9 +6,8 @@ from __future__ import absolute_import
 
 from debian.changelog import Changelog, get_maintainer
 from email.utils import formatdate
-from os import path, listdir, system
+from os import path, listdir
 from re import compile, findall, finditer
-from sys import stdout
 from glob import glob
 
 from ktl.git import Git, GitError
