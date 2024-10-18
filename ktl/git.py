@@ -231,7 +231,7 @@ class Git:
         for text in commit_text:
             while True:
                 m = cls.author_rc.match(text)  # Author
-                if m != None:
+                if m is not None:
                     id = {}
                     id["name"] = m.group(1)
                     id["email"] = m.group(2)
@@ -239,12 +239,12 @@ class Git:
                     break
 
                 m = cls.date_rc.match(text)  # Date
-                if m != None:
+                if m is not None:
                     results["date"] = m.group(1)
                     break
 
                 m = cls.buglink_rc.match(text)  # BugLink
-                if m != None:
+                if m is not None:
                     bug = m.group(1)
                     if bug not in cls.log_results["buglink-index"]:
                         cls.log_results["buglink-index"][bug] = []
@@ -258,7 +258,7 @@ class Git:
                     break
 
                 m = cls.sob_rc.match(text)  # Signed-off-by
-                if m != None:
+                if m is not None:
                     if "sob" not in results:
                         results["sob"] = []
 
@@ -270,7 +270,7 @@ class Git:
                     break
 
                 m = cls.ack_rc.match(text)  # Acked-by
-                if m != None:
+                if m is not None:
                     if "acks" not in results:
                         results["acks"] = []
 
@@ -282,7 +282,7 @@ class Git:
                     break
 
                 m = cls.source_rc.match(text)
-                if m != None:
+                if m is not None:
                     results["upstream_sha1"] = m.group(1)
                     if m.group(2):
                         results["upstream_1"] = m.group(2)
@@ -325,7 +325,7 @@ class Git:
             if debug:
                 print("debug: %s" % line)
             m = cls.commit_rc.match(line)
-            if m != None:
+            if m is not None:
                 sha1 = m.group(1)
                 # This is a new commit sha1. We are going to build up a dictionary entry
                 # for this one commit and then add it to the dictionary of all commits.

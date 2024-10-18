@@ -10,7 +10,7 @@ class Announce:
         self.mq.publish(key, payload)
 
     def send(self, key, subject=None, body=None, summary=None):
-        if subject == None and summary == None:
+        if subject is None and summary is None:
             raise ValueError("subject or summary required")
 
         destination = {"type": "key", "key": key}

@@ -390,7 +390,7 @@ class KernelBug(Bug):
             # Sometimes it's just in the description
             #
             m = re.search("Ubuntu ((hardy|intrepid|jaunty|karmic|lucid|maverick|natty|oneiric)) [0-9]+\.[0-9]+", line)
-            if m != None:
+            if m is not None:
                 series_name = m.group(1)
                 series_version = self._ubuntu_series_version_lookup(series_name)
 
@@ -406,7 +406,7 @@ class KernelBug(Bug):
             file = attachment.data.open()
             for line in file:
                 m = re.search("Linux version ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*", line)
-                if m != None:
+                if m is not None:
                     self.dbg("       - found\n")
                     retval = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
                     break
@@ -450,7 +450,7 @@ class KernelBug(Bug):
                     # kern.log
                     #
                     m = re.search("kern.log]*", attachment.title)
-                    if m != None:
+                    if m is not None:
                         self.dbg("         - examining\n")
                         kernel_version = self._find_linux_version(attachment, bug)
                         if kernel_version != "":
@@ -461,7 +461,7 @@ class KernelBug(Bug):
                     # BootDmesg.txt
                     #
                     m = re.search("Boot[Dd]mesg[.txt|.log]*", attachment.title)
-                    if m != None:
+                    if m is not None:
                         self.dbg("     - BootDmesg.log\n")
                         kernel_version = self._find_linux_version(attachment, bug)
                         if kernel_version != "":
@@ -472,7 +472,7 @@ class KernelBug(Bug):
                     # Dmesg.txt / dmesg.log
                     #
                     m = re.search("[Dd]mesg[.txt|.log]*", attachment.title)
-                    if m != None:
+                    if m is not None:
                         self.dbg("     - Dmesg.log\n")
                         kernel_version = self._find_linux_version(attachment, bug)
                         if kernel_version != "":
@@ -491,7 +491,7 @@ class KernelBug(Bug):
                                     m = re.search(
                                         "Kernel release:\s+([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?)", line
                                     )
-                                    if m != None:
+                                    if m is not None:
                                         self.dbg("       - found\n")
                                         kernel_version = "%s.%s.%s-%s-%s" % (
                                             m.group(1),
@@ -517,7 +517,7 @@ class KernelBug(Bug):
                     #
                     if series_name == "":
                         m = re.search("[Xx]org\.0\.log.*", attachment.title)
-                        if m != None:
+                        if m is not None:
                             self.dbg("     - Xorg.0.log\n")
                             try:
                                 file = attachment.data.open()
@@ -525,7 +525,7 @@ class KernelBug(Bug):
                                     if "Current Operating System" not in line:
                                         continue
                                     m = re.search("Linux \S+ ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*", line)
-                                    if m != None:
+                                    if m is not None:
                                         self.dbg("       - found\n")
                                         kernel_version = "%s.%s.%s-%s-%s" % (
                                             m.group(1),
