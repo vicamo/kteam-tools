@@ -108,7 +108,7 @@ function check_invalid_do_flags()
 
 	echo "  - Check invalid do_* build flags in ${DEBIAN}/rules.d/*.mk (LP: #2048183)"
 
-	flags="do_tools_common|do_tools_host"
+	flags="do_tools_common|do_tools_host|do_source_package"
 
 	if grep -qE "\b(${flags})\b" "${DEBIAN}"/rules.d/*.mk ; then
 		echo "EE: Invalid/unnecessary flags in rule files:" >&2
