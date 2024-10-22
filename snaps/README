@@ -33,7 +33,10 @@ The simplest way to make the stream/channel specific recipes is to use
 the relevant recipes.  It can also be use to update those recipes when things
 like routing changes.  At its simplest it can initiated against a handle-target:
 
-    ./snap-recipe-create oracular:linux:pc-kernel
+    ./snap-recipe-create [-v2v] oracular:linux:pc-kernel
 
 This will make two recipes per stream.  The only manual operation required
 is to approve the uploads on each.
+
+snap-recipe-create may also be re-run to update existing recipes should things
+like routing change such as happens when a series switch to stable.
