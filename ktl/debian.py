@@ -136,7 +136,6 @@ class Debian:
     #
     @classmethod
     def raw_changelog(cls, local=False):
-
         # Find the correct changelog for this branch of this repository.
         #
         current_branch = Git.current_branch()
@@ -261,7 +260,6 @@ class Debian:
     #
     @classmethod
     def abi(cls):
-
         # HACK: Newer kernels don't have an ABI directory anymore
         if not path.exists("debian/scripts/misc/getabis"):
             return []
@@ -294,7 +292,6 @@ class Debian:
     #
     @classmethod
     def abi_arch(cls):
-
         # HACK: Newer kernels don't have an ABI directory anymore
         if not path.exists("debian/scripts/misc/getabis"):
             return [], []

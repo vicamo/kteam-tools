@@ -9,7 +9,6 @@ import os
 
 
 class LaunchpadCacheNamedOperation:
-
     def __init__(self, value, key, cache):
         self.__value = value
         self.__key = key
@@ -23,7 +22,6 @@ class LaunchpadCacheNamedOperation:
 
 
 class LaunchpadCacheAttr:
-
     def __init__(self, value):
         self.__value = value
 
@@ -35,7 +33,6 @@ class LaunchpadCacheAttr:
 
 
 class LaunchpadCacheArchives(LaunchpadCacheAttr):
-
     __reference_cache = {}
 
     def __init__(self, value):
@@ -45,7 +42,6 @@ class LaunchpadCacheArchives(LaunchpadCacheAttr):
 
 
 class LaunchpadCacheDistributionsEntry(LaunchpadCacheAttr):
-
     def __init__(self, value):
         super().__init__(value)
 
@@ -53,7 +49,6 @@ class LaunchpadCacheDistributionsEntry(LaunchpadCacheAttr):
 
 
 class LaunchpadCacheDistributions:
-
     __cache = {}
 
     def __init__(self, value):
@@ -67,14 +62,12 @@ class LaunchpadCacheDistributions:
 
 
 class LaunchpadCacheProjectsEntry(LaunchpadCacheAttr):
-
     def __init__(self, value):
         super().__init__(value)
         self.getSeries = LaunchpadCacheNamedOperation(value.getSeries, "name", dict())
 
 
 class LaunchpadCacheProjects:
-
     __cache = {}
 
     def __init__(self, value):
@@ -88,7 +81,6 @@ class LaunchpadCacheProjects:
 
 
 class LaunchpadCacheGitRepositories(LaunchpadCacheAttr):
-
     __path_cache = {}
 
     def __init__(self, value):
@@ -98,7 +90,6 @@ class LaunchpadCacheGitRepositories(LaunchpadCacheAttr):
 
 
 class LaunchpadCachePeople:
-
     __cache = {}
 
     def __init__(self, value):
@@ -111,7 +102,6 @@ class LaunchpadCachePeople:
 
 
 class LaunchpadCache(Launchpad):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._me = False

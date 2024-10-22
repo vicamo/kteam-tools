@@ -12,7 +12,6 @@ from ktl.log import cdebug
 # kernel set packages, but can be extended or used with all packages
 #
 class CheckComponent:
-
     def __init__(self, lp):
         cdebug("CheckComponent::__init__ enter")
         self.lp = lp

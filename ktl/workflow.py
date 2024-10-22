@@ -27,7 +27,6 @@ class DefaultAssigneeMissing(Exception):
 
 
 class Properties:
-
     # __init__
     #
     def __init__(self, bug):
@@ -108,7 +107,6 @@ class Properties:
 # Workflow
 #
 class Workflow:
-
     # Stable tasks, tags, etc vary according to the package name. This
     # is a dictionary with information necessary for the scripts to
     # to create and handle stable tracking bugs. Each entry corresponds

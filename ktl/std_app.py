@@ -10,7 +10,6 @@ from .utils import stdo
 # configuration file in the user's home directory.
 #
 class StdApp:
-
     # __init__
     #
     def __init__(self):

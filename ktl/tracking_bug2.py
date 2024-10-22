@@ -761,7 +761,6 @@ class TrackingBug(object):
                 else:
                     lp = s.__bug.service.launchpad
                     try:
-
                         task.assignee = lp.people[assignee]
                         cdebug("  - assigning: {}".format(task.assignee.display_name))
                     except:

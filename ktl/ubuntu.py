@@ -94,7 +94,6 @@ class UbuntuError(Exception):
 # Ubuntu
 #
 class Ubuntu:
-
     # The series information data is now encoded in a yaml file in this same directory
     # and which is accessed via the URL you see below. If you make changes to the yaml
     # file you need to update the kteam-tools.kernel.ubuntu.com repo in the ~kernel-ppa

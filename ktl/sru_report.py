@@ -22,7 +22,6 @@ from ktl.log import cdebug, cerror
 # BugEntry
 #
 class BugEntry:
-
     def __init__(self, lp_bug):
         self.title = lp_bug.title
         self.tags = list(lp_bug.tags)

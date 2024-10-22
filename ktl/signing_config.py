@@ -6,9 +6,7 @@ from urllib.request import urlopen
 
 
 class SigningConfigStreamLevel:
-
     def __init__(self, stream, level, variant, reference):
-
         self.stream = stream
         self.level = int(level)
         self.variant = variant

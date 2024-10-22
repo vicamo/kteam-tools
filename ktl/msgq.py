@@ -6,7 +6,6 @@ import pika
 # MsgQueue
 #
 class MsgQueue(object):
-
     ACK = object()
     REJECT = object()
     REQUEUE = object()
@@ -194,7 +193,6 @@ class MsgQueueService(MsgQueue):
 
 
 class MsgQueueCkct(MsgQueueService):
-
     # __init__
     #
     def __init__(s, **kwargs):

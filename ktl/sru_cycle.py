@@ -44,7 +44,6 @@ SRU_CYCLE_HEADER = """# kernel SRU Cycle information file (YAML format)
 
 
 class SruCycleSpinEntry:
-
     def __init__(self, spin, data=False, sc=None, owner=None):
         """
         Instantiate a new SruCycleSpinEntry object.

@@ -25,7 +25,6 @@ def gzip_decompress(data):
 
 
 class KernelRoutingEntryDestination:
-
     def __init__(self, ks, route, entry, data):
         self._ks = ks
         self.route = route
@@ -55,7 +54,6 @@ class KernelRoutingEntryDestination:
 
 
 class KernelRoutingEntryRoute:
-
     def __init__(self, ks, routing, name, data):
         self._ks = ks
         self.name = name
@@ -735,7 +733,6 @@ class KernelSeriesEntry:
 # KernelSeriesUrl
 #
 class KernelSeriesUrl:
-
     def __init__(self, url=None, data=None, use_local=False, xc=None):
         if data is None and url is None:
             raise ValueError("expecting url or data")
@@ -812,7 +809,6 @@ class KernelSeriesUrl:
 
 
 class KernelSeriesCache:
-
     def __init__(self, data_location=None):
         if data_location is None:
             data_location = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "info"))
@@ -922,7 +918,6 @@ class KernelSeriesCache:
 # override __new__() so the class needs to be defined new-style so that it
 # inherits from object!
 class KernelSeries(object):
-
     _cache = KernelSeriesCache()
 
     def __new__(cls, *args, **kwargs):
