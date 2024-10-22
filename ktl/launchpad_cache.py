@@ -1,6 +1,5 @@
-#!/usr/bin/python3
-
 from launchpadlib.launchpad import Launchpad
+
 try:
     from launchpadlib.credentials import AuthorizeRequestTokenWithURL
 except ImportError:
@@ -10,7 +9,6 @@ import os
 
 
 class LaunchpadCacheNamedOperation:
-
     def __init__(self, value, key, cache):
         self.__value = value
         self.__key = key
@@ -24,7 +22,6 @@ class LaunchpadCacheNamedOperation:
 
 
 class LaunchpadCacheAttr:
-
     def __init__(self, value):
         self.__value = value
 
@@ -36,25 +33,22 @@ class LaunchpadCacheAttr:
 
 
 class LaunchpadCacheArchives(LaunchpadCacheAttr):
-
     __reference_cache = {}
 
     def __init__(self, value):
         super().__init__(value)
 
-        self.getByReference = LaunchpadCacheNamedOperation(value.getByReference, 'reference', self.__reference_cache)
+        self.getByReference = LaunchpadCacheNamedOperation(value.getByReference, "reference", self.__reference_cache)
 
 
 class LaunchpadCacheDistributionsEntry(LaunchpadCacheAttr):
-
     def __init__(self, value):
         super().__init__(value)
 
-        self.getSeries = LaunchpadCacheNamedOperation(value.getSeries, 'name_or_version', dict())
+        self.getSeries = LaunchpadCacheNamedOperation(value.getSeries, "name_or_version", dict())
 
 
 class LaunchpadCacheDistributions:
-
     __cache = {}
 
     def __init__(self, value):
@@ -68,14 +62,12 @@ class LaunchpadCacheDistributions:
 
 
 class LaunchpadCacheProjectsEntry(LaunchpadCacheAttr):
-
     def __init__(self, value):
         super().__init__(value)
-        self.getSeries = LaunchpadCacheNamedOperation(value.getSeries, 'name', dict())
+        self.getSeries = LaunchpadCacheNamedOperation(value.getSeries, "name", dict())
 
 
 class LaunchpadCacheProjects:
-
     __cache = {}
 
     def __init__(self, value):
@@ -89,17 +81,15 @@ class LaunchpadCacheProjects:
 
 
 class LaunchpadCacheGitRepositories(LaunchpadCacheAttr):
-
     __path_cache = {}
 
     def __init__(self, value):
         super().__init__(value)
 
-        self.getByPath = LaunchpadCacheNamedOperation(value.getByPath, 'path', self.__path_cache)
+        self.getByPath = LaunchpadCacheNamedOperation(value.getByPath, "path", self.__path_cache)
 
 
 class LaunchpadCachePeople:
-
     __cache = {}
 
     def __init__(self, value):
@@ -112,7 +102,6 @@ class LaunchpadCachePeople:
 
 
 class LaunchpadCache(Launchpad):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._me = False
@@ -129,14 +118,18 @@ class LaunchpadCache(Launchpad):
             # Work around a redirect handling issue in python3-lazr.restfulclient
             # which fails when trying to carry over non-GET requests.  Look up
             # my name (via +me), and then manually resolve that name to a user.
-            self._me = self.people[super().__getattr__('me').name]
+            self._me = self.people[super().__getattr__("me").name]
         return self._me
 
     @classmethod
-    def login_application(cls, application, service_root='production'):
+    def login_application(cls, application, service_root="production"):
         cred_dir = os.path.join(os.path.expanduser("~/.config"), application)
         os.makedirs(cred_dir, exist_ok=True)
         cred_file = os.path.join(cred_dir, "credentials-" + service_root)
         authorization_engine = AuthorizeRequestTokenWithURL(service_root=service_root, consumer_name=application)
-        return cls.login_with(service_root=service_root, version='devel',
-            authorization_engine=authorization_engine, credentials_file=cred_file)
+        return cls.login_with(
+            service_root=service_root,
+            version="devel",
+            authorization_engine=authorization_engine,
+            credentials_file=cred_file,
+        )

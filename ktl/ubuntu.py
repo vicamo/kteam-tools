@@ -2,10 +2,8 @@
 #
 
 import re
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib2 import urlopen
+
+from urllib.request import urlopen
 
 import yaml
 
@@ -15,63 +13,63 @@ def convert_v2_to_v1(data):
     for series_key, series in data.items():
         series_v1 = data_v1.setdefault(series_key, {})
 
-        series_v1['series_version'] = series_key
-        series_v1['name'] = series['codename']
-        for key in ('development', 'supported'):
+        series_v1["series_version"] = series_key
+        series_v1["name"] = series["codename"]
+        for key in ("development", "supported"):
             series_v1[key] = series.get(key, False)
-        for key in ('lts', 'esm'):
+        for key in ("lts", "esm"):
             if series.get(key, False):
                 series_v1[key] = series[key]
 
-        if 'sources' not in series or not series['sources']:
+        if "sources" not in series or not series["sources"]:
             continue
 
-        for source_key, source in series['sources'].items():
-            if 'versions' in source:
-                series_v1['kernels'] = source['versions']
-                series_v1['kernel'] = series_v1['kernels'][-1]
+        for source_key, source in series["sources"].items():
+            if "versions" in source:
+                series_v1["kernels"] = source["versions"]
+                series_v1["kernel"] = series_v1["kernels"][-1]
                 break
 
-        series_v1['derivative-packages'] = {}
-        series_v1['packages'] = []
-        series_v1['derivative-packages']['linux'] = []
-        for source_key, source in series['sources'].items():
-            if source.get('supported', False) and not source.get('copy-forward', False):
-                if 'derived-from' in source:
-                    (derived_series, derived_package) = source['derived-from']
+        series_v1["derivative-packages"] = {}
+        series_v1["packages"] = []
+        series_v1["derivative-packages"]["linux"] = []
+        for source_key, source in series["sources"].items():
+            if source.get("supported", False) and not source.get("copy-forward", False):
+                if "derived-from" in source:
+                    (derived_series, derived_package) = source["derived-from"]
                     if derived_series == series_key:
-                        derivative_packages = series_v1['derivative-packages'].setdefault(derived_package, [])
+                        derivative_packages = series_v1["derivative-packages"].setdefault(derived_package, [])
                         derivative_packages.append(source_key)
                     else:
-                        backport_packages = series_v1.setdefault('backport-packages', {})
-                        backport_packages[source_key] = [ derived_package, derived_series ]
+                        backport_packages = series_v1.setdefault("backport-packages", {})
+                        backport_packages[source_key] = [derived_package, derived_series]
 
                 else:
-                    series_v1['derivative-packages'].setdefault(source_key, [])
+                    series_v1["derivative-packages"].setdefault(source_key, [])
 
-            for package_key, package in source['packages'].items():
-                if source.get('supported', False) and not source.get('copy-forward', False):
-                    series_v1['packages'].append(package_key)
+            for package_key, package in source["packages"].items():
+                if source.get("supported", False) and not source.get("copy-forward", False):
+                    series_v1["packages"].append(package_key)
 
                 if not package:
                     continue
 
-                dependent_packages = series_v1.setdefault('dependent-packages', {})
+                dependent_packages = series_v1.setdefault("dependent-packages", {})
                 dependent_packages_package = dependent_packages.setdefault(source_key, {})
 
-                if 'type' in package:
-                    dependent_packages_package[package['type']] = package_key
+                if "type" in package:
+                    dependent_packages_package[package["type"]] = package_key
 
-            if 'snaps' in source:
-                for snap_key, snap in source['snaps'].items():
-                    if snap and 'primary' in snap:
-                        dependent_snaps = series_v1.setdefault('dependent-snaps', {})
+            if "snaps" in source:
+                for snap_key, snap in source["snaps"].items():
+                    if snap and "primary" in snap:
+                        dependent_snaps = series_v1.setdefault("dependent-snaps", {})
                         dependent_snaps_source = dependent_snaps.setdefault(source_key, snap)
-                        dependent_snaps_source['snap'] = snap_key
-                        del dependent_snaps_source['primary']
-                        del dependent_snaps_source['repo']
+                        dependent_snaps_source["snap"] = snap_key
+                        del dependent_snaps_source["primary"]
+                        del dependent_snaps_source["repo"]
                     else:
-                        derivative_snaps = series_v1.setdefault('derivative-snaps', {})
+                        derivative_snaps = series_v1.setdefault("derivative-snaps", {})
                         derivative_snaps.setdefault(source_key, []).append(snap_key)
 
     return data_v1
@@ -83,6 +81,7 @@ def convert_v2_to_v1(data):
 # series are not the same as the main kernels
 #
 
+
 # UbuntuError
 #
 class UbuntuError(Exception):
@@ -91,43 +90,43 @@ class UbuntuError(Exception):
     def __init__(self, error):
         self.msg = error
 
+
 # Ubuntu
 #
 class Ubuntu:
-
     # The series information data is now encoded in a yaml file in this same directory
     # and which is accessed via the URL you see below. If you make changes to the yaml
     # file you need to update the kteam-tools.kernel.ubuntu.com repo in the ~kernel-ppa
     # directory on kernel.ubuntu.com.
     #
-    #url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
-    url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
+    # url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
+    url = "https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml"
     # url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
     response = urlopen(url)
     content = response.read()
     if type(content) != str:
-        content = content.decode('utf-8')
+        content = content.decode("utf-8")
     data = yaml.safe_load(content)
 
     db = convert_v2_to_v1(data)
 
     index_by_kernel_version = {}
     for v in db:
-        if 'kernels' in db[v]:
-            for version in db[v]['kernels']:
+        if "kernels" in db[v]:
+            for version in db[v]["kernels"]:
                 index_by_kernel_version[version] = db[v]
-            db[v]['kernel'] = db[v]['kernels'][-1]
-        elif 'kernel' in db[v]:
-            index_by_kernel_version[db[v]['kernel']] = db[v]
+            db[v]["kernel"] = db[v]["kernels"][-1]
+        elif "kernel" in db[v]:
+            index_by_kernel_version[db[v]["kernel"]] = db[v]
 
     index_by_series_name = {}
     for v in db:
-        index_by_series_name[db[v]['name']] = db[v]
+        index_by_series_name[db[v]["name"]] = db[v]
 
     kernel_source_packages = []
     for v in db:
-        if 'packages' in db[v]:
-            for p in db[v]['packages']:
+        if "packages" in db[v]:
+            for p in db[v]["packages"]:
                 if p not in kernel_source_packages:
                     kernel_source_packages.append(p)
 
@@ -152,11 +151,11 @@ class Ubuntu:
     # is_development_series
     #
     def is_development_series(self, series):
-        '''
+        """
         Returns True if the series passed in is the current series under development.
-        '''
+        """
         try:
-            retval = self.index_by_series_name[series]['development']
+            retval = self.index_by_series_name[series]["development"]
         except KeyError:
             retval = False
         return retval
@@ -172,7 +171,7 @@ class Ubuntu:
         retval = False
 
         rec = self.lookup(series)
-        retval = rec['supported']
+        retval = rec["supported"]
 
         return retval
 
@@ -186,11 +185,11 @@ class Ubuntu:
         retval = None
         for series in self.db:
             try:
-                if self.db[series]['development']:
-                    retval = self.db[series]['name']
+                if self.db[series]["development"]:
+                    retval = self.db[series]["name"]
                     break
             except KeyError:
-                    pass
+                pass
 
         return retval
 
@@ -204,11 +203,11 @@ class Ubuntu:
         retval = None
         for series in self.db:
             try:
-                if self.db[series]['development']:
+                if self.db[series]["development"]:
                     retval = series
                     break
             except KeyError:
-                    pass
+                pass
 
         return retval
 
@@ -220,15 +219,15 @@ class Ubuntu:
         Return the series name for the last release, i.e. development_series - 1
         """
         devel_series = self.development_series
-        devel_version = self.lookup(devel_series)['series_version']
-        (y, m) = devel_version.split('.')
-        if m == '10':
-            m = '04'
+        devel_version = self.lookup(devel_series)["series_version"]
+        (y, m) = devel_version.split(".")
+        if m == "10":
+            m = "04"
         else:
             y = str(int(y) - 1)
-            m = '10'
+            m = "10"
         release_version = "%s.%s" % (y, m)
-        release_series = self.lookup(release_version)['name']
+        release_series = self.lookup(release_version)["name"]
 
         return release_series
 
@@ -241,8 +240,8 @@ class Ubuntu:
         """
         retval = []
         for series in self.db:
-            if self.db[series]['supported']:
-                retval.append(self.db[series]['name'])
+            if self.db[series]["supported"]:
+                retval.append(self.db[series]["name"])
 
         return retval
 
@@ -255,7 +254,7 @@ class Ubuntu:
         """
         retval = []
         for series in self.db:
-            if self.db[series]['supported']:
+            if self.db[series]["supported"]:
                 retval.append(series)
 
         return retval
@@ -269,8 +268,8 @@ class Ubuntu:
         """
         retval = []
         for series in self.db:
-            if self.db[series]['supported']:
-                for pkg in self.db[series]['packages']:
+            if self.db[series]["supported"]:
+                for pkg in self.db[series]["packages"]:
                     if pkg not in retval:
                         retval.append(pkg)
 
@@ -284,54 +283,54 @@ class Ubuntu:
         """
         retval = None
 
-        if package.startswith('linux-lts-') or package.startswith('linux-hwe'):
+        if package.startswith("linux-lts-") or package.startswith("linux-hwe"):
             for entry in self.db.values():
                 # starting with trusty, the lts packages now include the series
                 # version instead of the series name, e.g: 3.16.0-23.31~14.04.2
                 # instead of 3.16.0-23.31~trusty1
-                expected = '.*~(%s\.\d+|%s\d+)' % (entry['series_version'], entry['name'])
+                expected = ".*~(%s\.\d+|%s\d+)" % (entry["series_version"], entry["name"])
                 if re.match(expected, version):
-                    retval = entry['name']
+                    retval = entry["name"]
         else:
             for entry in self.db.values():
-                if 'kernels' in entry:
-                    for kversion in entry['kernels']:
+                if "kernels" in entry:
+                    for kversion in entry["kernels"]:
                         if version.startswith(kversion):
-                            retval = entry['name']
-                            series_version = entry['series_version']
+                            retval = entry["name"]
+                            series_version = entry["series_version"]
                             break
-                elif 'kernel' in entry:
-                    if version.startswith(entry['kernel']):
-                        retval = entry['name']
-                        series_version = entry['series_version']
+                elif "kernel" in entry:
+                    if version.startswith(entry["kernel"]):
+                        retval = entry["name"]
+                        series_version = entry["series_version"]
 
             # linux-azure is a backport that doesn't contain the 'upstream'
             # series number on the package name, so we need to look for it
             # first and then look for the target series.
-            if package.startswith('linux-azure'):
+            if package.startswith("linux-azure"):
                 for entry in self.db.values():
                     try:
-                        if len(set(['linux', series_version]) & set(entry['backport-packages'][package])) == 2:
-                            retval = entry['name']
+                        if len(set(["linux", series_version]) & set(entry["backport-packages"][package])) == 2:
+                            retval = entry["name"]
                     except KeyError:
                         pass
 
         return retval
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     ubuntu = Ubuntu()
     db = ubuntu.db
 
-    if db['16.04']['name'] != 'xenial':
-        print('DB Name doesn\'t match xenial.')
+    if db["16.04"]["name"] != "xenial":
+        print("DB Name doesn't match xenial.")
 
-    if ubuntu.index_by_kernel_version['4.4.0']['name'] != 'xenial':
-        print('Looking up by kernel version failed')
+    if ubuntu.index_by_kernel_version["4.4.0"]["name"] != "xenial":
+        print("Looking up by kernel version failed")
 
-    if ubuntu.index_by_series_name['xenial']['name'] != 'xenial':
-        print('Looking up by series name failed')
+    if ubuntu.index_by_series_name["xenial"]["name"] != "xenial":
+        print("Looking up by series name failed")
 
     for p in ubuntu.ksp:
         if p not in ubuntu.kernel_source_packages:
-            print('%s is not in ubuntu.kernel_source_packages' % p)
-# vi:set ts=4 sw=4 expandtab:
+            print("%s is not in ubuntu.kernel_source_packages" % p)

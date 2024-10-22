@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-#
 from __future__ import print_function
 
-from ktl.utils                  import run_command, dump
-from re                         import compile, escape
-import json
+from ktl.utils import run_command
+from re import compile, escape
+
 
 class GitError(Exception):
     # __init__
@@ -12,19 +10,20 @@ class GitError(Exception):
     def __init__(self, error):
         self.msg = error
 
+
 class Git:
     debug = False
-    commit_rc  = compile(r'^commit\s+([a-f0-9]+)\s*$')
-    author_rc  = compile(r'^Author:\s+(.*)\s+<(.*)>$')
-    date_rc    = compile(r'^Date:\s+(.*)$')
-    buglink_rc = compile(r'^\s+BugLink:\s+http.*launchpad\.net/.*/([0-9]+)$')
-    sob_rc     = compile(r'^\s+Signed-off-by:\s+(.*)\s+<(.*)>$')
-    ack_rc     = compile(r'^\s+Acked-by:\s+(.*)\s+<(.*)>$')
+    commit_rc = compile(r"^commit\s+([a-f0-9]+)\s*$")
+    author_rc = compile(r"^Author:\s+(.*)\s+<(.*)>$")
+    date_rc = compile(r"^Date:\s+(.*)$")
+    buglink_rc = compile(r"^\s+BugLink:\s+http.*launchpad\.net/.*/([0-9]+)$")
+    sob_rc = compile(r"^\s+Signed-off-by:\s+(.*)\s+<(.*)>$")
+    ack_rc = compile(r"^\s+Acked-by:\s+(.*)\s+<(.*)>$")
     subject_rc = compile(r"^UBUNTU: (Ubuntu-.*)$")
-    tag_rc     = compile(r"^Ubuntu-([a-z][^-]*-){0-2}(.*)$")
+    tag_rc = compile(r"^Ubuntu-([a-z][^-]*-){0-2}(.*)$")
     source_rc = compile(
-            r"\s*\[*\(*(?:cherry picked|backported|forward ported)\sfrom\scommit\s([a-f0-9]+)\s*([^\s\]\)]*)\s*([^\s\]\)]*)"
-        )
+        r"\s*\[*\(*(?:cherry picked|backported|forward ported)\sfrom\scommit\s([a-f0-9]+)\s*([^\s\]\)]*)\s*([^\s\]\)]*)"
+    )
 
     log_results = {}
 
@@ -67,7 +66,7 @@ class Git:
         status, result = run_command("git branch", cls.debug)
         if status == 0:
             for line in result:
-                if line[0] == '*':
+                if line[0] == "*":
                     line = line[1:]
                 retval.append(line.strip())
         else:
@@ -78,15 +77,15 @@ class Git:
     # describe
     #
     @classmethod
-    def describe(cls, exact_match=''):
-        retval =[]
+    def describe(cls, exact_match=""):
+        retval = []
         cmd = "git describe"
-        if exact_match != '':
-            cmd += ' --exact-match %s' % (exact_match)
+        if exact_match != "":
+            cmd += " --exact-match %s" % (exact_match)
         status, result = run_command(cmd, cls.debug)
         if status == 0:
             for line in result:
-                if line != '' and line[0] == '*':
+                if line != "" and line[0] == "*":
                     line = line[1:]
                 retval.append(line.strip())
         else:
@@ -97,16 +96,16 @@ class Git:
     # tags
     #
     @classmethod
-    def tags(cls, contains=''):
+    def tags(cls, contains=""):
         retval = []
         cmd = "git tag"
-        if contains != '':
-            cmd += ' --contains %s' % (contains)
+        if contains != "":
+            cmd += " --contains %s" % (contains)
 
         status, result = run_command(cmd, cls.debug)
         if status == 0:
             for line in result:
-                if line != '' and line[0] == '*':
+                if line != "" and line[0] == "*":
                     line = line[1:]
                 retval.append(line.strip())
         else:
@@ -158,8 +157,7 @@ class Git:
         return result[0]
 
     @classmethod
-    def ubuntu_commit(cls, branch, include_derivatives=False,
-                      debian_dir="debian.master/"):
+    def ubuntu_commit(cls, branch, include_derivatives=False, debian_dir="debian.master/"):
         """
         Return the SHA1 for the last commit that touched debian_dir
         ("debian.master/" by default) whose message matched the pattern
@@ -168,12 +166,11 @@ class Git:
         If include_derivatives is True, algo include derivative release
         commits.
         """
-        prefix=""
+        prefix = ""
         if include_derivatives:
             # Also match derivatives, ie "Ubuntu-azure-4.18.0-1001.1".
-            prefix=r"\([^0-9\s]*-\)\?"
-        cmd = "git log --pretty=%%H -1 --grep='UBUNTU: Ubuntu-%s[0-9]' '%s' '%s'" % \
-            (prefix, branch, debian_dir)
+            prefix = r"\([^0-9\s]*-\)\?"
+        cmd = "git log --pretty=%%H -1 --grep='UBUNTU: Ubuntu-%s[0-9]' '%s' '%s'" % (prefix, branch, debian_dir)
         (status, output) = run_command(cmd, cls.debug)
         if status == 0 and len(output) == 1:
             return output[0]
@@ -184,7 +181,7 @@ class Git:
         """
         Return message summary/subject from given commit.
         """
-        (status, output) = run_command('git show --pretty=%%s -s %s' % (commit), cls.debug)
+        (status, output) = run_command("git show --pretty=%%s -s %s" % (commit), cls.debug)
         if status == 0 and len(output) == 1:
             return output[0]
         return None
@@ -214,10 +211,10 @@ class Git:
     # show
     #
     @classmethod
-    def show(cls, obj, branch=''):
-        cmd = 'git show '
-        if branch != '':
-            cmd += branch + ':'
+    def show(cls, obj, branch=""):
+        cmd = "git show "
+        if branch != "":
+            cmd += branch + ":"
         cmd += obj
 
         status, result = run_command(cmd, cls.debug)
@@ -229,71 +226,70 @@ class Git:
     @classmethod
     def __process_log_commit(cls, commit_text, sha1):
         results = {}
-        results['sha1'] = sha1
-        results['text'] = []
+        results["sha1"] = sha1
+        results["text"] = []
         for text in commit_text:
-
             while True:
-                m = cls.author_rc.match(text)          # Author
-                if m != None:
+                m = cls.author_rc.match(text)  # Author
+                if m is not None:
                     id = {}
-                    id['name'] = m.group(1)
-                    id['email'] = m.group(2)
-                    results['author'] = id
+                    id["name"] = m.group(1)
+                    id["email"] = m.group(2)
+                    results["author"] = id
                     break
 
-                m = cls.date_rc.match(text)            # Date
-                if m != None:
-                    results['date'] = m.group(1)
+                m = cls.date_rc.match(text)  # Date
+                if m is not None:
+                    results["date"] = m.group(1)
                     break
 
-                m = cls.buglink_rc.match(text)         # BugLink
-                if m != None:
+                m = cls.buglink_rc.match(text)  # BugLink
+                if m is not None:
                     bug = m.group(1)
-                    if bug not in cls.log_results['buglink-index']:
-                        cls.log_results['buglink-index'][bug] = []
+                    if bug not in cls.log_results["buglink-index"]:
+                        cls.log_results["buglink-index"][bug] = []
 
-                    if 'buglink' not in results:
-                        results['buglink'] = []
+                    if "buglink" not in results:
+                        results["buglink"] = []
 
-                    cls.log_results['buglink-index'][bug].append(results['sha1'])
-                    results['buglink'].append(bug)
-                    results['text'].append(text)
+                    cls.log_results["buglink-index"][bug].append(results["sha1"])
+                    results["buglink"].append(bug)
+                    results["text"].append(text)
                     break
 
-                m = cls.sob_rc.match(text)             # Signed-off-by
-                if m != None:
-                    if 'sob' not in results:
-                        results['sob'] = []
+                m = cls.sob_rc.match(text)  # Signed-off-by
+                if m is not None:
+                    if "sob" not in results:
+                        results["sob"] = []
 
                     id = {}
-                    id['name'] = m.group(1)
-                    id['email'] = m.group(2)
-                    results['sob'].append(id)
-                    results['text'].append(text)
+                    id["name"] = m.group(1)
+                    id["email"] = m.group(2)
+                    results["sob"].append(id)
+                    results["text"].append(text)
                     break
 
-                m = cls.ack_rc.match(text)             # Acked-by
-                if m != None:
-                    if 'acks' not in results:
-                        results['acks'] = []
+                m = cls.ack_rc.match(text)  # Acked-by
+                if m is not None:
+                    if "acks" not in results:
+                        results["acks"] = []
 
                     id = {}
-                    id['name'] = m.group(1)
-                    id['email'] = m.group(2)
-                    results['acks'].append(id)
-                    results['text'].append(text)
+                    id["name"] = m.group(1)
+                    id["email"] = m.group(2)
+                    results["acks"].append(id)
+                    results["text"].append(text)
                     break
 
                 m = cls.source_rc.match(text)
-                if m != None:
+                if m is not None:
                     results["upstream_sha1"] = m.group(1)
                     if m.group(2):
                         results["upstream_1"] = m.group(2)
                     if m.group(3):
                         results["upstream_2"] = m.group(3)
 
-                results['text'].append(text)
+                results["text"].append(text)
                 break
         return results
 
@@ -308,8 +304,8 @@ class Git:
     def log(cls, num=-1, grep=""):
         debug = False
         cls.log_results = {}
-        cls.log_results['commits']       = []
-        cls.log_results['buglink-index'] = {}
+        cls.log_results["commits"] = []
+        cls.log_results["buglink-index"] = {}
         # Note that commit_rc assumes no decorate.
         log_cmd = "git log --pretty=medium --decorate=no"
         if num != -1:
@@ -319,16 +315,17 @@ class Git:
             grep = escape(grep).replace('"', '\\"')
             log_cmd = '%s -E --grep "%s"' % (log_cmd, grep)
         status, result = run_command(log_cmd, cls.debug)
-        commit       = {}
-        commit_text  = []
-        current_sha1 = 'unknown'
+        commit = {}
+        commit_text = []
+        current_sha1 = "unknown"
         if status != 0:
             raise GitError(result)
 
         for line in result:
-            if debug: print("debug: %s" % line)
+            if debug:
+                print("debug: %s" % line)
             m = cls.commit_rc.match(line)
-            if m != None:
+            if m is not None:
                 sha1 = m.group(1)
                 # This is a new commit sha1. We are going to build up a dictionary entry
                 # for this one commit and then add it to the dictionary of all commits.
@@ -339,32 +336,34 @@ class Git:
                 #
                 if len(commit_text) > 0:
                     commit = cls.__process_log_commit(commit_text, current_sha1)
-                    cls.log_results['commits'].append(commit)
+                    cls.log_results["commits"].append(commit)
 
                     # Reset working variables
                     #
-                    if debug: print("debug: commit reset")
+                    if debug:
+                        print("debug: commit reset")
                     commit = {}
                     commit_text = []
                     current_sha1 = sha1
-                    if debug: print("debug: sha1: %s" % current_sha1)
+                    if debug:
+                        print("debug: sha1: %s" % current_sha1)
 
                 else:
                     # This is the very first sha1
                     #
                     current_sha1 = m.group(1)
-                    if debug: print("debug: sha1: %s" % current_sha1)
+                    if debug:
+                        print("debug: sha1: %s" % current_sha1)
             else:
                 # This is text between two SHA1s, just add it to the working
                 # buffer for the current commit.
                 #
-                if debug: print(line)
+                if debug:
+                    print(line)
                 commit_text.append(line)
 
         if len(commit_text) > 0:
             commit = cls.__process_log_commit(commit_text, current_sha1)
-            cls.log_results['commits'].append(commit)
+            cls.log_results["commits"].append(commit)
 
         return cls.log_results
-
-# vi:set ts=4 sw=4 expandtab:

@@ -2,30 +2,39 @@ import functools
 import json
 import pika
 
+
 # MsgQueue
 #
 class MsgQueue(object):
-
     ACK = object()
     REJECT = object()
     REQUEUE = object()
 
     # __init__
     #
-    def __init__(s, address='162.213.33.247', exchange='kernel', exchange_type='topic', heartbeat_interval=None, supports_global_qos=False, local=False, **kwargs):
+    def __init__(
+        s,
+        address="162.213.33.247",
+        exchange="kernel",
+        exchange_type="topic",
+        heartbeat_interval=None,
+        supports_global_qos=False,
+        local=False,
+        **kwargs,
+    ):
         s.exchange_name = exchange
 
         # Address should now be considered deprecated.
         if local:
-            kwargs['host'] = 'localhost'
-            kwargs['port'] = 9123
+            kwargs["host"] = "localhost"
+            kwargs["port"] = 9123
         else:
-            kwargs.setdefault('host', address)
-            kwargs.setdefault('port', 5672)
-        kwargs.setdefault('connection_attempts', 3)
+            kwargs.setdefault("host", address)
+            kwargs.setdefault("port", 5672)
+        kwargs.setdefault("connection_attempts", 3)
 
         # Backwards compatibility with pre-0.11.x pika.
-        kwargs.setdefault('heartbeat', heartbeat_interval)
+        kwargs.setdefault("heartbeat", heartbeat_interval)
 
         s.connection = None
         s.channel = None
@@ -63,11 +72,19 @@ class MsgQueue(object):
         s.channel.basic_consume(queue=queue_name, auto_ack=True, on_message_callback=wrapped_handler)
         s.channel.start_consuming()
 
-
-    def listen_worker(s, queue_name, routing_key, handler_function=None, handler=None, queue_durable=True, auto_delete=False, queue_arguments=None):
+    def listen_worker(
+        s,
+        queue_name,
+        routing_key,
+        handler_function=None,
+        handler=None,
+        queue_durable=True,
+        auto_delete=False,
+        queue_arguments=None,
+    ):
         def wrapped_handler(channel, method, properties, body):
             if isinstance(body, bytes):
-                body = body.decode('utf-8')
+                body = body.decode("utf-8")
             payload = json.loads(body)
             ack = None
             if handler_function is not None:
@@ -93,14 +110,11 @@ class MsgQueue(object):
             s.channel.queue_bind(exchange=s.exchange_name, queue=queue_name, routing_key=key)
         s.channel.basic_consume(queue=queue_name, auto_ack=False, on_message_callback=wrapped_handler)
 
-
     def listen_start(s):
         s.channel.start_consuming()
 
-
     def listen_stop(s):
         s.channel.stop_consuming()
-
 
     def queue_info(s, queue_name):
         res = s.channel.queue_declare(queue=queue_name, passive=True)
@@ -109,11 +123,10 @@ class MsgQueue(object):
             return None
 
         return {
-            'queue':            res.method.queue,
-            'consumer_count':   res.method.consumer_count,
-            'message_count':    res.method.message_count,
+            "queue": res.method.queue,
+            "consumer_count": res.method.consumer_count,
+            "message_count": res.method.message_count,
         }
-
 
     def queue_delete(s, queue_name):
         s.channel.queue_delete(queue_name)
@@ -124,7 +137,9 @@ class MsgQueue(object):
     def publish(s, routing_key, payload, priority=None):
         message_body = json.dumps(payload)
         properties = pika.BasicProperties(delivery_mode=2, priority=priority)
-        s.channel.basic_publish(exchange=s.exchange_name, routing_key=routing_key, body=message_body, properties=properties)
+        s.channel.basic_publish(
+            exchange=s.exchange_name, routing_key=routing_key, body=message_body, properties=properties
+        )
 
     def publish_threadsafe(s, routing_key, payload, priority=None):
         cb = functools.partial(s.publish, routing_key, payload, priority)
@@ -142,9 +157,8 @@ class MsgQueueService(MsgQueue):
     authentication.  Start with hardwired data.
     """
 
-    server_ps5 = '10.131.229.185'
-    server_map = {
-    }
+    server_ps5 = "10.131.229.185"
+    server_map = {}
     local_map = {
         server_ps5: 9125,
     }
@@ -153,37 +167,34 @@ class MsgQueueService(MsgQueue):
     #
     def __init__(s, service=None, local=False, **kwargs):
         # Use the service prefix for the virtual_host name.
-        if '-' in service:
-            vhost = service.split('-')[0]
+        if "-" in service:
+            vhost = service.split("-")[0]
         else:
             vhost = service
-        kwargs.setdefault('virtual_host', vhost)
+        kwargs.setdefault("virtual_host", vhost)
 
         # Find the service rabbitmq server.
-        if kwargs.get('host') is None:
-            kwargs['host'] = s.server_map.get(vhost, s.server_ps5)
+        if kwargs.get("host") is None:
+            kwargs["host"] = s.server_map.get(vhost, s.server_ps5)
         if local:
-            kwargs['port'] = s.local_map.get(kwargs['host'], 9129)
-            kwargs['host'] = 'localhost'
+            kwargs["port"] = s.local_map.get(kwargs["host"], 9129)
+            kwargs["host"] = "localhost"
 
         # The new server always wants a service specific username.  For now
         # there is effectivly no password on those.  We will add this to a
         # configuration service once it is built.
-        if 'credentials' not in kwargs or kwargs['credentials'] is None:
-            cred = '{}-anon'.format(service)
-            kwargs['credentials'] = pika.PlainCredentials(cred, cred)
+        if "credentials" not in kwargs or kwargs["credentials"] is None:
+            cred = "{}-anon".format(service)
+            kwargs["credentials"] = pika.PlainCredentials(cred, cred)
 
-        kwargs['supports_global_qos'] = True
+        kwargs["supports_global_qos"] = True
 
         super(MsgQueueService, s).__init__(**kwargs)
 
 
 class MsgQueueCkct(MsgQueueService):
-
     # __init__
     #
     def __init__(s, **kwargs):
-        kwargs.setdefault('service', 'ckct')
+        kwargs.setdefault("service", "ckct")
         super(MsgQueueCkct, s).__init__(**kwargs)
-
-# vi:set ts=4 sw=4 expandtab:

@@ -1,25 +1,15 @@
-#!/usr/bin/env python3
-#
+from urllib.request import urlopen
 
-try:
-    from urllib.request import urlopen
-    from urllib.error import HTTPError, URLError
-except ImportError:
-    from urllib2 import urlopen
-    from urllib2 import HTTPError, URLError
-
-from copy           import copy
-from datetime       import datetime
-from warnings       import warn
+from copy import copy
+from datetime import datetime
+from warnings import warn
 import os
 import yaml
 
 
-KERNEL_VERSIONS_DIR = os.path.realpath(
-                        os.path.join(os.path.dirname(__file__), '..', '..',
-                                     'kernel-versions', 'info'))
+KERNEL_VERSIONS_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "..", "kernel-versions", "info"))
 
-SRU_CYCLE_HEADER = '''# kernel SRU Cycle information file (YAML format)
+SRU_CYCLE_HEADER = """# kernel SRU Cycle information file (YAML format)
 #
 # For all live SRU cycles this file contains a record.  That dictionary record
 # defines attributed of the SRU cycle such as its current release-data.
@@ -50,12 +40,12 @@ SRU_CYCLE_HEADER = '''# kernel SRU Cycle information file (YAML format)
 #       a notes link; initially a jira card identifier KERN-1234
 #  * owner (string)
 #       the owner of the cycle
-'''
+"""
+
 
 class SruCycleSpinEntry:
-
     def __init__(self, spin, data=False, sc=None, owner=None):
-        '''
+        """
         Instantiate a new SruCycleSpinEntry object.
 
         spin (string): Either a spin or a cycle name (with or without "-X" suffix).
@@ -64,59 +54,61 @@ class SruCycleSpinEntry:
             of the cycle data. If nothing is supplied a rudimentary initialized
             objects gets returned (name, cycle, known:False, hold:True).
         sc (deprecated) only accepted for backwards compatibility.
-        '''
-        cycle = spin.split('-')[0]
+        """
+        cycle = spin.split("-")[0]
 
         self._sc = None
         self._name = spin
         self._cycle = cycle
         self._known = data is not False
         if data is False:
-            data = { 'hold': True, }
+            data = {
+                "hold": True,
+            }
         elif data is None:
             data = {}
 
-        sdate = data.get('start-date')
+        sdate = data.get("start-date")
         if sdate is not None:
-            sdate = datetime.strptime(sdate, '%Y-%m-%d').date()
+            sdate = datetime.strptime(sdate, "%Y-%m-%d").date()
             self._start_date_explicit = True
         else:
             sdate = cycle
             if not sdate[0].isdigit():
                 sdate = sdate[1:]
-            sdate = datetime.strptime(sdate, '%Y.%m.%d').date()
+            sdate = datetime.strptime(sdate, "%Y.%m.%d").date()
             self._start_date_explicit = False
         self._start_date = sdate
 
-        rdate = data.get('release-date')
+        rdate = data.get("release-date")
         if rdate is not None:
-            rdate = datetime.strptime(rdate, '%Y-%m-%d').date()
+            rdate = datetime.strptime(rdate, "%Y-%m-%d").date()
         self._release_date = rdate
 
-        self._hold = data.get('hold', False)
-        self._complete = data.get('complete', False)
-        self._cutoff_date = data.get('cutoff-date', None)
-        self._stream = data.get('stream')
-        self._notes_link = data.get('notes-link')
+        self._hold = data.get("hold", False)
+        self._complete = data.get("complete", False)
+        self._cutoff_date = data.get("cutoff-date", None)
+        self._stream = data.get("stream")
+        self._notes_link = data.get("notes-link")
 
-        self._previous_cycle = data.get('previous-cycle')
+        self._previous_cycle = data.get("previous-cycle")
         self._previous_cycle_explicit = self._previous_cycle is not None
-        self._owner = data.get('owner')
+        self._owner = data.get("owner")
         if owner is not None:
             self._owner = owner
 
     def __eq__(self, other):
-        '''
+        """
         Returns True if both objects are SruCycleSpinEntry with the same name.
-        '''
+        """
         if isinstance(self, other.__class__):
             return self.name == other.name
         return False
 
     def __ne__(self, other):
-        '''
+        """
         Returns True if both sides are not considered to be the same.
-        '''
+        """
         return not self.__eq__(other)
 
     @property
@@ -196,9 +188,9 @@ class SruCycleSpinEntry:
         return self._previous_cycle
 
     def __str__(self):
-        '''
+        """
         Returns a string which represents the data of the object in YAML form.
-        '''
+        """
         s = "'{}':\n".format(self.name)
         if self._hold:
             s += "    hold: {}\n".format(str(self._hold).lower())
@@ -221,11 +213,13 @@ class SruCycleSpinEntry:
         return s
 
 
-'''
+"""
  Should be SruCycles
-'''
+"""
+
+
 class SruCycle:
-    '''
+    """
     Cycle Info accessor class (SRU and security cycles)
 
     Environment variables can be used to change the data source being used:
@@ -238,23 +232,24 @@ class SruCycle:
 
     For the default local path the 'kernel-versions' repository must be checked out with that
     name in the same top level directory of kteam-tools.
-    '''
+    """
+
     _data = None
 
     @classmethod
     def key_name(cls, name):
-        '''
+        """
         Returns a sorting key for a given cycle name. The goal is to sort by date and
         for the same date have the SRU cycle name first, then the security cycle and
         finally the devel cycle last.
         For multiple entries of the same cycles but with different spin numbers, the
         spin number sorts those.
-        '''
-        if '-' in name:
-            cycle, spin = name.split('-', 1)
+        """
+        if "-" in name:
+            cycle, spin = name.split("-", 1)
         else:
             cycle = name
-            spin  = '0'
+            spin = "0"
 
         if name[:1].isalpha():
             cycle = name[1:]
@@ -272,44 +267,44 @@ class SruCycle:
         return self._data[key]
 
     def __init__(self, data=None):
-        '''
+        """
         data (string|dict()): Optionally allows to either pass in a URL override (string)
             or a pre-filled dictionary which represents cycle data (this is intended for
             testing).
             The URL override takes priority over the definitions in the environment.
-        '''
+        """
         # This used to be a Launchpad git raw URL but that was unreliable. The web URL is
         # updated every 2min and has a higher reliability.
-        _url = 'https://kernel.ubuntu.com/info/sru-cycle.yaml'
+        _url = "https://kernel.ubuntu.com/info/sru-cycle.yaml"
 
         # The data source can be set from the environment but only if not directly done from
         # the command line.
         if data is None:
-            data = os.getenv('SRU_CYCLE_USE', None)
+            data = os.getenv("SRU_CYCLE_USE", None)
 
             # Deprecated mathod of overriding the data location
             if data is None and os.getenv("USE_LOCAL_SRU_CYCLE_YAML", False):
-                warn('Use of USE_LOCAL_SRU_CYCLE_YAML is deprecated, use SRU_CYCLE_USE=local instead.')
-                data='local'
+                warn("Use of USE_LOCAL_SRU_CYCLE_YAML is deprecated, use SRU_CYCLE_USE=local instead.")
+                data = "local"
 
         _data = None
         if data:
             if isinstance(data, dict):
-                self._url = 'raw-data'
+                self._url = "raw-data"
                 self._data = data.copy()
             elif isinstance(data, str):
-                if data == 'default' or data == 'remote':
+                if data == "default" or data == "remote":
                     pass
-                elif data.startswith('remote:'):
-                    _url = data.split(':', 1)[1]
-                elif data == 'local':
-                    _url = 'file://' + os.path.join(KERNEL_VERSIONS_DIR, 'sru-cycle.yaml')
-                elif data.startswith('local:'):
-                    _url = 'file://' + data.split(':', 1)[1]
+                elif data.startswith("remote:"):
+                    _url = data.split(":", 1)[1]
+                elif data == "local":
+                    _url = "file://" + os.path.join(KERNEL_VERSIONS_DIR, "sru-cycle.yaml")
+                elif data.startswith("local:"):
+                    _url = "file://" + data.split(":", 1)[1]
                 else:
-                    raise ValueError('Invalid data provided!')
+                    raise ValueError("Invalid data provided!")
             else:
-                raise ValueError('{} is not a valid data source!'.format(data))
+                raise ValueError("{} is not a valid data source!".format(data))
 
         if not self._data:
             self._url = _url
@@ -318,19 +313,19 @@ class SruCycle:
                     response = urlopen(_url)
                     _data = response.read()
                 except:
-                    warn('Unable to open {}. Dataset will be empty!'.format(_url))
+                    warn("Unable to open {}. Dataset will be empty!".format(_url))
                     _data = SRU_CYCLE_HEADER
             if not isinstance(_data, str):
-                _data = _data.decode('utf-8')
+                _data = _data.decode("utf-8")
             self._data = yaml.safe_load(_data)
             if not self._data:
                 self._data = {}
 
     @property
     def data_source(self):
-        '''
+        """
         Returns the URL of the data source which was used to create the instance
-        '''
+        """
         return self._url
 
     @property
@@ -341,7 +336,7 @@ class SruCycle:
         return cl
 
     def lookup_cycle(self, cycle=None, allow_missing=False):
-        '''
+        """
         Search for the given cycle ([ds]YYYY.MM.DD). If there is none found it either
         returns None or a minimally initialized SruCycleSpinEntry for the cycle date
         (allow_missing=True).
@@ -349,10 +344,10 @@ class SruCycle:
         cycle (string): name of the cycle to search
         allow_missing (bool): if false the search will return None if not found, otherwise
             a SruCycleSpinEntry() with just the name set will be returned.
-        '''
+        """
         if not cycle:
             raise ValueError("cycle required")
-        if '-' in cycle:
+        if "-" in cycle:
             raise ValueError("cycle contains a spin number")
 
         if cycle in self._data:
@@ -365,7 +360,7 @@ class SruCycle:
         return entry
 
     def lookup_spin(self, spin=None, allow_missing=False):
-        '''
+        """
         Search for a given spin ([ds]YYYY.MM.DD-S) in the dataset. If there is no
         spin found but a matching cycle without a spin number is, then that cycle
         gets returned instead.
@@ -373,13 +368,13 @@ class SruCycle:
         returns SruCycleSpinEntry() or None
             When allow_missing is set to True and no matching entry is found, then
             instead of None we return a minimally instantiated spin object.
-        '''
+        """
         if not spin:
             raise ValueError("spin required")
-        if '-' not in spin:
+        if "-" not in spin:
             raise ValueError("argument does not contain a spin number")
 
-        cycle, spin_nr = spin.split('-')
+        cycle, spin_nr = spin.split("-")
         if spin in self._data:
             entry = self.__cached_lookup(spin)
         elif cycle in self._data:
@@ -392,50 +387,48 @@ class SruCycle:
         return entry
 
     def add_cycle(self, cycle):
-        '''
+        """
         Adds a new cycle to the current database. The cycle must not already exist.
 
         cycle (SruCycleSpinEntry): new cycle entry to add
 
         returns: nothing
         raises:  ValueError if cycle already exists
-        '''
+        """
         if not isinstance(cycle, SruCycleSpinEntry):
-            raise ValueError('cycle is not a SruCycleSpinEntry')
+            raise ValueError("cycle is not a SruCycleSpinEntry")
         if self.lookup_cycle(cycle.name) is not None:
-            raise ValueError('Cycle {} already exists!'.format(cycle.name))
+            raise ValueError("Cycle {} already exists!".format(cycle.name))
         self._data[cycle.name] = copy(cycle).attach(self)
 
     def delete_cycle(self, cycle):
-        '''
+        """
         Deletes an existing cycle from the current database. If there is no cycle of
         the given name, nothing will happen.
-        '''
+        """
         if cycle in self._data:
-            del(self._data[cycle])
+            del self._data[cycle]
 
     def write(self):
-        '''
+        """
         Writes the current cycle info data back to a local: URL. Does nothing
         for any other source.
-        '''
-        if not self._url.startswith('file://'):
+        """
+        if not self._url.startswith("file://"):
             return
-        with open(self._url[7:], 'wt') as f:
+        with open(self._url[7:], "wt") as f:
             try:
                 f.write(str(self))
             except:
-                warn('Could not write to {}'.format(self._url))
+                warn("Could not write to {}".format(self._url))
 
     def __str__(self):
-        '''
+        """
         Returns the YAML representation of sru-cycle.yaml as a string (including
         the informational header. This can be used to write a new file after any
         changes.
-        '''
+        """
         s = SRU_CYCLE_HEADER
         for cycle in self.cycles:
             s += "\n" + str(cycle)
         return s
-
-# vi:set ts=4 sw=4 expandtab:

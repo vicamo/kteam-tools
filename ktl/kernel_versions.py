@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # Copyright (C) 2009-2013  Canonical Ltd.
 # Authors:
 #   Andy Whitcroft <apw@canonical.com>
@@ -29,17 +27,19 @@ import os
 import apt_pkg
 from launchpadlib.launchpad import Launchpad as _Launchpad
 
+
 # Work around non-multiple-instance-safety of launchpadlib (bug #459418).
 class Launchpad(_Launchpad):
     @classmethod
     def _get_paths(cls, service_root, launchpadlib_dir=None):
-        service_root, launchpadlib_dir, cache_path, service_root_dir = (
-            _Launchpad._get_paths(
-                service_root, launchpadlib_dir=launchpadlib_dir))
+        service_root, launchpadlib_dir, cache_path, service_root_dir = _Launchpad._get_paths(
+            service_root, launchpadlib_dir=launchpadlib_dir
+        )
         cache_path += "-sru-report"
         if not os.path.exists(cache_path):
             os.makedirs(cache_path, 0o700)
         return service_root, launchpadlib_dir, cache_path, service_root_dir
+
 
 class PackagePockets:
     def __init__(s, pv, series, sourcename):
@@ -54,12 +54,8 @@ class PackagePockets:
     def _cache_load(s):
         distro_series = s.pv.releases[s.series]
 
-        logging.debug(
-            'Fetching publishing history for %s/%s' %
-            (distro_series.name, s.sourcename))
-        pubs = s.pv.archive.getPublishedSources(source_name=s.sourcename,
-                                           exact_match=True,
-                                           distro_series=distro_series)
+        logging.debug("Fetching publishing history for %s/%s" % (distro_series.name, s.sourcename))
+        pubs = s.pv.archive.getPublishedSources(source_name=s.sourcename, exact_match=True, distro_series=distro_series)
 
         # Take the latest pocket the package made it into as its 'pocket'.
         s.pockets = {}
@@ -76,15 +72,15 @@ class PackagePockets:
                 s.pockets[version].append(pocket)
 
             # Record the Published version in a pocket.
-            if pub.status == 'Published':
+            if pub.status == "Published":
                 s.published[pocket] = version
 
         s.published_infer = s.published
 
-        if 'Release' not in s.published:
+        if "Release" not in s.published:
             for version in sorted(s.pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
-                if 'Updates' in s.pockets[version]:
-                    s.published_infer['Release'] = version
+                if "Updates" in s.pockets[version]:
+                    s.published_infer["Release"] = version
                     break
 
     def _pockets(s):
@@ -93,44 +89,37 @@ class PackagePockets:
 
         return s.pockets
 
-
     def _pocket_lookup(s, pocket, infer_release):
         if infer_release and pocket in s.published_infer:
             return s.published_infer[pocket]
         elif pocket in s.published:
             return s.published[pocket]
 
-        if pocket == 'Release' and infer_release:
+        if pocket == "Release" and infer_release:
             s._pockets()
             return s.published_infer.get(pocket)
 
         distro_series = s.pv.releases[s.series]
 
-        logging.debug(
-            'Fetching publishing record for %s/%s %s' %
-            (distro_series.name, s.sourcename, pocket))
-        pubs = s.pv.archive.getPublishedSources(source_name=s.sourcename,
-                                                exact_match=True,
-                                                distro_series=distro_series,
-                                                pocket=pocket,
-                                                status='Published')
+        logging.debug("Fetching publishing record for %s/%s %s" % (distro_series.name, s.sourcename, pocket))
+        pubs = s.pv.archive.getPublishedSources(
+            source_name=s.sourcename, exact_match=True, distro_series=distro_series, pocket=pocket, status="Published"
+        )
         for pub in pubs:
             s.published[pocket] = pub.source_package_version
             s.published_infer[pocket] = pub.source_package_version
 
         return s.published.get(pocket)
 
-
     def current_in_pocket(s, pocket, infer_release=False):
-        '''Get the current version of this package published in the specified pocket'''
+        """Get the current version of this package published in the specified pocket"""
         pocket = pocket.capitalize()
 
-        logging.debug('current_in_pocket: %s' % (pocket,))
+        logging.debug("current_in_pocket: %s" % (pocket,))
 
         # If a package is introduced post release then there is no -release
         # version, the very first -updates version stands in for this version.
         return s._pocket_lookup(pocket, infer_release)
-
 
     def all_viable(s, include_proposed=True):
         pockets = s._pockets()
@@ -138,11 +127,11 @@ class PackagePockets:
         result = []
         version = None
         for version in sorted(s.pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
-            #print(version, pockets[version])
-            if pockets[version] != ['Proposed']:
+            # print(version, pockets[version])
+            if pockets[version] != ["Proposed"]:
                 result.append(version)
 
-        if include_proposed and version in s.pockets and pockets[version] == ['Proposed']:
+        if include_proposed and version in s.pockets and pockets[version] == ["Proposed"]:
             result.append(version)
 
         return result
@@ -160,41 +149,35 @@ class KernelVersions:
         s.lpinit(launchpad=launchpad, ppa_owner=ppa_owner, ppa_name=ppa_name, active_only=active_only)
         apt_pkg.init_system()
 
-
     def pocket_data(s, series, sourcename):
         return PackagePockets(s, series, sourcename)
 
-
     def current_in_pocket(s, pocket, series, sourcename, infer_release=False):
-        '''Get the current version of this package published in the specified pocket'''
+        """Get the current version of this package published in the specified pocket"""
         pockets = s.pocket_data(series, sourcename)
 
         return pockets.current_in_pocket(pocket, infer_release)
 
-
     def all_viable(s, series, sourcename):
-        '''Get all viable versions of this package published ever, only the last -proposed is considered'''
+        """Get all viable versions of this package published ever, only the last -proposed is considered"""
         pockets = s.pocket_data(series, sourcename)
 
         return pockets.all_viable()
 
-
     def ppa(s, ppa_owner, ppa_name):
-        return KernelVersions(launchpad=s.lp, active_only=s.active_only, \
-                              ppa_owner=ppa_owner, ppa_name=ppa_name)
-
+        return KernelVersions(launchpad=s.lp, active_only=s.active_only, ppa_owner=ppa_owner, ppa_name=ppa_name)
 
     def lpinit(s, launchpad=None, ppa_owner=None, ppa_name=None, active_only=True):
-        '''Init LP credentials, archive, distro list and sru-team members'''
+        """Init LP credentials, archive, distro list and sru-team members"""
         logging.debug("Initializing LP Credentials")
         if not launchpad:
-            s.lp = Launchpad.login_anonymously('kernel-versions', 'production')
+            s.lp = Launchpad.login_anonymously("kernel-versions", "production")
         else:
             s.lp = launchpad
-            
-        s.ubuntu = s.lp.distributions['ubuntu']
+
+        s.ubuntu = s.lp.distributions["ubuntu"]
         if not ppa_owner:
-            s.archive = s.ubuntu.getArchive(name='primary')
+            s.archive = s.ubuntu.getArchive(name="primary")
         else:
             s.archive = s.lp.people[ppa_owner].getPPAByName(name=ppa_name)
 
@@ -202,5 +185,4 @@ class KernelVersions:
         for series in s.ubuntu.series:
             if not active_only or series.active:
                 s.releases[series.name] = series
-        logging.debug('Active releases found: %s' % ' '.join(s.releases))
-
+        logging.debug("Active releases found: %s" % " ".join(s.releases))

@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-#
-
-from os                                 import path
-from os                                 import _exit
+from os import path
+from os import _exit
 import json
-from .utils                             import stdo
+from .utils import stdo
+
 
 # StdApp
 #
@@ -12,12 +10,11 @@ from .utils                             import stdo
 # configuration file in the user's home directory.
 #
 class StdApp:
-
     # __init__
     #
     def __init__(self):
         self.cfg = {}
-        self.cfg['configuration_file'] = path.join(path.expanduser('~'), "ktl.cfg")
+        self.cfg["configuration_file"] = path.join(path.expanduser("~"), "ktl.cfg")
 
     # __load_user_config
     #
@@ -27,9 +24,9 @@ class StdApp:
     # be merged with the default one 'self.cfg' in this class.
     #
     def __load_user_config(self):
-        cfg_path = self.cfg['configuration_file']
+        cfg_path = self.cfg["configuration_file"]
         if path.exists(cfg_path):
-            with open(cfg_path, 'r') as f:
+            with open(cfg_path, "r") as f:
                 user_config = json.load(f)
             for k in user_config:
                 self.cfg[k] = user_config[k]
@@ -44,37 +41,36 @@ class StdApp:
         for k in defaults:
             self.cfg[k] = defaults[k]
 
-        if 'configuration_file' in cmdline_options:
-            self.cfg['configuration_file'] = cmdline_options['configuration_file']
-        if '~' in self.cfg['configuration_file']:
-            self.cfg['configuration_file'] = self.cfg['configuration_file'].replace('~', path.expanduser('~'))
+        if "configuration_file" in cmdline_options:
+            self.cfg["configuration_file"] = cmdline_options["configuration_file"]
+        if "~" in self.cfg["configuration_file"]:
+            self.cfg["configuration_file"] = self.cfg["configuration_file"].replace("~", path.expanduser("~"))
 
         self.__load_user_config()
 
         for k in cmdline_options:
             self.cfg[k] = cmdline_options[k]
 
-        if ('debug' in self.cfg) and ('cfg' in self.cfg['debug']):
+        if ("debug" in self.cfg) and ("cfg" in self.cfg["debug"]):
             stdo("Configuration:\n")
             stdo("-------------------------------------------------\n")
             for k in self.cfg:
                 str = "%s" % (k)
                 stdo('    %-25s = "%s"\n' % (str, self.cfg[k]))
-            if 'exit' in self.cfg['debug']: _exit(0)
+            if "exit" in self.cfg["debug"]:
+                _exit(0)
 
         return
 
     def dbg(self, system, msg):
-        if 'debug' in self.cfg:
-            if system in self.cfg['debug']:
+        if "debug" in self.cfg:
+            if system in self.cfg["debug"]:
                 stdo("dbg: %s" % (msg))
 
     def verbose(self, msg):
-        if 'verbose' in self.cfg and self.cfg['verbose']:
+        if "verbose" in self.cfg and self.cfg["verbose"]:
             stdo(msg)
 
     def vout(self, lvl, msg):
-        if 'verbosity' in self.cfg and lvl <= self.cfg['verbosity']:
+        if "verbosity" in self.cfg and lvl <= self.cfg["verbosity"]:
             stdo(msg)
-
-# vi:set ts=4 sw=4 expandtab:

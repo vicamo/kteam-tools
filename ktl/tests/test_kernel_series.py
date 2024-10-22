@@ -1,22 +1,24 @@
 import os
 import sys
 import unittest
-from testfixtures       import TempDirectory
+from testfixtures import TempDirectory
 
-from ktl.kernel_series  import (KernelSeries,
-                                KernelSeriesCache,
-                                KernelSeriesEntry,
-                                KernelSourceEntry,
-                                KernelSourceTestingFlavourEntry,
-                                KernelPackageEntry,
-                                KernelSnapEntry,
-                                KernelRepoEntry,
-                               )
+from ktl.kernel_series import (
+    KernelSeries,
+    KernelSeriesCache,
+    KernelSeriesEntry,
+    KernelSourceEntry,
+    KernelSourceTestingFlavourEntry,
+    KernelPackageEntry,
+    KernelSnapEntry,
+    KernelRepoEntry,
+)
 
 
 class TestKernelSeriesCore(unittest.TestCase):
 
     if sys.version_info[:3] > (3, 0):
+
         def assertItemsEqual(self, a, b):
             return self.assertCountEqual(a, b)
 
@@ -31,7 +33,7 @@ class TestKernelSeries(TestKernelSeriesCore):
         codename: xenial
     '14.04':
     """
-    data_series_names = [ '18.04', '16.04', '14.04' ]
+    data_series_names = ["18.04", "16.04", "14.04"]
 
     def test_initialisation_data(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -44,9 +46,9 @@ class TestKernelSeries(TestKernelSeriesCore):
 
     def test_initialisation_url(self):
         with TempDirectory() as d:
-            d.write('kernel-series.yaml', self.data_yaml.encode('utf-8'))
+            d.write("kernel-series.yaml", self.data_yaml.encode("utf-8"))
 
-            ks = KernelSeries(url='file://' + d.getpath('kernel-series.yaml'))
+            ks = KernelSeries(url="file://" + d.getpath("kernel-series.yaml"))
 
         count = 0
         for series in ks.series:
@@ -64,24 +66,24 @@ class TestKernelSeries(TestKernelSeriesCore):
 
     def test_lookup_series(self):
         ks = KernelSeries(data=self.data_yaml)
-        series = ks.lookup_series('16.04')
+        series = ks.lookup_series("16.04")
 
-        self.assertEqual(series.name, '16.04')
-        self.assertEqual(series.codename, 'xenial')
+        self.assertEqual(series.name, "16.04")
+        self.assertEqual(series.codename, "xenial")
 
     def test_lookup_series_codename(self):
         ks = KernelSeries(data=self.data_yaml)
-        series = ks.lookup_series(codename='xenial')
+        series = ks.lookup_series(codename="xenial")
 
-        self.assertEqual(series.name, '16.04')
-        self.assertEqual(series.codename, 'xenial')
+        self.assertEqual(series.name, "16.04")
+        self.assertEqual(series.codename, "xenial")
 
     def test_lookup_series_development(self):
         ks = KernelSeries(data=self.data_yaml)
         series = ks.lookup_series(development=True)
 
-        self.assertEqual(series.name, '18.04')
-        self.assertEqual(series.codename, 'bionic')
+        self.assertEqual(series.name, "18.04")
+        self.assertEqual(series.codename, "bionic")
 
     def test_lookup_series_invalid_no_selectors(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -91,7 +93,7 @@ class TestKernelSeries(TestKernelSeriesCore):
 
     def test_series(self):
         ks = KernelSeries(data=self.data_yaml)
-        series_names = [ s.name for s in ks.series ]
+        series_names = [s.name for s in ks.series]
 
         self.assertItemsEqual(series_names, self.data_series_names)
 
@@ -103,8 +105,8 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         '18.04':
         """
         ks = KernelSeries(data=data)
-        series1 = ks.lookup_series('18.04')
-        series2 = ks.lookup_series('18.04')
+        series1 = ks.lookup_series("18.04")
+        series2 = ks.lookup_series("18.04")
 
         self.assertEqual(series1, series2)
 
@@ -114,8 +116,8 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         '16.04':
         """
         ks = KernelSeries(data=data)
-        series1 = ks.lookup_series('18.04')
-        series2 = ks.lookup_series('16.04')
+        series1 = ks.lookup_series("18.04")
+        series2 = ks.lookup_series("16.04")
 
         self.assertNotEqual(series1, series2)
 
@@ -125,7 +127,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         '16.04':
         """
         ks = KernelSeries(data=data)
-        series1 = ks.lookup_series('18.04')
+        series1 = ks.lookup_series("18.04")
 
         self.assertNotEqual(series1, None)
         self.assertNotEqual(None, series1)
@@ -136,9 +138,9 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             codename: bionic
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
-        self.assertEqual(series.codename, 'bionic')
+        self.assertEqual(series.codename, "bionic")
 
     def test_codename_present_empty(self):
         data = """
@@ -146,7 +148,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             codename:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertIsNone(series.codename)
 
@@ -155,7 +157,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         '18.04':
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertIsNone(series.codename)
 
@@ -165,7 +167,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             development: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.development, True)
 
@@ -175,7 +177,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             development: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.development, False)
 
@@ -184,7 +186,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         '18.04':
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.development, False)
 
@@ -194,7 +196,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             supported: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.supported, True)
 
@@ -204,7 +206,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             supported: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.supported, False)
 
@@ -213,7 +215,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         '18.04':
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.supported, False)
 
@@ -223,7 +225,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             lts: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.lts, True)
 
@@ -233,7 +235,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             lts: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.lts, False)
 
@@ -242,7 +244,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         '18.04':
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.lts, False)
 
@@ -252,7 +254,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             esm: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.esm, True)
 
@@ -262,7 +264,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             esm: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.esm, False)
 
@@ -271,7 +273,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         '18.04':
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.esm, False)
 
@@ -281,7 +283,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             esm-legacy: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.esm_legacy, True)
 
@@ -291,7 +293,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             esm-legacy: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.esm_legacy, False)
 
@@ -300,7 +302,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         '18.04':
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.esm_legacy, False)
 
@@ -310,11 +312,11 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             opening:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_allow('thing'), False)
-        self.assertEqual(series.opening_allow('thing2'), False)
+        self.assertEqual(series.opening_allow("thing"), False)
+        self.assertEqual(series.opening_allow("thing2"), False)
 
     def test_opening_allow_present_true(self):
         data = """
@@ -322,11 +324,11 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             opening: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_allow('thing'), False)
-        self.assertEqual(series.opening_allow('thing2'), False)
+        self.assertEqual(series.opening_allow("thing"), False)
+        self.assertEqual(series.opening_allow("thing2"), False)
 
     def test_opening_allow_present_false(self):
         data = """
@@ -334,11 +336,11 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             opening: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, False)
-        self.assertEqual(series.opening_allow('thing'), True)
-        self.assertEqual(series.opening_allow('thing2'), True)
+        self.assertEqual(series.opening_allow("thing"), True)
+        self.assertEqual(series.opening_allow("thing2"), True)
 
     def test_opening_allow_present_mixed_true(self):
         data = """
@@ -347,11 +349,11 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 thing: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_allow('thing'), True)
-        self.assertEqual(series.opening_allow('thing2'), False)
+        self.assertEqual(series.opening_allow("thing"), True)
+        self.assertEqual(series.opening_allow("thing2"), False)
 
     def test_opening_allow_present_mixed_false(self):
         data = """
@@ -360,11 +362,11 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 thing: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_allow('thing'), False)
-        self.assertEqual(series.opening_allow('thing2'), False)
+        self.assertEqual(series.opening_allow("thing"), False)
+        self.assertEqual(series.opening_allow("thing2"), False)
 
     def test_opening_allow_present_mixed_mixed(self):
         data = """
@@ -374,11 +376,11 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 thing2: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_allow('thing'), False)
-        self.assertEqual(series.opening_allow('thing2'), True)
+        self.assertEqual(series.opening_allow("thing"), False)
+        self.assertEqual(series.opening_allow("thing2"), True)
 
     def test_opening_allow_present_empty(self):
         data = """
@@ -387,20 +389,20 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 thing:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_allow('thing'), False)
+        self.assertEqual(series.opening_allow("thing"), False)
 
     def test_opening_allow_absent(self):
         data = """
         '18.04':
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, False)
-        self.assertEqual(series.opening_allow('thing'), True)
+        self.assertEqual(series.opening_allow("thing"), True)
 
     def test_opening_ready_present_empty(self):
         data = """
@@ -408,12 +410,12 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             opening:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_ready('thing'), False)
-        self.assertEqual(series.opening_ready('thing2'), False)
-        self.assertEqual(series.opening_ready('thing', 'thing2'), False)
+        self.assertEqual(series.opening_ready("thing"), False)
+        self.assertEqual(series.opening_ready("thing2"), False)
+        self.assertEqual(series.opening_ready("thing", "thing2"), False)
 
     def test_opening_ready_present_true(self):
         data = """
@@ -421,12 +423,12 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             opening: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_ready('thing'), False)
-        self.assertEqual(series.opening_ready('thing2'), False)
-        self.assertEqual(series.opening_ready('thing', 'thing2'), False)
+        self.assertEqual(series.opening_ready("thing"), False)
+        self.assertEqual(series.opening_ready("thing2"), False)
+        self.assertEqual(series.opening_ready("thing", "thing2"), False)
 
     def test_opening_ready_present_false(self):
         data = """
@@ -434,12 +436,12 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             opening: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, False)
-        self.assertEqual(series.opening_ready('thing'), True)
-        self.assertEqual(series.opening_ready('thing2'), True)
-        self.assertEqual(series.opening_ready('thing', 'thing2'), True)
+        self.assertEqual(series.opening_ready("thing"), True)
+        self.assertEqual(series.opening_ready("thing2"), True)
+        self.assertEqual(series.opening_ready("thing", "thing2"), True)
 
     def test_opening_ready_present_true_absent(self):
         data = """
@@ -448,12 +450,12 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 thing: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_ready('thing'), True)
-        self.assertEqual(series.opening_ready('thing2'), False)
-        self.assertEqual(series.opening_ready('thing', 'thing2'), False)
+        self.assertEqual(series.opening_ready("thing"), True)
+        self.assertEqual(series.opening_ready("thing2"), False)
+        self.assertEqual(series.opening_ready("thing", "thing2"), False)
 
     def test_opening_ready_present_false_absent(self):
         data = """
@@ -462,12 +464,12 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 thing: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_ready('thing'), False)
-        self.assertEqual(series.opening_ready('thing2'), False)
-        self.assertEqual(series.opening_ready('thing', 'thing2'), False)
+        self.assertEqual(series.opening_ready("thing"), False)
+        self.assertEqual(series.opening_ready("thing2"), False)
+        self.assertEqual(series.opening_ready("thing", "thing2"), False)
 
     def test_opening_ready_present_false_true(self):
         data = """
@@ -477,12 +479,12 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 thing2: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_ready('thing'), False)
-        self.assertEqual(series.opening_ready('thing2'), True)
-        self.assertEqual(series.opening_ready('thing', 'thing2'), False)
+        self.assertEqual(series.opening_ready("thing"), False)
+        self.assertEqual(series.opening_ready("thing2"), True)
+        self.assertEqual(series.opening_ready("thing", "thing2"), False)
 
     def test_opening_ready_present_true_false(self):
         data = """
@@ -492,12 +494,12 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 thing2: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_ready('thing'), True)
-        self.assertEqual(series.opening_ready('thing2'), False)
-        self.assertEqual(series.opening_ready('thing', 'thing2'), False)
+        self.assertEqual(series.opening_ready("thing"), True)
+        self.assertEqual(series.opening_ready("thing2"), False)
+        self.assertEqual(series.opening_ready("thing", "thing2"), False)
 
     def test_opening_ready_present_true_true(self):
         data = """
@@ -507,12 +509,12 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 thing2: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_ready('thing'), True)
-        self.assertEqual(series.opening_ready('thing2'), True)
-        self.assertEqual(series.opening_ready('thing', 'thing2'), True)
+        self.assertEqual(series.opening_ready("thing"), True)
+        self.assertEqual(series.opening_ready("thing2"), True)
+        self.assertEqual(series.opening_ready("thing", "thing2"), True)
 
     def test_opening_ready_present_empty_absent(self):
         data = """
@@ -521,12 +523,12 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 thing:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_ready('thing'), False)
-        self.assertEqual(series.opening_ready('thing2'), False)
-        self.assertEqual(series.opening_ready('thing', 'thing2'), False)
+        self.assertEqual(series.opening_ready("thing"), False)
+        self.assertEqual(series.opening_ready("thing2"), False)
+        self.assertEqual(series.opening_ready("thing", "thing2"), False)
 
     def test_opening_ready_present_empty_true(self):
         data = """
@@ -536,31 +538,31 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 thing2: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_ready('thing'), False)
-        self.assertEqual(series.opening_ready('thing2'), True)
-        self.assertEqual(series.opening_ready('thing', 'thing2'), False)
+        self.assertEqual(series.opening_ready("thing"), False)
+        self.assertEqual(series.opening_ready("thing2"), True)
+        self.assertEqual(series.opening_ready("thing", "thing2"), False)
 
     def test_opening_ready_absent(self):
         data = """
         '18.04':
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertEqual(series.opening, False)
-        self.assertEqual(series.opening_ready('thing'), True)
-        self.assertEqual(series.opening_ready('thing2'), True)
-        self.assertEqual(series.opening_ready('thing', 'thing2'), True)
+        self.assertEqual(series.opening_ready("thing"), True)
+        self.assertEqual(series.opening_ready("thing2"), True)
+        self.assertEqual(series.opening_ready("thing", "thing2"), True)
 
     def test_sources_no_sources(self):
         data = """
         '18.04':
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertItemsEqual(series.sources, [])
 
@@ -570,7 +572,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             sources:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         self.assertItemsEqual(series.sources, [])
 
@@ -581,7 +583,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         count = 0
         for source in series.sources:
@@ -598,7 +600,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 linux-meta:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
         count = 0
         for source in series.sources:
@@ -611,8 +613,8 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         '18.04':
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source, None)
 
@@ -622,9 +624,9 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
             sources:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
 
-        source = series.lookup_source('linux')
+        source = series.lookup_source("linux")
         self.assertEqual(source, None)
 
     def test_lookup_source_present(self):
@@ -636,14 +638,15 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
                 linux-snapdragon:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source1 = series.lookup_source('linux')
-        source2 = series.lookup_source('linux-raspi2')
-        source3 = series.lookup_source('linux-snapdragon')
+        series = ks.lookup_series("18.04")
+        source1 = series.lookup_source("linux")
+        source2 = series.lookup_source("linux-raspi2")
+        source3 = series.lookup_source("linux-snapdragon")
 
-        self.assertEqual(source1.name, 'linux')
-        self.assertEqual(source2.name, 'linux-raspi2')
-        self.assertEqual(source3.name, 'linux-snapdragon')
+        self.assertEqual(source1.name, "linux")
+        self.assertEqual(source2.name, "linux-raspi2")
+        self.assertEqual(source3.name, "linux-snapdragon")
+
 
 class TestKernelSourceEntry(TestKernelSeriesCore):
 
@@ -654,10 +657,10 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
-        self.assertEqual(source.name, 'linux')
+        self.assertEqual(source.name, "linux")
         self.assertEqual(series, source.series)
 
     def test_equal_true(self):
@@ -670,11 +673,11 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source1 = series.lookup_source('linux')
-        series2 = ks.lookup_series('18.04')
+        series = ks.lookup_series("18.04")
+        source1 = series.lookup_source("linux")
+        series2 = ks.lookup_series("18.04")
 
-        source2 = series.lookup_source('linux')
+        source2 = series.lookup_source("linux")
 
         self.assertEqual(source1, source2)
 
@@ -689,11 +692,11 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series1 = ks.lookup_series('18.04')
-        source1 = series1.lookup_source('linux')
-        source2 = series1.lookup_source('linux-raspi2')
-        series2 = ks.lookup_series('16.04')
-        source3 = series2.lookup_source('linux')
+        series1 = ks.lookup_series("18.04")
+        source1 = series1.lookup_source("linux")
+        source2 = series1.lookup_source("linux-raspi2")
+        series2 = ks.lookup_series("16.04")
+        source3 = series2.lookup_source("linux")
 
         self.assertNotEqual(source1, source2)
         self.assertNotEqual(source1, source3)
@@ -706,8 +709,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux-raspi2:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source1 = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source1 = series.lookup_source("linux")
 
         self.assertNotEqual(source1, None)
         self.assertNotEqual(None, source1)
@@ -720,12 +723,12 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux-raspi2:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source1 = series.lookup_source('linux')
-        source2 = series.lookup_source('linux-raspi2')
+        series = ks.lookup_series("18.04")
+        source1 = series.lookup_source("linux")
+        source2 = series.lookup_source("linux-raspi2")
 
-        self.assertEqual(source1.name, 'linux')
-        self.assertEqual(source2.name, 'linux-raspi2')
+        self.assertEqual(source1.name, "linux")
+        self.assertEqual(source2.name, "linux-raspi2")
 
     def test_versions_present_one(self):
         data = """
@@ -735,10 +738,10 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     versions: [ 1 ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
-        self.assertItemsEqual(source.versions, [ 1 ])
+        self.assertItemsEqual(source.versions, [1])
         self.assertEqual(source.version, 1)
 
     def test_versions_present_many(self):
@@ -749,10 +752,10 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     versions: [ 1, 2, 3, 10 ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
-        self.assertItemsEqual(source.versions, [ 1, 2, 3, 10 ])
+        self.assertItemsEqual(source.versions, [1, 2, 3, 10])
         self.assertEqual(source.version, 10)
 
     def test_versions_present_empty(self):
@@ -763,8 +766,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     versions: []
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertItemsEqual(source.versions, [])
         self.assertEqual(source.version, None)
@@ -776,8 +779,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.versions, None)
 
@@ -789,8 +792,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     development: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.development, True)
 
@@ -802,8 +805,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     development: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.development, False)
 
@@ -814,8 +817,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.development, False)
 
@@ -827,8 +830,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.development, True)
 
@@ -840,8 +843,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.development, False)
 
@@ -853,8 +856,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     supported: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertTrue(source.supported)
 
@@ -866,8 +869,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     supported: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertFalse(source.supported)
 
@@ -878,8 +881,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertFalse(source.supported)
 
@@ -891,8 +894,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertTrue(source.supported)
 
@@ -904,8 +907,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertFalse(source.supported)
 
@@ -917,8 +920,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     severe-only: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertTrue(source.severe_only)
 
@@ -930,8 +933,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     severe-only: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertFalse(source.severe_only)
 
@@ -942,8 +945,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertFalse(source.severe_only)
 
@@ -955,8 +958,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     backport: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertTrue(source.backport)
 
@@ -968,8 +971,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     backport: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertFalse(source.backport)
 
@@ -980,8 +983,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertFalse(source.backport)
 
@@ -993,8 +996,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     copy-forward: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertTrue(source.copy_forward)
 
@@ -1006,8 +1009,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     copy-forward: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertFalse(source.copy_forward)
 
@@ -1021,13 +1024,13 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     copy-forward: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux-foo')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux-foo")
 
         copy = source.copy_forward
         self.assertTrue(isinstance(copy, KernelSourceEntry))
-        self.assertEqual(copy.series.name, '18.04')
-        self.assertEqual(copy.name, 'linux')
+        self.assertEqual(copy.series.name, "18.04")
+        self.assertEqual(copy.name, "linux")
 
     def test_copy_forward_absent(self):
         data = """
@@ -1036,8 +1039,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertFalse(source.copy_forward)
 
@@ -1048,8 +1051,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertItemsEqual(source.packages, [])
 
@@ -1061,8 +1064,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     packages:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertItemsEqual(source.packages, [])
 
@@ -1075,8 +1078,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                         linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         count = 0
         for package in source.packages:
@@ -1095,8 +1098,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                         linux-meta:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         count = 0
         for package in source.packages:
@@ -1111,8 +1114,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertItemsEqual(source.snaps, [])
 
@@ -1124,8 +1127,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     snaps:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertItemsEqual(source.snaps, [])
 
@@ -1138,8 +1141,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                         linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         count = 0
         for snap in source.snaps:
@@ -1158,8 +1161,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                         lowlatency-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         count = 0
         for snap in source.snaps:
@@ -1176,9 +1179,9 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     derived-from: [ '18.04', 'linux' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source1 = series.lookup_source('linux')
-        source2 = series.lookup_source('linux-raspi2')
+        series = ks.lookup_series("18.04")
+        source1 = series.lookup_source("linux")
+        source2 = series.lookup_source("linux-raspi2")
 
         self.assertEqual(source2.derived_from, source1)
 
@@ -1193,10 +1196,10 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     derived-from: [ '18.04', 'linux' ]
         """
         ks = KernelSeries(data=data)
-        series1 = ks.lookup_series('18.04')
-        source1 = series1.lookup_source('linux')
-        series2 = ks.lookup_series('16.04')
-        source2 = series2.lookup_source('linux-hwe')
+        series1 = ks.lookup_series("18.04")
+        source1 = series1.lookup_source("linux")
+        series2 = ks.lookup_series("16.04")
+        source2 = series2.lookup_source("linux-hwe")
 
         self.assertEqual(source2.derived_from, source1)
 
@@ -1207,8 +1210,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.derived_from, None)
 
@@ -1222,9 +1225,9 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     derived-from: [['22.04', 'linux-realtime'], ['22.04', 'linux-raspi']]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('22.04')
-        source1 = series.lookup_source('linux-realtime')
-        source2 = series.lookup_source('linux-raspi-realtime')
+        series = ks.lookup_series("22.04")
+        source1 = series.lookup_source("linux-realtime")
+        source2 = series.lookup_source("linux-raspi-realtime")
 
         self.assertEqual(source2.derived_from, source1)
 
@@ -1236,10 +1239,10 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     invalid-tasks: [ 'task1' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
-        self.assertEqual(source.invalid_tasks, ['task1'])
+        self.assertEqual(source.invalid_tasks, ["task1"])
 
     def test_invalid_tasks_present_multiple(self):
         data = """
@@ -1249,10 +1252,10 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     invalid-tasks: [ 'task1', 'task2' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
-        self.assertEqual(source.invalid_tasks, ['task1', 'task2'])
+        self.assertEqual(source.invalid_tasks, ["task1", "task2"])
 
     def test_invalid_tasks_present_empty(self):
         data = """
@@ -1262,8 +1265,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     invalid-tasks:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.invalid_tasks, [])
 
@@ -1274,8 +1277,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.invalid_tasks, [])
 
@@ -1287,8 +1290,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.testable_flavours, [])
 
@@ -1301,8 +1304,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     testing:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.testable_flavours, [])
 
@@ -1316,8 +1319,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                         flavours:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.testable_flavours, [])
 
@@ -1333,8 +1336,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                             lowlatency:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertEqual(source.testable_flavours, [])
 
@@ -1352,8 +1355,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                                 arches:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         flavours = []
         count = 0
@@ -1362,7 +1365,7 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
             flavours.append(testable.name)
             count += 1
         self.assertEqual(count, 2)
-        self.assertEqual(sorted(flavours), sorted(['generic', 'lowlatency']))
+        self.assertEqual(sorted(flavours), sorted(["generic", "lowlatency"]))
 
     def test_testable_flavours_testing_flavours_arches_present_valid(self):
         data = """
@@ -1378,8 +1381,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                                 arches: ['arch1', 'arch3']
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         flavours = []
         count = 0
@@ -1388,7 +1391,7 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
             flavours.append(testable.name)
             count += 1
         self.assertEqual(count, 2)
-        self.assertEqual(sorted(flavours), sorted(['generic', 'lowlatency']))
+        self.assertEqual(sorted(flavours), sorted(["generic", "lowlatency"]))
 
     def test_testable_flavours_testing_flavours_arches_clouds_present_valid(self):
         data = """
@@ -1406,8 +1409,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                                 clouds: ['cloud1', 'cloud3']
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         flavours = []
         count = 0
@@ -1416,7 +1419,7 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
             flavours.append(testable.name)
             count += 1
         self.assertEqual(count, 2)
-        self.assertEqual(sorted(flavours), sorted(['generic', 'lowlatency']))
+        self.assertEqual(sorted(flavours), sorted(["generic", "lowlatency"]))
 
     def test_swm_data_absent(self):
         data = """
@@ -1425,8 +1428,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertIsNone(source.swm_data)
 
@@ -1438,8 +1441,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     swm:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertIsNone(source.swm_data)
 
@@ -1452,11 +1455,11 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                         something: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertIsNotNone(source.swm_data)
-        self.assertTrue(source.swm_data['something'])
+        self.assertTrue(source.swm_data["something"])
 
     def test_owner_absent(self):
         data = """
@@ -1465,8 +1468,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertIsNone(source.owner)
 
@@ -1478,8 +1481,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     owner:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertIsNone(source.owner)
 
@@ -1491,10 +1494,10 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     owner: botty-mc-bot-face
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
-        self.assertEqual(source.owner, 'botty-mc-bot-face')
+        self.assertEqual(source.owner, "botty-mc-bot-face")
 
     def test_swm_peer_reviewer_absent(self):
         data = """
@@ -1503,8 +1506,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertIsNone(source.peer_reviewer)
 
@@ -1516,8 +1519,8 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     peer-reviewer:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertIsNone(source.peer_reviewer)
 
@@ -1529,10 +1532,11 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
                     peer-reviewer: botty-mc-bot-face
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
-        self.assertEqual(source.peer_reviewer, 'botty-mc-bot-face')
+        self.assertEqual(source.peer_reviewer, "botty-mc-bot-face")
+
 
 class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
 
@@ -1548,12 +1552,12 @@ class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
                                 arches:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         testable = source.testable_flavours[0]
 
         self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
-        self.assertEqual(testable.name, 'generic')
+        self.assertEqual(testable.name, "generic")
 
     def test_arches_absent(self):
         data = """
@@ -1567,8 +1571,8 @@ class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
                                 clouds:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         testable = source.testable_flavours[0]
 
         self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
@@ -1586,8 +1590,8 @@ class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
                                 arches:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         testable = source.testable_flavours[0]
 
         self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
@@ -1605,12 +1609,12 @@ class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
                                 arches: [ 'arch1' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         testable = source.testable_flavours[0]
 
         self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
-        self.assertEqual(testable.arches, ['arch1'])
+        self.assertEqual(testable.arches, ["arch1"])
 
     def test_arches_present_many(self):
         data = """
@@ -1624,12 +1628,12 @@ class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
                                 arches: [ 'arch1', 'arch2', 'arch3' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         testable = source.testable_flavours[0]
 
         self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
-        self.assertEqual(testable.arches, ['arch1', 'arch2', 'arch3'])
+        self.assertEqual(testable.arches, ["arch1", "arch2", "arch3"])
 
     def test_clouds_absent(self):
         data = """
@@ -1643,8 +1647,8 @@ class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
                                 arches:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         testable = source.testable_flavours[0]
 
         self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
@@ -1662,8 +1666,8 @@ class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
                                 clouds:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         testable = source.testable_flavours[0]
 
         self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
@@ -1681,12 +1685,12 @@ class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
                                 clouds: [ 'cloud1' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         testable = source.testable_flavours[0]
 
         self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
-        self.assertEqual(testable.clouds, ['cloud1'])
+        self.assertEqual(testable.clouds, ["cloud1"])
 
     def test_cloud_present_long(self):
         data = """
@@ -1700,12 +1704,12 @@ class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
                                 clouds: [ 'cloud1', 'cloud2', 'cloud3' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         testable = source.testable_flavours[0]
 
         self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
-        self.assertEqual(testable.clouds, ['cloud1', 'cloud2', 'cloud3'])
+        self.assertEqual(testable.clouds, ["cloud1", "cloud2", "cloud3"])
 
 
 class TestKernelPackageEntry(TestKernelSeriesCore):
@@ -1719,12 +1723,12 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-meta:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-meta')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-meta")
 
-        self.assertEqual(source.name, 'linux')
-        self.assertEqual(package.name, 'linux-meta')
+        self.assertEqual(source.name, "linux")
+        self.assertEqual(package.name, "linux-meta")
         self.assertEqual(package.source, source)
         self.assertEqual(package.series, series)
 
@@ -1737,10 +1741,10 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-meta:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package1 = source.lookup_package('linux-meta')
-        package2 = source.lookup_package('linux-meta')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package1 = source.lookup_package("linux-meta")
+        package2 = source.lookup_package("linux-meta")
 
         self.assertEqual(package1, package2)
 
@@ -1759,13 +1763,13 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-meta:
         """
         ks = KernelSeries(data=data)
-        series1 = ks.lookup_series('18.04')
-        source1 = series1.lookup_source('linux')
-        package1 = source1.lookup_package('linux-meta')
-        package2 = source1.lookup_package('linux-signed')
-        series2 = ks.lookup_series('16.04')
-        source2 = series2.lookup_source('linux')
-        package3 = source2.lookup_package('linux-meta')
+        series1 = ks.lookup_series("18.04")
+        source1 = series1.lookup_source("linux")
+        package1 = source1.lookup_package("linux-meta")
+        package2 = source1.lookup_package("linux-signed")
+        series2 = ks.lookup_series("16.04")
+        source2 = series2.lookup_source("linux")
+        package3 = source2.lookup_package("linux-meta")
 
         self.assertNotEqual(package1, package2)
         self.assertNotEqual(package1, package3)
@@ -1780,9 +1784,9 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-signed:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package1 = source.lookup_package('linux-meta')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package1 = source.lookup_package("linux-meta")
 
         self.assertNotEqual(package1, None)
         self.assertNotEqual(None, package1)
@@ -1797,13 +1801,13 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-signed:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package1 = source.lookup_package('linux-meta')
-        package2 = source.lookup_package('linux-signed')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package1 = source.lookup_package("linux-meta")
+        package2 = source.lookup_package("linux-signed")
 
-        self.assertEqual(package1.name, 'linux-meta')
-        self.assertEqual(package2.name, 'linux-signed')
+        self.assertEqual(package1.name, "linux-meta")
+        self.assertEqual(package2.name, "linux-signed")
 
     def test_type_present(self):
         data = """
@@ -1815,11 +1819,11 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             type: meta
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-meta')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-meta")
 
-        self.assertEqual(package.type, 'meta')
+        self.assertEqual(package.type, "meta")
 
     def test_type_absent(self):
         data = """
@@ -1830,9 +1834,9 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-meta:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-meta')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-meta")
 
         self.assertEqual(package.type, "main")
 
@@ -1846,9 +1850,9 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             repo: [ 'url-string' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-meta')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-meta")
 
         self.assertTrue(isinstance(package.repo, KernelRepoEntry))
 
@@ -1861,9 +1865,9 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-meta:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-meta')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-meta")
 
         self.assertEqual(package.repo, None)
 
@@ -1879,11 +1883,11 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             ancillary-for: signed
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
-        self.assertEqual(package.ancillary_for.type, 'signed')
+        self.assertEqual(package.ancillary_for.type, "signed")
 
     def test_ancillary_for_absent(self):
         data = """
@@ -1894,9 +1898,9 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-generate:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
         self.assertEqual(package.ancillary_for, None)
 
@@ -1917,11 +1921,11 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             type: generate
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
-        self.assertEqual(package.ancillary_for.type, 'signed')
+        self.assertEqual(package.ancillary_for.type, "signed")
 
     def test_depends_present(self):
         data = """
@@ -1935,11 +1939,11 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             depends: signed
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
-        self.assertEqual(package.depends.type, 'signed')
+        self.assertEqual(package.depends.type, "signed")
 
     def test_depends_absent(self):
         data = """
@@ -1952,9 +1956,9 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-generate:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
         self.assertEqual(package.depends, None)
 
@@ -1975,11 +1979,11 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             type: generate
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
-        self.assertEqual(package.depends.type, 'signed')
+        self.assertEqual(package.depends.type, "signed")
 
     def test_adjunct_present(self):
         data = """
@@ -1991,9 +1995,9 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             adjunct: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
         self.assertTrue(package.adjunct)
 
@@ -2006,9 +2010,9 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-generate:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
         self.assertFalse(package.adjunct)
 
@@ -2027,9 +2031,9 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             type: generate
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
         self.assertTrue(package.adjunct)
 
@@ -2045,11 +2049,11 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             type: signed
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
-        self.assertEqual(package.signing_to.type, 'signed')
+        self.assertEqual(package.signing_to.type, "signed")
 
     def test_signing_to_absent(self):
         data = """
@@ -2060,9 +2064,9 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-generate:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
         self.assertEqual(package.signing_to, None)
 
@@ -2083,11 +2087,11 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             type: signed
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-generate')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-generate")
 
-        self.assertTrue(package.signing_to.type == 'signed')
+        self.assertTrue(package.signing_to.type == "signed")
 
     def test_signing_from_present(self):
         data = """
@@ -2101,11 +2105,11 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             signing-from: generate
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-signed')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-signed")
 
-        self.assertEqual(package.signing_from.type, 'generate')
+        self.assertEqual(package.signing_from.type, "generate")
 
     def test_signing_from_absent(self):
         data = """
@@ -2116,9 +2120,9 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                         linux-signed:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-signed')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-signed")
 
         self.assertEqual(package.signing_from, None)
 
@@ -2140,11 +2144,11 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
                             type: signed
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-signed')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-signed")
 
-        self.assertEqual(package.signing_from.type, 'generate')
+        self.assertEqual(package.signing_from.type, "generate")
 
 
 class TestKernelSnapEntry(TestKernelSeriesCore):
@@ -2158,12 +2162,12 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertEqual(source.name, 'linux')
-        self.assertEqual(snap.name, 'pc-kernel')
+        self.assertEqual(source.name, "linux")
+        self.assertEqual(snap.name, "pc-kernel")
         self.assertEqual(snap.source, source)
         self.assertEqual(snap.series, series)
 
@@ -2176,10 +2180,10 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap1 = source.lookup_snap('pc-kernel')
-        snap2 = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap1 = source.lookup_snap("pc-kernel")
+        snap2 = source.lookup_snap("pc-kernel")
 
         self.assertEqual(snap1, snap2)
 
@@ -2198,13 +2202,13 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series1 = ks.lookup_series('18.04')
-        source1 = series1.lookup_source('linux')
-        snap1 = source1.lookup_snap('pc-kernel')
-        snap2 = source1.lookup_snap('euclid-kernel')
-        series2 = ks.lookup_series('16.04')
-        source2 = series2.lookup_source('linux')
-        snap3 = source2.lookup_snap('pc-kernel')
+        series1 = ks.lookup_series("18.04")
+        source1 = series1.lookup_source("linux")
+        snap1 = source1.lookup_snap("pc-kernel")
+        snap2 = source1.lookup_snap("euclid-kernel")
+        series2 = ks.lookup_series("16.04")
+        source2 = series2.lookup_source("linux")
+        snap3 = source2.lookup_snap("pc-kernel")
 
         self.assertNotEqual(snap1, snap2)
         self.assertNotEqual(snap1, snap3)
@@ -2219,9 +2223,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         euclid-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap1 = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap1 = source.lookup_snap("pc-kernel")
 
         self.assertNotEqual(snap1, None)
         self.assertNotEqual(None, snap1)
@@ -2236,13 +2240,13 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         euclid-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap1 = source.lookup_snap('pc-kernel')
-        snap2 = source.lookup_snap('euclid-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap1 = source.lookup_snap("pc-kernel")
+        snap2 = source.lookup_snap("euclid-kernel")
 
-        self.assertEqual(snap1.name, 'pc-kernel')
-        self.assertEqual(snap2.name, 'euclid-kernel')
+        self.assertEqual(snap1.name, "pc-kernel")
+        self.assertEqual(snap2.name, "euclid-kernel")
 
     def test_repo_present(self):
         data = """
@@ -2254,9 +2258,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             repo: [ 'url-string' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertTrue(isinstance(snap.repo, KernelRepoEntry))
 
@@ -2269,9 +2273,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertEqual(snap.repo, None)
 
@@ -2285,9 +2289,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             primary: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertTrue(snap.primary)
 
@@ -2301,9 +2305,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             primary: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.primary)
 
@@ -2316,9 +2320,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.primary)
 
@@ -2332,9 +2336,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             gated: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertTrue(snap.gated)
 
@@ -2348,9 +2352,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             gated: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.gated)
 
@@ -2363,9 +2367,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.gated)
 
@@ -2379,9 +2383,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             gated: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertTrue(snap.gated)
 
@@ -2395,9 +2399,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             gated: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.gated)
 
@@ -2410,9 +2414,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.gated)
 
@@ -2426,9 +2430,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             stable: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertTrue(snap.stable)
 
@@ -2442,9 +2446,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             stable: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.stable)
 
@@ -2457,9 +2461,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.stable)
 
@@ -2473,9 +2477,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             qa: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertTrue(snap.qa)
 
@@ -2489,9 +2493,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             qa: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.qa)
 
@@ -2504,9 +2508,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.qa)
 
@@ -2520,9 +2524,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             hw-cert: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertTrue(snap.hw_cert)
 
@@ -2536,9 +2540,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             hw-cert: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.hw_cert)
 
@@ -2551,9 +2555,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.hw_cert)
 
@@ -2567,11 +2571,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             arches: [ 'amd64' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertItemsEqual(snap.arches, [ 'amd64' ])
+        self.assertItemsEqual(snap.arches, ["amd64"])
 
     def test_arches_present_many(self):
         data = """
@@ -2583,11 +2587,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             arches: [ 'arm64', 'armhf' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertItemsEqual(snap.arches, [ 'arm64', 'armhf' ])
+        self.assertItemsEqual(snap.arches, ["arm64", "armhf"])
 
     def test_arches_absent(self):
         data = """
@@ -2598,9 +2602,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertEqual(snap.arches, None)
 
@@ -2613,9 +2617,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertEqual(snap.track, None)
 
@@ -2629,9 +2633,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             track:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertEqual(snap.track, None)
 
@@ -2645,11 +2649,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             track: "18"
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertEqual(snap.track, '18')
+        self.assertEqual(snap.track, "18")
 
     def test_publish_to_absent(self):
         data = """
@@ -2660,9 +2664,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertEqual(snap.publish_to, None)
 
@@ -2676,9 +2680,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             publish-to:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertIsNone(snap.publish_to)
 
@@ -2693,13 +2697,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                                 amd64: [ '18' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        match = {
-            'amd64': ['18']
-            }
+        match = {"amd64": ["18"]}
         self.assertEqual(match, snap.publish_to)
 
     def test_publish_to_present_multiple(self):
@@ -2714,14 +2716,14 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                                 arm64: [ "18-pi3", "18-cm3" ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         match = {
-            "armhf": [ "18-pi2", "18-pi3" ],
-            "arm64": [ "18-pi3", "18-cm3" ],
-            }
+            "armhf": ["18-pi2", "18-pi3"],
+            "arm64": ["18-pi3", "18-cm3"],
+        }
         self.assertEqual(match, snap.publish_to)
 
     def test_publish_to_compat_track_arches_present(self):
@@ -2735,15 +2737,15 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             arches: [ 'armhf', 'arm64' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         match = {
-            'armhf': [ '18-pi2' ],
-            'arm64': [ '18-pi2' ],
-            }
-        self.assertEqual(snap.track, '18-pi2')
+            "armhf": ["18-pi2"],
+            "arm64": ["18-pi2"],
+        }
+        self.assertEqual(snap.track, "18-pi2")
         self.assertEqual(match, snap.publish_to)
 
     def test_publish_to_compat_arches_present(self):
@@ -2756,14 +2758,14 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             arches: [ 'armhf', 'arm64' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         match = {
-            'armhf': [ 'latest' ],
-            'arm64': [ 'latest' ],
-            }
+            "armhf": ["latest"],
+            "arm64": ["latest"],
+        }
         self.assertIsNone(snap.track)
         self.assertEqual(match, snap.publish_to)
 
@@ -2777,11 +2779,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: ['beta']
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        match = ['beta']
+        match = ["beta"]
         self.assertEqual(match, snap.promote_to)
 
     def test_promote_to_present_list_many(self):
@@ -2794,11 +2796,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: ['edge', 'beta', 'stable']
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        match = ['edge', 'beta', 'stable']
+        match = ["edge", "beta", "stable"]
         self.assertEqual(match, snap.promote_to)
 
     def test_promote_to_present_string_edge(self):
@@ -2811,11 +2813,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: edge
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        match = ['edge']
+        match = ["edge"]
         self.assertEqual(match, snap.promote_to)
 
     def test_promote_to_present_string_beta(self):
@@ -2828,11 +2830,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: beta
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        match = ['edge', 'beta']
+        match = ["edge", "beta"]
         self.assertEqual(match, snap.promote_to)
 
     def test_promote_to_present_string_candidate(self):
@@ -2845,11 +2847,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: candidate
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        match = ['edge', 'beta', 'candidate']
+        match = ["edge", "beta", "candidate"]
         self.assertEqual(match, snap.promote_to)
 
     def test_promote_to_present_string_stable(self):
@@ -2862,11 +2864,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: stable
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        match = ['edge', 'beta', 'candidate', 'stable']
+        match = ["edge", "beta", "candidate", "stable"]
         self.assertEqual(match, snap.promote_to)
 
     def test_promote_to_missing_stable_missing(self):
@@ -2878,11 +2880,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                         pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        match = ['edge']
+        match = ["edge"]
         self.assertEqual(match, snap.promote_to)
 
     def test_promote_to_missing_stable_false(self):
@@ -2895,11 +2897,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             stable: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        match = ['edge', 'beta', 'candidate']
+        match = ["edge", "beta", "candidate"]
         self.assertEqual(match, snap.promote_to)
 
     def test_promote_to_missing_stable_true(self):
@@ -2912,11 +2914,11 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             stable: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        match = ['edge', 'beta', 'candidate', 'stable']
+        match = ["edge", "beta", "candidate", "stable"]
         self.assertEqual(match, snap.promote_to)
 
     def test_promote_to_present_candidate_stable_implied_false(self):
@@ -2929,9 +2931,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: candidate
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertFalse(snap.stable)
 
@@ -2945,9 +2947,9 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: stable
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertTrue(snap.stable)
 
@@ -2961,14 +2963,14 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: ['edge']
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertTrue(snap.promote_to_risk('edge'))
-        self.assertFalse(snap.promote_to_risk('beta'))
-        self.assertFalse(snap.promote_to_risk('candidate'))
-        self.assertFalse(snap.promote_to_risk('stable'))
+        self.assertTrue(snap.promote_to_risk("edge"))
+        self.assertFalse(snap.promote_to_risk("beta"))
+        self.assertFalse(snap.promote_to_risk("candidate"))
+        self.assertFalse(snap.promote_to_risk("stable"))
 
     def test_promote_to_present_list_beta_promote_to_risk(self):
         data = """
@@ -2980,14 +2982,14 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: ['beta']
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertFalse(snap.promote_to_risk('edge'))
-        self.assertTrue(snap.promote_to_risk('beta'))
-        self.assertFalse(snap.promote_to_risk('candidate'))
-        self.assertFalse(snap.promote_to_risk('stable'))
+        self.assertFalse(snap.promote_to_risk("edge"))
+        self.assertTrue(snap.promote_to_risk("beta"))
+        self.assertFalse(snap.promote_to_risk("candidate"))
+        self.assertFalse(snap.promote_to_risk("stable"))
 
     def test_promote_to_present_list_candidate_promote_to_risk(self):
         data = """
@@ -2999,14 +3001,14 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: ['candidate']
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertFalse(snap.promote_to_risk('edge'))
-        self.assertFalse(snap.promote_to_risk('beta'))
-        self.assertTrue(snap.promote_to_risk('candidate'))
-        self.assertFalse(snap.promote_to_risk('stable'))
+        self.assertFalse(snap.promote_to_risk("edge"))
+        self.assertFalse(snap.promote_to_risk("beta"))
+        self.assertTrue(snap.promote_to_risk("candidate"))
+        self.assertFalse(snap.promote_to_risk("stable"))
 
     def test_promote_to_present_list_stable_promote_to_risk(self):
         data = """
@@ -3018,14 +3020,14 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: ['stable']
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertFalse(snap.promote_to_risk('edge'))
-        self.assertFalse(snap.promote_to_risk('beta'))
-        self.assertFalse(snap.promote_to_risk('candidate'))
-        self.assertTrue(snap.promote_to_risk('stable'))
+        self.assertFalse(snap.promote_to_risk("edge"))
+        self.assertFalse(snap.promote_to_risk("beta"))
+        self.assertFalse(snap.promote_to_risk("candidate"))
+        self.assertTrue(snap.promote_to_risk("stable"))
 
     def test_promote_to_present_string_edge_promote_to_risk(self):
         data = """
@@ -3037,14 +3039,14 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: edge
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertTrue(snap.promote_to_risk('edge'))
-        self.assertFalse(snap.promote_to_risk('beta'))
-        self.assertFalse(snap.promote_to_risk('candidate'))
-        self.assertFalse(snap.promote_to_risk('stable'))
+        self.assertTrue(snap.promote_to_risk("edge"))
+        self.assertFalse(snap.promote_to_risk("beta"))
+        self.assertFalse(snap.promote_to_risk("candidate"))
+        self.assertFalse(snap.promote_to_risk("stable"))
 
     def test_promote_to_present_string_beta_promote_to_risk(self):
         data = """
@@ -3056,14 +3058,14 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: beta
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertTrue(snap.promote_to_risk('edge'))
-        self.assertTrue(snap.promote_to_risk('beta'))
-        self.assertFalse(snap.promote_to_risk('candidate'))
-        self.assertFalse(snap.promote_to_risk('stable'))
+        self.assertTrue(snap.promote_to_risk("edge"))
+        self.assertTrue(snap.promote_to_risk("beta"))
+        self.assertFalse(snap.promote_to_risk("candidate"))
+        self.assertFalse(snap.promote_to_risk("stable"))
 
     def test_promote_to_present_string_candidate_promote_to_risk(self):
         data = """
@@ -3075,14 +3077,14 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: candidate
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertTrue(snap.promote_to_risk('edge'))
-        self.assertTrue(snap.promote_to_risk('beta'))
-        self.assertTrue(snap.promote_to_risk('candidate'))
-        self.assertFalse(snap.promote_to_risk('stable'))
+        self.assertTrue(snap.promote_to_risk("edge"))
+        self.assertTrue(snap.promote_to_risk("beta"))
+        self.assertTrue(snap.promote_to_risk("candidate"))
+        self.assertFalse(snap.promote_to_risk("stable"))
 
     def test_promote_to_present_string_stable_promote_to_risk(self):
         data = """
@@ -3094,14 +3096,14 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
                             promote-to: stable
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertTrue(snap.promote_to_risk('edge'))
-        self.assertTrue(snap.promote_to_risk('beta'))
-        self.assertTrue(snap.promote_to_risk('candidate'))
-        self.assertTrue(snap.promote_to_risk('stable'))
+        self.assertTrue(snap.promote_to_risk("edge"))
+        self.assertTrue(snap.promote_to_risk("beta"))
+        self.assertTrue(snap.promote_to_risk("candidate"))
+        self.assertTrue(snap.promote_to_risk("stable"))
 
 
 class TestKernelRepoEntry(TestKernelSeriesCore):
@@ -3119,10 +3121,10 @@ class TestKernelRepoEntry(TestKernelSeriesCore):
                             repo: [ 'url-string2' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package = source.lookup_package('linux-meta')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package = source.lookup_package("linux-meta")
+        snap = source.lookup_snap("pc-kernel")
 
         self.assertEqual(package.repo.owner, package)
         self.assertEqual(snap.repo.owner, snap)
@@ -3137,10 +3139,10 @@ class TestKernelRepoEntry(TestKernelSeriesCore):
                         linux-meta:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package1 = source.lookup_package('linux-meta')
-        package2 = source.lookup_package('linux-meta')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package1 = source.lookup_package("linux-meta")
+        package2 = source.lookup_package("linux-meta")
 
         self.assertEqual(package1.repo, package2.repo)
 
@@ -3156,10 +3158,10 @@ class TestKernelRepoEntry(TestKernelSeriesCore):
                             repo: [ 'url-string2' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package1 = source.lookup_package('linux-meta')
-        package2 = source.lookup_package('linux-signed')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package1 = source.lookup_package("linux-meta")
+        package2 = source.lookup_package("linux-signed")
 
         self.assertNotEqual(package1.repo, package2.repo)
 
@@ -3175,9 +3177,9 @@ class TestKernelRepoEntry(TestKernelSeriesCore):
                             repo: [ 'url-string2' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package1 = source.lookup_package('linux-meta')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        package1 = source.lookup_package("linux-meta")
 
         self.assertNotEqual(package1.repo, None)
         self.assertNotEqual(None, package1.repo)
@@ -3192,12 +3194,12 @@ class TestKernelRepoEntry(TestKernelSeriesCore):
                             repo: [ 'url-string' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertEqual(snap.repo.url, 'url-string')
-        self.assertEqual(snap.repo.branch, 'master')
+        self.assertEqual(snap.repo.url, "url-string")
+        self.assertEqual(snap.repo.branch, "master")
 
     def test_repo_url_branch(self):
         data = """
@@ -3209,12 +3211,12 @@ class TestKernelRepoEntry(TestKernelSeriesCore):
                             repo: [ 'url-string', 'branch-name' ]
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap = source.lookup_snap('pc-kernel')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
+        snap = source.lookup_snap("pc-kernel")
 
-        self.assertEqual(snap.repo.url, 'url-string')
-        self.assertEqual(snap.repo.branch, 'branch-name')
+        self.assertEqual(snap.repo.url, "url-string")
+        self.assertEqual(snap.repo.branch, "branch-name")
 
 
 class TestKernelRoutingEntry(TestKernelSeriesCore):
@@ -3235,126 +3237,152 @@ class TestKernelRoutingEntry(TestKernelSeriesCore):
     """
 
     def test_source_linkage(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             sources:
                 linux:
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing = source.routing
 
         self.assertEqual(routing.source, source)
 
     def test_equal_true(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             sources:
                 linux:
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing1 = source.routing
         routing2 = source.routing
 
         self.assertEqual(routing1, routing2)
 
     def test_equal_none(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             sources:
                 linux:
                     routing:
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing1 = source.routing
 
         self.assertEqual(routing1, None)
 
     def test_routing_default(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             sources:
                 linux:
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing = source.routing
-        destination = routing.lookup_destination('build')
+        destination = routing.lookup_destination("build")
 
-        match = [['default-build', 'Release'], ['default-build2', 'Release']]
+        match = [["default-build", "Release"], ["default-build2", "Release"]]
         self.assertEqual(destination, match)
 
     def test_routing_default_primary(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             sources:
                 linux:
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing = source.routing
-        destination = routing.lookup_destination('build', primary=True)
+        destination = routing.lookup_destination("build", primary=True)
 
-        match = ['default-build', 'Release']
+        match = ["default-build", "Release"]
         self.assertEqual(destination, match)
 
     def test_routing_devel(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             development: true
             sources:
                 linux:
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing = source.routing
-        destination = routing.lookup_destination('build')
+        destination = routing.lookup_destination("build")
 
-        match = [['default-devel-build', 'Release']]
+        match = [["default-devel-build", "Release"]]
         self.assertEqual(destination, match)
 
     def test_routing_esm(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             esm: true
             sources:
                 linux:
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing = source.routing
-        destination = routing.lookup_destination('build')
+        destination = routing.lookup_destination("build")
 
-        match = [['default-esm-build', 'Release']]
+        match = [["default-esm-build", "Release"]]
         self.assertEqual(destination, match)
 
     def test_routing_override_devel(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             sources:
                 linux:
                     routing: esm
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing = source.routing
-        destination = routing.lookup_destination('build')
+        destination = routing.lookup_destination("build")
 
-        match = [['default-esm-build', 'Release']]
+        match = [["default-esm-build", "Release"]]
         self.assertEqual(destination, match)
 
     def test_routing_override_local(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             sources:
                 linux:
@@ -3362,58 +3390,70 @@ class TestKernelRoutingEntry(TestKernelSeriesCore):
                         build:
                             - [ 'local-build', 'Release' ]
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing = source.routing
-        destination = routing.lookup_destination('build')
+        destination = routing.lookup_destination("build")
 
-        match = [['local-build', 'Release']]
+        match = [["local-build", "Release"]]
         self.assertEqual(destination, match)
 
     def test_name_default(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             sources:
                 linux:
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing = source.routing
 
-        self.assertEqual(routing.name, 'default')
+        self.assertEqual(routing.name, "default")
 
     def test_name_devel(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             development: true
             sources:
                 linux:
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing = source.routing
 
-        self.assertEqual(routing.name, 'devel')
+        self.assertEqual(routing.name, "devel")
 
     def test_name_esm(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             esm: true
             sources:
                 linux:
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing = source.routing
 
-        self.assertEqual(routing.name, 'esm')
+        self.assertEqual(routing.name, "esm")
 
     def test_name_override_local(self):
-        data = self.routing_data + """
+        data = (
+            self.routing_data
+            + """
         '18.04':
             codename: bionic
             sources:
@@ -3422,12 +3462,13 @@ class TestKernelRoutingEntry(TestKernelSeriesCore):
                         build:
                             - [ 'local-build', 'Release' ]
         """
+        )
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
         routing = source.routing
 
-        self.assertEqual(routing.name, 'bionic:linux')
+        self.assertEqual(routing.name, "bionic:linux")
 
     def test_private_present_true(self):
         data = """
@@ -3437,8 +3478,8 @@ class TestKernelRoutingEntry(TestKernelSeriesCore):
                     private: true
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertTrue(source.private)
 
@@ -3450,8 +3491,8 @@ class TestKernelRoutingEntry(TestKernelSeriesCore):
                     private: false
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertFalse(source.private)
 
@@ -3462,8 +3503,8 @@ class TestKernelRoutingEntry(TestKernelSeriesCore):
                 linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
+        series = ks.lookup_series("18.04")
+        source = series.lookup_source("linux")
 
         self.assertFalse(source.private)
 
@@ -3474,11 +3515,15 @@ class TestKernelSeriesCache(TestKernelSeriesCore):
         ksc = KernelSeriesCache(data_location="/DATA/")
         for what, cycle, paths in (
             ("tip", None, ["file:///DATA/kernel-series.yaml"]),
-            ("cycle c1", "c1", [
-                "file:///DATA/kernel-versions/c1/info/kernel-series.yaml",
-                "file:///DATA/kernel-versions/complete/c1/info/kernel-series.yaml",
-                "file:///DATA/kernel-series.yaml@c1",
-            ]),
+            (
+                "cycle c1",
+                "c1",
+                [
+                    "file:///DATA/kernel-versions/c1/info/kernel-series.yaml",
+                    "file:///DATA/kernel-versions/complete/c1/info/kernel-series.yaml",
+                    "file:///DATA/kernel-series.yaml@c1",
+                ],
+            ),
         ):
             with self.subTest(msg=what):
                 urls = ksc.url_local(cycle)
@@ -3490,18 +3535,31 @@ class TestKernelSeriesCache(TestKernelSeriesCore):
             (None, None, ["https://kernel.ubuntu.com/info/kernel-series.json.gz"], False),
             (None, "c1", ["https://kernel.ubuntu.com/info/kernel-series.json.gz@c1"], False),
             ("local", None, ["file:///DATA/kernel-series.yaml"], True),
-            ("local", "c1", [
+            (
+                "local",
+                "c1",
+                [
                     "file:///DATA/kernel-versions/c1/info/kernel-series.yaml",
                     "file:///DATA/kernel-versions/complete/c1/info/kernel-series.yaml",
-                    "file:///DATA/kernel-series.yaml@c1"
-                ], True
+                    "file:///DATA/kernel-series.yaml@c1",
+                ],
+                True,
             ),
-            ("launchpad", None, ["https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml"], False),
-            ("launchpad", "c1", [
+            (
+                "launchpad",
+                None,
+                ["https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml"],
+                False,
+            ),
+            (
+                "launchpad",
+                "c1",
+                [
                     "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/c1/info/kernel-series.yaml?h=main",
                     "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/complete/c1/info/kernel-series.yaml?h=main",
                     "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h=c1",
-                ], False
+                ],
+                False,
             ),
         ):
             with self.subTest(msg=str(which) + " " + str(cycle)):
@@ -3514,5 +3572,5 @@ class TestKernelSeriesCache(TestKernelSeriesCore):
                     self.assertEqual(use_local, local)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
