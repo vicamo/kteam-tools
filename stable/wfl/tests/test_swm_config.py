@@ -11,10 +11,7 @@ from testfixtures       import (
 import unittest
 import yaml
 
-#sys.path.append(os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..', '..', 'py3')))
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..')))
-
-from swm_config         import (
+from wfl.swm_config         import (
                             SwmConfig,
                             SwmConfigError,
                             )
@@ -53,7 +50,7 @@ class TestSwmConfig(TestSwmConfigCore):
         sc = SwmConfig(data=data)
 
         self.assertIsNotNone(sc)
-        self.assertIsNone(sc.gke_nvidia_packages)
+        self.assertEqual(sc.gke_nvidia_packages, [])
 
     def test_gke_nvidia_packages_present_empty(self):
         data = "gke-nvidia-packages:"

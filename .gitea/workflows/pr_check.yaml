@@ -41,9 +41,10 @@ jobs:
           git config --global user.email "noreply+ckctreview-bot@canonical.com"
           git config --global user.name "Bot"
           pip3 install xdg
-          (cd ktl/tests && python3 -m unittest -v)
+          pip3 install pytest
+          python3 -m pytest ktl
 
-  multi-series-tests-cranky:
+  multi-series-tests-remainder:
     strategy:
       matrix:
         image:
@@ -69,9 +70,9 @@ jobs:
           git config --global user.email "noreply+ckctreview-bot@canonical.com"
           git config --global user.name "Bot"
           pip3 install xdg
+          pip3 install pytest
           # See Gitea Issue # 414
-          #(cd cranky/crl/tests && python3 -m unittest -v)
-          (cd cranky/ && python3 -m pytest)
+          python3 -m pytest --ignore ktl
 
   # Tests that are not affected by the host's environment
   series-agnostic-tests:
