@@ -192,7 +192,7 @@ class Application:
 
                 if recipe is None and not args.dry_run:
                     # new cannot apply auto_build_channels.
-                    new_params = {(k, v) for k, v in new_recipe.items() if k != "auto_build_channels"}
+                    new_params = {k: v for k, v in new_recipe.items() if k != "auto_build_channels"}
                     recipe = self.lp.snaps.new(**new_params)
                     print("New Recipe:", recipe)
 
