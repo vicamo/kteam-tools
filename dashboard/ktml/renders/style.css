@@ -1,0 +1,49 @@
+body {
+  background: #000000bf;
+  /* padding: 0 24px;
+  margin: 0; */
+  height: 100vh;
+  color: white;
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
+}
+details {
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 0.5em 0.5em;
+}
+
+summary {
+  font-weight: bold;
+  margin: -0.5em -0.5em 0;
+  padding: 0.5em;
+}
+
+details[open] {
+  background: grey;
+  padding: 0.5em;
+}
+
+details[open] details {
+  margin-bottom: 0px;
+  padding :0.1em 0.1em;
+  margin-left:35px;
+  background: #000000bf;
+}
+
+details[open] details[open] {
+  margin-bottom: 0px;
+  padding :0.1em 0.1em;
+  margin-left:35px;
+  background: grey;
+}
+
+[id*="item"]:target {
+  display: hide;
+}
+
+details[open] summary {
+  border-bottom: 1px solid #aaa;
+  margin-bottom: 0.5em;
+}

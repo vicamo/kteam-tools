@@ -6,3 +6,5 @@ deps/
 stable/jira
 *.egg-info
 venv/
+dashboard/lkml/renders/*.html
+dashboard/lkml/**/*.json

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dashboard KTML</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <table>
+        <tr>
+            <td>Generated the</td>
+            <td>{{ date }}</td>
+        </tr>
+        <tr>
+            <td> From </td>
+            <td>{{ begin_date }}</td>
+            <td> to </td>
+            <td>{{ end_date }}</td>
+        </tr>
+        <tr>
+            <td>Pending patchsets</td>
+            <td><span class="count">{{ pending_patchsets|length }}</span>/{{ total_patchsets }}</td>
+        </tr>
+        <tr>
+            <td>Filtered patchsets</td>
+            <td class="filtered_count">0</td>
+        </tr>
+        <tr>
+            <td>filter for</td>
+            <td>
+                    <select class="selection" onChange="select(this)">
+                        <option selected="selected" value="none">.</option> 
+                        {% for reviewer in active_reviewers %}
+                        <option value="{{ reviewer }}"> {{ reviewer }} </option>
+                        {% endfor %}
+                    </select>
+            </td>
+    </table>
+    <script>
+    function select(selectObject) {
+      var value = selectObject.value;
+      count = 0
+      for (let element of document.querySelectorAll('details')) {
+        element.style.display="";
+      }
+      for (let element of document.getElementsByClassName(value)) {
+        element.style.display="none";
+        count++;
+      }
+      all = document.getElementsByClassName("count")[0].innerHTML 
+      document.getElementsByClassName("filtered_count")[0].innerHTML = all - count
+    }
+    window.addEventListener('load', function () {
+        // When loading, might have already something selected, apply the filter
+        selection = document.getElementsByClassName("selection")[0]
+        select(selection.options[selection.selectedIndex])
+    })
+
+    </script>
+
+    {% for patchset in pending_patchsets %}
+        <details class="{{ patchset.reviewer }} {{ patchset.email }}"><summary>{{ patchset.subject }} | {{ patchset.date }} | {{ patchset.author }} | <span title="{{ patchset.reviewer }}">ACK:{% print(2-patchset.pending_acks) %}/2</span> | {% for status in patchset.status %}<span title="{{ status.comment }}">{% if "0" in status.ret %}✅{% else %}❌{% endif %}{{ status.operation }} {{ status.serie }}|</span> {% endfor %} </summary>
+	{# RESULTS HERE #}
+	{{ patchset.result }}
+        {% for patch in patchset.patches %}
+            <details><summary>{{ patch.subject }}</summary><div class=mail><pre>{{ patch.body }}</pre></div></details>
+	{% endfor %}
+        </details>
+    {% endfor %}
+
+    {# a comment #}
+</body>
+</html>
