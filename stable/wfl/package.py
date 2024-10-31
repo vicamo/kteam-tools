@@ -3107,8 +3107,8 @@ class Package():
     #
     def send_testing_requests(s, op="sru", ppa=False):
         cdebug("send_testing_requests: op={} ppa={}".format(op, ppa))
-        for flavour_meta in s.test_flavour_meta():
-            s.send_testing_request(op=op, ppa=ppa, flavour=flavour_meta[0], meta=flavour_meta[1])
+        for flavour, meta in s.test_flavour_meta5():
+            s.send_testing_request(op=op, ppa=ppa, flavour=flavour, meta=meta)
 
     # send_testing_request
     #
