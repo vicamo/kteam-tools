@@ -1,9 +1,0 @@
-#!/bin/bash
-
-case "$1" in
-azure-kpi)
-    (cd /srv/kernel.ubuntu.com/www/kpi/azure &&
-    "$HOME/kteam-tools/kpi/azure/azure-kpi" >azure-kpi.txt &&
-    curl -i -XPOST 'http://influxdb.cloud.kpi.internal:8086/write?db=kernel' --data-binary '@azure-kpi.txt' --netrc-file $HOME/.influx-kernel.auth)
-    ;;
-esac
