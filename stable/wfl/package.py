@@ -1029,7 +1029,6 @@ class Package():
             s.routing_mode = s.source.routing.name
 
 
-        cinfo('     test_flavours: %s' % (s.test_flavours()), 'blue')
         cinfo('test_flavour_meta4: %s' % (s.test_flavour_meta()), 'blue')
         cinfo('test_flavour_meta5: %s' % (s.test_flavour_meta5()), 'blue')
         cinfo('     Routing mode: {}'.format(s.routing_mode), 'blue')
@@ -3103,23 +3102,6 @@ class Package():
             result.append((flavour, meta_pkg))
 
         return result
-
-    # test_flavours
-    #
-    def test_flavours(s):
-        if s.bug.swm_config is not None and s.bug.swm_config.hack_kernel_testing:
-            return sorted([x.name for x in s.source.testable_flavours])
-
-        generic = (s.name is None or
-                   s.name == 'linux' or
-                   s.name.startswith('linux-hwe') or
-                   s.name.startswith('linux-lts-'))
-        if generic:
-            flavours = [ 'generic', 'lowlatency' ]
-        else:
-            flavours = [ s.name.replace('linux-', '') ]
-
-        return flavours
 
     # send_testing_requests
     #
