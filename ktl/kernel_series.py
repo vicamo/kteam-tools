@@ -590,6 +590,10 @@ class KernelSourceEntry:
         return self._data.get("swm")
 
     @property
+    def testing_data(self):
+        return self._data.get("testing")
+
+    @property
     def private(self):
         return self._data.get("private", False)
 
