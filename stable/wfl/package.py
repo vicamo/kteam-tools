@@ -1031,6 +1031,7 @@ class Package():
 
         cinfo('     test_flavours: %s' % (s.test_flavours()), 'blue')
         cinfo('test_flavour_meta4: %s' % (s.test_flavour_meta()), 'blue')
+        cinfo('test_flavour_meta5: %s' % (s.test_flavour_meta5()), 'blue')
         cinfo('     Routing mode: {}'.format(s.routing_mode), 'blue')
         cinfo('    Routing table:', 'blue')
         for pocket, pocket_data in s._routing.items():
@@ -3062,6 +3063,44 @@ class Package():
             variants[0] = ''
         for flavour in testables:
             result.append((flavour.name, 'linux-' + flavour.name + variants[0]))
+
+        return result
+
+    # test_flavour_meta5
+    #
+    def test_flavour_meta5(self):
+        if self.source is None:
+            return []
+
+        testing_data = self.source.testing_data
+        if testing_data is None:
+            return []
+
+        flavours_data = testing_data.get("flavours")
+        if flavours_data is None:
+            return []
+
+        result = []
+        kernel_testing = self.bug.swm_config.hack_kernel_testing
+        variants = self.source.variants
+        if (
+            variants is not None
+            and len(variants) > 0
+            and variants[0] != "--"
+        ):
+            variant = variants[0]
+        else:
+            variant = ''
+
+        # Run the flavour list, and build an appropriate meta-pkg.
+        for flavour, flavour_data in sorted(flavours_data.items()):
+            meta_pkg = flavour_data.get("meta-pkg")
+            if meta_pkg is None:
+                if kernel_testing:
+                    meta_pkg = "kernel-testing--{}--full--{}".format(self.source.name, flavour)
+                else:
+                    meta_pkg = 'linux-' + flavour + variant
+            result.append((flavour, meta_pkg))
 
         return result
 
