@@ -2939,8 +2939,8 @@ class Package():
 
     # send_testing_message
     #
-    def send_testing_message(s, op="sru", ppa=False, flavour="generic", meta=None):
-        cdebug("send_testing_message: op={} ppa={} flavour={} meta={}".format(op, ppa, flavour, meta))
+    def send_testing_message(s, op="sru", ppa=False, flavour="generic", meta=None, data=None):
+        cdebug("send_testing_message: op={} ppa={} flavour={} meta={} data={}".format(op, ppa, flavour, meta, data))
 
         who = {
             2: "s2",
@@ -2964,6 +2964,8 @@ class Package():
         }
         if meta is not None:
             msg['meta-pkg'] = meta
+        if data is not None:
+            msg["context"] = data
 
         # Construct the appropriate testing meta package.
         # XXX: note this is currently limited to those packages which are
@@ -3099,7 +3101,7 @@ class Package():
                     meta_pkg = "kernel-testing--{}--full--{}".format(self.source.name, flavour)
                 else:
                     meta_pkg = 'linux-' + flavour + variant
-            result.append((flavour, meta_pkg))
+            result.append((flavour, meta_pkg, flavour_data))
 
         return result
 
@@ -3107,14 +3109,14 @@ class Package():
     #
     def send_testing_requests(s, op="sru", ppa=False):
         cdebug("send_testing_requests: op={} ppa={}".format(op, ppa))
-        for flavour, meta in s.test_flavour_meta5():
-            s.send_testing_request(op=op, ppa=ppa, flavour=flavour, meta=meta)
+        for flavour, meta, flavour_data in s.test_flavour_meta5():
+            s.send_testing_request(op=op, ppa=ppa, flavour=flavour, meta=meta, data=flavour_data)
 
     # send_testing_request
     #
-    def send_testing_request(s, op="sru", ppa=False, flavour="generic", meta=None):
-        cdebug("send_testing_request: op={} ppa={} flavour={} meta={}".format(op, ppa, flavour, meta))
-        msg = s.send_testing_message(op, ppa, flavour, meta)
+    def send_testing_request(s, op="sru", ppa=False, flavour="generic", meta=None, data=None):
+        cdebug("send_testing_request: op={} ppa={} flavour={} meta={} data={}".format(op, ppa, flavour, meta, data))
+        msg = s.send_testing_message(op, ppa, flavour, meta, data)
 
         where = " uploaded" if not ppa else " available in ppa"
         subject = "[" + s.series + "] " + s.name + " " + flavour + " " + s.version + where
