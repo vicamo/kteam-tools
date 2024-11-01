@@ -1,20 +1,16 @@
 # Crank Turning Setup
 
-This document describes what needs to be done to properly configure the local
-host environment for turning the crank.
+This document describes the steps to configure a host environment for `cranky`.
 
-Everyone that intends to use the kernel cranking tools is expected to follow
-the instructions in this document. All crank-turning documentation and example
-commands depend on this config setup to work properly.
-
-**Note** This is a one-time process to initialize your local host to use all
+This is a one-time process to initialize your local host to use all
 the cranky tools required to produce all the Canonical kernels.
 
-## Dependencies
+## Install dependencies
 
-You will need to install/update the following packages:
-```
-sudo apt-get install -y \
+Install the following packages via `apt`:
+
+```bash
+sudo apt install \
     bash-completion \
     build-essential \
     ccache \
@@ -31,14 +27,20 @@ sudo apt-get install -y \
     python3-launchpadlib \
     schroot \
     sharutils \
-    snapcraft \
     transfig \
     ubuntu-dev-tools \
     wget \
     xmlto
 ```
 
-If you are using a newer Ubuntu release, then the installation of the `snapcraft` package may fail:
+### Snapcraft
+
+On newer releases of Ubuntu, install `snapcraft` using Snap:
+```bash
+snap install snapcraft --classic
+```
+
+On older Ubuntu releases, this may fail:
 
 ```
 => Installing the Snapcraft snap
@@ -52,59 +54,188 @@ Errors were encountered while processing:
 E: Sub-process /usr/bin/dpkg returned an error code (1)
 ```
 
-In this case, you should install `snapcraft` using Snap directly:
-
+In this case, install it via `apt` instead:
+```bash
+sudo apt install snapcraft
 ```
-snap install snapcraft --classic
-```
 
-Read and follow the directions in [README.deploy](../../README.deploy).
+
+<!-- Read and follow the directions in [README.deploy](../../README.deploy). -->
 
 ## Environment setup
 
 Create your own version of each of these environment setup files. Copy the
-contents for each file from the given snip file and make necessary edits.
+contents for each file from the given snippet and make necessary edits.
 
-### ~/.bashrc
+### Shell startup file
 
-See [cranky/docs/snip-bashrc](snip-bashrc).
+Copy and paste the following into your shell's startup file (e.g., `~/.bashrc`).
 
-This file should be placed in your .bashrc file or wherever your main
-shell is sourced from. The main things to note here are DEBEMAIL and
-DEBFULLNAME that are used by debian packaging tools to fill out your
-name and address, make sure these are properly filled out. The next
-important part is mainly setting up the paths to cranky tools in
-kteam-tools that we will reference often and we will want to have
-auto-completed.
+**Be sure to update the lines marked with TODO**
 
-### ~/.gitconfig
+```bash
+# Set System Locale to enable scripts handling ABI files to make sure that
+# these files are not unnecessarily reordered.
+export LC_ALL=C.UTF-8
 
-See [cranky/docs/snip-gitconfig](snip-gitconfig).
+# Helper to call debian/rules quickly
+alias fdr="fakeroot debian/rules"
 
-Here we will want to replace all of the fields specified that would need
-either your launchpad ID or other information. These are used by git
-to access and push/pull git repositories.
+# Set shell variables so various Debian maintenance tools know your real name
+# and email address to use for packages
+export DEBEMAIL="<firstname>.<lastname>@canonical.com" # TODO
+export DEBFULLNAME="<firstname> <lastname>" # TODO 
+
+# Set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# Add cranky tools to the PATH
+export PATH=$HOME/canonical/kteam-tools/cranky:$PATH
+export PATH=$HOME/canonical/kteam-tools/maintscripts:$PATH
+
+# Enable cranky bash auto-completion
+source $HOME/canonical/kteam-tools/cranky/cranky-complete.bash
+
+# If you want to use the new click-based auto-completion, uncomment the
+# following instead of the above. Note that at the moment, this only
+# auto-completes the subcommands but not any of their arguments or the
+# valid kernel handles.
+# eval "$(_CRANKY_COMPLETE=bash_source cranky)"
+```
+
+### Git configuration
+
+These are used by git to access and push/pull git repositories.
+Copy this snippet into your git global configuration, typically either 
+`~/.gitconfig` or `~/.config/git/config`.
+
+**Be sure to update the lines marked with TODO**
+```gitconfig
+[user]
+	email = <firstname>.<lastname>@canonical.com  # TODO
+	name = <firstname> <lastname> # TODO
+	signingkey = <your-pgp-signing-key-id> # TODO the one uploaded in Launchpad
+
+[sendemail]
+	smtpencryption = tls
+	smtpserver = smtp.gmail.com
+	smtpuser = <firstname>.<lastname>@canonical.com  # TODO
+	smtppass = <your-smtp-password> # TODO Get this one from Enigma
+	smtpserverport = 587
+	signedoffbycc = 0
+	cccover = 0
+	tocover = 0
+	chainreplyto = false
+	suppressfrom = true
+
+[url "git+ssh://<your-launchpad-id>@git.launchpad.net/"]  # TODO 
+	pushinsteadof = lp:
+	pushinsteadof = "git://git.launchpad.net/"
+	pushinsteadof = "https://git.launchpad.net/"
+	insteadof = lps:
+	insteadof = "git+ssh://git.launchpad.net/"
+
+# Used for real-time, esm and other private kernels.
+[url "git+ssh://<your-launchpad-id>@git.launchpad.net/~canonical-kernel"]  # TODO
+	insteadof = lp:~canonical-kernel
+	insteadof = git://git.launchpad.net/~canonical-kernel
+
+[url "git://git.launchpad.net/"]
+	insteadof = lp:
+
+```
 
 ### ~/.config/cranky/cranky.yaml
 
-See [cranky/docs/snip-cranky.yaml](snip-cranky.yaml).
+Copy this snippet into `~/.config/cranky/cranky.yaml`.
 
-This is the yaml file that cranky tools will reference for where to find
-your kernel source trees and how kernel source directories will be
-named. If you want your trees to be placed somewhere else this is where
-you would change them so that cranky tools are aware of them.
+This file allows you to configure cranky's default settings.
 
-### ~/.dput.cf
+```yaml
+# Configuration file for the cranky toolchain.
+#
+# Copy to ~/.config/cranky/cranky.yaml and modify as you like. Note that a
+# configuration file is not necessary since all options can also be specified
+# using commandline arguments. Commandline arguments take precedence over
+# options specified in this file.
+#
 
-See [cranky/docs/snip-dput.cf](snip-dput.cf).
+# Absolute base path for all the bits managed by the cranky tools. The repos,
+# logs, ...
+#
+# All paths below are relative to this 'base-path':
+#
+base-path: '~/canonical/kernel/ubuntu'
+
+# cranky checkout
+#checkout:
+  # A local reference kernel repo used for cloning the Ubuntu kernel repo.
+  # Using this speeds up the cloning process considerably. See
+  # 'git help clone', option --reference, for more details.
+  #reference: /path/to/local/kernel/repo
+  # Borrow the objects from the above reference repo only during the cloning
+  # process to reduce network traffic. See 'git help clone', option
+  # --dissociate, for more details.
+  #dissociate: True
+
+# cranky test-build
+#test-build:
+  # The relative path of the directory where the logfiles are written to.
+  #log-path: relative/path/to/logdir
+
+# cranky review-master-changes
+#review-master-changes:
+  # Extended regular expression to exclude commits based on the commit message
+  #exclude: "UBUNTU: (Ubuntu-|link-to-tracker:|Start new release)"
+  # Command used to list the master kernel commits
+  #git-cmd: "git log --oneline"
+
+# Path to source code directories
+#
+# The relative paths to the git repos of the different packages. The paths can
+# be specified per package type (main, meta, signed) or via a 'default' entry
+# which is used as a fallback. The following formatter keywords are
+# recognized:
+#   {series}:      The distro series codename (bionic, ...)
+#   {type}:        The type of the package (main, meta, signed, ...)
+#   {type_suffix}: The suffix of dependent packages (-meta, -signed, ...)
+#   {package}:     The package name (linux, linux-aws, linux-meta-gcp, ...)
+#   {source}:      The source name (linux-oracle, linux-restricted-modules-oracle, ...)
+#
+# The following configuration assumes you are going to use the following
+# layout:
+#
+#  $HOME/canonical/kernel/ubuntu/<ubuntu_release>/<kernel_version>
+#
+package-path:
+  default: '{series}/{source}/linux-{type}'
+```
+
+### dput configuration
 
 The main purpose of this is to give dput (the main command for uploading
 source package to repositories) configuration options for what to do and
 which file transfer protocol to use when uploading. We on the kernel
 team don't upload directly to the Ubuntu archive, but instead upload to
-ppas that build those packages which are then copied to the archive.
-Setting the default_host_main=UNKNOWN prevents accidentally uploading to
-the archive.
+PPAs that build those packages, which are then copied to the archive.
+
+Copy the following snippet into `~/.dput.cf`.
+```ini
+[DEFAULT]
+# Prevent accidential uploads to the main Ubuntu archive
+default_host_main = UNKNOWN
+
+[ubuntu]
+method = sftp
+login = [lp-id]
+
+[ppa]
+method = sftp
+login = [lp-id]
+
+```
 
 ## Get cranky tools
 
@@ -112,9 +243,10 @@ Clone the Kernel Team Tools git repository, our main repo where the
 kernel team keeps tools and where tools in the cranky process are pulled 
 from. (yes, by now you've cloned kteam-tools already, otherwise you 
 wouldn't be reading this document :-):
-```
-cd $HOME/canonical
+```bash
+cd ~/canonical
 git clone lps:~canonical-kernel/+git/kteam-tools
 ```
-This references the ``lps:`` prefix in your .gitconfig file that should 
-be able to properly ssh and clone into kteam-tools.
+
+This references the `lps:` prefix in your git config that should 
+be able to properly `ssh` and clone into `kteam-tools/`.
