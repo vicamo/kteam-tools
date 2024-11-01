@@ -835,6 +835,13 @@ class SnapDebs:
             "channel"        : track + "/" + s.risk_stream(risk, s.bug.built_in),
         }
 
+        # Pick up our testing context data from testing.snaps.<snap-name>
+        testing_data = s.source.testing_data
+        if testing_data is not None:
+            snap_data = testing_data.get("snaps", {}).get(s.name)
+            if snap_data is not None:
+                msg["context"] = snap_data
+
         cinfo("APW: snapDebs send_testing_request {}".format(msg))
         mq = MsgQueueCkct()
         mq.publish(msg['key'], msg)
