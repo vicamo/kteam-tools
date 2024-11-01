@@ -44,8 +44,8 @@ def compare_versions(version1, version2):
     # print 'comparing ', version1, 'and', version2
     # 2.6.35-26.46
 
-    r1 = re.split("[-\.\~\+]", version1)
-    r2 = re.split("[-\.\~\+]", version2)
+    r1 = re.split(r"[-\.\~\+]", version1)
+    r2 = re.split(r"[-\.\~\+]", version2)
     for i in range(0, len(r1)):
         if r1[i] != r2[i]:
             return int(r1[i]) - int(r2[i])
@@ -171,7 +171,7 @@ class Archive:
                 # Add some plain text fields for some info
                 sourceinfo["creator"] = sourceinfo["package_creator_link"].split("/")[-1].strip("~")
                 sourceinfo["signer"] = sourceinfo["package_signer_link"].split("/")[-1].strip("~")
-                rm = re.match("[0-9]\.[0-9](\.[0-9][0-9])*", sourceinfo["source_package_version"])
+                rm = re.match(r"[0-9]\.[0-9](\.[0-9][0-9])*", sourceinfo["source_package_version"])
                 if rm is None:
                     continue  # skip this one
                 sourceinfo["series"] = sourceinfo["display_name"].split()[-1]
@@ -275,7 +275,7 @@ class Archive:
                         sourceinfo["signer"] = field.split("/")[-1].strip("~")
                     else:
                         sourceinfo["signer"] = "Unknown"
-                    rm = re.match("[0-9]\.[0-9](\.[0-9][0-9])*", sourceinfo["source_package_version"])
+                    rm = re.match(r"[0-9]\.[0-9](\.[0-9][0-9])*", sourceinfo["source_package_version"])
                     if rm is None:
                         print("  ** Error: The source package version failed to match the regular expression.")
                         raise
