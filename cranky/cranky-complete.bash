@@ -36,7 +36,7 @@ _cranky() {
 		"review -h --help -p --prev-dsc-dir -o --output"
 		"review-master-changes -h --help"
 		"rmadison -h --help -a --show-all -e --show-extended -p --pocket release updates security proposed HANDLE"
-		"shell-helper -h handle-to-series-source series-codename package-name source-packages-path read-swm-property tree-type tree-main-path list-handles list-cycles list-variants config"
+		"shell-helper -h handle-to-series-source series-codename package-name source-packages-path read-swm-property tree-type tree-main-path list-handles list-cycles list-variants config source-packages-name"
 		"startnewrelease -h --help -c --commit"
 		"tag -h --help -v --verbose -f --force"
 		"tags -h --help -v --verbose -f --force"

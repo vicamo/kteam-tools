@@ -53,6 +53,15 @@ def source_packages_path(args):
         print(tree.directory)
 
 
+def source_packages_name(args):
+    handle = handle_lookup("set", args.handle, cycle=args.cycle, validate=False)
+    for tree in handle.trees:
+        name = tree.package.name
+        if args.type:
+            name = f"{tree_package_type(tree)} {name}"
+        print(name)
+
+
 def tree_type(args):
     tree = handle_lookup("tree", args.handle, cycle=args.cycle)
     print(tree_package_type(tree))
@@ -173,6 +182,11 @@ Helper program for getting cranky config and handle data from shell scripts.
     subparser = subparsers.add_parser("source-packages-path", help="Print source packages' paths")
     subparser.add_argument("-t", "--type", action="store_true", default=False, help="Also print package type.")
     subparser.set_defaults(func=source_packages_path)
+
+    # source-packages-name subparser
+    subparser = subparsers.add_parser("source-packages-name", help="Print source packages' names")
+    subparser.add_argument("-t", "--type", action="store_true", default=False, help="Also print package type.")
+    subparser.set_defaults(func=source_packages_name)
 
     # tree-type subparser
     subparser = subparsers.add_parser("tree-type", help="tree-type: dump source tree type")
