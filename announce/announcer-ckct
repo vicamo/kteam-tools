@@ -143,7 +143,9 @@ class ListenerCkct(threading.Thread):
                     retval.append(content)
 
             elif 'published' == what:
-                content += '%s-%s %s' % (series, payload['flavour'], payload['kernel-version'])
+                content += '%s-%s' % (series, payload['flavour'])
+                if 'kernel-version' in payload:
+                    content += ' %s'     % (payload['kernel-version'])
                 if 'pocket' in payload:
                     content += ' to -' + payload['pocket']
                 retval.append(content)
