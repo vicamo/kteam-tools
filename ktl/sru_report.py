@@ -14,7 +14,7 @@ import shutil
 import time
 from lpltk.LaunchpadService import LaunchpadService
 from ktl.kernel_series import KernelSeries
-from lib.archive import Archive
+from ktl.archive import Archive
 from logging import basicConfig, DEBUG
 from ktl.log import cdebug, cerror
 

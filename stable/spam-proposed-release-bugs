@@ -9,7 +9,7 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '
 from sys                                import argv
 from os                                 import path, _exit
 from getopt                             import getopt, GetoptError
-from lib.utils                          import stdo, error
+from ktl.utils                          import stdo, error
 from ktl.bug_spam                       import BugSpam
 import json
 
