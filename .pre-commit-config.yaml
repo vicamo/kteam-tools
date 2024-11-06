@@ -57,5 +57,6 @@ files: >
     mainline-build/cod-mainline-dashboard |
     mainline-build/cod-tip-build |
     stable/24hrs-of-bugs |
-    dashboard/ktml/.*
+    dashboard/ktml/.* |
+    dashboard/ktml/tests/.*
   )$

@@ -72,4 +72,5 @@ testpaths = [
     "stable/wfl/tests",
     "adt-matrix/tests",
     "ktl/tests",
+    "dashboard/ktml/tests",
 ]
