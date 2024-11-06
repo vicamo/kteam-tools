@@ -4,13 +4,13 @@ from difflib import get_close_matches
 
 
 def match_patch_count(subject):
-    patch_cnt_regex = "\\[.*([0-9]+\\/[0-9]+)\\]"
+    patch_cnt_regex = r"\[.*([0-9]+\/[0-9]+)\]"
     patch_cnt = re.search(patch_cnt_regex, subject).group(1).split("/")[1]
     return patch_cnt
 
 
 def match_handles(subject):
-    handles_regex = "\\[((([XxBbFfJjNnOo]([a-zA-Z:\\-]+)?)[/]?)+)\\]"
+    handles_regex = r"\[((([XxBbFfJjNnOo]([a-zA-Z:\-]+)?)[/]?)+)\]"
     raw_handles = re.search(handles_regex, subject).group(1).split("/")
     handles = [(x, match_handle(x)) for x in raw_handles]
     return handles
