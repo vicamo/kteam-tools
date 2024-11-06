@@ -1339,7 +1339,7 @@ class Package():
             if not s.bug.is_development_series:
                 cdebug('Stable Package', 'cyan')
                 cdebug('')
-                scan_pockets = ['ppa', 'Signing', 'Proposed', 'as-proposed', 'Security', 'Updates']
+                scan_pockets = ['ppa', 'Signing', 'Proposed', 'as-proposed', 'Updates', 'Security']
             else:
                 cdebug('Development Package', 'cyan')
                 cdebug('')
