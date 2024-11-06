@@ -1,7 +1,14 @@
 import pytest
 import os
-from matching import MatchHandles, match_handle, match_handles, match_patch_count, match_patch_subject
-
+from matching import (
+    MatchHandles,
+    match_handle,
+    match_handles,
+    match_patch_count,
+    match_patch_subject,
+    match_patchset,
+    ParsingPatchesError,
+)
 
 handle_data = [
     ("J", "jammy:linux"),
@@ -69,6 +76,64 @@ patch_matching_data_missing_count = [
     ("[N][PATCH 2/2] UBUNTU: SAUCE: apparmor4.0.0 [95/99]:", "N", "2", True),
 ]
 
+patchset_data = [
+    ("[SRU][B/X][PATCH 0/5] CVE-2024"),
+    ("[SRU][B][PATCH 1/5] Bluetooth: SCO: Fix not validating setsockopt user input"),
+    ("[SRU][B][PATCH 2/5] Bluetooth: RFCOMM: Fix not validating setsockopt user input"),
+    ("[SRU][B][PATCH 3/5] Bluetooth: L2CAP: uninitialized variables in l2cap_sock_setsockopt()"),
+    ("[SRU][B][PATCH 4/5] Bluetooth: L2CAP: Fix not validating setsockopt user input"),
+    ("[SRU][B][PATCH 5/5] Bluetooth: hci_sock: Fix not validating setsockopt user input"),
+    ("[SRU][X][PATCH 1/5] Bluetooth: SCO: Fix not validating setsockopt user input"),
+    ("[SRU][X][PATCH 2/5] Bluetooth: RFCOMM: Fix not validating setsockopt user input"),
+    ("[SRU][X][PATCH 3/5] Bluetooth: L2CAP: uninitialized variables in l2cap_sock_setsockopt()"),
+    ("[SRU][X][PATCH 4/5] Bluetooth: L2CAP: Fix not validating setsockopt user input"),
+    ("[SRU][X][PATCH 5/5] Bluetooth: hci_sock: Fix not validating setsockopt user input"),
+]
+
+patchset_data_single = [
+    ("[SRU][B/X][PATCH 0/5] CVE-2024"),
+    ("[SRU][B/X][PATCH 1/5] Bluetooth: SCO: Fix not validating setsockopt user input"),
+    ("[SRU][B/X][PATCH 2/5] Bluetooth: RFCOMM: Fix not validating setsockopt user input"),
+    ("[SRU][B/X][PATCH 3/5] Bluetooth: L2CAP: uninitialized variables in l2cap_sock_setsockopt()"),
+    ("[SRU][B/X][PATCH 4/5] Bluetooth: L2CAP: Fix not validating setsockopt user input"),
+    ("[SRU][B/X][PATCH 5/5] Bluetooth: hci_sock: Fix not validating setsockopt user input"),
+]
+
+patchset_data_varying_patch_cnt = [
+    ("[SRU][B/X][PATCH 0/2] CVE-2024"),
+    ("[SRU][B][PATCH 0/5] CVE-2024"),
+    ("[SRU][X][PATCH 0/3] CVE-2024"),
+    ("[SRU][B][PATCH 1/5] Bluetooth: SCO: Fix not validating setsockopt user input"),
+    ("[SRU][B][PATCH 2/5] Bluetooth: RFCOMM: Fix not validating setsockopt user input"),
+    ("[SRU][B][PATCH 3/5] Bluetooth: L2CAP: uninitialized variables in l2cap_sock_setsockopt()"),
+    ("[SRU][B][PATCH 4/5] Bluetooth: L2CAP: Fix not validating setsockopt user input"),
+    ("[SRU][B][PATCH 5/5] Bluetooth: hci_sock: Fix not validating setsockopt user input"),
+    ("[SRU][X][PATCH 1/3] Bluetooth: SCO: Fix not validating setsockopt user input"),
+    ("[SRU][X][PATCH 2/3] Bluetooth: RFCOMM: Fix not validating setsockopt user input"),
+    ("[SRU][X][PATCH 3/3] Bluetooth: L2CAP: uninitialized variables in l2cap_sock_setsockopt()"),
+]
+
+patchset_data_missing = [
+    ("[SRU][B/X][PATCH 0/2] CVE-2024"),
+    ("[SRU][B][PATCH 0/5] CVE-2024"),
+    ("[SRU][X][PATCH 0/3] CVE-2024"),
+    ("[SRU][B][PATCH 1/5] Bluetooth: SCO: Fix not validating setsockopt user input"),
+    ("[SRU][B][PATCH 3/5] Bluetooth: L2CAP: uninitialized variables in l2cap_sock_setsockopt()"),
+    ("[SRU][B][PATCH 4/5] Bluetooth: L2CAP: Fix not validating setsockopt user input"),
+    ("[SRU][B][PATCH 5/5] Bluetooth: hci_sock: Fix not validating setsockopt user input"),
+    ("[SRU][X][PATCH 1/3] Bluetooth: SCO: Fix not validating setsockopt user input"),
+    ("[SRU][X][PATCH 2/3] Bluetooth: RFCOMM: Fix not validating setsockopt user input"),
+    ("[SRU][X][PATCH 3/3] Bluetooth: L2CAP: uninitialized variables in l2cap_sock_setsockopt()"),
+]
+
+
+def data_to_entries(data_list):
+    full_entries = []
+    for data in data_list:
+        entry = {":subject": data}
+        full_entries.append(entry)
+    return full_entries
+
 
 class TestMatchHandle:
     @classmethod
@@ -89,10 +154,6 @@ class TestMatchHandle:
     def test_patch_count(self, subject, expected):
         assert expected == match_patch_count(subject)
 
-    @pytest.mark.parametrize("subject, raw_handle, index, patch_count, expected", patch_matching_data)
-    def test_patch_subject(self, subject, raw_handle, index, patch_count, expected):
-        assert expected == match_patch_subject(subject, raw_handle, index, patch_count)
-
     def test_failed_handle(self):
         with pytest.raises(AttributeError):
             match_handles("[SRU][PATCH 0/1] Test handle")
@@ -101,12 +162,45 @@ class TestMatchHandle:
         with pytest.raises(AttributeError):
             match_patch_count("[SRU][PULL] Test handle")
 
+    @pytest.mark.parametrize("subject, raw_handle, index, patch_count, expected", patch_matching_data)
+    def test_patch_subject(self, subject, raw_handle, index, patch_count, expected):
+        assert expected == match_patch_subject(subject, raw_handle, index, patch_count)
 
-@pytest.mark.parametrize("subject, raw_handle, index, patch_count, expected", patch_matching_data)
-def test_patch_subject(subject, raw_handle, index, patch_count, expected):
-    assert expected == match_patch_subject(subject, raw_handle, index, patch_count)
+    @pytest.mark.parametrize("subject, raw_handle, index, expected", patch_matching_data_missing_count)
+    def test_patch_subject_missing_count(self, subject, raw_handle, index, expected):
+        assert expected == match_patch_subject(subject, raw_handle, index, None)
 
+    def test_full_patchset(self):
+        full_entries = data_to_entries(patchset_data)
+        patches = match_patchset(full_entries, "B", 5)
+        for i, patch in enumerate(patches):
+            assert patch[":subject"] == patchset_data[i + 1]
+        patches = match_patchset(full_entries, "X", 5)
+        for i, patch in enumerate(patches):
+            assert patch[":subject"] == patchset_data[i + 6]
 
-@pytest.mark.parametrize("subject, raw_handle, index, expected", patch_matching_data_missing_count)
-def test_patch_subject_missing_count(subject, raw_handle, index, expected):
-    assert expected == match_patch_subject(subject, raw_handle, index, None)
+    def test_single_patchset(self):
+        full_entries = data_to_entries(patchset_data_single)
+        patches = match_patchset(full_entries, "B", 5)
+        for i, patch in enumerate(patches):
+            assert patch[":subject"] == patchset_data_single[i + 1]
+        patches = match_patchset(full_entries, "X", 5)
+        for i, patch in enumerate(patches):
+            assert patch[":subject"] == patchset_data_single[i + 1]
+
+    def test_varying_patch_cnt(self):
+        full_entries = data_to_entries(patchset_data_varying_patch_cnt)
+        patches = match_patchset(full_entries, "B", 5)
+        for i, patch in enumerate(patches):
+            assert patch[":subject"] == patchset_data_varying_patch_cnt[i + 3]
+        patches = match_patchset(full_entries, "X", 5)
+        for i, patch in enumerate(patches):
+            assert patch[":subject"] == patchset_data_varying_patch_cnt[i + 8]
+
+    def test_data_missing(self):
+        full_entries = data_to_entries(patchset_data_missing)
+        with pytest.raises(ParsingPatchesError):
+            patches = match_patchset(full_entries, "B", 5)
+        patches = match_patchset(full_entries, "X", 5)
+        for i, patch in enumerate(patches):
+            assert patch[":subject"] == patchset_data_missing[i + 7]

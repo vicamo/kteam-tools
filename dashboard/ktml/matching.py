@@ -1,7 +1,11 @@
 import re
 from difflib import get_close_matches
-
+import functools
 from ktl.kernel_series import KernelSeries
+
+
+class ParsingPatchesError(Exception):
+    pass
 
 
 class MatchHandles:
@@ -88,3 +92,35 @@ def match_patch_subject(subject, raw_handle, index, patch_count):
     if re.match(patch_cnt_regex, subject) and re.match(handle_regex, subject):
         return True
     return False
+
+
+def match_patchset(related_patches, raw_handle, patch_cnt):
+    patches = []
+    error = finished = False
+    i = 1
+    while not finished:
+        patch = None
+        patch_subject = filter(
+            functools.partial(match_patch, raw_handle=raw_handle, index=i, patch_count=patch_cnt),
+            related_patches,
+        )
+        for patch in patch_subject:
+            patches.append(patch)
+            if int(match_patch_count(patch[":subject"])) == i:
+                finished = True
+        if patch is None:
+            patch_subject = filter(
+                functools.partial(match_patch, raw_handle=raw_handle, index=i, patch_count=None),
+                related_patches,
+            )
+        for patch in patch_subject:
+            patches.append(patch)
+            if int(match_patch_count(patch[":subject"])) == i:
+                finished = True
+        if patch is None:
+            finished = True
+            error = True
+        i += 1
+    if error:
+        raise ParsingPatchesError
+    return patches
