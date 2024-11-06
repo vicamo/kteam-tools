@@ -23,11 +23,10 @@ def log_result(patchset_path, target_serie, msg, isFail, operation):
 
 @click.command()
 @click.option("--pending", help="use file as input instead of calling pending_SRU.sh")
-@click.option("--kernel-dir", default="~/canonical/kernel/ubuntu/", help="Directory containing kernel in $SERIE.")
 @click.option("--dry-run", is_flag=True, default=False, help="Don't do any thing.")
 @click.option("--verbose", is_flag=True, default=False)
 @click.option("--period", default="3month", help="Period to look back for patches, default to 3month.")
-def check_pending(pending, period, kernel_dir, dry_run, verbose):
+def check_pending(pending, period, dry_run, verbose):
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(level=level, format="%(message)s")
     if pending:
