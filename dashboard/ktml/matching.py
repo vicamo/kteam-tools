@@ -25,7 +25,7 @@ class MatchHandles:
 
 
 def match_patch_count(subject):
-    patch_cnt_regex = r"\[.*([0-9]+\/[0-9]+)\]"
+    patch_cnt_regex = r"\[[^\]]*PATCH[^\]]*([0-9]+\/[0-9]+)\]"
     patch_cnt = re.search(patch_cnt_regex, subject).group(1).split("/")[1]
     return patch_cnt
 

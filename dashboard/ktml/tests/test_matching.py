@@ -39,6 +39,7 @@ patch_count_data = [
     ("[SRU][J][PATCH 0/1] Test handle", "1"),
     ("[SRU][PATCH 0/5][J] Test handle", "5"),
     ("[SRU][PATCH 0/500][J] Test handle", "500"),
+    ("[N][PATCH 2/2] UBUNTU: SAUCE: apparmor4.0.0 [95/99]:", "2"),
 ]
 
 patch_matching_data = [
@@ -65,6 +66,7 @@ patch_matching_data_missing_count = [
     ("[SRU][Jammy:linux-ein][PATCH 2/5] Test handle", "J", "2", False),
     ("[SRU][J][PATCH 2/5] Test handle", "X", "2", False),
     ("[SRU][X][PATCH 2/5] Test handle", "J", "2", False),
+    ("[N][PATCH 2/2] UBUNTU: SAUCE: apparmor4.0.0 [95/99]:", "N", "2", True),
 ]
 
 
