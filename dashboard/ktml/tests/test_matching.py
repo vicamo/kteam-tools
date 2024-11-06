@@ -11,6 +11,7 @@ handle_data = [
     ("JAMMY:LINUX", "jammy:linux"),
     ("j:gcp", "jammy:linux-gcp"),
     ("f:linux-ein", "focal:linux-ein"),
+    ("N:nvidia-lowlatency", "noble:linux-nvidia-lowlatency"),
 ]
 
 subject_data = [

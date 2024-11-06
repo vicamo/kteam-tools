@@ -43,13 +43,13 @@ def match_handle(raw_handle):
         # Handle derivatives without "linux" and shortening the series
         if re.match(".*:linux-.*", handles[i]):
             mapping[0].append(handles[i])
-            short = handles[i].split(":")[0] + ":" + handles[i].split("-")[1]
+            short = handles[i].split(":")[0] + ":" + handles[i].split("-", 1)[1]
             mapping[1].append(short)
             mapping[0].append(handles[i])
             shorter = handles[i][0] + ":" + handles[i].split(":")[1]
             mapping[1].append(shorter)
             mapping[0].append(handles[i])
-            shortest = handles[i][0] + ":" + handles[i].split("-")[1]
+            shortest = handles[i][0] + ":" + handles[i].split("-", 1)[1]
             mapping[1].append(shortest)
 
     closest = get_close_matches(raw_handle.lower(), mapping[1], cutoff=0.9)
