@@ -7,7 +7,7 @@ from pathlib import Path
 import glob
 import logging
 from ktl.log import cerror, cnotice
-from matching import match_handles, match_patch
+from matching import match_handles, match_patch, match_patch_count
 
 
 def log_result(patchset_path, target_serie, msg, isFail, operation):
@@ -37,7 +37,6 @@ def check_pending(pending, period, kernel_dir, dry_run, verbose):
         pending_patchsets_search = json.loads(
             subprocess.run(["./pending_SRU.sh", "-p", period, "-j"], stdout=subprocess.PIPE).result.stdout
         )
-    patch_cnt_regex = "\\[.*([0-9]+\\/[0-9]+)\\]"
     for patchset in pending_patchsets_search:
         subject = patchset["subject"]
         path = patchset["path"]
@@ -47,7 +46,7 @@ def check_pending(pending, period, kernel_dir, dry_run, verbose):
             log_result(path, "Unknown", f"Unable to find the handles of {subject}", True, "parsing")
             continue
         try:
-            patch_cnt = re.search(patch_cnt_regex, subject).group(1).split("/")[1]
+            patch_cnt = match_patch_count(subject)
         except AttributeError:
             log_result(path, "Unknown", f"Unable to find the patch count of {subject}", True, "parsing")
             continue
