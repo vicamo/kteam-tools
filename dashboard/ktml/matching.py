@@ -3,6 +3,12 @@ import re
 from difflib import get_close_matches
 
 
+def match_handles(subject):
+    handles_regex = "\\[((([XxBbFfJjNnOo]([a-zA-Z:\\-]+)?)[/]?)+)\\]"
+    raw_handles = re.search(handles_regex, subject).group(1).split("/")
+    handles = [(x, match_handle(x)) for x in raw_handles]
+    return handles
+
 def match_handle(raw_handle):
     try:
         with open("./handles.list") as input:
