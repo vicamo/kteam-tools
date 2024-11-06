@@ -8,6 +8,8 @@ import sys
 
 from subprocess import call
 
+from . import push_refs as _push_refs
+
 _ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
 _LIBSPATH = os.path.abspath(os.path.join(_ROOTPATH, os.pardir, "libs"))
 _PYPATH = os.environ.get("PYTHONPATH")
@@ -39,3 +41,7 @@ class Cranky:
         if rc:
             log.error("Command failed: %s (args=%s)", cmd_name, args[1:])
         sys.exit(rc)
+
+    def push_refs(self, handle, cycle=None, dry_run=False):
+        """Push refs (HEADs and tags) that make up the set of kernel packages"""
+        return _push_refs.push_refs(handle, cycle=cycle, dry_run=dry_run)
