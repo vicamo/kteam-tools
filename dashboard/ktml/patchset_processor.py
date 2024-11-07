@@ -1,7 +1,7 @@
 from ktl.log import cerror, cnotice, cdebug
 from patch_checks import PatchChecks, CheckError
 from patch_results import PatchResults
-from matching import match_handles, match_patch_count, match_patchset, ParsingPatchesError
+from matching import match_handles, match_patchset, ParsingPatchesError
 
 
 class PatchsetProcessor:
@@ -42,11 +42,6 @@ class PatchsetProcessor:
         except AttributeError:
             self.log_result("Unknown", f"Unable to find the handles of {self.subject}", True, "parsing")
             return
-        try:
-            patch_cnt = match_patch_count(self.subject)
-        except AttributeError:
-            self.log_result("Unknown", f"Unable to find the patch count of {self.subject}", True, "parsing")
-            return
         for handle_mapping in handles:
             raw_handle = handle_mapping[0]
             official_handle = handle_mapping[1]
@@ -55,7 +50,7 @@ class PatchsetProcessor:
                 continue
             cdebug(f"Processing {raw_handle}/{official_handle} for {self.subject}")
             try:
-                patches = self.build_patchset(patch_cnt, raw_handle)
+                patches = self.build_patchset(raw_handle)
             except ParsingPatchesError:
                 self.log_result(official_handle, f"Failed to parse patches for {official_handle}", True, "parsing")
                 continue
@@ -66,8 +61,8 @@ class PatchsetProcessor:
 
             self.run_checks(official_handle, patches)
 
-    def build_patchset(self, patch_cnt, raw_handle):
-        return match_patchset(self.patchset["patches"], raw_handle, patch_cnt)
+    def build_patchset(self, raw_handle):
+        return match_patchset(self.patchset["patches"], raw_handle)
 
     def run_checks(self, official_handle, patches):
         pc = PatchChecks(official_handle, patches, self.patchset)

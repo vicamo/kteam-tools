@@ -76,15 +76,12 @@ def match_handle(raw_handle):
         return None
 
 
-def match_patch(patch, raw_handle, index, patch_count):
-    return match_patch_subject(patch.get(":subject"), raw_handle, index, patch_count)
+def match_patch(patch, raw_handle, index):
+    return match_patch_subject(patch.get(":subject"), raw_handle, index)
 
 
-def match_patch_subject(subject, raw_handle, index, patch_count):
-    if patch_count:
-        patch_cnt_regex = f".*{index}/{patch_count}\\].*"
-    else:
-        patch_cnt_regex = f".*{index}/[0-9]+\\].*"
+def match_patch_subject(subject, raw_handle, index):
+    patch_cnt_regex = f"\\[.*{index}/[0-9]+\\].*"
 
     escaped_raw_handle = raw_handle.replace("-", "\\-").replace(":", "\\:")
     handle_regex = f".*[\\[/]{escaped_raw_handle}[/\\]].*"
@@ -94,14 +91,14 @@ def match_patch_subject(subject, raw_handle, index, patch_count):
     return False
 
 
-def match_patchset(related_patches, raw_handle, patch_cnt):
+def match_patchset(related_patches, raw_handle):
     patches = []
-    error = finished = False
     i = 1
+    finished = False
     while not finished:
         patch = None
         patch_subject = filter(
-            functools.partial(match_patch, raw_handle=raw_handle, index=i, patch_count=patch_cnt),
+            functools.partial(match_patch, raw_handle=raw_handle, index=i),
             related_patches,
         )
         for patch in patch_subject:
@@ -109,18 +106,6 @@ def match_patchset(related_patches, raw_handle, patch_cnt):
             if int(match_patch_count(patch[":subject"])) == i:
                 finished = True
         if patch is None:
-            patch_subject = filter(
-                functools.partial(match_patch, raw_handle=raw_handle, index=i, patch_count=None),
-                related_patches,
-            )
-        for patch in patch_subject:
-            patches.append(patch)
-            if int(match_patch_count(patch[":subject"])) == i:
-                finished = True
-        if patch is None:
-            finished = True
-            error = True
+            raise ParsingPatchesError
         i += 1
-    if error:
-        raise ParsingPatchesError
     return patches

@@ -49,20 +49,7 @@ patch_count_data = [
     ("[N][PATCH 2/2] UBUNTU: SAUCE: apparmor4.0.0 [95/99]:", "2"),
 ]
 
-patch_matching_data = [
-    ("[SRU][J][PATCH 2/5] Test handle", "J", "2", "5", True),
-    ("[SRU][jammy:linux][PATCH 2/5] Test handle", "jammy:linux", "2", "5", True),
-    ("[SRU][jammy:linux-ein][PATCH 2/5] Test handle", "jammy:linux-ein", "2", "5", True),
-    ("[SRU][J][PATCH 5/5] Test handle", "J", "5", "5", True),
-    ("[SRU][J/X][PATCH 5/5] Test handle", "J", "5", "5", True),
-    ("[SRU][J][X][PATCH 5/5] Test handle", "J", "5", "5", True),
-    ("[SRU][J][PATCH 2/5] Test handle", "J", "3", "5", False),
-    ("[SRU][Jammy:linux-ein][PATCH 2/5] Test handle", "J", "2", "5", False),
-    ("[SRU][J][PATCH 2/5] Test handle", "X", "2", "5", False),
-    ("[SRU][X][PATCH 2/5] Test handle", "J", "2", "5", False),
-]
-
-patch_matching_data_missing_count = [
+patch_matching_data_count = [
     ("[SRU][J][PATCH 2/5] Test handle", "J", "2", True),
     ("[SRU][jammy:linux][PATCH 2/5] Test handle", "jammy:linux", "2", True),
     ("[SRU][jammy:linux-ein][PATCH 2/5] Test handle", "jammy:linux-ein", "2", True),
@@ -162,45 +149,41 @@ class TestMatchHandle:
         with pytest.raises(AttributeError):
             match_patch_count("[SRU][PULL] Test handle")
 
-    @pytest.mark.parametrize("subject, raw_handle, index, patch_count, expected", patch_matching_data)
-    def test_patch_subject(self, subject, raw_handle, index, patch_count, expected):
-        assert expected == match_patch_subject(subject, raw_handle, index, patch_count)
-
-    @pytest.mark.parametrize("subject, raw_handle, index, expected", patch_matching_data_missing_count)
-    def test_patch_subject_missing_count(self, subject, raw_handle, index, expected):
-        assert expected == match_patch_subject(subject, raw_handle, index, None)
+    @pytest.mark.parametrize("subject, raw_handle, index, expected", patch_matching_data_count)
+    def test_patch_subject(self, subject, raw_handle, index, expected):
+        assert expected == match_patch_subject(subject, raw_handle, index)
 
     def test_full_patchset(self):
         full_entries = data_to_entries(patchset_data)
-        patches = match_patchset(full_entries, "B", 5)
+        patches = match_patchset(full_entries, "B")
         for i, patch in enumerate(patches):
             assert patch[":subject"] == patchset_data[i + 1]
-        patches = match_patchset(full_entries, "X", 5)
+        patches = match_patchset(full_entries, "X")
         for i, patch in enumerate(patches):
             assert patch[":subject"] == patchset_data[i + 6]
 
     def test_single_patchset(self):
         full_entries = data_to_entries(patchset_data_single)
-        patches = match_patchset(full_entries, "B", 5)
+        patches = match_patchset(full_entries, "B")
         for i, patch in enumerate(patches):
             assert patch[":subject"] == patchset_data_single[i + 1]
-        patches = match_patchset(full_entries, "X", 5)
+        patches = match_patchset(full_entries, "X")
         for i, patch in enumerate(patches):
             assert patch[":subject"] == patchset_data_single[i + 1]
 
     def test_varying_patch_cnt(self):
         full_entries = data_to_entries(patchset_data_varying_patch_cnt)
-        patches = match_patchset(full_entries, "B", 5)
+        patches = match_patchset(full_entries, "B")
         for i, patch in enumerate(patches):
             assert patch[":subject"] == patchset_data_varying_patch_cnt[i + 3]
-        patches = match_patchset(full_entries, "X", 5)
+        patches = match_patchset(full_entries, "X")
         for i, patch in enumerate(patches):
             assert patch[":subject"] == patchset_data_varying_patch_cnt[i + 8]
 
     def test_data_missing(self):
         full_entries = data_to_entries(patchset_data_missing)
         with pytest.raises(ParsingPatchesError):
-            patches = match_patchset(full_entries, "B", 5)
-        patches = match_patchset(full_entries, "X", 5)
+            patches = match_patchset(full_entries, "B")
+        patches = match_patchset(full_entries, "X")
         for i, patch in enumerate(patches):
             assert patch[":subject"] == patchset_data_missing[i + 7]
