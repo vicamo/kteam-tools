@@ -5,7 +5,25 @@ from difflib import get_close_matches
 
 
 class MatchHandles:
-    cache_file = "./handles.list"
+    cache = "./handles.list"
+    handle_cache = None
+
+    @classmethod
+    @property
+    def handles(cls):
+        if cls.handle_cache is None:
+            cache = cls.cache
+            try:
+                with open(cache) as input:
+                    handles = input.readlines()
+            except FileNotFoundError:
+                with open(cache + ".new", "w") as handle_list_file:
+                    subprocess.run(["cranky", "shell-helper", "list-handles"], stdout=handle_list_file)
+                    os.rename(cache + ".new", cache)
+                with open(cache) as input:
+                    handles = input.read().split(" ")
+            cls.handle_cache = [s.strip("\n") for s in handles]
+        return cls.handle_cache
 
 
 def match_patch_count(subject):
@@ -22,17 +40,7 @@ def match_handles(subject):
 
 
 def match_handle(raw_handle):
-    cache = MatchHandles.cache
-    try:
-        with open(cache) as input:
-            handles = input.readlines()
-    except FileNotFoundError:
-        with open(cache + ".new", "w") as handle_list_file:
-            subprocess.run(["cranky", "shell-helper", "list-handles"], stdout=handle_list_file)
-            os.rename(cache + ".new", cache)
-        with open(cache) as input:
-            handles = input.read().split(" ")
-    handles = [s.strip("\n") for s in handles]
+    handles = MatchHandles.handles
     original_len = len(handles)
     mapping = [[], []]
     for i in range(original_len):
