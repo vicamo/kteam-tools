@@ -1,6 +1,11 @@
+import os
 import subprocess
 import re
 from difflib import get_close_matches
+
+
+class MatchHandles:
+    cache_file = "./handles.list"
 
 
 def match_patch_count(subject):
@@ -17,13 +22,15 @@ def match_handles(subject):
 
 
 def match_handle(raw_handle):
+    cache = MatchHandles.cache
     try:
-        with open("./handles.list") as input:
+        with open(cache) as input:
             handles = input.readlines()
     except FileNotFoundError:
-        with open("./handles.list", "w") as handle_list_file:
+        with open(cache + ".new", "w") as handle_list_file:
             subprocess.run(["cranky", "shell-helper", "list-handles"], stdout=handle_list_file)
-        with open("./handles.list") as input:
+            os.rename(cache + ".new", cache)
+        with open(cache) as input:
             handles = input.read().split(" ")
     handles = [s.strip("\n") for s in handles]
     original_len = len(handles)
