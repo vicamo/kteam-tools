@@ -4,6 +4,11 @@ import re
 from difflib import get_close_matches
 
 
+class MatchHandles:
+
+    cache_file = "./handles.list"
+
+
 def match_patch_count(subject):
     patch_cnt_regex = r"\[.*([0-9]+\/[0-9]+)\]"
     patch_cnt = re.search(patch_cnt_regex, subject).group(1).split("/")[1]
@@ -17,7 +22,8 @@ def match_handles(subject):
     return handles
 
 
-def match_handle(raw_handle, cache="./handles.list"):
+def match_handle(raw_handle):
+    cache = MatchHandles.cache
     try:
         with open(cache) as input:
             handles = input.readlines()
