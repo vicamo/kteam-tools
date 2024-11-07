@@ -1,5 +1,3 @@
-import os
-import subprocess
 import re
 from difflib import get_close_matches
 
