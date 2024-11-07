@@ -16,7 +16,11 @@ esac
 log="$HOME/logs/cod-queue-worker.log"
 
 case "$SSH_ORIGINAL_COMMAND" in
-"rsync --server -vlogDtpre.iLsfx . incoming/"|"rsync --server -vlogDtpre.iLsf . incoming/"|"rsync --server -vlogDtpre.iLsfx --remove-source-files . incoming/"|"rsync --server -vlogDtpre.iLsfxC --remove-source-files . incoming/")
+"rsync --server -vlogDtpre.iLsfx . mainline-builds/incoming/"|\
+"rsync --server -vlogDtpre.iLsf . mainline-builds/incoming/"|\
+"rsync --server -vlogDtpre.iLsfx --remove-source-files . mainline-builds/incoming/"|\
+"rsync --server -vlogDtpre.iLsfxC --remove-source-files . mainline-builds/incoming/"|\
+"rsync --server -vlogDtpre.iLsfxCIvu --remove-source-files . mainline-builds/incoming/")
 	incoming="$HOME/incoming"
 	lock="$incoming/.LOCK"
 
