@@ -3,26 +3,26 @@ import subprocess
 import re
 from difflib import get_close_matches
 
+from ktl.kernel_series import KernelSeries
+
 
 class MatchHandles:
-    cache = "./handles.list"
     handle_cache = None
 
     @classmethod
     @property
     def handles(cls):
         if cls.handle_cache is None:
-            cache = cls.cache
-            try:
-                with open(cache) as input:
-                    handles = input.readlines()
-            except FileNotFoundError:
-                with open(cache + ".new", "w") as handle_list_file:
-                    subprocess.run(["cranky", "shell-helper", "list-handles"], stdout=handle_list_file)
-                    os.rename(cache + ".new", cache)
-                with open(cache) as input:
-                    handles = input.read().split(" ")
-            cls.handle_cache = [s.strip("\n") for s in handles]
+            handles = []
+            ks = KernelSeries()
+            for series in ks.series:
+                if not series.supported:
+                    continue
+                for source in series.sources:
+                    if not source.supported or source.copy_forward is not None:
+                        continue
+                    handles.append(series.codename + ":" + source.name)
+            cls.handle_cache = handles
         return cls.handle_cache
 
 
