@@ -132,6 +132,7 @@ authors=()
 paths=()
 emails=()
 threads=()
+dates=()
 
 ack_regex='ACK'
 nack_regex='(NAK|NACK)'
@@ -184,6 +185,7 @@ while read -r path; do
 
 	name=$(mu find -o json -u "path:\"${path}\"" | jq -r '.[][":from"][0][":name"]')
 	email=$(mu find -o json -u "path:\"${path}\"" | jq -r '.[][":from"][0][":email"]')
+	date=$(LC_ALL=C.UTF-8 mu find -f d --nocolor "path:\"${path}\"")
 	[ "${name}" = null ] && name=''
 	subjects+=("$subject")
 	authors+=("${name} <${email}>")
@@ -193,6 +195,7 @@ while read -r path; do
 	paths+=("${path}")
 	threads+=("${thread}")
 	count_pending="$((count_pending + 1))"
+	dates+=("${date}")
 done <<<$(mu find -o json -u "date:${begin}..${end} and ${mu_query}" |
 	jq -r '.[] | select(.[":references"] == null) | .[":path"]')
 
@@ -210,7 +213,7 @@ else
 	echo "["
 	for i in $count; do
 		escaped_subject="${subjects[i]//\"/\\\"}"
-		echo "{\"subject\": \"${escaped_subject}\",\"path\": \"${paths[i]}\",\"from\": \"${authors[i]}\",\"email\":\"${emails[i]}\", \"pending_acks\": ${pending_acks[i]}, \"reviewer\":\"${reviewer[i]//[$'\t\r\n ']/,}\", \"patches\": ${threads[i]}}"
+		echo "{\"subject\": \"${escaped_subject}\",\"date\":\"${dates[i]}\",\"path\": \"${paths[i]}\",\"from\": \"${authors[i]}\",\"email\":\"${emails[i]}\", \"pending_acks\": ${pending_acks[i]}, \"reviewer\":\"${reviewer[i]//[$'\t\r\n ']/,}\", \"patches\": ${threads[i]}}"
 		if [ "$((i + 1))" -lt ${#authors[@]} ]; then
 			echo ","
 		fi

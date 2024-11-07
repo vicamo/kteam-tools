@@ -25,13 +25,9 @@ with open("pending.json") as input:
     print(len(pending_patchsets_search))
     for patch_cover in pending_patchsets_search:
         print(patch_cover["path"])
-        date = subprocess.run(
-            ["env", "LC_ALL=C.UTF-8", "mu", "find", "-f", "d", "--nocolor", 'path:"' + patch_cover["path"] + '"'],
-            stdout=subprocess.PIPE,
-        ).stdout.decode("utf-8")
         patchset = {
             "subject": patch_cover["subject"],
-            "date": date,
+            "date": patch_cover["date"],
             "author": patch_cover["from"],
             "email": patch_cover["email"],
             "pending_acks": patch_cover["pending_acks"],

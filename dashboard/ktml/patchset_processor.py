@@ -20,11 +20,11 @@ class PatchsetProcessor:
             or self.patch_result.exist("build", raw_handle)
             or self.patch_result.exist("build", official_handle)
         ):
-            cdebug(f"Skipping {self.subject}, already built")
+            cdebug(f"{official_handle}/skipping already built:{self.subject}")
             return True
 
         if self.dry_run:
-            cdebug(f"Skipping {self.subject}, dry_run")
+            cdebug(f"{official_handle}/skipping dry_run:{self.subject}")
             return True
 
     def log_result(self, target_serie, msg, isFail, operation):
