@@ -58,7 +58,9 @@ patch_matching_data = [
 class TestMatchHandle:
     @classmethod
     def setup_class(cls):
-        MatchHandles.cache = os.path.join(os.path.dirname(os.path.abspath(__file__)), "handles.list")
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "handles.list")) as handle_data:
+            handles = [handle.strip() for handle in handle_data.readlines() if handle != ""]
+        MatchHandles.handle_cache = handles
 
     @pytest.mark.parametrize("subject, expected", handle_data)
     def test_handle(self, subject, expected):
