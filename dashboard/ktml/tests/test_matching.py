@@ -1,5 +1,5 @@
 import pytest
-from ..matching import match_handle, match_handles, match_patch_count, match_patch_subject
+from matching import match_handle, match_handles, match_patch_count, match_patch_subject
 
 
 handle_data = [
