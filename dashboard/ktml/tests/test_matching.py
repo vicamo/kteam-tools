@@ -54,6 +54,19 @@ patch_matching_data = [
     ("[SRU][X][PATCH 2/5] Test handle", "J", "2", "5", False),
 ]
 
+patch_matching_data_missing_count = [
+    ("[SRU][J][PATCH 2/5] Test handle", "J", "2", True),
+    ("[SRU][jammy:linux][PATCH 2/5] Test handle", "jammy:linux", "2", True),
+    ("[SRU][jammy:linux-ein][PATCH 2/5] Test handle", "jammy:linux-ein", "2", True),
+    ("[SRU][J][PATCH 5/5] Test handle", "J", "5", True),
+    ("[SRU][J/X][PATCH 5/5] Test handle", "J", "5", True),
+    ("[SRU][J][X][PATCH 5/5] Test handle", "J", "5", True),
+    ("[SRU][J][PATCH 2/5] Test handle", "J", "3", False),
+    ("[SRU][Jammy:linux-ein][PATCH 2/5] Test handle", "J", "2", False),
+    ("[SRU][J][PATCH 2/5] Test handle", "X", "2", False),
+    ("[SRU][X][PATCH 2/5] Test handle", "J", "2", False),
+]
+
 
 class TestMatchHandle:
     @classmethod
@@ -85,3 +98,13 @@ class TestMatchHandle:
     def test_failed_patch_cnt(self):
         with pytest.raises(AttributeError):
             match_patch_count("[SRU][PULL] Test handle")
+
+
+@pytest.mark.parametrize("subject, raw_handle, index, patch_count, expected", patch_matching_data)
+def test_patch_subject(subject, raw_handle, index, patch_count, expected):
+    assert expected == match_patch_subject(subject, raw_handle, index, patch_count)
+
+
+@pytest.mark.parametrize("subject, raw_handle, index, expected", patch_matching_data_missing_count)
+def test_patch_subject_missing_count(subject, raw_handle, index, expected):
+    assert expected == match_patch_subject(subject, raw_handle, index, None)

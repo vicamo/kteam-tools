@@ -62,7 +62,9 @@ def check_pending(pending, period, dry_run, verbose):
                 ).stdout.decode("utf-8")
             )
             patches = []
-            for i in range(1, int(patch_cnt) + 1):
+            error = finished = False
+            i = 1
+            while not finished:
                 patch = None
                 patch_subject = filter(
                     functools.partial(match_patch, raw_handle=raw_handle, index=i, patch_count=patch_cnt),
@@ -70,9 +72,24 @@ def check_pending(pending, period, dry_run, verbose):
                 )
                 for patch in patch_subject:
                     patches.append(patch)
+                    if int(match_patch_count(patch[":subject"])) == i:
+                        finished = True
+                if patch is None:
+                    patch_subject = filter(
+                        functools.partial(match_patch, raw_handle=raw_handle, index=i, patch_count=None),
+                        related_patches,
+                    )
+                for patch in patch_subject:
+                    patches.append(patch)
+                    if int(match_patch_count(patch[":subject"])) == i:
+                        finished = True
                 if patch is None:
                     cerror(f"No patch found for {i}/{patch_cnt} for {subject}")
-            if len(patches) < int(patch_cnt):
+                    finished = True
+                    error = True
+                i += 1
+
+            if error:
                 log_result(path, official_handle, f"Failed to parse patches for {official_handle}", True, "parsing")
                 continue
             # Check if we skip

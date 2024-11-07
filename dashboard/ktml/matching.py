@@ -77,7 +77,11 @@ def match_patch(patch, raw_handle, index, patch_count):
 
 
 def match_patch_subject(subject, raw_handle, index, patch_count):
-    patch_cnt_regex = f".*{index}/{patch_count}\\].*"
+    if patch_count:
+        patch_cnt_regex = f".*{index}/{patch_count}\\].*"
+    else:
+        patch_cnt_regex = f".*{index}/[0-9]+\\].*"
+
     escaped_raw_handle = raw_handle.replace("-", "\\-").replace(":", "\\:")
     handle_regex = f".*[\\[/]{escaped_raw_handle}[/\\]].*"
 
