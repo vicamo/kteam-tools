@@ -73,8 +73,8 @@ do
 		git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
 		[ -d .git ] && git checkout -qf)
 done <<EOL
-linux-linus.git			git://kernel.ubuntu.com/virgin/linux.git					-
-kteam-tools			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-
+linux-linus.git  git://git.launchpad.net/~ubuntu-kernel-test/+git/linus--linux  -
+kteam-tools      git://git.launchpad.net/~canonical-kernel/+git/kteam-tools     -
 EOL
 
 # If we will not have local developers we do not need general repository mirrors.
