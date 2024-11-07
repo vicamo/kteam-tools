@@ -1,5 +1,6 @@
 import pytest
-from matching import match_handle, match_handles, match_patch_count, match_patch_subject
+import os
+from matching import MatchHandles, match_handle, match_handles, match_patch_count, match_patch_subject
 
 
 handle_data = [
@@ -54,31 +55,31 @@ patch_matching_data = [
 ]
 
 
-@pytest.mark.parametrize("subject, expected", handle_data)
-def test_handle(subject, expected):
-    assert expected == match_handle(subject)
+class TestMatchHandle:
+    @classmethod
+    def setup_class(cls):
+        MatchHandles.cache = os.path.join(os.path.dirname(os.path.abspath(__file__)), "handles.list")
 
+    @pytest.mark.parametrize("subject, expected", handle_data)
+    def test_handle(self, subject, expected):
+        assert expected == match_handle(subject)
 
-@pytest.mark.parametrize("subject, expected", subject_data)
-def test_handles(subject, expected):
-    assert expected == match_handles(subject)
+    @pytest.mark.parametrize("subject, expected", subject_data)
+    def test_handles(self, subject, expected):
+        assert expected == match_handles(subject)
 
+    @pytest.mark.parametrize("subject, expected", patch_count_data)
+    def test_patch_count(self, subject, expected):
+        assert expected == match_patch_count(subject)
 
-@pytest.mark.parametrize("subject, expected", patch_count_data)
-def test_patch_count(subject, expected):
-    assert expected == match_patch_count(subject)
+    @pytest.mark.parametrize("subject, raw_handle, index, patch_count, expected", patch_matching_data)
+    def test_patch_subject(self, subject, raw_handle, index, patch_count, expected):
+        assert expected == match_patch_subject(subject, raw_handle, index, patch_count)
 
+    def test_failed_handle(self):
+        with pytest.raises(AttributeError):
+            match_handles("[SRU][PATCH 0/1] Test handle")
 
-@pytest.mark.parametrize("subject, raw_handle, index, patch_count, expected", patch_matching_data)
-def test_patch_subject(subject, raw_handle, index, patch_count, expected):
-    assert expected == match_patch_subject(subject, raw_handle, index, patch_count)
-
-
-def test_failed_handle():
-    with pytest.raises(AttributeError):
-        match_handles("[SRU][PATCH 0/1] Test handle")
-
-
-def test_failed_patch_cnt():
-    with pytest.raises(AttributeError):
-        match_patch_count("[SRU][PULL] Test handle")
+    def test_failed_patch_cnt(self):
+        with pytest.raises(AttributeError):
+            match_patch_count("[SRU][PULL] Test handle")
