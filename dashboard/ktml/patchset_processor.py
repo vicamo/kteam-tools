@@ -60,7 +60,7 @@ class PatchsetProcessor:
                 self.log_result(official_handle, f"Failed to parse patches for {official_handle}", True, "parsing")
                 continue
 
-            cdebug(f"Patchset ready for {self.subject}/{official_handle}")
+            cdebug(f"{official_handle}/ready:{self.subject}")
             if self.skip_checks(official_handle, raw_handle):
                 continue
 
