@@ -1,9 +1,7 @@
-import subprocess
 from ktl.log import cerror, cnotice, cdebug
 from patch_checks import PatchChecks, CheckError
 from patch_results import PatchResults
 from matching import match_handles, match_patch_count, match_patchset, ParsingPatchesError
-import json
 
 
 class PatchsetProcessor:
@@ -69,12 +67,7 @@ class PatchsetProcessor:
             self.run_checks(official_handle, patches)
 
     def build_patchset(self, patch_cnt, raw_handle):
-        related_patches = json.loads(
-            subprocess.run(
-                ["mu", "find", "-o", "json", "-r", "-u", f"path:{self.path}"], stdout=subprocess.PIPE
-            ).stdout.decode("utf-8")
-        )
-        return match_patchset(related_patches, raw_handle, patch_cnt)
+        return match_patchset(self.patchset["patches"], raw_handle, patch_cnt)
 
     def run_checks(self, official_handle, patches):
         pc = PatchChecks(official_handle, patches, self.patchset)

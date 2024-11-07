@@ -43,11 +43,6 @@ with open("pending.json") as input:
         if patch_cover["reviewer"]:
             active_reviewers.append(patch_cover["email"])
         active_reviewers.append(patch_cover["reviewer"])
-        related_patches = json.loads(
-            subprocess.run(
-                ["mu", "find", "-r", "-o", "json", 'path:"' + patch_cover["path"] + '"'], stdout=subprocess.PIPE
-            ).stdout.decode("utf-8")
-        )
 
         # Find all results associated
         for results in glob(patch_cover["path"] + ".*.*_*"):
@@ -63,7 +58,7 @@ with open("pending.json") as input:
             patchset["status"].append(status)
 
         # Find all patches to list them
-        for patch in related_patches:
+        for patch in patch_cover["patches"]:
             patch["body"] = subprocess.run(
                 ["env", "LC_ALL=C.UTF-8", "mu", "view", patch[":path"]], stdout=subprocess.PIPE
             ).stdout.decode("utf-8")

@@ -131,6 +131,7 @@ pending_acks=()
 authors=()
 paths=()
 emails=()
+threads=()
 
 ack_regex='ACK'
 nack_regex='(NAK|NACK)'
@@ -152,21 +153,22 @@ while read -r path; do
 		continue
 	fi
 	total="$((total + 1))"
-	thread=$(mu find -o json -r -u "path:\"${path}\"" | jq -r '.[][":subject"]')
+	thread=$(mu find -o json -r -u "path:\"${path}\"")
+	thread_subjects=$(echo "${thread}" | jq -r '.[][":subject"]')
 
-	applied=$(echo "$thread" | grep -c -P "${applied_regex}" || true)
+	applied=$(echo "$thread_subjects" | grep -c -P "${applied_regex}" || true)
 	if [ "$all" -eq 0 ] && [ "$applied" -gt 0 ]; then
 		verbose "Applied: $subject"
 		continue
 	fi
 
-	nacks=$(echo "$thread" | grep -c -P "${nack_regex}" || true)
+	nacks=$(echo "$thread_subjects" | grep -c -P "${nack_regex}" || true)
 	if [ "$all" -eq 0 ] && [ "$nacks" -gt 0 ]; then
 		verbose "Nacked: $subject"
 		continue
 	fi
 
-	acks=$(echo "$thread" | grep -c -P "${ack_regex}" || true)
+	acks=$(echo "$thread_subjects" | grep -c -P "${ack_regex}" || true)
 	if [ "$all" -eq 0 ] && [ "$acks" -ge "$expected_acks" ]; then
 		verbose "ACKED: $subject"
 		continue
@@ -189,6 +191,7 @@ while read -r path; do
 	pending_acks+=("$((expected_acks - acks))")
 	reviewer+=("${review}")
 	paths+=("${path}")
+	threads+=("${thread}")
 	count_pending="$((count_pending + 1))"
 done <<<$(mu find -o json -u "date:${begin}..${end} and ${mu_query}" |
 	jq -r '.[] | select(.[":references"] == null) | .[":path"]')
@@ -207,7 +210,7 @@ else
 	echo "["
 	for i in $count; do
 		escaped_subject="${subjects[i]//\"/\\\"}"
-		echo "{\"subject\": \"${escaped_subject}\",\"path\": \"${paths[i]}\",\"from\": \"${authors[i]}\",\"email\":\"${emails[i]}\", \"pending_acks\": ${pending_acks[i]}, \"reviewer\":\"${reviewer[i]//[$'\t\r\n ']/,}\"}"
+		echo "{\"subject\": \"${escaped_subject}\",\"path\": \"${paths[i]}\",\"from\": \"${authors[i]}\",\"email\":\"${emails[i]}\", \"pending_acks\": ${pending_acks[i]}, \"reviewer\":\"${reviewer[i]//[$'\t\r\n ']/,}\", \"patches\": ${threads[i]}}"
 		if [ "$((i + 1))" -lt ${#authors[@]} ]; then
 			echo ","
 		fi
