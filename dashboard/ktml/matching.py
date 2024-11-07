@@ -5,7 +5,6 @@ from difflib import get_close_matches
 
 
 class MatchHandles:
-
     cache_file = "./handles.list"
 
 
