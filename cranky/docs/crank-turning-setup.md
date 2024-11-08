@@ -1,13 +1,11 @@
 # Crank Turning Setup
 
-This document describes the steps to configure a host environment for `cranky`.
-
-This is a one-time process to initialize your local host to use all
-the cranky tools required to produce all the Canonical kernels.
+This tutorial describes the one-time process to configure your environment to crank Canonical kernels via Cranky.
 
 ## Install dependencies
 
-Install the following packages via `apt`:
+### Debian packages
+Install the following debian packages via `apt`:
 
 ```bash
 sudo apt install \
@@ -33,8 +31,9 @@ sudo apt install \
     xmlto
 ```
 
-### Snapcraft
+### Snap packages
 
+<!--TODO figure out *which* versions of Ubuntu need the legacy install-->
 On newer releases of Ubuntu, install `snapcraft` using Snap:
 ```bash
 snap install snapcraft --classic
@@ -42,7 +41,8 @@ snap install snapcraft --classic
 
 On older Ubuntu releases, this may fail:
 
-```
+<!--text lang prevents strange highlighting-->
+```text
 => Installing the Snapcraft snap
 ==> Checking connectivity with the snap store
 ==> Installing the Snapcraft snap for ubuntu-23.04
@@ -60,8 +60,6 @@ sudo apt install snapcraft
 ```
 
 
-<!-- Read and follow the directions in [README.deploy](../../README.deploy). -->
-
 ## Environment setup
 
 Create your own version of each of these environment setup files. Copy the
@@ -71,7 +69,7 @@ contents for each file from the given snippet and make necessary edits.
 
 Copy and paste the following into your shell's startup file (e.g., `~/.bashrc`).
 
-**Be sure to update the lines marked with TODO**
+**Be sure to update the lines marked with `# TODO`.**
 
 ```bash
 # Set System Locale to enable scripts handling ABI files to make sure that
@@ -107,12 +105,11 @@ source $HOME/canonical/kteam-tools/cranky/cranky-complete.bash
 
 ### Git configuration
 
-These are used by git to access and push/pull git repositories.
-Copy this snippet into your git global configuration, typically either 
+Copy this snippet into your git global configuration, either 
 `~/.gitconfig` or `~/.config/git/config`.
 
-**Be sure to update the lines marked with TODO**
-```gitconfig
+**Be sure to update the lines marked with `# TODO`.**
+```ini
 [user]
 	email = <firstname>.<lastname>@canonical.com  # TODO
 	name = <firstname> <lastname> # TODO
@@ -147,11 +144,12 @@ Copy this snippet into your git global configuration, typically either
 
 ```
 
-### ~/.config/cranky/cranky.yaml
+### Cranky configuration
 
 Copy this snippet into `~/.config/cranky/cranky.yaml`.
 
 This file allows you to configure cranky's default settings.
+You don't need to touch anything here right now.
 
 ```yaml
 # Configuration file for the cranky toolchain.
@@ -215,13 +213,16 @@ package-path:
 
 ### dput configuration
 
-The main purpose of this is to give dput (the main command for uploading
-source package to repositories) configuration options for what to do and
-which file transfer protocol to use when uploading. We on the kernel
-team don't upload directly to the Ubuntu archive, but instead upload to
-PPAs that build those packages, which are then copied to the archive.
+The main purpose of this is to give [dput](https://manpages.debian.org/bookworm/dput/dput.1.en.html) 
+(the main command for uploading source package to repositories) 
+configuration options for what to do and which file transfer protocol 
+to use when uploading. We on the kernel team don't upload directly 
+to the Ubuntu archive, but instead upload to PPAs that build those 
+packages, which are then copied to the archive.
 
 Copy the following snippet into `~/.dput.cf`.
+
+**Be sure to update the lines marked with `# TODO`.**
 ```ini
 [DEFAULT]
 # Prevent accidential uploads to the main Ubuntu archive
@@ -229,20 +230,18 @@ default_host_main = UNKNOWN
 
 [ubuntu]
 method = sftp
-login = [lp-id]
+login = <launchpad ID>  # TODO
 
 [ppa]
 method = sftp
-login = [lp-id]
+login = <launchpad ID>  # TODO
 
 ```
 
-## Get cranky tools
+## Install kteam-tools
 
-Clone the Kernel Team Tools git repository, our main repo where the 
-kernel team keeps tools and where tools in the cranky process are pulled 
-from. (yes, by now you've cloned kteam-tools already, otherwise you 
-wouldn't be reading this document :-):
+Clone the [Kernel Team Tools git repository](https://kernel.ubuntu.com/gitea/kernel/kteam-tools), 
+which is home to various tools, including cranky:
 ```bash
 cd ~/canonical
 git clone lps:~canonical-kernel/+git/kteam-tools
