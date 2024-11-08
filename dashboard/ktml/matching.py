@@ -35,7 +35,7 @@ def match_patch_count(subject):
 
 
 def match_handles(subject):
-    handles_regex = r"\[((([XxBbFfJjNnOo]([a-zA-Z:\-]+)?)[/]?)+)\]"
+    handles_regex = r"\[((([TtXxBbFfJjNnOo]([a-zA-Z:\-]+)?)[/]?)+)\]"
     raw_handles = re.search(handles_regex, subject).group(1).split("/")
     handles = [(x, match_handle(x)) for x in raw_handles]
     return handles

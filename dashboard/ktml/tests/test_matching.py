@@ -39,6 +39,7 @@ subject_data = [
         [("xenial:linux", "xenial:linux"), ("oracular:non-existing-linux", None)],
     ),
     ("[SRU][jemmy:linux][PATCH 0/1] Test handle", [("jemmy:linux", "jammy:linux")]),
+    ("[SRU][T/X][PATCH 0/1] Test handle", [("T", "trusty:linux"), ("X", "xenial:linux")]),
 ]
 
 patch_count_data = [
