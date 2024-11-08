@@ -34,12 +34,14 @@ subject_data = [
     ),
     ("[SRU][j:gcp/j:gke][PATCH 0/1] Test handle", [("j:gcp", "jammy:linux-gcp"), ("j:gke", "jammy:linux-gke")]),
     ("[SRU][N][PATCH 0/1] Test handle", [("N", "noble:linux")]),
+    ("[SRU][PATCH 0/1][N] Test handle", [("N", "noble:linux")]),
     (
         "[SRU][xenial:linux/oracular:non-existing-linux][PATCH 0/1] Test handle",
         [("xenial:linux", "xenial:linux"), ("oracular:non-existing-linux", None)],
     ),
     ("[SRU][jemmy:linux][PATCH 0/1] Test handle", [("jemmy:linux", "jammy:linux")]),
     ("[SRU][T/X][PATCH 0/1] Test handle", [("T", "trusty:linux"), ("X", "xenial:linux")]),
+    ("[SRU][N/O/P][PATCH 0/1] Test handle", [("N", "noble:linux"), ("O", "oracular:linux"), ("P", None)]),
 ]
 
 patch_count_data = [
