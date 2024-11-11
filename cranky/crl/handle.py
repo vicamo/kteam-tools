@@ -29,7 +29,7 @@ class HandleHelper:
 
     @staticmethod
     def main_directory(directory):
-        git_dir = directory + "/.git"
+        git_dir = os.path.join(directory, ".git")
         if os.path.isfile(git_dir):
             with open(git_dir) as gfd:
                 git_dir = gfd.readline()
