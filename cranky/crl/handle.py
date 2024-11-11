@@ -26,7 +26,6 @@ def change_directory(new_dir):
 
 
 class HandleHelper:
-
     @staticmethod
     def main_directory(directory):
         git_dir = os.path.join(directory, ".git")
@@ -315,9 +314,7 @@ class Handle:
                         try:
                             _, cycle_name = tfd.readline().strip().split()[0:2]
                         except ValueError as e:
-                            raise HandleError(
-                                "{}: expecting tracking id and cycle name -- {}".format(tracking_file, e)
-                            )
+                            raise HandleError("{}: expecting tracking id and cycle name -- {}".format(tracking_file, e))
 
         except (DebianError, GitError) as e:
             raise HandleError("{}: bad directory handle -- {}".format(directory, e))
