@@ -27,8 +27,8 @@ def change_directory(new_dir):
 
 class HandleHelper:
 
-    @classmethod
-    def main_directory(cls, directory):
+    @staticmethod
+    def main_directory(directory):
         git_dir = directory + "/.git"
         if os.path.isfile(git_dir):
             with open(git_dir) as gfd:
