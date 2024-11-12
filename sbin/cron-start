@@ -37,7 +37,15 @@ fi
 daemon="$1"
 name=`basename "$1"`
 shift
-name="$name$instance"
+short_instance="${instance#$name}"
+case "$short_instance" in
+"")	;;
+-*)	;;
+*)	short_instance="-$short_instance" ;;
+esac
+
+legacy_name="$name$instance"
+name="$name$short_instance"
 
 # Pull the command line apart, everything before -- is the daemon
 # command, the remainder for dashboard-status
@@ -55,7 +63,17 @@ case "$daemon" in
 *)		daemon="$here/../$daemon" ;;
 esac
 
-lck="/tmp/$name.lck"
+legacy_lck="/tmp/$legacy_name.lck"
+lck="$HOME/.$name.lck"
+
+# If we are using the legacy lock name, then attempt to rename it
+# if we are able to then we can use the new name, otherwise retain
+# the old.
+if [ -f "$legacy_lck" ]; then
+	if ! mv "$legacy_lck" "$lck"; then
+		lck="$legacy_lck"
+	fi
+fi
 
 # Start the daemon in the background -- it remains connected to the lockfile
 # which keeps the locks in place.
