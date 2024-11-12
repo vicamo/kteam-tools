@@ -1029,8 +1029,8 @@ class Package():
             s.routing_mode = s.source.routing.name
 
 
-        cinfo('     test_flavours: %s' % (s.test_flavours()), 'blue')
         cinfo('test_flavour_meta4: %s' % (s.test_flavour_meta()), 'blue')
+        cinfo('test_flavour_meta5: %s' % (s.test_flavour_meta5()), 'blue')
         cinfo('     Routing mode: {}'.format(s.routing_mode), 'blue')
         cinfo('    Routing table:', 'blue')
         for pocket, pocket_data in s._routing.items():
@@ -2939,8 +2939,8 @@ class Package():
 
     # send_testing_message
     #
-    def send_testing_message(s, op="sru", ppa=False, flavour="generic", meta=None):
-        cdebug("send_testing_message: op={} ppa={} flavour={} meta={}".format(op, ppa, flavour, meta))
+    def send_testing_message(s, op="sru", ppa=False, flavour="generic", meta=None, data=None):
+        cdebug("send_testing_message: op={} ppa={} flavour={} meta={} data={}".format(op, ppa, flavour, meta, data))
 
         who = {
             2: "s2",
@@ -2964,6 +2964,8 @@ class Package():
         }
         if meta is not None:
             msg['meta-pkg'] = meta
+        if data is not None:
+            msg["context"] = data
 
         # Construct the appropriate testing meta package.
         # XXX: note this is currently limited to those packages which are
@@ -3065,35 +3067,56 @@ class Package():
 
         return result
 
-    # test_flavours
+    # test_flavour_meta5
     #
-    def test_flavours(s):
-        if s.bug.swm_config is not None and s.bug.swm_config.hack_kernel_testing:
-            return sorted([x.name for x in s.source.testable_flavours])
+    def test_flavour_meta5(self):
+        if self.source is None:
+            return []
 
-        generic = (s.name is None or
-                   s.name == 'linux' or
-                   s.name.startswith('linux-hwe') or
-                   s.name.startswith('linux-lts-'))
-        if generic:
-            flavours = [ 'generic', 'lowlatency' ]
+        testing_data = self.source.testing_data
+        if testing_data is None:
+            return []
+
+        flavours_data = testing_data.get("flavours")
+        if flavours_data is None:
+            return []
+
+        result = []
+        kernel_testing = self.bug.swm_config.hack_kernel_testing
+        variants = self.source.variants
+        if (
+            variants is not None
+            and len(variants) > 0
+            and variants[0] != "--"
+        ):
+            variant = variants[0]
         else:
-            flavours = [ s.name.replace('linux-', '') ]
+            variant = ''
 
-        return flavours
+        # Run the flavour list, and build an appropriate meta-pkg.
+        for flavour, flavour_data in sorted(flavours_data.items()):
+            meta_pkg = flavour_data.get("meta-pkg")
+            if meta_pkg is None:
+                if kernel_testing:
+                    meta_pkg = "kernel-testing--{}--full--{}".format(self.source.name, flavour)
+                else:
+                    meta_pkg = 'linux-' + flavour + variant
+            result.append((flavour, meta_pkg, flavour_data))
+
+        return result
 
     # send_testing_requests
     #
     def send_testing_requests(s, op="sru", ppa=False):
         cdebug("send_testing_requests: op={} ppa={}".format(op, ppa))
-        for flavour_meta in s.test_flavour_meta():
-            s.send_testing_request(op=op, ppa=ppa, flavour=flavour_meta[0], meta=flavour_meta[1])
+        for flavour, meta, flavour_data in s.test_flavour_meta5():
+            s.send_testing_request(op=op, ppa=ppa, flavour=flavour, meta=meta, data=flavour_data)
 
     # send_testing_request
     #
-    def send_testing_request(s, op="sru", ppa=False, flavour="generic", meta=None):
-        cdebug("send_testing_request: op={} ppa={} flavour={} meta={}".format(op, ppa, flavour, meta))
-        msg = s.send_testing_message(op, ppa, flavour, meta)
+    def send_testing_request(s, op="sru", ppa=False, flavour="generic", meta=None, data=None):
+        cdebug("send_testing_request: op={} ppa={} flavour={} meta={} data={}".format(op, ppa, flavour, meta, data))
+        msg = s.send_testing_message(op, ppa, flavour, meta, data)
 
         where = " uploaded" if not ppa else " available in ppa"
         subject = "[" + s.series + "] " + s.name + " " + flavour + " " + s.version + where

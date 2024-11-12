@@ -204,8 +204,8 @@ class WorkflowBug():
                 cinfo('        {}'.format(prop), 'magenta')
 
         if s.debs is not None:
-            old_flavours = sorted(s.debs.test_flavours())
-            new_flavours = sorted([ x.name for x in s.source.testable_flavours ])
+            old_flavours = sorted(s.debs.test_flavour_meta())
+            new_flavours = sorted(s.debs.test_flavour_meta5())
             if old_flavours != new_flavours:
                 cinfo("APW-TEST-FLAVOURS: {} {} {} {}".format(s.series, s.name, str(old_flavours), str(new_flavours)))
 
