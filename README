@@ -16,3 +16,12 @@ maintscripts: Scripts used for general / stable kernel maintenance
 mainline-build: Scripts to produce .debs for mainline kernels
 
 misc: Everything else...
+
+
+Documentation
+------------------------------------
+
+General: https://canonical-kteam-docs.readthedocs-hosted.com/en/latest/index.html
+
+Stable Patch Format: https://wiki.ubuntu.com/Kernel/Dev/StablePatchFormat
+
