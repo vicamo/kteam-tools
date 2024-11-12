@@ -16,7 +16,7 @@ from crl.config import Config
 from crl.cycle_ref import CycleRef
 from crl.exceptions import CrankyException
 from crl.git import GitError, GitHandleSet
-from crl.handle import HandleError
+from crl.handle import HandleError, HandleHelper
 
 
 def checkout_repos(
@@ -64,7 +64,7 @@ def checkout_repos(
 
     for gh in ghs:
         if gh != gh_main:
-            link = gh.directory + "/.git/cranky-main"
+            link = HandleHelper.main_directory(gh.directory)
             link_destination = os.path.relpath(gh_main.directory, os.path.dirname(link))
             os.symlink(link_destination, link + ".new", target_is_directory=True)
             os.rename(link + ".new", link)

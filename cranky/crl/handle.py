@@ -25,6 +25,24 @@ def change_directory(new_dir):
         os.chdir(previous_dir)
 
 
+class HandleHelper:
+    @staticmethod
+    def main_directory(directory):
+        git_dir = os.path.join(directory, ".git")
+        if os.path.isfile(git_dir):
+            with open(git_dir) as gfd:
+                git_dir = gfd.readline()
+            if git_dir[0:7] != "gitdir:":
+                raise GitError("invalid .git format")
+            git_dir = git_dir[7:].strip()
+
+        main_dir = os.path.join(git_dir, "cranky-main")
+        if os.path.exists(main_dir):
+            return main_dir
+
+        return directory
+
+
 class HandleCore:
     def __init__(self, series=None, package=None, source=None, config=None, ks=None):
         self.series = series
@@ -287,21 +305,16 @@ class Handle:
         try:
             with change_directory(directory):
                 changelog = Debian.changelog()
-            for base in (os.path.join(directory, ".git", "cranky-main"), directory):
-                if not os.path.exists(base):
-                    continue
-                with change_directory(base):
-                    debian_env = Debian.debian_env() or "debian"
-                    tracking_file = os.path.join(debian_env, "tracking-bug")
-                    if os.path.exists(tracking_file):
-                        with open(tracking_file) as tfd:
-                            try:
-                                _, cycle_name = tfd.readline().strip().split()[0:2]
-                            except ValueError as e:
-                                raise HandleError(
-                                    "{}: expecting tracking id and cycle name -- {}".format(tracking_file, e)
-                                )
-                        break
+            base = HandleHelper.main_directory(directory)
+            with change_directory(base):
+                debian_env = Debian.debian_env() or "debian"
+                tracking_file = os.path.join(debian_env, "tracking-bug")
+                if os.path.exists(tracking_file):
+                    with open(tracking_file) as tfd:
+                        try:
+                            _, cycle_name = tfd.readline().strip().split()[0:2]
+                        except ValueError as e:
+                            raise HandleError("{}: expecting tracking id and cycle name -- {}".format(tracking_file, e))
 
         except (DebianError, GitError) as e:
             raise HandleError("{}: bad directory handle -- {}".format(directory, e))
