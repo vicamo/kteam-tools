@@ -4,6 +4,7 @@ import sys
 from argparse import ArgumentParser
 from collections import namedtuple
 
+from lazr.restfulclient.errors import NotFound
 from launchpadlib.launchpad import Launchpad
 
 from ktl.kernel_series import KernelSeries
@@ -124,7 +125,6 @@ class Application:
                     raise ApplicationError("source does not have a {} route".format(route_name))
 
                 for reference in (route_entry.reference + "-snap", route_entry.reference):
-                    print(reference)
                     archive = self.lp.archives.getByReference(reference=reference)
                     if archive is not None:
                         break
@@ -171,18 +171,50 @@ class Application:
                     auto_build=False,
                     auto_build_archive=archive,
                     auto_build_pocket=route_entry.pocket,
-                    #auto_build_channels=recipe.auto_build_channels, # XXX: new cannot apply these.
+                    auto_build_channels=args.auto_build_channels, # XXX: new cannot apply these.
 
                     store_name=snap_name,
                     store_series="/+snappy-series/16",
                     store_channels=channels,
                     store_upload=True,
                 )
-                print(new_recipe)
-                if not args.dry_run:
-                    new_recipe = self.lp.snaps.new(**new_recipe)
-                    new_recipe.auto_build_channels = args.auto_build_channels
-                    new_recipe.lp_save()
+                print("Recipe:")
+                for item, value in new_recipe.items():
+                    print(" ", item, value)
+
+                # Check if it already exists.
+                recipe = None
+                try:
+                    recipe = self.lp.snaps.getByName(owner=new_recipe["owner"], name=new_recipe["name"])
+                    print("Old Recipe:", recipe)
+                except NotFound:
+                    pass
+
+                if recipe is None and not args.dry_run:
+                    # new cannot apply auto_build_channels.
+                    new_params = {k: v for k, v in new_recipe.items() if k != "auto_build_channels"}
+                    recipe = self.lp.snaps.new(**new_params)
+                    print("New Recipe:", recipe)
+
+                changed = False
+                if recipe is not None:
+                    if recipe.auto_build_channels != args.auto_build_channels:
+                        print("Setting auto_build_channels", args.auto_build_channels)
+                        recipe.auto_build_channels = args.auto_build_channels
+                        changed = True
+
+                    if recipe.auto_build_archive != new_recipe["auto_build_archive"]:
+                        print("Setting auto_build_archive", new_recipe["auto_build_archive"])
+                        recipe.auto_build_archive = new_recipe["auto_build_archive"]
+                        changed = True
+
+                    if recipe.auto_build_pocket != new_recipe["auto_build_pocket"]:
+                        print("Setting auto_build_pocket", new_recipe["auto_build_pocket"])
+                        recipe.auto_build_pocket = new_recipe["auto_build_pocket"]
+                        changed = True
+
+                if recipe is not None and changed and not args.dry_run:
+                    recipe.lp_save()
 
 
 if __name__ == "__main__":
