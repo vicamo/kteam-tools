@@ -31,34 +31,27 @@ sudo apt install \
     xmlto
 ```
 
-### Snap packages
+### snapcraft package
 
-<!--TODO figure out *which* versions of Ubuntu need the legacy install-->
-On newer releases of Ubuntu, install `snapcraft` using Snap:
+Depending on your release of Ubuntu, choose between the following steps:
+
+(You can see your release of Ubuntu by running `lsb_release -a`.)
+
+::::{tab-set}
+:::{tab-item} 24.04 LTS (Noble Numbat) or later
+Install `snapcraft` using snap:
 ```bash
 snap install snapcraft --classic
 ```
+:::
 
-On older Ubuntu releases, this may fail:
-
-<!--text lang prevents strange highlighting-->
-```text
-=> Installing the Snapcraft snap
-==> Checking connectivity with the snap store
-==> Installing the Snapcraft snap for ubuntu-23.04
-error: requested a non-existing branch on latest/stable for snap "snapcraft": ubuntu-23.04
-dpkg: error processing archive /var/cache/apt/archives/snapcraft_3.0ubuntu2_all.deb (--unpack):
- new snapcraft package pre-installation script subprocess returned error exit status 1
-Errors were encountered while processing:
- /var/cache/apt/archives/snapcraft_3.0ubuntu2_all.deb
-E: Sub-process /usr/bin/dpkg returned an error code (1)
-```
-
-In this case, install it via `apt` instead:
+:::{tab-item} 22.04 LTS (Jammy Jellyfish) or earlier
+Install `snapcraft` using apt:
 ```bash
 sudo apt install snapcraft
 ```
-
+:::
+::::
 
 ## Environment setup
 
