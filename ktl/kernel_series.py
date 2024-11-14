@@ -521,6 +521,25 @@ class KernelSourceEntry:
         return source
 
     @property
+    def derived_from_all(self):
+        """Return a list of sources that this kernel is derived from """
+        if "derived-from" not in self._data:
+            return []
+
+        if isinstance(self._data["derived-from"][0], list):
+            parents = self._data["derived-from"]
+        else:
+            # derived-from is a single parent, convert it to a (single-element) list
+            parents = [self._data["derived-from"]]
+
+        source_list = []
+        for series_key, source_key in parents:
+            series = self._ks.lookup_series(series_key)
+            source = series.lookup_source(source_key)
+            source_list.append(source)
+        return source_list
+
+    @property
     def testable_flavours(self):
         retval = []
         if self._data.get("testing") is not None and self._data["testing"].get("flavours") is not None:
