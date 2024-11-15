@@ -27,7 +27,7 @@ def change_directory(new_dir):
 
 class HandleHelper:
     @staticmethod
-    def main_directory(directory):
+    def main_link(directory):
         git_dir = os.path.join(directory, ".git")
         if os.path.isfile(git_dir):
             with open(git_dir) as gfd:
@@ -35,8 +35,11 @@ class HandleHelper:
             if git_dir[0:7] != "gitdir:":
                 raise GitError("invalid .git format")
             git_dir = git_dir[7:].strip()
+        return os.path.join(git_dir, "cranky-main")
 
-        main_dir = os.path.join(git_dir, "cranky-main")
+    @classmethod
+    def main_directory(cls, directory):
+        main_dir = cls.main_link(directory)
         if os.path.exists(main_dir):
             return main_dir
 
