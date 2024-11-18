@@ -239,6 +239,9 @@ case "$SUITE" in
 noble)
 	ADDPKG="$ADDPKG rustc-1.74 rust-1.74-src rustfmt-1.74 bindgen-0.65 clang-17 llvm-17 lld-17 libclang1-17"
 
+	# Backported Rust toolchain for Oracular kernels
+	ADDPKG="$ADDPKG rustc-1.80 rust-1.80-src rustfmt-1.80 bindgen-0.65 clang-18 llvm-18 lld-18 libclang1-18"
+
 	# Always include the latest stock Rust toolchain in the latest Ubuntu release
 	ADDPKG="$ADDPKG rustc rust-src rustfmt bindgen clang llvm lld libclang1"
 	;;

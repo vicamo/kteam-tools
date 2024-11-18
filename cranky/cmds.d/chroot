@@ -191,6 +191,9 @@ session_chroot_create()
 		# noble has rust toolchain
 		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install rustc-1.74 rust-1.74-src rustfmt-1.74 bindgen-0.65 clang-17 llvm-17 libclang1-17 libtraceevent-dev
 
+		# Backported Rust toolchain for Oracular kernels
+		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install rustc-1.80 rust-1.80-src rustfmt-1.80 clang-18 llvm-18 libclang1-18
+
 		# Always include the latest stock Rust toolchain in the latest Ubuntu release.
 		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install rustc rust-src rustfmt bindgen clang llvm libclang1
 	fi
