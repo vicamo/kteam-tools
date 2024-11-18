@@ -181,7 +181,7 @@ may vanish on rebase if those were already done there.
 
 **Note** The repo paths created by `cranky checkout` are controlled by the
 package-path key in your `cranky.yaml` configuration file. See the [sample
-configuration file](snip-cranky.yaml) for more information.
+configuration file](https://canonical-kteam-docs.readthedocs-hosted.com/en/latest/how-to/kteam_tools/crank-turning-setup.html) for more information.
 
 ```
 $ cd xenial/linux-main
