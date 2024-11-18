@@ -1231,6 +1231,38 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
 
         self.assertEqual(source2.derived_from, source1)
 
+    def test_derived_from_all_series_same(self):
+        data = """
+        '22.04':
+            sources:
+                linux:
+                linux-raspi:
+                    derived-from: ['22.04', 'linux']
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series("22.04")
+        source1 = series.lookup_source("linux")
+        source2 = series.lookup_source("linux-raspi")
+
+        self.assertEqual(source2.derived_from_all, [source1])
+
+    def test_derived_from_all_multiple_series_same(self):
+        data = """
+        '22.04':
+            sources:
+                linux-raspi:
+                linux-realtime:
+                linux-raspi-realtime:
+                    derived-from: [['22.04', 'linux-raspi'], ['22.04', 'linux-realtime']]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series("22.04")
+        source1 = series.lookup_source("linux-raspi")
+        source2 = series.lookup_source("linux-realtime")
+        source3 = series.lookup_source("linux-raspi-realtime")
+
+        self.assertEqual(source3.derived_from_all, [source1, source2])
+
     def test_invalid_tasks_present_single(self):
         data = """
         '18.04':
