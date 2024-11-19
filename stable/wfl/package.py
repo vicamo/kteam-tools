@@ -3141,12 +3141,16 @@ class Package():
         if src is None:
             return
 
+        binary_image_archs = {}
+
         bins = src.getPublishedBinaries(active_binaries_only=False)
         bins_image = []
         for binary in bins:
             binary_name = binary.binary_package_name
             if "-image-" in binary_name:
                 bins_image.append(binary)
+                arch_tag = binary.distro_arch_series_link.split('/')[-1] if binary.architecture_specific else 'all'
+                binary_image_archs.setdefault(binary_name, []).append(arch_tag)
         #cinfo("meta_check: bins_image={}".format(bins_image))
         bins_image_names = set([binary.binary_package_name for binary in bins_image])
 
@@ -3207,6 +3211,10 @@ class Package():
                         version_change = True
             if some:
                 break
+
+        # Record the flavours
+        if binary_image_archs:
+            self.bug.bprops["flavours"] = binary_image_archs
 
         signing_signoff = signing_present and (not previously_published or version_change)
         kernel_signoff = version_change or variant_change
