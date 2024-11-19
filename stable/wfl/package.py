@@ -3206,8 +3206,10 @@ class Package():
                         continue
                     some = True
 
-                    if meta_version.split('.')[0:2] != prev_version.split('.')[0:2]:
-                        cinfo("meta_check: major versions are different prev={} curr={}".format(prev_version.split('.')[0:2], meta_version.split('.')[0:2]))
+                    meta_version_mainline = meta_version.split('.')[0:2]
+                    meta_version_prev_mainline = prev_version.split('.')[0:2]
+                    if meta_version_mainline != meta_version_prev_mainline:
+                        cinfo("meta_check: major versions are different prev={} curr={}".format(meta_version_prev_mainline, meta_version_mainline))
                         version_change = True
             if some:
                 break
@@ -3237,8 +3239,12 @@ class Package():
         signoff_messages = []
         if variant_change:
             signoff_messages.append("linux-image name changes detected, review variant/flavour changes; kernel-signoff required.")
+            signoff_messages.append("  was: " + " ".join(sorted(bins_image_prev_names)))
+            signoff_messages.append("   is: " + " ".join(sorted(bins_image_names)))
         if version_change:
             signoff_messages.append("linux-image major version change detected, upgrade testing required; kernel-signoff required.")
+            signoff_messages.append("  was: " + meta_version_prev_mainline)
+            signoff_messages.append("   is: " + meta_version_mainline)
 
         if len(signing_messages) > 0 and not dry_run:
             self.bug.add_comment("signing-signoff: Kernel requires additional testing and signoff", "\n".join(signing_messages))
