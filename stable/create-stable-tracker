@@ -216,10 +216,9 @@ class CreateTrackingBug(StdApp):
 
             # Teams / individuals to be automatically subscribed to the tracking bugs
             #   Hardware Certification Team     "hardware-certification"
-            #   SRU Verification                "sru-verification"
             #   Ubuntu Stable Release           "ubuntu-sru"
             #
-            teams = ["sru-verification", "ubuntu-sru"]
+            teams = ["ubuntu-sru"]
             for team in teams:
                 lp_team = self.lp.launchpad.people[team]
                 bug.lpbug.subscribe(person=lp_team)
