@@ -157,7 +157,7 @@ class Workflow:
                 "signing-signoff": "canonical-kernel-team",
             },
             "initial_bug_tags": ["kernel-release-tracking-bug", "kernel-release-tracking-bug-live"],
-            "subscribers": ["sru-verification", "ubuntu-sru", "hardware-certification"],
+            "subscribers": ["ubuntu-sru", "hardware-certification"],
             "invalidate_tasks": {
                 "certification-testing": ["3.5.0"]  # Kernels that are supported but Cert. no longer tests
             },
