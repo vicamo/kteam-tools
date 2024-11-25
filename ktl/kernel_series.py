@@ -304,6 +304,10 @@ class KernelSnapEntry:
     def promote_to_risk(self, risk):
         return risk in self._data.get("promote-to", [])
 
+    @property
+    def swm_data(self):
+        return self._data.get("swm")
+
     def __str__(self):
         return "{} {}".format(str(self.source), self.name)
 
