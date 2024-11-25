@@ -20,6 +20,7 @@ from ktl.msgq import MsgQueueCkct
 
 from wfl.git_tag                                import GitTagsSnap
 from wfl.log                                    import center, cleave, cinfo, cerror, cdebug, centerleave
+from wfl.swm_config                             import SwmConfigSnap
 
 from .context                                   import ctx
 from .secrets                                   import Secrets
@@ -850,3 +851,9 @@ class SnapDebs:
 
         subject = "[" + s.series + "] " + s.name + " " + track + "/..."  + " " + s.version
         s.bug.announce('swm-testing-started', subject=subject, body=json.dumps(msg, sort_keys=True, indent=4))
+
+    @property
+    def swm_config(s):
+        if s.snap_info is None:
+            return SwmConfigSnap(None)
+        return SwmConfigSnap(s.snap_info.swm_data)
