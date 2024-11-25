@@ -194,7 +194,7 @@ class Workflow:
                 "signing-signoff": "canonical-kernel-team",
             },
             "initial_bug_tags": ["kernel-release-tracking-bug", "kernel-release-tracking-bug-live"],
-            "subscribers": ["sru-verification", "ubuntu-sru", "hardware-certification"],
+            "subscribers": ["ubuntu-sru", "hardware-certification"],
         },
     }
 
