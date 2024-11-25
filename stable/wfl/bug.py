@@ -1190,6 +1190,18 @@ class WorkflowBug():
             cinfo("    abi-testing added {}".format(tasks_by_name['abi-testing']))
             redo = True
 
+        # SNAPS: add boot-testing if requested
+        if (
+            s.variant == "snap-debs"
+            and 'boot-testing' not in tasks_by_name
+            and s.snap.swm_config.boot_testing
+        ):
+            cinfo("APW: boot-testing requested for SNAP")
+            tasks_by_name['boot-testing'] = s.lpbug.addTask(target='/kernel-sru-workflow/boot-testing')
+
+            cinfo("    boot-testing added {}".format(tasks_by_name['boot-testing']))
+            redo = True
+
         if redo:
             cinfo('    Re-scanning bug tasks:', 'cyan')
             for t in s.lpbug.bug_tasks:
