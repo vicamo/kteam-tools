@@ -209,6 +209,11 @@ class WorkflowBug():
             if old_flavours != new_flavours:
                 cinfo("APW-TEST-FLAVOURS: {} {} {} {}".format(s.series, s.name, str(old_flavours), str(new_flavours)))
 
+        if s.has_debs:
+            s.debs.check_version()
+        if s.has_snap:
+            s.snap.check_version()
+
     @property
     def has_debs(self):
         return self.debs is not None
@@ -1183,6 +1188,18 @@ class WorkflowBug():
             tasks_by_name['abi-testing'] = s.lpbug.addTask(target='/kernel-sru-workflow/abi-testing')
 
             cinfo("    abi-testing added {}".format(tasks_by_name['abi-testing']))
+            redo = True
+
+        # SNAPS: add boot-testing if requested
+        if (
+            s.variant == "snap-debs"
+            and 'boot-testing' not in tasks_by_name
+            and s.snap.swm_config.boot_testing
+        ):
+            cinfo("APW: boot-testing requested for SNAP")
+            tasks_by_name['boot-testing'] = s.lpbug.addTask(target='/kernel-sru-workflow/boot-testing')
+
+            cinfo("    boot-testing added {}".format(tasks_by_name['boot-testing']))
             redo = True
 
         if redo:

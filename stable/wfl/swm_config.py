@@ -33,7 +33,7 @@ class SwmConfig:
 
         if isinstance(data, str):
             data = yaml.safe_load(data)
-        if data == None:
+        if data is None:
             data = {}
         self._data = data
 
@@ -103,3 +103,26 @@ class SwmConfig:
     @property
     def gpu_overrides(self):
         return self._data.get('gpu-overrides', [])
+
+
+# SwmConfigSnap
+#
+class SwmConfigSnap:
+
+    # __init__
+    #
+    def __init__(self, data):
+        """
+        :param data: swm raw data
+        """
+        center(self.__class__.__name__ + '.__init__')
+
+        if isinstance(data, str):
+            data = yaml.safe_load(data)
+        if data == None:
+            data = {}
+        self._data = data
+
+    @property
+    def boot_testing(self):
+        return self._data.get('boot-testing', False)
