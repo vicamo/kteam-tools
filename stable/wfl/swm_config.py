@@ -33,7 +33,7 @@ class SwmConfig:
 
         if isinstance(data, str):
             data = yaml.safe_load(data)
-        if data == None:
+        if data is None:
             data = {}
         self._data = data
 
