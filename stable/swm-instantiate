@@ -5,24 +5,25 @@
 # swm-publishing -- monitor publishing of things.
 #
 
-import os
 import logging
+import os
 import re
 import sys
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from contextlib                         import contextmanager
-from fcntl                              import lockf, LOCK_EX, LOCK_NB, LOCK_UN
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from contextlib import contextmanager
+from fcntl import LOCK_EX, LOCK_NB, LOCK_UN, lockf
 
 import yaml
 
 # Add ../libs to the Python search path
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, "libs")))
+
+from lazr.restfulclient.errors import BadRequest
 
 from ktl.kernel_series import KernelSeries
-from ktl.workflow import Workflow, DefaultAssigneeMissing
-from lazr.restfulclient.errors import BadRequest
-from wfl.log import Clog, cdebug, cinfo, cerror, cwarn, center, cleave
+from ktl.workflow import DefaultAssigneeMissing, Workflow
 from wfl.launchpad import LaunchpadDirect
+from wfl.log import Clog, cdebug, center, cerror, cinfo, cleave, cwarn
 from wfl.work import SwmWork
 
 
@@ -30,7 +31,7 @@ class TrackerProduction:
 
     def __init__(self, project, lp=None, wf=None):
         if lp is None:
-            lp = LaunchpadDirect.login_application('swm-instantiate')
+            lp = LaunchpadDirect.login_application("swm-instantiate")
         if wf is None:
             wf = Workflow()
 
@@ -39,7 +40,7 @@ class TrackerProduction:
         self.project_name = project
         self.project = self.lp.projects[project]
 
-    title2sp_rc = re.compile(r'^([^/]*)/?(\S+):')
+    title2sp_rc = re.compile(r"^([^/]*)/?(\S+):")
 
     def lookup_source(self, bug_id, bug):
         title = bug.title
@@ -51,8 +52,8 @@ class TrackerProduction:
 
         spin = None
         for tag in bug.tags:
-            if tag.startswith('kernel-sru-cycle-'):
-                spin = tag.replace('kernel-sru-cycle-', '')
+            if tag.startswith("kernel-sru-cycle-"):
+                spin = tag.replace("kernel-sru-cycle-", "")
                 break
 
         cinfo("spin<{}> series_name<{}> source_name<{}>".format(spin, series_name, source_name))
@@ -74,7 +75,7 @@ class TrackerProduction:
 
     def load_properties(self, bug):
         description = bug.description
-        bits = description.split('-- swm properties --')
+        bits = description.split("-- swm properties --")
         if len(bits) != 2:
             return None
         return yaml.safe_load(bits[-1])
@@ -83,20 +84,20 @@ class TrackerProduction:
         changed = []
         if status is not None and lp_task.status != status:
             lp_task.status = status
-            changed.append('status {}'.format(status))
+            changed.append("status {}".format(status))
 
         if importance is not None and lp_task.importance != importance:
             lp_task.importance = importance
-            changed.append('importance {}'.format(importance))
+            changed.append("importance {}".format(importance))
 
         if assignee is not None:
             lp_assignee = self.lp.people[assignee]
             if lp_task.assignee != lp_assignee:
                 lp_task.assignee = lp_assignee
-                changed.append('assignee {}'.format(assignee))
+                changed.append("assignee {}".format(assignee))
 
         if len(changed) > 0:
-            cinfo("task updated: " + ', '.join(changed))
+            cinfo("task updated: " + ", ".join(changed))
             lp_task.lp_save()
 
     def instantiate(self, bug_id, lp_bug):
@@ -106,7 +107,7 @@ class TrackerProduction:
         is_private = lp_bug.private
         is_mute = False
         for tag in lp_bug.tags:
-            if tag == 'kernel-release-tracking-bug-test':
+            if tag == "kernel-release-tracking-bug-test":
                 is_mute = True
                 break
 
@@ -115,8 +116,8 @@ class TrackerProduction:
         swm_props = self.load_properties(lp_bug)
         if swm_props is None:
             return False
-        variant = swm_props.get('variant', 'combo')
-        master = swm_props.get('master-bug', swm_props.get('kernel-stable-master-bug'))
+        variant = swm_props.get("variant", "combo")
+        master = swm_props.get("master-bug", swm_props.get("kernel-stable-master-bug"))
 
         # If this is not a valid source we actually cannot instantiate it.  Drop it from
         # the queue and assume it will be re-requested again later.
@@ -136,7 +137,7 @@ class TrackerProduction:
 
         # Check if we are actually already complete.
         lp_task = lp_tasks[self.project.self_link]
-        if lp_task.status != 'Confirmed':
+        if lp_task.status != "Confirmed":
             cinfo("Already complete.")
             return False
 
@@ -144,26 +145,28 @@ class TrackerProduction:
         for wf_task in self.project.series_collection:
             cinfo(wf_task)
             wf_name = wf_task.display_name
-            if not self.wf.is_task_valid(wf_task, ks_source, variant, snap_name=swm_props.get('snap-name')):
-                cdebug('    invalid: %s' % wf_name)
+            if not self.wf.is_task_valid(wf_task, ks_source, variant, snap_name=swm_props.get("snap-name")):
+                cdebug("    invalid: %s" % wf_name)
                 continue
-            cdebug('    adding: %s' % wf_name)
+            cdebug("    adding: %s" % wf_name)
             if wf_task.self_link not in lp_tasks:
                 lp_tasks[wf_task.self_link] = lp_bug.addTask(target=wf_task)
             lp_task = lp_tasks[wf_task.self_link]
 
-            status = 'New'
+            status = "New"
             if wf_name in ks_invalid_tasks:
-                status = 'Invalid'
+                status = "Invalid"
 
             assignee = None
-            if status != 'Invalid' and not is_private:
+            if status != "Invalid" and not is_private:
                 try:
-                    assignee = self.wf.assignee_ex(ks_source.series.codename, ks_source.name, wf_task.display_name, ks_source.development)
+                    assignee = self.wf.assignee_ex(
+                        ks_source.series.codename, ks_source.name, wf_task.display_name, ks_source.development
+                    )
                 except DefaultAssigneeMissing:
                     pass
 
-            self.lp_task_update(lp_task, status=status, importance='Medium', assignee=assignee)
+            self.lp_task_update(lp_task, status=status, importance="Medium", assignee=assignee)
 
         # Subscribers.
         if not is_private and not is_mute:
@@ -174,14 +177,13 @@ class TrackerProduction:
                 lp_subscriber = self.lp.people[subscriber]
                 if lp_subscriber.self_link in subscriber_present:
                     continue
-                cdebug('    subscriber {}'.format(subscriber))
+                cdebug("    subscriber {}".format(subscriber))
                 lp_bug.subscribe(person=lp_subscriber)
 
-
         # Add the package/series nomination.
-        if variant in ('debs', 'combo'):
+        if variant in ("debs", "combo"):
             cdebug("series/package task ({}/{})".format(ks_source.series.codename, ks_source.name))
-            lp_ubuntu = self.lp.distributions['ubuntu']
+            lp_ubuntu = self.lp.distributions["ubuntu"]
             lp_series = lp_ubuntu.getSeries(name_or_version=ks_source.series.codename)
             lp_package = lp_series.getSourcePackage(name=ks_source.name)
 
@@ -191,7 +193,7 @@ class TrackerProduction:
                     cdebug("    adding: {}".format(lp_package.self_link))
                     lp_tasks[lp_package.self_link] = lp_bug.addTask(target=lp_package)
                 except BadRequest:
-                    lp_package = lp_series.getSourcePackage(name='linux')
+                    lp_package = lp_series.getSourcePackage(name="linux")
                     cdebug("    failed, adding: {}".format(lp_package.self_link))
                     try:
                         lp_tasks[lp_package.self_link] = lp_bug.addTask(target=lp_package)
@@ -201,21 +203,21 @@ class TrackerProduction:
             if lp_package is not None:
                 lp_task = lp_tasks.get(lp_package.self_link)
             if lp_task is not None:
-                self.lp_task_update(lp_task, status='New', importance='Medium')
+                self.lp_task_update(lp_task, status="New", importance="Medium")
 
         # If this is a key package default to derivatives held.
         if master is None:
-            cinfo('blocking derivatives')
+            cinfo("blocking derivatives")
             tags = lp_bug.tags
-            tags.append('kernel-block-derivatives')
+            tags.append("kernel-block-derivatives")
             lp_bug.tags = tags
             lp_bug.lp_save()
 
         # If this is *:linux.
-        if ks_source.name == 'linux':
-            cinfo('requesting early testing')
+        if ks_source.name == "linux":
+            cinfo("requesting early testing")
             tags = lp_bug.tags
-            tags.append('kernel-regression-testing-early')
+            tags.append("kernel-regression-testing-early")
             lp_bug.tags = tags
             lp_bug.lp_save()
 
@@ -223,15 +225,13 @@ class TrackerProduction:
         lp_task = lp_tasks[self.project.self_link]
         cdebug("liven workflow task")
 
-        self.lp_task_update(lp_task, status='Triaged', importance='Medium')
+        self.lp_task_update(lp_task, status="Triaged", importance="Medium")
         return True
 
     def instantiate_all(self):
         bugs = {}
 
-        tasks = self.project.searchTasks(
-            status=['Confirmed'],
-            omit_duplicates=False)
+        tasks = self.project.searchTasks(status=["Confirmed"], omit_duplicates=False)
         for task in tasks:
             bug = task.bug
             bugs[bug.id] = bug
@@ -265,34 +265,36 @@ class TrackerProduction:
             cinfo("INSTANTIATE {} already in-progress, skipped".format(bug_id))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Command line argument setup and initial processing
     #
-    app_description = '''
+    app_description = """
 SWM tracker instantiator
-    '''
-    app_epilog = '''
+    """
+    app_epilog = """
 examples:
     swm-instantiate --help
-    '''
+    """
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
-    parser.add_argument('trackers', nargs="*", help='Trackers to scan')
+    parser.add_argument(
+        "--debug", action="store_true", default=False, help="Print out a lot of messages about what is going on."
+    )
+    parser.add_argument("trackers", nargs="*", help="Trackers to scan")
     args = parser.parse_args()
 
     # If logging parameters were set on the command line, handle them
     # here.
     logging.basicConfig(
-        format='%(asctime)s %(levelname)-8s %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
+        format="%(asctime)s %(levelname)-8s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
         level=logging.DEBUG if args.debug else logging.INFO,
     )
-    logger = logging.getLogger('swm-instantiate')
+    logger = logging.getLogger("swm-instantiate")
     logger.setLevel(level=logging.DEBUG if args.debug else logging.INFO)
 
     Clog.color = False
 
-    app = TrackerProduction('kernel-sru-workflow')
+    app = TrackerProduction("kernel-sru-workflow")
     if len(args.trackers) == 0:
         app.instantiate_all()
     else:

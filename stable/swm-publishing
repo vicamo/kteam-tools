@@ -12,32 +12,32 @@ from copy import copy
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from subprocess import Popen
-from time import time, perf_counter
-
-#from logging import DEBUG, INFO, WARNING, basicConfig
+from time import perf_counter, time
+# from logging import DEBUG, INFO, WARNING, basicConfig
 from urllib.error import HTTPError
 from urllib.parse import urlsplit, urlunsplit
 from urllib.request import (HTTPBasicAuthHandler,
-                            HTTPPasswordMgrWithDefaultRealm,
-                            build_opener,
+                            HTTPPasswordMgrWithDefaultRealm, build_opener,
                             urlopen)
 
 import yaml
 from lazr.restfulclient.errors import Unauthorized
 
 # Add ../libs to the Python search path
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, "libs")))
 
 from ktl.announce import Announce
 from ktl.kernel_series import KernelSeries
 from ktl.sru_cycle import SruCycle
 from ktl.swm_status import SwmStatus
 from wfl.launchpad import LaunchpadDirect
-#from wfl.log import Clog, cdebug, center, cleave
+# from wfl.log import Clog, cdebug, center, cleave
 from wfl.snap import SnapStore, SnapStoreError
-from wfl.wft.regression_testing import RegressionTestingResults, RegressionTestingResultsError
-from wfl.wft.automated_testing import AutomatedTestingResults, AutomatedTestingResultsError
-from wfl.test_observer import TestObserverResults, TestObserverError
+from wfl.test_observer import TestObserverError, TestObserverResults
+from wfl.wft.automated_testing import (AutomatedTestingResults,
+                                       AutomatedTestingResultsError)
+from wfl.wft.regression_testing import (RegressionTestingResults,
+                                        RegressionTestingResultsError)
 from wfl.work import SwmWork
 
 
@@ -119,16 +119,17 @@ class Changes:
 
 
 class MonitorStore:
-    '''
+    """
     A backing store provider for monitor data.  This class behaves very like a
     persistent dictionary.  On instantiation it will load up the specified
     yaml file.  When the sync is called all current data is flushed back
     to the backing store.  Handles timezones being lost in the default
     yaml date format.
-    '''
+    """
+
     def __init__(self, store_path=None):
         if store_path is None:
-            store_path = 'swm-publisher.yaml'
+            store_path = "swm-publisher.yaml"
 
         self.store_path = store_path
         self._store = {}
@@ -152,15 +153,14 @@ class MonitorStore:
     # primary persistent store.
     def attach(self, name, owner):
         # Link an appropriate store dictionary to the owner.
-        owner._store = self._store.setdefault(
-            owner.__class__.__name__ + ':' + name, {})
+        owner._store = self._store.setdefault(owner.__class__.__name__ + ":" + name, {})
 
         # Set the default value for this attribute.  Note: we pass the
         # attribute name to also (re)implement __set_name__ for older versions
         # of python3.
         for k in dir(type(owner)):
             v = getattr(type(owner), k)
-            func = getattr(v, 'msa_set_default', None)
+            func = getattr(v, "msa_set_default", None)
             if func is not None:
                 func(owner, k)
 
@@ -174,13 +174,13 @@ class MonitorStore:
         return self._store.setdefault(key, value)
 
     def sync(self):
-        with open(self.store_path + '.new', 'w') as wfd:
+        with open(self.store_path + ".new", "w") as wfd:
             yaml.dump(self._store, wfd, default_flow_style=False)
-        os.rename(self.store_path + '.new', self.store_path)
+        os.rename(self.store_path + ".new", self.store_path)
 
 
 class MonitorStoreAttr:
-    '''
+    """
     This class is a Python descriptor class.  This means that an instance
     of this class may be used to replace a class attribute; all access to that
     attribute is mediated by this class.  The attribute key in the store
@@ -207,31 +207,32 @@ class MonitorStoreAttr:
                 # Read and update attribute as normal.
                 if self.last_date < when:
                     self.last_date = when
-    '''
+    """
+
     def __init__(self, attr=None, default=None):
         self.attr = attr
         self.default = default
 
     def msa_set_default(self, owner, attr):
         if self.attr is None:
-            attr = attr.replace('_', '-')
+            attr = attr.replace("_", "-")
             self.attr = attr
         if self.attr not in owner._store:
             owner._store[self.attr] = copy(self.default)
 
     def __set_name__(self, owner, attr):
         if self.attr is None:
-            attr = attr.replace('_', '-')
+            attr = attr.replace("_", "-")
             self.attr = attr
 
     def __get__(self, obj, objtype=None):
-        #print("__get__", self.attr, obj, objtype)
+        # print("__get__", self.attr, obj, objtype)
         if obj is None:
             return self
         return obj._store[self.attr]
 
     def __set__(self, obj, value):
-        #print("__set__", self.attr, obj, value)
+        # print("__set__", self.attr, obj, value)
         obj._store[self.attr] = value
 
 
@@ -256,14 +257,15 @@ class MonitorLaunchpadProject:
         start_date = self.last_date
 
         tasks = self.project.searchTasks(
-            status=['In Progress', 'Incomplete', 'Fix Committed', 'Fix Released', 'Invalid'],
+            status=["In Progress", "Incomplete", "Fix Committed", "Fix Released", "Invalid"],
             omit_duplicates=False,
-            modified_since=self.last_date)
+            modified_since=self.last_date,
+        )
         for task in tasks:
             bug = task.bug
             if bug.date_last_updated > self.last_date:
                 self.last_date = bug.date_last_updated
-            if 'kernel-release-tracking-bug-test' in bug.tags:
+            if "kernel-release-tracking-bug-test" in bug.tags:
                 continue
             print("TASK", task, bug, bug.date_last_updated)
             bugs[bug.id] = bug
@@ -277,14 +279,14 @@ class MonitorLaunchpadProject:
             dup = bug.duplicate_of
             if dup is not None:
                 dup_id = bug.duplicate_of.id
-                print("D", dup_id, '<-', bug_id)
+                print("D", dup_id, "<-", bug_id)
                 # Add both ends as SWM may have triggered the duplication.
-                changed.add('shank', str(dup_id), reason="duplicate of")
-                changed.add('shank', str(bug_id), reason="duplicate target")
+                changed.add("shank", str(dup_id), reason="duplicate of")
+                changed.add("shank", str(bug_id), reason="duplicate target")
             for activity in bug.activity:
                 activity_date = activity.datechanged
 
-                #print("D?", activity, start_date, activity_date, self.last_date)
+                # print("D?", activity, start_date, activity_date, self.last_date)
                 # We are only interested in bug activity between the start date
                 # and the latest task update time (inclusive).  Scanning
                 # activity after this upper bound might lead to false positives
@@ -292,38 +294,37 @@ class MonitorLaunchpadProject:
                 # later activity in a future run.
                 if activity_date < start_date or activity_date > self.last_date:
                     continue
-                #print("P?", activity, activity.person_link)
+                # print("P?", activity, activity.person_link)
                 # Why is this not lp.me.self_link ?
-                if (activity.whatchanged == 'kernel-sru-workflow: status' and
-                        activity.newvalue == 'In Progress'):
+                if activity.whatchanged == "kernel-sru-workflow: status" and activity.newvalue == "In Progress":
                     pass
                 # We change tags and do want to scan in that case.
-                elif activity.whatchanged == 'tags':
+                elif activity.whatchanged == "tags":
                     pass
                 elif activity.person_link.endswith("/~ubuntu-kernel-bot"):
                     continue
                 print("Y", bug_id, activity, activity.person_link)
-                changed.add('shank', str(bug_id), reason="bug activity")
+                changed.add("shank", str(bug_id), reason="bug activity")
                 break
 
         # Trackers in Confirmed are uninstantiated and need to be built,
         # retrigger until they resolve.
         # Trackers in Triaged are new and have never been scanned (or that
         # scan has failed, retrigger until they resolve.
-        tasks = self.project.searchTasks(status=['Confirmed', 'Triaged'])
+        tasks = self.project.searchTasks(status=["Confirmed", "Triaged"])
         for task in tasks:
             bug = task.bug
-            if 'kernel-release-tracking-bug-test' in bug.tags:
+            if "kernel-release-tracking-bug-test" in bug.tags:
                 continue
             print("TASK ({})".format(task.status), task, bug, bug.date_last_updated)
-            if task.status == 'Confirmed':
+            if task.status == "Confirmed":
                 instantiate.add(str(bug.id))
                 if len(instantiate) <= 10:
-                    changed.add('instantiate', str(bug.id), reason="nascent tracker")
+                    changed.add("instantiate", str(bug.id), reason="nascent tracker")
                 else:
                     print("DELAYING instantiate", str(bug.id))
             else:
-                changed.add('shank', str(bug.id), reason="new tracker")
+                changed.add("shank", str(bug.id), reason="new tracker")
 
         return changed
 
@@ -341,9 +342,9 @@ class MonitorLaunchpadQueues:
         if bs is None:
             raise ValueError("backing store not specified")
 
-        #archive = 'ubuntu'
+        # archive = 'ubuntu'
 
-        self.distro = 'ubuntu'
+        self.distro = "ubuntu"
         self.lp = lp
         self.ks = ks
         self.bs = bs
@@ -351,8 +352,8 @@ class MonitorLaunchpadQueues:
         # Attach us to the backing store.
         bs.attach(self.distro, self)
 
-        #self.reference = archive
-        #self.archive = lp.archives.getByReference(reference=archive)
+        # self.reference = archive
+        # self.archive = lp.archives.getByReference(reference=archive)
 
         # Make a quick lookup for all valid source packages.
         self.source_packages = {}
@@ -365,7 +366,7 @@ class MonitorLaunchpadQueues:
     last_announce = MonitorStoreAttr(default=[])
 
     def changed(self):
-        start_date = self.last_date #- timedelta(hours=1)
+        start_date = self.last_date  # - timedelta(hours=1)
 
         changed = Changes()
         notices = list()
@@ -374,7 +375,7 @@ class MonitorLaunchpadQueues:
             if not series.supported or series.esm:
                 continue
             series_lp = self.lp.distributions[self.distro].getSeries(name_or_version=series.name)
-            for status in ('New', 'Unapproved'):
+            for status in ("New", "Unapproved"):
                 for upload in series_lp.getPackageUploads(status=status):
                     date_created = upload.date_created
                     if date_created > self.last_date:
@@ -382,8 +383,8 @@ class MonitorLaunchpadQueues:
 
                     package_name = upload.package_name
                     # If we have no package name this is likely a signing block.
-                    if package_name is None and upload.display_arches in ('uefi', 'signing'):
-                        package_name = upload.display_name.split('_')[0]
+                    if package_name is None and upload.display_arches in ("uefi", "signing"):
+                        package_name = upload.display_name.split("_")[0]
 
                     package_key = "{}:{}".format(series.codename, package_name)
                     if package_key not in self.source_packages:
@@ -394,7 +395,7 @@ class MonitorLaunchpadQueues:
                     # If this is new to the queue then trigger it.
                     if date_created > start_date:
                         source_key = "{}:{}".format(series.codename, self.source_packages[package_key])
-                        changed.add('shank', source_key, reason="newly queued")
+                        changed.add("shank", source_key, reason="newly queued")
 
                     # Anything on the queue is interesting for summary notification.
                     notices.append([status, series.codename, upload.pocket, package_name])
@@ -412,11 +413,11 @@ class MonitorLaunchpadQueues:
                     summary[(series_name, status)] = summary.get((series_name, status), 0) + 1
                 for series_name, status in sorted(summary):
                     msgs.append("{}:{}={}".format(status, series_name, summary[(series_name, status)]))
-            notice = ' '.join(msgs)
+            notice = " ".join(msgs)
 
             announce = Announce()
             print("ANNOUNCE", notice)
-            announce.send('swm-queued-item', notice)
+            announce.send("swm-queued-item", notice)
 
         return changed
 
@@ -432,7 +433,7 @@ class MonitorKernelSeries:
 
         self.factory = factory
 
-        self.factory.bs.attach('main', self)
+        self.factory.bs.attach("main", self)
 
     owners = MonitorStoreAttr(default={})
 
@@ -448,14 +449,14 @@ class MonitorKernelSeries:
                 ks_owner = ks_source.owner
                 if ks_owner is None:
                     continue
-                handle = ks_series.codename + ':' + ks_source.name
+                handle = ks_series.codename + ":" + ks_source.name
                 previous_owner = self.owners.get(handle)
                 if previous_owner is not None:
                     if previous_owner != ks_owner:
-                        changed.add('shank', handle, reason="kernel-series owner changed")
+                        changed.add("shank", handle, reason="kernel-series owner changed")
                 self.owners[handle] = ks_owner
 
-        #print("REFRESH", changed)
+        # print("REFRESH", changed)
 
         return changed
 
@@ -471,7 +472,7 @@ class MonitorStatusSwmStatus:
 
         self.factory = factory
 
-        #bs.attach(status_path + '--' + project, self)
+        # bs.attach(status_path + '--' + project, self)
 
     @property
     def ss(self):
@@ -485,12 +486,11 @@ class MonitorStatusSwmStatus:
         (bug_id, bug_data) = item
 
         # Sort by lowest last scanned date.
-        return (bug_data.get('manager', {}).get('time-scanned') or
-            datetime.utcnow() - timedelta(days=10*365), bug_id)
+        return (bug_data.get("manager", {}).get("time-scanned") or datetime.utcnow() - timedelta(days=10 * 365), bug_id)
 
     def changed(self):
         changed = Changes()
-        #start_date = datetime.utcnow() # - timedelta(minutes=60)
+        # start_date = datetime.utcnow() # - timedelta(minutes=60)
         start_date = datetime.now(timezone.utc)
 
         status = self.ss
@@ -500,48 +500,59 @@ class MonitorStatusSwmStatus:
         # Finally scan the maintenance records for changes.
         lagging = []
         for bug_id, bug_data in sorted(status.trackers.items(), key=self.status_key):
-            if 'refresh' in bug_data:
-                (when, why) = bug_data['refresh']
+            if "refresh" in bug_data:
+                (when, why) = bug_data["refresh"]
                 when = when.replace(tzinfo=timezone.utc)
-                print("REFRESH {} time={} delta={} trigger={} reason={}".format(bug_id, when, when - start_date, when < start_date, why))
-                #print("APW", bug_id, bug_data['refresh-time'], start_date)
-                #print("APW", bug_data['refresh-time'] - start_date, bug_data['refresh-time'] < start_date)
+                print(
+                    "REFRESH {} time={} delta={} trigger={} reason={}".format(
+                        bug_id, when, when - start_date, when < start_date, why
+                    )
+                )
+                # print("APW", bug_id, bug_data['refresh-time'], start_date)
+                # print("APW", bug_data['refresh-time'] - start_date, bug_data['refresh-time'] < start_date)
                 if when < start_date:
-                    #print("APW", bug_id, bug_data['refresh-time'], "READY")
-                    changed.add('shank', bug_id, reason="refresh time passed ({})".format(why))
+                    # print("APW", bug_id, bug_data['refresh-time'], "READY")
+                    changed.add("shank", bug_id, reason="refresh time passed ({})".format(why))
 
-            sru_cycle = self.sc.lookup_spin(bug_data.get('cycle'))
+            sru_cycle = self.sc.lookup_spin(bug_data.get("cycle"))
             cycle_complete = sru_cycle is not None and sru_cycle.complete
-            tracker_complete = bug_data.get('task', {}).get('kernel-sru-workflow', {}).get('status', 'Invalid') == 'Fix Committed'
-            scanned = bug_data.get('manager', {}).get('time-scanned')
+            tracker_complete = (
+                bug_data.get("task", {}).get("kernel-sru-workflow", {}).get("status", "Invalid") == "Fix Committed"
+            )
+            scanned = bug_data.get("manager", {}).get("time-scanned")
             if (cycle_complete or not tracker_complete) and scanned is not None:
                 scanned = scanned.replace(tzinfo=timezone.utc)
                 scan_refresh = scanned + timedelta(hours=3, minutes=30)
                 if scan_refresh < start_date:
                     delta = scan_refresh - start_date
-                    print("LAGGING {} time={} delta={} trigger={}".format(bug_id, scan_refresh, delta, scan_refresh < start_date))
+                    print(
+                        "LAGGING {} time={} delta={} trigger={}".format(
+                            bug_id, scan_refresh, delta, scan_refresh < start_date
+                        )
+                    )
                     lagging.append((scan_refresh, delta, bug_id))
 
         # Run the list of lagging trackers and try and spread them out over the cycle without
         # letting them lag too long.  Try not to batch up too many updates either as a timeout
         # in a batch is fatal.  Basically, spread out the entire pending pile over the 'next'
         # hour.
-        limit = ceil(len(lagging) / (60/5))
+        limit = ceil(len(lagging) / (60 / 5))
         print("SCANNER trackers={} lagging={} limit={}".format(len(status.trackers), len(lagging), limit))
         for scan_refresh, delta, bug_id in sorted(lagging):
             print("LAGGER {} time={} delta={}".format(bug_id, scan_refresh, delta))
-            changed.add('shank', bug_id, reason="routine rescan")
+            changed.add("shank", bug_id, reason="routine rescan")
 
             limit -= 1
             if limit == 0:
                 break
 
-        #print("REFRESH", changed)
+        # print("REFRESH", changed)
 
         return changed
 
     def __str__(self):
         return "Status refresh_time Monitor"
+
 
 class MonitorSwmStatusMonitor:
 
@@ -551,7 +562,7 @@ class MonitorSwmStatusMonitor:
 
         self.factory = factory
 
-        #self.factory.bs.attach(status_path + '--' + project, self)
+        # self.factory.bs.attach(status_path + '--' + project, self)
 
     @property
     def lp(self):
@@ -566,12 +577,12 @@ class MonitorSwmStatusMonitor:
         return self.factory.ks
 
     def regression_testing(self, bug_id, bug_data, monitor):
-        sru_cycle = bug_data.get('cycle')
-        series = bug_data.get('series')
-        source = bug_data.get('source')
-        version = bug_data.get('version')
-        op = monitor.get('op')
-        existing = monitor.get('status')
+        sru_cycle = bug_data.get("cycle")
+        series = bug_data.get("series")
+        source = bug_data.get("source")
+        version = bug_data.get("version")
+        op = monitor.get("op")
+        existing = monitor.get("status")
 
         try:
             current = RegressionTestingResults.lookup_result(sru_cycle, series, source, version, op)
@@ -582,10 +593,10 @@ class MonitorSwmStatusMonitor:
         return existing != current
 
     def automated_testing(self, bug_id, bug_data, monitor):
-        series = bug_data.get('series')
-        source = bug_data.get('source')
-        version = bug_data.get('version')
-        existing = monitor.get('status')
+        series = bug_data.get("series")
+        source = bug_data.get("source")
+        version = bug_data.get("version")
+        existing = monitor.get("status")
 
         try:
             result = AutomatedTestingResults.lookup_result(series, source, version)
@@ -597,13 +608,13 @@ class MonitorSwmStatusMonitor:
         return existing != current
 
     def test_observer(self, bug_id, bug_data, monitor):
-        to_id = monitor.get('id')
-        existing_status = monitor.get('status')
-        existing_assignee = monitor.get('assignee')
+        to_id = monitor.get("id")
+        existing_status = monitor.get("status")
+        existing_assignee = monitor.get("assignee")
 
         try:
-                observer = TestObserverResults()
-                result = observer.lookup_result(to_id)
+            observer = TestObserverResults()
+            result = observer.lookup_result(to_id)
         except TestObserverError as e:
             print("test_observer: data not available ({}) change={}".format(str(e), False))
             return False
@@ -613,18 +624,21 @@ class MonitorSwmStatusMonitor:
             return True
 
         current_status = result.get("status")
-        current_assignee = (result.get('assignee') or {}).get('launchpad_handle')
+        current_assignee = (result.get("assignee") or {}).get("launchpad_handle")
         change = existing_status != current_status or existing_assignee != current_assignee
-        print("test_observer: existing_status={} current_status={} existing_assignee={} current_assignee={} change={}".format(
-            existing_status, current_status, existing_assignee, current_assignee, change))
+        print(
+            "test_observer: existing_status={} current_status={} existing_assignee={} current_assignee={} change={}".format(
+                existing_status, current_status, existing_assignee, current_assignee, change
+            )
+        )
         return change
 
     def snap_publishing(self, bug_id, bug_data, monitor):
-        sru_cycle = bug_data.get('cycle')
-        series = bug_data.get('series')
-        source = bug_data.get('source')
-        snap = bug_data.get('snap-name')
-        last_published = monitor.get('last-published')
+        sru_cycle = bug_data.get("cycle")
+        series = bug_data.get("series")
+        source = bug_data.get("source")
+        snap = bug_data.get("snap-name")
+        last_published = monitor.get("last-published")
         if last_published is not None:
             last_published = last_published.replace(tzinfo=timezone.utc)
 
@@ -648,17 +662,21 @@ class MonitorSwmStatusMonitor:
             return False
 
         current_published = snap_store.last_published
-        print("snap_publishing: snap={} last_published={} current_published={} change={}".format(snap, last_published, current_published, current_published != last_published))
+        print(
+            "snap_publishing: snap={} last_published={} current_published={} change={}".format(
+                snap, last_published, current_published, current_published != last_published
+            )
+        )
         return current_published != last_published
 
     def launchpad_source(self, bug_id, bug_data, monitor):
-        tag = "{}: bug={}".format(monitor['type'], bug_id)
-        archive_reference = monitor.get('reference')
-        archive_pocket = monitor.get('pocket')
-        series = bug_data.get('series')
-        package_name = monitor.get('package')
-        status = monitor.get('status')
-        lp_api = monitor.get('lp-api')
+        tag = "{}: bug={}".format(monitor["type"], bug_id)
+        archive_reference = monitor.get("reference")
+        archive_pocket = monitor.get("pocket")
+        series = bug_data.get("series")
+        package_name = monitor.get("package")
+        status = monitor.get("status")
+        lp_api = monitor.get("lp-api")
 
         lp_archive = self.lp.archives.getByReference(reference=archive_reference)
         if lp_archive is None:
@@ -667,9 +685,13 @@ class MonitorSwmStatusMonitor:
 
         # Grab the current latest publication, if it is a different lp_api
         # then things are changing.
-        srcs = lp_archive.getPublishedSources(exact_match=True, order_by_date=True,
-            pocket=archive_pocket, distro_series='/ubuntu/' + series,
-            source_name=package_name)
+        srcs = lp_archive.getPublishedSources(
+            exact_match=True,
+            order_by_date=True,
+            pocket=archive_pocket,
+            distro_series="/ubuntu/" + series,
+            source_name=package_name,
+        )
 
         if lp_api is None and len(srcs) == 0:
             print(tag, "expected=no-package current=no-package change=False")
@@ -684,12 +706,12 @@ class MonitorSwmStatusMonitor:
         return src.status != status
 
     def launchpad_nobuilds(self, bug_id, bug_data, monitor):
-        tag = "{}: bug={}".format(monitor['type'], bug_id)
-        #archive_reference = monitor.get('reference')
-        #archive_pocket = monitor.get('pocket')
-        lp_api = monitor.get('lp-api')
-        last_scanned = monitor.get('last-scanned').replace(tzinfo=timezone.utc)
-        #status = monitor.get('status')
+        tag = "{}: bug={}".format(monitor["type"], bug_id)
+        # archive_reference = monitor.get('reference')
+        # archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get("lp-api")
+        last_scanned = monitor.get("last-scanned").replace(tzinfo=timezone.utc)
+        # status = monitor.get('status')
 
         # Grab us the object in question.
         src = self.lp.load(lp_api)
@@ -703,12 +725,12 @@ class MonitorSwmStatusMonitor:
         return builds != 0
 
     def launchpad_build(self, bug_id, bug_data, monitor):
-        tag = "{}: bug={}".format(monitor['type'], bug_id)
-        #archive_reference = monitor.get('reference')
-        #archive_pocket = monitor.get('pocket')
-        lp_api = monitor.get('lp-api')
-        last_scanned = monitor.get('last-scanned').replace(tzinfo=timezone.utc)
-        status = monitor.get('status')
+        tag = "{}: bug={}".format(monitor["type"], bug_id)
+        # archive_reference = monitor.get('reference')
+        # archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get("lp-api")
+        last_scanned = monitor.get("last-scanned").replace(tzinfo=timezone.utc)
+        status = monitor.get("status")
 
         # Grab us the object in question.
         build = self.lp.load(lp_api)
@@ -724,11 +746,11 @@ class MonitorSwmStatusMonitor:
         return build.buildstate != status
 
     def launchpad_upload(self, bug_id, bug_data, monitor):
-        tag = "{}: bug={}".format(monitor['type'], bug_id)
-        #archive_reference = monitor.get('reference')
-        #archive_pocket = monitor.get('pocket')
-        lp_api = monitor.get('lp-api')
-        status = monitor.get('status')
+        tag = "{}: bug={}".format(monitor["type"], bug_id)
+        # archive_reference = monitor.get('reference')
+        # archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get("lp-api")
+        status = monitor.get("status")
 
         # Grab us the object in question.
         upload = self.lp.load(lp_api)
@@ -740,11 +762,11 @@ class MonitorSwmStatusMonitor:
         return upload.status != status
 
     def launchpad_binary(self, bug_id, bug_data, monitor):
-        tag = "{}: bug={}".format(monitor['type'], bug_id)
-        #archive_reference = monitor.get('reference')
-        #archive_pocket = monitor.get('pocket')
-        lp_api = monitor.get('lp-api')
-        status = monitor.get('status')
+        tag = "{}: bug={}".format(monitor["type"], bug_id)
+        # archive_reference = monitor.get('reference')
+        # archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get("lp-api")
+        status = monitor.get("status")
 
         # Grab us the object in question.
         binary = self.lp.load(lp_api)
@@ -756,9 +778,9 @@ class MonitorSwmStatusMonitor:
         return binary.status != status
 
     def launchpad_thing_status(self, bug_id, bug_data, monitor):
-        tag = "{}: bug={}".format(monitor['type'], bug_id)
-        lp_api = monitor.get('lp-api')
-        status = monitor.get('status')
+        tag = "{}: bug={}".format(monitor["type"], bug_id)
+        lp_api = monitor.get("lp-api")
+        status = monitor.get("status")
 
         # Grab us the object in question.
         thing = self.lp.load(lp_api)
@@ -770,12 +792,12 @@ class MonitorSwmStatusMonitor:
         return thing.status != status
 
     def tracker_modified(self, bug_id, bug_data, monitor):
-        tag = "{}: bug={}".format(monitor['type'], bug_id)
-        watch = monitor.get('watch')
+        tag = "{}: bug={}".format(monitor["type"], bug_id)
+        watch = monitor.get("watch")
         watch_data = self.ss.trackers.get(watch, {})
 
-        bug_scanned = bug_data.get('manager', {}).get('time-scanned')
-        watch_modified = watch_data.get('manager', {}).get('time-modified')
+        bug_scanned = bug_data.get("manager", {}).get("time-scanned")
+        watch_modified = watch_data.get("manager", {}).get("time-modified")
 
         if bug_scanned is None:
             print(tag, "tracker has no time-scanned change=True")
@@ -784,7 +806,12 @@ class MonitorSwmStatusMonitor:
             print(tag, "watch has no time-modified change=True")
             return True
 
-        print(tag, "time_floor={} time_current={} change={}".format(watch_modified, bug_scanned, (bug_scanned < watch_modified)))
+        print(
+            tag,
+            "time_floor={} time_current={} change={}".format(
+                watch_modified, bug_scanned, (bug_scanned < watch_modified)
+            ),
+        )
         return bug_scanned < watch_modified
 
     def changed(self):
@@ -798,24 +825,24 @@ class MonitorSwmStatusMonitor:
             for monitor in bug_data.get("monitor", []):
                 print("{}: bug={} monitor={}".format(monitor.get("type", "????"), bug_id, monitor))
                 handler = {
-                    'regression-testing':   self.regression_testing,
-                    'automated-testing':    self.automated_testing,
-                    'test-observer':        self.test_observer,
-                    'snap-publishing':      self.snap_publishing,
-                    'launchpad-source':     self.launchpad_source,
-                    'launchpad-nobuilds':   self.launchpad_nobuilds,
-                    'launchpad-build':      self.launchpad_build,
-                    'launchpad-upload':     self.launchpad_upload,
-                    'launchpad-binary':     self.launchpad_binary,
-                    'launchpad-task':       self.launchpad_thing_status,
-                    'tracker-modified':     self.tracker_modified,
-                    }.get(monitor.get("type"))
+                    "regression-testing": self.regression_testing,
+                    "automated-testing": self.automated_testing,
+                    "test-observer": self.test_observer,
+                    "snap-publishing": self.snap_publishing,
+                    "launchpad-source": self.launchpad_source,
+                    "launchpad-nobuilds": self.launchpad_nobuilds,
+                    "launchpad-build": self.launchpad_build,
+                    "launchpad-upload": self.launchpad_upload,
+                    "launchpad-binary": self.launchpad_binary,
+                    "launchpad-task": self.launchpad_thing_status,
+                    "tracker-modified": self.tracker_modified,
+                }.get(monitor.get("type"))
                 # We shorten lp-api to save space.  If we are an absolute path restore the prefix.
                 lp_api = monitor.get("lp-api")
                 if lp_api is not None and lp_api[0] == "/":
                     monitor["lp-api"] = "https://api.launchpad.net/devel" + lp_api
                 if handler is not None and handler(bug_id, bug_data, monitor):
-                    changed.add('shank', bug_id, reason="monitor {} triggered".format(monitor.get("type")))
+                    changed.add("shank", bug_id, reason="monitor {} triggered".format(monitor.get("type")))
                     break
             sys.stdout.flush()
         print("REFRESH", changed)
@@ -839,7 +866,7 @@ class MonitorFactory:
     @property
     def lp(self):
         if self._lp is None:
-            self._lp = LaunchpadDirect.login_application('swm-publishing')
+            self._lp = LaunchpadDirect.login_application("swm-publishing")
         return self._lp
 
     @property
@@ -851,7 +878,7 @@ class MonitorFactory:
     @property
     def bs(self):
         if self._bs is None:
-            self._bs = MonitorStore('swm-publishing.yaml')
+            self._bs = MonitorStore("swm-publishing.yaml")
         return self._bs
 
     @property
@@ -913,19 +940,20 @@ class FilterSwmStatus:
 
         for change in changes:
             tracker = change.tracker
-            if ':' in tracker:
+            if ":" in tracker:
                 # We will search for <series>:<source>:<target>
                 # if target is missing imply it from source.
-                bits = tracker.split(':')
+                bits = tracker.split(":")
                 if len(bits) < 3:
                     bits.append(bits[-1])
 
                 for search_id, search_data in status.trackers.items():
                     search_key = [
-                        search_data.get('series', '-'),
-                        search_data.get('source', '-'),
-                        search_data.get('target', '-')]
-                    search_phase = search_data.get('phase', 'unknown')
+                        search_data.get("series", "-"),
+                        search_data.get("source", "-"),
+                        search_data.get("target", "-"),
+                    ]
+                    search_phase = search_data.get("phase", "unknown")
                     if bits == search_key and search_phase != "Complete":
                         changed.add(change.cmd, search_id, priority=change.priority, reason=change.reason)
             else:
@@ -935,13 +963,13 @@ class FilterSwmStatus:
 
         # Record when the previous change for each of these was.
         for change in changed:
-            change.scanned = status.trackers.get(change.tracker, {}).get('manager', {}).get('time-scanned')
+            change.scanned = status.trackers.get(change.tracker, {}).get("manager", {}).get("time-scanned")
 
         # Look at the changes we think we submitted before and recover any which appear to have not been
         # completed.
         for last in self.last_changes:
             change = Change.decode(last)
-            curr_scanned = status.trackers.get(change.tracker, {}).get('manager', {}).get('time-scanned', False)
+            curr_scanned = status.trackers.get(change.tracker, {}).get("manager", {}).get("time-scanned", False)
             if change.scanned == curr_scanned:
                 print("RECOVERED {} {} {} {}".format(change.cmd, change.tracker, change.scanned, curr_scanned))
                 changed.add_change(change)
@@ -963,11 +991,11 @@ class FilterSwmStatus:
         return "Filter SwmStatus"
 
 
-if __name__ == '__main__':
-    factory = MonitorFactory(ss_file='status.json')
+if __name__ == "__main__":
+    factory = MonitorFactory(ss_file="status.json")
 
     monitors = []
-    monitors += factory.launchpad_project('kernel-sru-workflow')
+    monitors += factory.launchpad_project("kernel-sru-workflow")
     monitors += factory.swm_status()
     monitors += factory.kernel_series()
     monitors += factory.swm_monitor()
@@ -985,7 +1013,7 @@ if __name__ == '__main__':
         before = perf_counter()
         new = monitor.changed()
         after = perf_counter()
-        #if len(new) > 0:
+        # if len(new) > 0:
         #    print(monitor, "CHANGED", list(new))
         print(monitor, "changed={} time={}".format(new, after - before))
         sys.stdout.flush()
@@ -1011,10 +1039,10 @@ if __name__ == '__main__':
         group_shank = swm_work.new_group()
         group_instantiate = swm_work.new_group()
         for change in changed:
-            if change.cmd == 'shank':
+            if change.cmd == "shank":
                 print("QUEUE #1: {} {} ({})".format(change.cmd, change.tracker, change.reason))
                 group_shank.send_shank(change.tracker, scanned=change.scanned)
-            elif change.cmd == 'instantiate':
+            elif change.cmd == "instantiate":
                 print("QUEUE #2: {} {} ({})".format(change.cmd, change.tracker, change.reason))
                 group_instantiate.send_instantiate(change.tracker)
         cmd_after = perf_counter()

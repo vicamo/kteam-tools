@@ -4,14 +4,16 @@ import argparse
 import os
 import sys
 
-LIBDIR=os.path.join('..', 'ktl')
+LIBDIR = os.path.join("..", "ktl")
 if LIBDIR not in sys.path:
     sys.path.append(LIBDIR)
 
 from ktl.swm_status import SwmStatus
 
+
 class CycleStatusError(Exception):
     pass
+
 
 class CycleStatus:
     def __init__(self, datestr, verbose=False):
@@ -19,7 +21,7 @@ class CycleStatus:
 
         self._byid = dict()
         self._idx_byhandle = dict()
-        for (tid, tinfo) in swmfull.trackers.items():
+        for tid, tinfo in swmfull.trackers.items():
             cycletag = tinfo.get("cycle")
             if not cycletag.startswith(datestr):
                 continue
@@ -27,23 +29,23 @@ class CycleStatus:
 
             series = tinfo.get("series")
             source = tinfo.get("source")
-            handle = f'{series}:{source}'
-            if tinfo.get("variant") == 'snap-debs':
+            handle = f"{series}:{source}"
+            if tinfo.get("variant") == "snap-debs":
                 handle += f':{tinfo.get("snap-name")}'
-            tinfo["handle"]   = handle
+            tinfo["handle"] = handle
             tinfo["blocking"] = list()
 
             if verbose:
-                print(f'II: Added LP: #{tid}({handle})')
+                print(f"II: Added LP: #{tid}({handle})")
 
-        #print(self._byid)
+        # print(self._byid)
         for tid in self._byid:
-            ptid   = self._byid[tid].get("master-bug", 0)
+            ptid = self._byid[tid].get("master-bug", 0)
             handle = self._byid[tid].get("handle")
             if ptid == 0:
                 continue
             if ptid not in self._byid:
-                print(f'EE: Undefined parent(LP: #{ptid}) for LP: #{tid}({handle})')
+                print(f"EE: Undefined parent(LP: #{ptid}) for LP: #{tid}({handle})")
                 continue
             phase = self._byid[tid].get("phase")
             if "Holding before Packaging" in phase:
@@ -62,12 +64,18 @@ class CycleStatus:
         return self._byid[tid].get("packages", {}).get("lrm", "") != ""
 
     def print_tid_tasks(self, tid):
-        task_list_deb = ['automated-testing', 'boot-testing', 'certification-testing',
-                         ':prepare-packages', 'regression-testing', 'verification-testing']
-        task_list_snap = ['snap-prepare', 'snap-certification-testing']
-        ignore_status = ['Invalid', 'Fix Released', 'New']
+        task_list_deb = [
+            "automated-testing",
+            "boot-testing",
+            "certification-testing",
+            ":prepare-packages",
+            "regression-testing",
+            "verification-testing",
+        ]
+        task_list_snap = ["snap-prepare", "snap-certification-testing"]
+        ignore_status = ["Invalid", "Fix Released", "New"]
 
-        if self._byid[tid].get("variant", "") == 'snap-debs':
+        if self._byid[tid].get("variant", "") == "snap-debs":
             task_list = task_list_snap
         else:
             task_list = task_list_deb
@@ -80,7 +88,7 @@ class CycleStatus:
 
             if status in ignore_status:
                 continue
-            print(f'      - {task} - {status}')
+            print(f"      - {task} - {status}")
 
     def list_by_owner(self, ignore=[], lrm=False, crankable=False, tasks=False):
         by_owner = dict()
@@ -96,23 +104,23 @@ class CycleStatus:
             if "Holding before Prepare" in phase:
                 continue
             if crankable:
-                if 'Packaging' in phase:
+                if "Packaging" in phase:
                     reason = self._byid[tid].get("reason", {}).get(":prepare-packages", "")
-                    if 'Pending' not in reason and 'Ongoing' not in reason:
+                    if "Pending" not in reason and "Ongoing" not in reason:
                         continue
-                    if 'building' in reason:
+                    if "building" in reason:
                         continue
-                elif 'Prepare' in phase:
+                elif "Prepare" in phase:
                     reason = self._byid[tid].get("reason", {}).get("snap-prepare", "")
-                    if 'Pending' not in reason:
+                    if "Pending" not in reason:
                         continue
                 else:
                     continue
 
-            skip  = False
+            skip = False
             cycle = self._byid[tid].get("cycle")
             for spin in ignore:
-                if cycle.endswith(f'-{spin}'):
+                if cycle.endswith(f"-{spin}"):
                     skip = True
                     break
             if skip:
@@ -128,28 +136,28 @@ class CycleStatus:
 
         for owner in by_owner:
             if crankable:
-                print(f'@{owner} has not completed to prepare:')
+                print(f"@{owner} has not completed to prepare:")
             else:
-                print(f'@{owner} has the following kernels on todo:')
+                print(f"@{owner} has the following kernels on todo:")
             for tid in by_owner[owner]:
-                handle   = self._byid[tid].get("handle")
+                handle = self._byid[tid].get("handle")
 
                 if lrm:
-                    priority = ''
+                    priority = ""
                 else:
                     if self.has_lrm(tid):
-                        priority = '!'
+                        priority = "!"
                     else:
-                        priority = ''
-                if self._byid[tid].get("variant", "") == 'snap-debs':
+                        priority = ""
+                if self._byid[tid].get("variant", "") == "snap-debs":
                     handle += " [snap]"
 
-                print(f'  - {priority}{handle} (LP: #{tid})', end='')
+                print(f"  - {priority}{handle} (LP: #{tid})", end="")
                 blocking = self.get_nr_blocking(tid)
                 if blocking == 0:
                     print()
                 else:
-                    print(f' ({blocking} sources are waiting on this)')
+                    print(f" ({blocking} sources are waiting on this)")
 
                 if tasks:
                     self.print_tid_tasks(tid)
@@ -191,23 +199,23 @@ swm-laglist --lrm <DD.MM.YYYY>
     LRM. Because all those have to release together or none at all they have a high
     chance to critically delay a release.
     """
-    parser = argparse.ArgumentParser(description=desc,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     epilog=epilog,
-                                     prog="swm-laglist")
-    parser.add_argument("-v", "--verbose", action="store_true",
-                        help="Add more details to the output.")
-    parser.add_argument("-t", "--tasks", action="store_true",
-                        help="Print outstanding tasks")
-    parser.add_argument("-i", "--ignore", metavar='<spin nr>', type=str, action="append",
-                        default=[],
-                        help="Ignore the given spin number (for security spins).")
-    parser.add_argument("--lrm", action="store_true",
-                        help="Concentrate on sources which have LRM.")
-    parser.add_argument("--crankable", action="store_true",
-                        help="Only report sources which are not prepared, yet")
-    parser.add_argument('cdate', metavar='<date>', nargs=1, type=str,
-                        help="Date (YYYY.MM.DD) of cycle to show")
+    parser = argparse.ArgumentParser(
+        description=desc, formatter_class=argparse.RawDescriptionHelpFormatter, epilog=epilog, prog="swm-laglist"
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Add more details to the output.")
+    parser.add_argument("-t", "--tasks", action="store_true", help="Print outstanding tasks")
+    parser.add_argument(
+        "-i",
+        "--ignore",
+        metavar="<spin nr>",
+        type=str,
+        action="append",
+        default=[],
+        help="Ignore the given spin number (for security spins).",
+    )
+    parser.add_argument("--lrm", action="store_true", help="Concentrate on sources which have LRM.")
+    parser.add_argument("--crankable", action="store_true", help="Only report sources which are not prepared, yet")
+    parser.add_argument("cdate", metavar="<date>", nargs=1, type=str, help="Date (YYYY.MM.DD) of cycle to show")
     args = parser.parse_args()
 
     cdate = args.cdate[0]
@@ -216,15 +224,15 @@ swm-laglist --lrm <DD.MM.YYYY>
         content = "sources with LRM"
     if args.crankable:
         if content != "":
-            content += ' '
-        content += 'not yet prepared'
+            content += " "
+        content += "not yet prepared"
     if len(args.ignore) > 0:
         if content != "":
-            content += ', '
+            content += ", "
         content += f'ignoring spin(s)#{",".join(args.ignore)}'
     if content == "":
         content = "Complete"
 
-    print(f'Report on SRU Cycle {cdate} ({content})')
+    print(f"Report on SRU Cycle {cdate} ({content})")
     cs = CycleStatus(args.cdate[0], verbose=args.verbose)
     cs.list_by_owner(ignore=args.ignore, lrm=args.lrm, crankable=args.crankable, tasks=args.tasks)

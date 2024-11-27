@@ -7,12 +7,10 @@ import os
 import sys
 import time
 import traceback
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from subprocess import PIPE, STDOUT, CalledProcessError, Popen, TimeoutExpired
 
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from subprocess                         import Popen, PIPE, STDOUT, CalledProcessError, TimeoutExpired
-
-from ktl.msgq                           import MsgQueueService, MsgQueueCredentials
-
+from ktl.msgq import MsgQueueCredentials, MsgQueueService
 from wfl.secrets import Secrets
 from wfl.work import SwmWorkCmds
 
@@ -20,29 +18,28 @@ from wfl.work import SwmWorkCmds
 class SwmWorker(SwmWorkCmds):
 
     def __init__(self, args):
-        '''
-        '''
+        """ """
         self.args = args
 
         self.log = logger
 
         self.queue = self.args.queue
-        self.direct = self.queue + '--' + self.args.name
+        self.direct = self.queue + "--" + self.args.name
 
     # _announce
     #
     def _announce(self, to, message):
         message = to + " " + self.args.name + " " + message
 
-        destination = {'type': 'key', 'key': to}
-        message = {'subject': message}
+        destination = {"type": "key", "key": to}
+        message = {"subject": message}
 
-        payload = {'destination': destination, 'message': message}
+        payload = {"destination": destination, "message": message}
 
         self.deliver_to(payload)
 
     def deliver_to(self, payload):
-        key = 'announce.' + payload['destination']['type']
+        key = "announce." + payload["destination"]["type"]
         self.mq.publish(key, payload)
 
     # _handler
@@ -52,44 +49,58 @@ class SwmWorker(SwmWorkCmds):
         self.log.info("handler method={}".format(method))
         self.log.info("handler properties={}".format(properties))
 
-        prefix = self.args.name.split('-')[-1]
+        prefix = self.args.name.split("-")[-1]
 
         ack = MsgQueueService.ACK
         try:
-            what = payload.get('type')
+            what = payload.get("type")
             if what is None:
                 raise ValueError("invalid message")
 
-            if what == 'quit':
+            if what == "quit":
                 self.mq.listen_stop()
 
             elif what in ("shank", "dependants", "instantiate", "worker-start"):
                 ack = MsgQueueService.REQUEUE
 
                 if what == "shank":
-                    tracker = payload.get('tracker')
+                    tracker = payload.get("tracker")
                     if tracker is None:
                         raise ValueError("invalid shank message")
-                    scanned = payload.get('scanned')
-                    cmd = [os.path.join(os.path.dirname(__file__), "swm-run"), "--log-prefix", prefix + ":", "--queue-only", tracker + "@" + scanned]
+                    scanned = payload.get("scanned")
+                    cmd = [
+                        os.path.join(os.path.dirname(__file__), "swm-run"),
+                        "--log-prefix",
+                        prefix + ":",
+                        "--queue-only",
+                        tracker + "@" + scanned,
+                    ]
 
                 elif what == "dependants":
-                    cmd = [os.path.join(os.path.dirname(__file__), "swm-run"), "--log-prefix", prefix + ":", "--queue-only", "--dependants-only"]
+                    cmd = [
+                        os.path.join(os.path.dirname(__file__), "swm-run"),
+                        "--log-prefix",
+                        prefix + ":",
+                        "--queue-only",
+                        "--dependants-only",
+                    ]
 
                 elif what == "instantiate":
-                    tracker = payload.get('tracker')
+                    tracker = payload.get("tracker")
                     if tracker is None:
                         raise ValueError("invalid shank message")
                     cmd = [os.path.join(os.path.dirname(__file__), "swm-instantiate"), tracker]
 
                 elif what == "worker-start":
-                    number = payload.get('number')
+                    number = payload.get("number")
                     if number is None:
                         raise ValueError("invalid worker-start message")
                     cmd = [os.path.join(os.path.dirname(__file__), "swm-worker-start"), str(number)]
 
                 try:
-                    self.log.info("Starting {} (priority={} key={})".format(cmd, properties.priority, method.routing_key))
+                    self.log.info(
+                        "Starting {} (priority={} key={})".format(cmd, properties.priority, method.routing_key)
+                    )
                     cmd.insert(0, os.path.join(os.path.dirname(__file__), "..", "sbin", "oops-stream"))
                     cmd.insert(1, "swm")
                     child = Popen(cmd)
@@ -100,7 +111,7 @@ class SwmWorker(SwmWorkCmds):
                         except TimeoutExpired:
                             pass
                         self.mq.connection.process_data_events()
-                    self.log.info("Complete {} res={}".format(cmd, res) )
+                    self.log.info("Complete {} res={}".format(cmd, res))
 
                     # All requests are idempotent and any dropped ones will be
                     # resubmitted.  Therefore we ack this one away regardless
@@ -109,19 +120,19 @@ class SwmWorker(SwmWorkCmds):
                     if res != 0:
                         time.sleep(10)
 
-                    #self._announce('cod-job-stop', 'finished ' + job_tag)
+                    # self._announce('cod-job-stop', 'finished ' + job_tag)
 
                 except OSError:
                     self.log.error("work request failed")
 
-                    #self._announce('cod-job-stop', 'failed ' + job_tag)
+                    # self._announce('cod-job-stop', 'failed ' + job_tag)
 
                 except:
                     self.log.error("work request exploded")
-                    #print(sys.exc_info()[0])
+                    # print(sys.exc_info()[0])
                     self.log.error(traceback.format_exc())
 
-                    #self._announce('cod-job-stop', 'exploded ' + job_tag)
+                    # self._announce('cod-job-stop', 'exploded ' + job_tag)
 
                 # Indicate this is complete.
                 if ack is MsgQueueService.ACK:
@@ -129,44 +140,51 @@ class SwmWorker(SwmWorkCmds):
 
         except Exception as e:
             self.log.error("announcement failed: {}".format(str(e)))
-            self._announce('announce-control', 'exploded')
+            self._announce("announce-control", "exploded")
             raise e
 
         return ack
 
-
     def main(self):
-        '''
-        '''
+        """ """
         retval = 1
 
         try:
             self.log.info("Starting")
 
             # XXX: should this be by "name" in general.
-            self.secrets = Secrets(os.path.expanduser('~/.kernel-swm-worker.yaml'))
+            self.secrets = Secrets(os.path.expanduser("~/.kernel-swm-worker.yaml"))
 
             # Pass in credentials if we have them, else use the limited defaults.
-            hostname = self.secrets.get('amqp-hostname')
-            username = self.secrets.get('amqp-username')
-            password = self.secrets.get('amqp-password')
+            hostname = self.secrets.get("amqp-hostname")
+            username = self.secrets.get("amqp-username")
+            password = self.secrets.get("amqp-password")
             credentials = None
             if username is not None and password is not None:
                 credentials = MsgQueueCredentials(username, password)
 
-            self.mq = MsgQueueService(service='swm', local=self.args.local, host=hostname, credentials=credentials, exchange='swm', heartbeat_interval=60)
+            self.mq = MsgQueueService(
+                service="swm",
+                local=self.args.local,
+                host=hostname,
+                credentials=credentials,
+                exchange="swm",
+                heartbeat_interval=60,
+            )
 
-            self._announce('announce-control', 'swm-worker start')
+            self._announce("announce-control", "swm-worker start")
 
-            q_args = {'x-max-priority': 7}
-            shared = ['swm.shank', 'swm.dependants', 'swm.instantiate', 'swm.worker-start']
+            q_args = {"x-max-priority": 7}
+            shared = ["swm.shank", "swm.dependants", "swm.instantiate", "swm.worker-start"]
             self.mq.listen_worker(self.queue, shared, handler=self._handler, queue_arguments=q_args)
-            direct = ['direct.{}.swm.quit'.format(self.args.name),]
+            direct = [
+                "direct.{}.swm.quit".format(self.args.name),
+            ]
             self.mq.listen_worker(self.direct, direct, handler=self._handler, queue_arguments=q_args, auto_delete=True)
 
             self.log.info("Listening")
             self.mq.listen_start()
-            self._announce('announce-control', 'swm-worker quit')
+            self._announce("announce-control", "swm-worker quit")
 
             self.mq.close()
 
@@ -181,28 +199,32 @@ class SwmWorker(SwmWorkCmds):
         return retval
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Command line argument setup and initial processing
     #
-    app_description = '''
+    app_description = """
 SWM AMQP listener
-    '''
-    app_epilog = '''
+    """
+    app_epilog = """
 examples:
     swm-worker --help
-    '''
+    """
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
-    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
-    parser.add_argument('--name', default=os.uname().nodename, help='Name of this instance in the admin domain')
-    parser.add_argument('--queue', default='swm-worker', help='Name of the queue to use')
+    parser.add_argument(
+        "--debug", action="store_true", default=False, help="Print out a lot of messages about what is going on."
+    )
+    parser.add_argument(
+        "--local", action="store_true", default=False, help="Assume we have sshuttle setup to the MQ server."
+    )
+    parser.add_argument("--name", default=os.uname().nodename, help="Name of this instance in the admin domain")
+    parser.add_argument("--queue", default="swm-worker", help="Name of the queue to use")
     args = parser.parse_args()
 
     # If logging parameters were set on the command line, handle them
     # here.
     #
     logging.basicConfig(format="%(levelname)05s %(name)s %(message)s")
-    logger = logging.getLogger('app')
+    logger = logging.getLogger("app")
     logger.setLevel(level=logger.DEBUG if args.debug else logging.INFO)
 
     app = SwmWorker(args)
@@ -210,4 +232,3 @@ examples:
 
 
 # vi:set ts=4 sw=4 expandtab:
-
