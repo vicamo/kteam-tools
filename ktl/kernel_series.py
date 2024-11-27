@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 
+from urllib.parse import urlsplit
 from urllib.request import urlopen
 from urllib.error import HTTPError, URLError
 
@@ -760,12 +761,15 @@ class KernelSeriesEntry:
 # KernelSeriesUrl
 #
 class KernelSeriesUrl:
-    def __init__(self, url=None, data=None, use_local=False, xc=None):
+    def __init__(self, url=None, data=None, data_location=None, xc=None):
         if data is None and url is None:
             raise ValueError("expecting url or data")
 
         self.url = url
+        self.data_location = data_location
+
         if data is None:
+            url = urlsplit(url, scheme="file").geturl()
             response = urlopen(url)
             data = response.read()
             if data[0:2] == b"\x1f\x8b":
@@ -784,7 +788,6 @@ class KernelSeriesUrl:
             self._data = yaml.safe_load(data)
 
         self._xc = None
-        self._xc_local = use_local
 
         self._development_series = None
         self._codename_to_series = {}
@@ -808,7 +811,7 @@ class KernelSeriesUrl:
     @property
     def xc(self):
         if self._xc is None:
-            self._xc = SigningConfig(use_local=self._xc_local)
+            self._xc = SigningConfig(data_location=self.data_location)
         return self._xc
 
     @property
@@ -836,92 +839,71 @@ class KernelSeriesUrl:
 
 
 class KernelSeriesCache:
-    def __init__(self, data_location=None):
-        if data_location is None:
-            data_location = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "info"))
-
-        self._data_location = data_location
-        self.by_url = {}
-
-    def url_local(self, cycle):
-        try:
-            import ckt_info
-
-            path = ckt_info.abspath("info/kernel-series.yaml")
-        except ImportError:
-            path = os.path.join(self._data_location, "kernel-series.yaml")
-        if cycle is not None:
-            path_base = os.path.dirname(path)
-            paths = [
-                os.path.join(path_base, "kernel-versions", cycle, "info", "kernel-series.yaml"),
-                os.path.join(path_base, "kernel-versions", "complete", cycle, "info", "kernel-series.yaml"),
-                os.path.join(path_base, "kernel-series.yaml@" + cycle),
-            ]
-        else:
-            paths = [path]
-        return ["file://" + path for path in paths]
-
-    # Enviromental overrides allowing selection of data:
-    #  USE_LOCAL_KERNEL_SERIES_YAML=true -- switch to using a local .yaml form (deprecated)
-    #  KERNEL_SERIES_USE={json,local,launchpad} -- switch to a specific data source
-    #    json -- remote native json form
-    #    local -- local yaml files in tree
-    #    launchpad -- raw primary sources in yaml form from git.launchpad.net
-    #    devel -- read exclusively from local info/kernel-series.yaml
-    def form_url(self, use_local, cycle):
-        if use_local is None:
-            if os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False):
-                warn(
-                    "Use of USE_LOCAL_KERNEL_SERIES_YAML environment variable is deprecated, use KERNEL_SERIES_USE=local"
-                )
-                use_local = True
-
+    def __init__(self, use_local=False, data_location=None):
+        # Enviromental overrides allowing selection of data:
+        #  USE_LOCAL_KERNEL_SERIES_YAML=true -- switch to using a local .yaml form (deprecated)
+        #  KERNEL_SERIES_USE={json,local,launchpad} -- switch to a specific data source
+        #    json -- remote native json form
+        #    local -- local yaml files in tree
+        #    launchpad -- raw primary sources in yaml form from git.launchpad.net
+        #    devel -- read exclusively from local info/kernel-series.yaml
         which = os.getenv("KERNEL_SERIES_USE", "default")
         if use_local:
             which = "local"
-        if which in ("local", "devel"):
-            use_local = True
 
-        if which == "launchpad":
-            if cycle is None:
-                urls = ["https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml"]
+        self.form_urls = self.form_urls_regular
+        if data_location is None:
+            if which in ("local", "devel"):
+                try:
+                    import ckt_info
+
+                    path = ckt_info.abspath("info/kernel-series.yaml")
+                    data_location = os.path.dirname(path)
+                except ImportError:
+                    data_location = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "kernel-versions", "info"))
+
+                if which == "devel":
+                    self.form_urls = self.form_urls_devel
+
+            elif which == "launchpad":
+                data_location = "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info"
+
             else:
-                urls = [
-                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/"
-                    + cycle
-                    + "/info/kernel-series.yaml?h=main",
-                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/complete/"
-                    + cycle
-                    + "/info/kernel-series.yaml?h=main",
-                    "https://git.launchpad.net/~canonical-kernel/+git/kernel-versions/plain/info/kernel-series.yaml?h="
-                    + cycle,
-                ]
-        else:
-            if which == "local":
-                urls = self.url_local(cycle)
-            elif which == "devel":
-                urls = self.url_local(None)
-            else:  # default|json
-                url = "https://kernel.ubuntu.com/info/kernel-series.json.gz"
-                if cycle is not None:
-                    url += "@" + cycle
-                urls = [url]
+                data_location = "https://kernel.ubuntu.com/info"
+                self.form_urls = self.form_urls_flat
 
-        return urls, use_local
+        self.data_location = data_location
+        self.by_url = {}
+
+    def form_urls_devel(self, cycle):
+            return [f"{self.data_location}/kernel-series.yaml"]
+
+    def form_urls_regular(self, cycle):
+        if cycle is not None:
+            return [
+                os.path.dirname(self.data_location) + f"/{cycle}/info/kernel-series.yaml",
+                os.path.dirname(self.data_location) + f"/complete/{cycle}/info/kernel-series.yaml",
+            ]
+        else:
+            return [f"{self.data_location}/kernel-series.yaml"]
+
+    def form_urls_flat(self, cycle):
+        if cycle is not None:
+            return [f"{self.data_location}/kernel-series.json.gz@{cycle}"]
+        else:
+            return [f"{self.data_location}/kernel-series.json.gz"]
 
     def for_cycle(self, cycle, url=None, data=None, use_local=None, **kwargs):
         if data is not None:
-            return KernelSeriesUrl(url=url, data=data, use_local=use_local, **kwargs)
+            return KernelSeriesUrl(url=url, data=data, data_location=self.data_location, **kwargs)
         if url is None:
-            urls, use_local = self.form_url(use_local, cycle)
+            urls = self.form_urls(cycle)
         else:
             urls = [url]
-        if urls is None:
-            return None
         for url in urls:
             if url not in self.by_url:
                 try:
-                    self.by_url[url] = KernelSeriesUrl(url=url, data=data, use_local=use_local, **kwargs)
+                    self.by_url[url] = KernelSeriesUrl(url=url, data=data, data_location=self.data_location, **kwargs)
                 except HTTPError as e:
                     if e.code == 404:
                         continue
