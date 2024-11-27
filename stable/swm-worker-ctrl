@@ -1,11 +1,6 @@
 #!/usr/bin/python3
 
-import sys
-import os
-import json
 from argparse import ArgumentParser
-
-from ktl.msgq import MsgQueueService, MsgQueueCredentials
 
 from wfl.work import SwmWork
 
@@ -15,9 +10,7 @@ from wfl.work import SwmWork
 if __name__ == "__main__":
     parser = ArgumentParser("control SWM worker threads")
 
-    commands = parser.add_subparsers(
-        metavar="COMMAND", title="sub-commands", help="add -h for command help"
-    )
+    commands = parser.add_subparsers(metavar="COMMAND", title="sub-commands", help="add -h for command help")
     # Work around http://bugs.python.org/issue9253
     commands.required = True
     parser.add_argument("--local", action="store_true")
@@ -27,7 +20,7 @@ if __name__ == "__main__":
         help="set the number of workers",
         description="""Scale the number of workers.""",
     )
-    #subcmd.set_defaults(func=self.cmd_ready)
+    # subcmd.set_defaults(func=self.cmd_ready)
     subcmd.set_defaults(cmd="workers")
     subcmd.add_argument("count", type=int, help="number of workers")
 
@@ -51,4 +44,4 @@ if __name__ == "__main__":
             swm_work.send_worker_stop(worker_num)
         print("Stop:", " ".join(stop))
 
-    #print(swm_work.mq.queue_info("swm-worker"))
+    # print(swm_work.mq.queue_info("swm-worker"))

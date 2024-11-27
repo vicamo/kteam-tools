@@ -3,25 +3,25 @@
 # SWM - SRU Workflow Manager  (aka: shankbot)
 #
 
-import sys
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, DEBUG, WARNING, INFO
-import traceback
-import threading, sys, traceback
 import signal
+import sys
+import threading
+import traceback
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from logging import DEBUG, INFO, WARNING, basicConfig
 
-from wfl.log                            import Clog, center, cleave, cdebug
-from wfl.manager                        import WorkflowManager
-from wfl.bugmail                        import BugMailConfigFileMissing
-from wfl.bug                            import WorkflowBug
-from wfl.task                           import WorkflowBugTask
+from wfl.bug import WorkflowBug
+from wfl.bugmail import BugMailConfigFileMissing
+from wfl.log import Clog, cdebug, center, cleave
+from wfl.manager import WorkflowManager
+from wfl.task import WorkflowBugTask
 
 
 def dumpstacks(signal, frame):
     id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
     code = []
     for threadId, stack in sys._current_frames().items():
-        code.append("\n# Thread: %s(%d)" % (id2name.get(threadId,""), threadId))
+        code.append("\n# Thread: %s(%d)" % (id2name.get(threadId, ""), threadId))
         for filename, lineno, name, line in traceback.extract_stack(stack):
             code.append('File: "%s", line %d, in %s' % (filename, lineno, name))
             if line:
@@ -29,47 +29,69 @@ def dumpstacks(signal, frame):
     print("\n".join(code))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     signal.signal(signal.SIGQUIT, dumpstacks)
 
     # Command line argument setup and initial processing
     #
-    app_description = '''
+    app_description = """
 I do increadible things to kernel workflow bugs.
-    '''
-    app_epilog = '''
+    """
+    app_epilog = """
 examples:
     swm
     swm --debug
     swm --bugs 1134424 1133589
-    '''
+    """
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('--debug',                      action='store_true', default=False, help='')
-    parser.add_argument('--dry-run', '--dryrun',        action='store_true', default=False, help='Make no permanent changes.', dest='dryrun')
-    parser.add_argument('--no-status-changes',          action='store_true', default=False, help='Make no status changes.')
-    parser.add_argument('--no-phase-changes',           action='store_true', default=False, help='Make no phase changes.')
-    parser.add_argument('--no-assignments',             action='store_true', default=False, help='Make no assignee assignments.')
-    parser.add_argument('--no-announcements',           action='store_true', default=False, help='Send no email, msgq or other announcements.')
-    parser.add_argument('--no-timestamps',              action='store_true', default=False, help='Don\'t set any timestamps in the properties.')
-    parser.add_argument('--sauron',                     action='store_true', default=False, help='I\'m a professional, I know what I\'m doing. (will work on bugs marked \'invalid\')')
-    parser.add_argument('--no-color',                   action='store_true', default=False, help='Turn off colorisationn.)')
-    parser.add_argument('--dependants',                 action='store_true', default=False, help='Include dependant bugs of specified bugs.')
-    parser.add_argument('--dependants-only',            action='store_true', default=False, help='Only scan dependant bugs.')
-    parser.add_argument('--queue-only',                 action='store_true', default=False, help='Only queue bugs requiring further scan.')
-    parser.add_argument('--queue-direct',               action='store_true', default=False, help='Only queue proffered bugs.')
-    parser.add_argument('--logfile',                                         default=None, help='Where to log the output.')
-    parser.add_argument('--log-prefix',                                      default=None, help='Logfile prefix to disabiguate overlapping runs.')
-    parser.add_argument('--local-msgqueue-port',  type=int,                  default=None,  help='The local port to be used to talk to the Rabbit MQ service.')
-    parser.add_argument('bugs',  metavar='BUGS', nargs="*",                  default=None, help='A list of Launchpad bug ids that are to be processed.')
+    parser.add_argument("--debug", action="store_true", default=False, help="")
+    parser.add_argument(
+        "--dry-run", "--dryrun", action="store_true", default=False, help="Make no permanent changes.", dest="dryrun"
+    )
+    parser.add_argument("--no-status-changes", action="store_true", default=False, help="Make no status changes.")
+    parser.add_argument("--no-phase-changes", action="store_true", default=False, help="Make no phase changes.")
+    parser.add_argument("--no-assignments", action="store_true", default=False, help="Make no assignee assignments.")
+    parser.add_argument(
+        "--no-announcements", action="store_true", default=False, help="Send no email, msgq or other announcements."
+    )
+    parser.add_argument(
+        "--no-timestamps", action="store_true", default=False, help="Don't set any timestamps in the properties."
+    )
+    parser.add_argument(
+        "--sauron",
+        action="store_true",
+        default=False,
+        help="I'm a professional, I know what I'm doing. (will work on bugs marked 'invalid')",
+    )
+    parser.add_argument("--no-color", action="store_true", default=False, help="Turn off colorisationn.)")
+    parser.add_argument(
+        "--dependants", action="store_true", default=False, help="Include dependant bugs of specified bugs."
+    )
+    parser.add_argument("--dependants-only", action="store_true", default=False, help="Only scan dependant bugs.")
+    parser.add_argument(
+        "--queue-only", action="store_true", default=False, help="Only queue bugs requiring further scan."
+    )
+    parser.add_argument("--queue-direct", action="store_true", default=False, help="Only queue proffered bugs.")
+    parser.add_argument("--logfile", default=None, help="Where to log the output.")
+    parser.add_argument("--log-prefix", default=None, help="Logfile prefix to disabiguate overlapping runs.")
+    parser.add_argument(
+        "--local-msgqueue-port",
+        type=int,
+        default=None,
+        help="The local port to be used to talk to the Rabbit MQ service.",
+    )
+    parser.add_argument(
+        "bugs", metavar="BUGS", nargs="*", default=None, help="A list of Launchpad bug ids that are to be processed."
+    )
 
     args = parser.parse_args()
 
     # If logging parameters were set on the command line, handle them
     # here.
     #
-    log_prefix = ''
+    log_prefix = ""
     if args.log_prefix is not None:
-        log_prefix = args.log_prefix + ' '
+        log_prefix = args.log_prefix + " "
     if args.debug:
         log_format = log_prefix + "%(levelname)05s - %(message)s"
         basicConfig(filename=args.logfile, level=DEBUG, format=log_format)
@@ -83,22 +105,22 @@ examples:
     if args.no_color:
         Clog.color = False
 
-    center('__main__')
+    center("__main__")
     if args.debug:
-        cdebug('Configuration:')
+        cdebug("Configuration:")
         for arg in vars(args):
-            cdebug('    %s: %s' % (arg, getattr(args, arg)))
+            cdebug("    %s: %s" % (arg, getattr(args, arg)))
 
     try:
         # Pass along any "global" settings to the WorkflowBugTask.
         #
-        WorkflowBug.sauron            = args.sauron
-        WorkflowBug.dryrun            = args.dryrun
+        WorkflowBug.sauron = args.sauron
+        WorkflowBug.dryrun = args.dryrun
         WorkflowBug.no_status_changes = args.no_status_changes
-        WorkflowBug.no_phase_changes  = args.no_phase_changes
-        WorkflowBug.no_assignments    = args.no_assignments
-        WorkflowBug.no_announcements  = args.no_announcements
-        WorkflowBug.no_timestamps     = args.no_timestamps
+        WorkflowBug.no_phase_changes = args.no_phase_changes
+        WorkflowBug.no_assignments = args.no_assignments
+        WorkflowBug.no_announcements = args.no_announcements
+        WorkflowBug.no_timestamps = args.no_timestamps
         WorkflowBug.local_msgqueue_port = args.local_msgqueue_port
 
         WorkflowBugTask.dryrun = WorkflowBug.dryrun
@@ -118,14 +140,14 @@ examples:
             sys.stderr.write(trace)
         except:
             pass
-        logfile = open('/tmp/exceptions.log', 'w')
-        logfile.write('Critical exception in core')
+        logfile = open("/tmp/exceptions.log", "w")
+        logfile.write("Critical exception in core")
         logfile.write(trace)
-        logfile.write('----------------------------------------\n\n')
+        logfile.write("----------------------------------------\n\n")
         logfile.close()
         retval = -2
 
-    cleave('__main__ (%s)' % (retval))
+    cleave("__main__ (%s)" % (retval))
     exit(retval)
 
 # vi:set ts=4 sw=4 expandtab:

@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from ktl.kernel_series import KernelSeries
 from ktl.swm_status import SwmStatus
-from ktl.tracking_bug2 import TrackingBugs, TrackingBugError
+from ktl.tracking_bug2 import TrackingBugs
 
 
 class SwmAdditionalCreate:
@@ -38,7 +38,7 @@ class SwmAdditionalCreate:
                     tbs = TrackingBugs()
                 tb = tbs.add(tracker_id)
                 if not dry_run:
-                    tb.wf_set_property('kernel-stable-master-bug', int(want_parent))
+                    tb.wf_set_property("kernel-stable-master-bug", int(want_parent))
                     tb.save()
 
     def fix_esm_stream(self, dry_run=True):
@@ -55,10 +55,9 @@ class SwmAdditionalCreate:
 
             prepare_package = tracker.get("task", {}).get("prepare-package", {})
             snap_prepare = tracker.get("task", {}).get("snap-prepare", {})
-            if (
-                prepare_package.get("status", "Invalid") not in ("New", "Confirmed")
-                and snap_prepare.get("status", "Invalid") not in ("New", "Confirmed")
-            ):
+            if prepare_package.get("status", "Invalid") not in ("New", "Confirmed") and snap_prepare.get(
+                "status", "Invalid"
+            ) not in ("New", "Confirmed"):
                 continue
 
             stream_id = tracker.get("built", {}).get("route-entry")
@@ -113,14 +112,16 @@ class SwmAdditionalCreate:
         # provide binaries for the trackers above which we are closing out.
         # Also close our a selection of manually curated kernels which serve the
         # same purpose.
-        snap_only = set([
-            "focal:linux-iot",
-            "focal:linux-denver",
-            "focal:linux-ein",
-            "focal:linux-havana",
-            "focal:linux-nuremberg",
-            "focal:linux-shiner",
-        ])
+        snap_only = set(
+            [
+                "focal:linux-iot",
+                "focal:linux-denver",
+                "focal:linux-ein",
+                "focal:linux-havana",
+                "focal:linux-nuremberg",
+                "focal:linux-shiner",
+            ]
+        )
         for tracker_id, tracker in self.ss.trackers.items():
             cycle = tracker.get("cycle")
             series = tracker.get("series")
@@ -128,10 +129,7 @@ class SwmAdditionalCreate:
             target = tracker.get("target")
             parent = tracker.get("master-bug")
 
-            if (
-                not source.startswith("linux-uc2")
-                and not f"{series}:{source}" in snap_only
-            ):
+            if not source.startswith("linux-uc2") and not f"{series}:{source}" in snap_only:
                 continue
 
             prepare_package = tracker.get("task", {}).get("prepare-package", {})
@@ -153,7 +151,6 @@ class SwmAdditionalCreate:
             print(f"{tracker_id}: {cycle} {series} {source} {target} snap (linux-ucNN) unprepared stream#2")
             if not dry_run:
                 tb.invalidate()
-
 
     def main(self):
         parser = ArgumentParser()

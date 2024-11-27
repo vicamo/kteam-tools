@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
-#
-from __future__             import print_function
 
 import argparse
-import os
-import sys
-import yaml
 
 from launchpadlib.launchpad import Launchpad
 
@@ -15,28 +10,26 @@ from ktl.swm_status import SwmStatus
 class SwmMaintenance:
 
     _lp = None
+
     @property
     def lp(self):
         if self._lp is None:
-            self._lp = Launchpad.login_with('swm-maintenance', 'production', version='devel')
+            self._lp = Launchpad.login_with("swm-maintenance", "production", version="devel")
 
         return self._lp
 
     def bug_prefix(self, bugid):
-        if bugid != '':
-            bugid = 'LP: #' + str(bugid)
+        if bugid != "":
+            bugid = "LP: #" + str(bugid)
         else:
-            bugid = '--  --'
+            bugid = "--  --"
         return bugid
 
     def main(self):
-        parser = argparse.ArgumentParser(description='SWM maintenance tool')
-        parser.add_argument('--list', help='Display maintenance records',
-            action='store_true', default=False)
-        parser.add_argument('--all', help='Include positive maintenance records',
-            action='store_true', default=False)
-        parser.add_argument('--retry-builds', help='Retry build failure records for a tracker',
-            action='append')
+        parser = argparse.ArgumentParser(description="SWM maintenance tool")
+        parser.add_argument("--list", help="Display maintenance records", action="store_true", default=False)
+        parser.add_argument("--all", help="Include positive maintenance records", action="store_true", default=False)
+        parser.add_argument("--retry-builds", help="Retry build failure records for a tracker", action="append")
 
         # XXX: exclusive group
         args = parser.parse_args()
@@ -46,7 +39,7 @@ class SwmMaintenance:
         results = []
 
         for bug_id, bug_data in self.status.trackers.items():
-            maint_records = bug_data.get('maintenance')
+            maint_records = bug_data.get("maintenance")
             if maint_records is None:
                 continue
 
@@ -55,30 +48,33 @@ class SwmMaintenance:
                 if args.list:
                     fmt = "{bug_id:13} {cycle:15} {what:25} {type:10}"
                     detail = {}
-                    for key, value in sorted(maint.get('detail', {}).items()):
-                        if key in ('lp-api'):
-                            detail['lp-api'] = value
+                    for key, value in sorted(maint.get("detail", {}).items()):
+                        if key in ("lp-api"):
+                            detail["lp-api"] = value
                             continue
                         value = str(value)
-                        if ' ' in value:
+                        if " " in value:
                             fmt += " {0}<{{detail-{0}}}>".format(key)
                         else:
                             fmt += " {0}={{detail-{0}}}".format(key)
-                        detail['detail-' + key] = value
+                        detail["detail-" + key] = value
 
-                    what = "{}:{}".format(bug_data['series'], bug_data['source'])
-                    if maint['target'] != bug_data['source']:
-                        what += ':' + maint['target']
-                    records.append(fmt.format(
+                    what = "{}:{}".format(bug_data["series"], bug_data["source"])
+                    if maint["target"] != bug_data["source"]:
+                        what += ":" + maint["target"]
+                    records.append(
+                        fmt.format(
                             bug_id=self.bug_prefix(bug_id),
-                            cycle=bug_data['cycle'],
+                            cycle=bug_data["cycle"],
                             what=what,
-                            type=maint['type'],
-                            **detail))
+                            type=maint["type"],
+                            **detail,
+                        )
+                    )
                     if not args.all:
-                        build = self.lp.load(detail['lp-api'])
+                        build = self.lp.load(detail["lp-api"])
                         buildstate = build.buildstate
-                        if buildstate in ('Currently building', 'Uploading build', 'Successfully built'):
+                        if buildstate in ("Currently building", "Uploading build", "Successfully built"):
                             records = []
                             break
 
@@ -86,35 +82,38 @@ class SwmMaintenance:
                     if bug_id not in args.retry_builds:
                         continue
 
-                    if maint['type'] != 'deb-build':
+                    if maint["type"] != "deb-build":
                         continue
 
-                    detail = maint.get('detail', {})
+                    detail = maint.get("detail", {})
 
-                    #if detail['state'] == 'Dependency wait':
+                    # if detail['state'] == 'Dependency wait':
                     #    continue
 
-                    if 'lp-api' not in detail:
+                    if "lp-api" not in detail:
                         continue
-                    build = self.lp.load(detail['lp-api'])
+                    build = self.lp.load(detail["lp-api"])
 
-                    notes = ''
+                    notes = ""
                     if build.can_be_retried:
-                        notes += ' (retrying)'
+                        notes += " (retrying)"
 
                     fmt = "{bug_id:13} {cycle:15} {what:25} {type:10} {package} {arch} {buildstate}{notes}"
-                    what = "{}:{}".format(bug_data['series'], bug_data['source'])
-                    if maint['target'] != bug_data['source']:
-                        what += ':' + maint['target']
-                    print(fmt.format(
+                    what = "{}:{}".format(bug_data["series"], bug_data["source"])
+                    if maint["target"] != bug_data["source"]:
+                        what += ":" + maint["target"]
+                    print(
+                        fmt.format(
                             bug_id=self.bug_prefix(bug_id),
-                            cycle=bug_data['cycle'],
+                            cycle=bug_data["cycle"],
                             what=what,
                             package=build.source_package_name,
                             arch=build.arch_tag,
                             buildstate=build.buildstate,
                             notes=notes,
-                            **maint))
+                            **maint,
+                        )
+                    )
                     if build.can_be_retried:
                         build.retry()
 
@@ -123,5 +122,6 @@ class SwmMaintenance:
                 for record in records:
                     print(record)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     SwmMaintenance().main()

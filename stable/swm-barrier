@@ -1,18 +1,10 @@
 #!/usr/bin/env python3
 
-from __future__ import print_function
-
 import logging
 import os
-import sys
-import time
-import traceback
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from subprocess                         import Popen, PIPE, STDOUT, CalledProcessError
-
-from ktl.msgq                           import MsgQueueService, MsgQueueCredentials
-
+from ktl.msgq import MsgQueueCredentials, MsgQueueService
 from wfl.secrets import Secrets
 from wfl.work import SwmWorkCmds
 
@@ -56,26 +48,29 @@ class SwmBarrierGroup:
         if self.nascent:
             return "GROUP<nascent>"
         else:
-            return "GROUP<{} wants={} sees={} complete={} priorities={}>".format(self.group, len(self.want), len(self.seen), self.complete, self.priorities)
+            return "GROUP<{} wants={} sees={} complete={} priorities={}>".format(
+                self.group, len(self.want), len(self.seen), self.complete, self.priorities
+            )
 
     def __repr__(self):
         if self.nascent:
             return "GROUP<nascent>"
         else:
-            return "GROUP<{} wants={} sees={} complete={} priorities={}>".format(self.group, len(self.want), len(self.seen), self.complete, self.priorities)
+            return "GROUP<{} wants={} sees={} complete={} priorities={}>".format(
+                self.group, len(self.want), len(self.seen), self.complete, self.priorities
+            )
 
 
 class SwmBarrier(SwmWorkCmds):
 
     def __init__(self, args):
-        '''
-        '''
+        """ """
         self.args = args
 
         self.log = logger
 
         self.queue = args.queue
-        self.direct = self.queue + '--' + self.args.name
+        self.direct = self.queue + "--" + self.args.name
 
         # Wanted, Seen per group.
         self.groups = []
@@ -85,15 +80,15 @@ class SwmBarrier(SwmWorkCmds):
     def _announce(self, to, message):
         message = to + " " + self.args.name + " " + message
 
-        destination = {'type': 'key', 'key': to}
-        message = {'subject': message}
+        destination = {"type": "key", "key": to}
+        message = {"subject": message}
 
-        payload = {'destination': destination, 'message': message}
+        payload = {"destination": destination, "message": message}
 
         self.deliver_to(payload)
 
     def deliver_to(self, payload):
-        key = 'announce.' + payload['destination']['type']
+        key = "announce." + payload["destination"]["type"]
         self.mq.publish(key, payload)
 
     # _handler
@@ -103,19 +98,19 @@ class SwmBarrier(SwmWorkCmds):
         self.log.info("handler method={}".format(method))
         self.log.info("handler properties={}".format(properties))
 
-        prefix = args.name.split('-')[-1]
+        prefix = args.name.split("-")[-1]
 
         try:
-            what = payload.get('type')
+            what = payload.get("type")
             if what is None:
                 raise ValueError("invalid message")
 
-            if what == 'quit':
+            if what == "quit":
                 self.mq.listen_stop()
 
-            elif what in ('shank', 'instantiate'):
-                shank_group = payload.get('group')
-                shank_id = payload.get('id')
+            elif what in ("shank", "instantiate"):
+                shank_group = payload.get("group")
+                shank_id = payload.get("id")
                 priority = properties.priority
                 for group in self.groups:
                     if group.group == shank_group:
@@ -128,8 +123,8 @@ class SwmBarrier(SwmWorkCmds):
 
                 self.log.info("groups={}".format(self.groups))
 
-            elif what in ('shank-complete', 'instantiate-complete'):
-                shank_id = payload.get('id')
+            elif what in ("shank-complete", "instantiate-complete"):
+                shank_id = payload.get("id")
                 for group in self.groups:
                     if group.offer(shank_id):
                         break
@@ -139,7 +134,7 @@ class SwmBarrier(SwmWorkCmds):
 
         except Exception as e:
             self.log.error("announcement failed: {}".format(str(e)))
-            self._announce('announce-control', 'exploded')
+            self._announce("announce-control", "exploded")
             raise e
 
         request_dependants = False
@@ -162,38 +157,45 @@ class SwmBarrier(SwmWorkCmds):
             self.log.info("REQUESTING DEPENDANTS")
             self.send_dependants()
 
-
     def main(self):
-        '''
-        '''
+        """ """
         retval = 1
 
         try:
             self.log.info("Starting")
 
             # XXX: should this be by "name" in general.
-            self.secrets = Secrets(os.path.expanduser('~/.kernel-swm-worker.yaml'))
+            self.secrets = Secrets(os.path.expanduser("~/.kernel-swm-worker.yaml"))
 
             # Pass in credentials if we have them, else use the limited defaults.
-            hostname = self.secrets.get('amqp-hostname')
-            username = self.secrets.get('amqp-username')
-            password = self.secrets.get('amqp-password')
+            hostname = self.secrets.get("amqp-hostname")
+            username = self.secrets.get("amqp-username")
+            password = self.secrets.get("amqp-password")
             credentials = None
             if username is not None and password is not None:
                 credentials = MsgQueueCredentials(username, password)
 
-            self.mq = MsgQueueService(service='swm', local=self.args.local, host=hostname, credentials=credentials, exchange='swm', heartbeat_interval=60)
+            self.mq = MsgQueueService(
+                service="swm",
+                local=self.args.local,
+                host=hostname,
+                credentials=credentials,
+                exchange="swm",
+                heartbeat_interval=60,
+            )
 
-            self._announce('announce-control', 'swm-worker start')
+            self._announce("announce-control", "swm-worker start")
 
-            shared = ['swm.shank', 'swm.shank-complete', 'swm.instantiate', 'swm.instantiate-complete', 'swm.barrier']
+            shared = ["swm.shank", "swm.shank-complete", "swm.instantiate", "swm.instantiate-complete", "swm.barrier"]
             self.mq.listen_worker(self.queue, shared, handler=self._handler)
-            direct = ['direct.{}.swm.quit'.format(self.args.name),]
+            direct = [
+                "direct.{}.swm.quit".format(self.args.name),
+            ]
             self.mq.listen_worker(self.direct, direct, handler=self._handler, auto_delete=True)
 
             self.log.info("Listening")
             self.mq.listen_start()
-            self._announce('announce-control', 'swm-worker quit')
+            self._announce("announce-control", "swm-worker quit")
 
             self.mq.close()
 
@@ -208,28 +210,32 @@ class SwmBarrier(SwmWorkCmds):
         return retval
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Command line argument setup and initial processing
     #
-    app_description = '''
+    app_description = """
 SWM AMQP listener
-    '''
-    app_epilog = '''
+    """
+    app_epilog = """
 examples:
     swm-barrier --help
-    '''
+    """
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
-    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
-    parser.add_argument('--name', default=os.uname().nodename, help='Name of this instance in the admin domain')
-    parser.add_argument('--queue', default='swm-barrier', help='Name of the queue to use')
+    parser.add_argument(
+        "--debug", action="store_true", default=False, help="Print out a lot of messages about what is going on."
+    )
+    parser.add_argument(
+        "--local", action="store_true", default=False, help="Assume we have sshuttle setup to the MQ server."
+    )
+    parser.add_argument("--name", default=os.uname().nodename, help="Name of this instance in the admin domain")
+    parser.add_argument("--queue", default="swm-barrier", help="Name of the queue to use")
     args = parser.parse_args()
 
     # If logging parameters were set on the command line, handle them
     # here.
     #
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-    logger = logging.getLogger('swm-barrier')
+    logging.basicConfig(format="%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    logger = logging.getLogger("swm-barrier")
     logger.setLevel(level=logger.DEBUG if args.debug else logging.INFO)
 
     app = SwmBarrier(args)
@@ -237,4 +243,3 @@ examples:
 
 
 # vi:set ts=4 sw=4 expandtab:
-
