@@ -209,6 +209,11 @@ class WorkflowBug():
             if old_flavours != new_flavours:
                 cinfo("APW-TEST-FLAVOURS: {} {} {} {}".format(s.series, s.name, str(old_flavours), str(new_flavours)))
 
+        if s.has_debs:
+            s.debs.check_version()
+        if s.has_snap:
+            s.snap.check_version()
+
     @property
     def has_debs(self):
         return self.debs is not None

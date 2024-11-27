@@ -964,16 +964,6 @@ class Package():
         s.bug.version_from_title()
         s.bug.update_title()
 
-        # Handle version changes.
-        clamp = s.bug.clamp('self')
-        if s.bug.version != s.bug.clamp('self'):
-            cinfo("tracker version has changed resetting tracker {} -> {}".format(clamp, s.bug.version))
-            s.bug.clamp_assign('self', s.bug.version)
-
-            if 'versions' in s.bug.bprops:
-                cinfo("tracker version has changed dropping package version data")
-                del s.bug.bprops['versions']
-
         # XXX: TRANSITION -- use the cycle information to work out which stream
         # we are going to default to.
         stream = s.bug.built_in
@@ -1052,6 +1042,17 @@ class Package():
         s.sync_versions()
 
         cleave('package::__init__')
+
+    def check_version(self):
+        # Handle version changes.
+        clamp = self.bug.clamp('self')
+        if self.bug.version != self.bug.clamp('self'):
+            cinfo("tracker version has changed resetting tracker {} -> {}".format(clamp, self.bug.version))
+            self.bug.clamp_assign('self', self.bug.version)
+
+            if 'versions' in self.bug.bprops:
+                cinfo("tracker version has changed dropping package version data")
+                del self.bug.bprops['versions']
 
     @centerleave
     def sync_versions(self):

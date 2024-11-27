@@ -223,23 +223,6 @@ class SnapDebs:
             # Default to our own version information.
             s.bug.version_from_title()
 
-            # Handle version changes.
-            parent_wb = s.bug.master_bug
-            clamp = s.bug.clamp('parent')
-            if parent_wb is not None and parent_wb.version != clamp:
-                cinfo("parent tracker version has changed resetting snap versioning {} -> {}".format(clamp, parent_wb.version))
-                s.bug.version = parent_wb.version
-                s.bug.clamp_assign('parent', parent_wb.version)
-            clamp = s.bug.clamp('self')
-            if s.bug.version != clamp:
-                cinfo("tracker version has changed resetting tracker {} -> {}".format(clamp, s.bug.version))
-                s.bug.clamp_assign('self', s.bug.version)
-                # XXX: likely we should be pulling tasks back here.
-                for taskname, task in s.bug.tasks_by_name.items():
-                    if taskname.startswith('snap-') and task.status != 'New':
-                        cinfo("pulling {} to New".format(taskname))
-                        task.status = 'New'
-
             # Expect this bug to have the data we need to identify the
             # snap.
             snap_name = s.bug.bprops.get('snap-name')
@@ -267,6 +250,7 @@ class SnapDebs:
 
             # Use our parents stream as soon as it comes ready.  Match our parent in
             # the normal form.
+            parent_wb = s.bug.master_bug
             if s.is_v2 and parent_wb is not None and parent_wb.built_in != s.bug.built_in:
                 s.bug.built_in = parent_wb.built_in
                 cinfo("APW: STREAM2 -- SNAP stream set to {}".format(s.bug.built_in))
@@ -297,6 +281,24 @@ class SnapDebs:
         s.source = s.bug.source
         s.kernel = s.bug.kernel
         s.abi = s.bug.abi
+
+    def check_version(self):
+        # Handle version changes.
+        parent_wb = self.bug.master_bug
+        clamp = self.bug.clamp('parent')
+        if parent_wb is not None and parent_wb.version != clamp:
+            cinfo("parent tracker version has changed resetting snap versioning {} -> {}".format(clamp, parent_wb.version))
+            self.bug.version = parent_wb.version
+            self.bug.clamp_assign('parent', parent_wb.version)
+        clamp = self.bug.clamp('self')
+        if self.bug.version != clamp:
+            cinfo("tracker version has changed resetting tracker {} -> {}".format(clamp, self.bug.version))
+            self.bug.clamp_assign('self', self.bug.version)
+            # XXX: likely we should be pulling tasks back here.
+            for taskname, task in self.bug.tasks_by_name.items():
+                if taskname.startswith('snap-') and task.status != 'New':
+                    cinfo("pulling {} to New".format(taskname))
+                    task.status = 'New'
 
     @property
     def snap_store(s):
