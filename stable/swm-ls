@@ -6,8 +6,6 @@ import argparse
 import os
 import sys
 
-import yaml
-
 from ktl.swm_status import SwmStatus
 
 

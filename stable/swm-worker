@@ -4,11 +4,10 @@ from __future__ import print_function
 
 import logging
 import os
-import sys
 import time
 import traceback
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-from subprocess import PIPE, STDOUT, CalledProcessError, Popen, TimeoutExpired
+from subprocess import Popen, TimeoutExpired
 
 from ktl.msgq import MsgQueueCredentials, MsgQueueService
 from wfl.secrets import Secrets

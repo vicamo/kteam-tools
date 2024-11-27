@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from ktl.kernel_series import KernelSeries
 from ktl.swm_status import SwmStatus
-from ktl.tracking_bug2 import TrackingBugError, TrackingBugs
+from ktl.tracking_bug2 import TrackingBugs
 
 
 class SwmAdditionalCreate:

@@ -7,21 +7,12 @@
 
 import os
 import sys
-from collections import namedtuple
 from copy import copy
 from datetime import datetime, timedelta, timezone
 from math import ceil
-from subprocess import Popen
 from time import perf_counter, time
-# from logging import DEBUG, INFO, WARNING, basicConfig
-from urllib.error import HTTPError
-from urllib.parse import urlsplit, urlunsplit
-from urllib.request import (HTTPBasicAuthHandler,
-                            HTTPPasswordMgrWithDefaultRealm, build_opener,
-                            urlopen)
 
 import yaml
-from lazr.restfulclient.errors import Unauthorized
 
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, "libs")))
@@ -31,8 +22,7 @@ from ktl.kernel_series import KernelSeries
 from ktl.sru_cycle import SruCycle
 from ktl.swm_status import SwmStatus
 from wfl.launchpad import LaunchpadDirect
-# from wfl.log import Clog, cdebug, center, cleave
-from wfl.snap import SnapStore, SnapStoreError
+from wfl.snap import SnapStore
 from wfl.test_observer import TestObserverError, TestObserverResults
 from wfl.wft.automated_testing import (AutomatedTestingResults,
                                        AutomatedTestingResultsError)

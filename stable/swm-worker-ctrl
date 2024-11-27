@@ -1,11 +1,7 @@
 #!/usr/bin/python3
 
-import json
-import os
-import sys
 from argparse import ArgumentParser
 
-from ktl.msgq import MsgQueueCredentials, MsgQueueService
 from wfl.work import SwmWork
 
 # from wfl.secrets import Secrets

@@ -5,9 +5,7 @@ from __future__ import print_function
 import argparse
 import os
 import sys
-from subprocess import PIPE, Popen, run
-
-import yaml
+from subprocess import PIPE, run
 
 from ktl.kernel_series import KernelSeries
 from ktl.swm_status import SwmStatus

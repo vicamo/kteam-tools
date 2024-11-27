@@ -23,7 +23,7 @@ from lazr.restfulclient.errors import BadRequest
 from ktl.kernel_series import KernelSeries
 from ktl.workflow import DefaultAssigneeMissing, Workflow
 from wfl.launchpad import LaunchpadDirect
-from wfl.log import Clog, cdebug, center, cerror, cinfo, cleave, cwarn
+from wfl.log import Clog, cdebug, cinfo
 from wfl.work import SwmWork
 
 
