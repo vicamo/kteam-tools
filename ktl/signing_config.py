@@ -2,6 +2,7 @@ import os
 import json
 import yaml
 
+from urllib.parse import urlsplit
 from urllib.request import urlopen
 
 
@@ -21,26 +22,28 @@ class SigningConfigStreamLevel:
 
 
 class SigningConfig:
-    def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_SIGNING_CONFIG", False)):
-        self._url = "https://kernel.ubuntu.com/info/signing-config.yaml"
-        try:
-            import ckt_info
+    def __init__(self, url=None, data=None, data_location=None, use_local=os.getenv("USE_LOCAL_SIGNING_CONFIG", False)):
+        if data_location is None:
+            if use_local:
+                try:
+                    import ckt_info
 
-            _local = ckt_info.abspath("info/signing-config.yaml")
-        except ImportError:
-            _local = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "info", "signing-config.yaml"))
-        self._url_local = "file://" + _local
+                    path = ckt_info.abspath("info/signing-config.yaml")
+                    data_location = os.path.dirname(path)
+                except ImportError:
+                    data_location = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "kernel-versions"))
+
+            else:
+                data_location = "https://kernel.ubuntu.com/info"
+
+        self.data_location = data_location
 
         if data is None:
             if url is None:
-                url = self._url_local if use_local else self._url
-            # print("URL", url)
-            if url.startswith("file://"):
-                with open(url[7:], "rb") as lfd:
-                    data = lfd.read()
-            else:
-                response = urlopen(url)
-                data = response.read()
+                url = self.data_location + "/signing-config.yaml"
+            url = urlsplit(url, scheme="file").geturl()
+            response = urlopen(url)
+            data = response.read()
             if isinstance(data, bytes):
                 data = data.decode("utf-8")
 
