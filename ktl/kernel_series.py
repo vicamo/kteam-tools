@@ -1,14 +1,13 @@
+import errno
+import io
+import json
+import os
+from gzip import GzipFile
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import urlopen
-from urllib.error import HTTPError, URLError
 
-import errno
-import json
-import io
-import os
 import yaml
-from gzip import GzipFile
-from warnings import warn
 
 from .signing_config import SigningConfig
 
@@ -522,7 +521,7 @@ class KernelSourceEntry:
 
     @property
     def derived_from_all(self):
-        """Return a list of sources that this kernel is derived from """
+        """Return a list of sources that this kernel is derived from"""
         if "derived-from" not in self._data:
             return []
 
@@ -853,7 +852,9 @@ class KernelSeriesCache:
                     path = ckt_info.abspath("info/kernel-series.yaml")
                     data_location = os.path.dirname(path)
                 except ImportError:
-                    data_location = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "kernel-versions", "info"))
+                    data_location = os.path.realpath(
+                        os.path.join(os.path.dirname(__file__), "..", "kernel-versions", "info")
+                    )
 
                 if which == "devel":
                     self.form_urls = self.form_urls_devel
@@ -869,7 +870,7 @@ class KernelSeriesCache:
         self.by_url = {}
 
     def form_urls_devel(self, cycle):
-            return [f"{self.data_location}/kernel-series.yaml"]
+        return [f"{self.data_location}/kernel-series.yaml"]
 
     def form_urls_regular(self, cycle):
         if cycle is not None:
