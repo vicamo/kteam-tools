@@ -138,14 +138,13 @@ class KernelRoutingEntry:
     @property
     def routes(self):
         self._routes_init()
-        return [route for dest, route in self._routes.items()]
+        return [route for _, route in self._routes.items()]
 
     def lookup_route(self, route):
         self._routes_init()
         return self._routes.get(route, [])
 
     def lookup_destination(self, dest, primary=False):
-        routes = self.lookup_route(dest)
         simple = [[route.reference, route.pocket] for route in self.lookup_route(dest)]
         if len(simple) == 0:
             return None
