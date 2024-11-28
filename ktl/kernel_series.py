@@ -753,8 +753,6 @@ class KernelSeriesEntry:
         return KernelSourceEntry(self._ks, self, source_key, sources[source_key])
 
 
-# KernelSeriesUrl
-#
 class KernelSeriesUrl:
     def __init__(self, url=None, data=None, data_location=None):
         if data is None and url is None:
