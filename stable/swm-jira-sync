@@ -125,7 +125,7 @@ if __name__ == "__main__":
                 if start is not None:
                     depth += 1
             elif tag.startswith("</div"):
-                if depth is not None:
+                if start is not None:
                     depth -= 1
                     if depth == 0:
                         end = match.start(0)
@@ -134,6 +134,8 @@ if __name__ == "__main__":
             return None
 
         public_html = issue_html[start:end]
+        if not public_html.startswith("\n<p>Public Information</p>"):
+            return None
 
         # Drop the Public Information header.
         public_html = public_html.replace("<p>Public Information</p>", "")
