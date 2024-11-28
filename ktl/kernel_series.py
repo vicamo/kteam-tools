@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-
 from urllib.parse import urlsplit
 from urllib.request import urlopen
 from urllib.error import HTTPError, URLError
@@ -16,7 +13,6 @@ from warnings import warn
 from .signing_config import SigningConfig
 
 
-# XXX: python2/3 compatibility.
 def gzip_decompress(data):
     """Decompress a gzip compressed string in one shot.
     Return the decompressed string.
@@ -943,6 +939,11 @@ class KernelSeries:
 
     key_series_name = KernelSeriesUrl.key_series_name
 
+
+# This file uses relative imports so it cannot be executed directly.
+# You can run the main below using the following command in the parent folder:
+#
+#     python3 -m ktl.kernel_series
 
 if __name__ == "__main__":
     db = KernelSeries()
