@@ -46,7 +46,7 @@ function check_linux_source()
 {
 	echo "  - Check linux-source package stanza (LP: #2052439)"
 
-	if [ "${SOURCE}" = "linux" ] ; then
+	if [ "${SOURCE}" = "linux" ] || [ "${SOURCE}" = "linux-unstable" ] ; then
 		must_produce "linux-source-\d+\.\d+\.\d+"
 	else
 		must_not_produce "linux-source-\d+\.\d+\.\d+"
@@ -58,7 +58,7 @@ function check_linux_tools()
 {
 	echo "  - Check linux-*-tools-common and linux-*-tools-host package stanzas (LP: #2048183)"
 
-	if [ "${SOURCE}" = "linux" ] ; then
+	if [ "${SOURCE}" = "linux" ] || [ "${SOURCE}" = "linux-unstable" ] ; then
 		must_produce "linux-tools-common"
 		must_produce "linux-cloud-tools-common"
 		must_produce "linux-tools-host"
