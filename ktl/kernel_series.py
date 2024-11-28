@@ -757,7 +757,7 @@ class KernelSeriesEntry:
 # KernelSeriesUrl
 #
 class KernelSeriesUrl:
-    def __init__(self, url=None, data=None, data_location=None, xc=None):
+    def __init__(self, url=None, data=None, data_location=None):
         if data is None and url is None:
             raise ValueError("expecting url or data")
 
