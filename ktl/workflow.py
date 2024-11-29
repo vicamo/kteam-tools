@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-#
-
 from ktl.kernel_series import KernelSeries
 from ktl.log import cdebug
 
@@ -424,6 +421,9 @@ class Workflow:
 
         return retval
 
+# This module uses relative imports from the ktl library, which it is a part
+# of, so it cannot be executed directly using a shebang. Instead, if you want
+# to run this file, use `python3 -m ktl.workflow` from the parent directory.
 
 if __name__ == "__main__":
     workflow = Workflow()
