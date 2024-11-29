@@ -23,6 +23,7 @@ sudo apt install \
     libncurses5-dev \
     makedumpfile \
     python3-launchpadlib \
+    python3-ruamel.yaml \
     schroot \
     sharutils \
     transfig \
