@@ -367,3 +367,13 @@ class Git:
             cls.log_results["commits"].append(commit)
 
         return cls.log_results
+
+    @classmethod
+    def list_modified_files(cls):
+        """Shows which files were modified, both staged and unstaged """
+        cmd = "git diff --name-only HEAD"
+        status, result = run_command(cmd, cls.debug)
+        if status != 0:
+            raise GitError(result)
+
+        return result
