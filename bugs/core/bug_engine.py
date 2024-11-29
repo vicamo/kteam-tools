@@ -14,7 +14,6 @@ import json
 from lpltk.LaunchpadService             import LaunchpadService
 from ktl.utils                          import error, date_to_string, string_to_date, stdo, json_load, FileDoesntExist
 from ktl.std_app                        import StdApp
-#from ktl.ubuntu                         import Ubuntu
 from ktl.kernel_bug                     import KernelBug
 from ktl.termcolor                      import colored
 from bug_handler                        import BugHandler
@@ -61,8 +60,6 @@ class BugEngine(StdApp):
     #
     def __initialize(self):
         Dbg.enter("BugEngine.__initialize")
-
-        #self.ubuntu = Ubuntu()
 
         Dbg.verbose('Connecting to LaunchPad')
         if 'staging' in self.cfg:
@@ -193,9 +190,9 @@ class BugEngine(StdApp):
 
                 # Now find all the New bugs for all the packages we care about and do something with them.
                 #
-                #for package_name in self.ubuntu.active_packages: # FIXME bjf: do we want to do all the packages or just the linux
-                                                                  #            package? there's plenty to work on with just the one
-                                                                  #            but we don't want to ignore the others either.
+                # FIXME bjf: do we want to do all the packages or just the linux
+                #            package? there's plenty to work on with just the one
+                #            but we don't want to ignore the others either.
                 for package_name in ['linux']:
                     Dbg.verbose('Package: %s\n' % package_name)
 
