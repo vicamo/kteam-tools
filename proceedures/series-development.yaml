@@ -1,0 +1,82 @@
+# Procedure list for development series tasks
+# To be created with:
+#   ./proceedure-cards --component Development --epic-key <epic-key> KERN series-development.yaml
+
+cards:
+  - name: "Test Secure Boot"
+    description: |
+      - Test Secure Boot on all supported architectures (amd64, arm64, ppc64el, s390x)
+  - name: "Verify variants"
+    description: |
+      - Verify whether the variants (e.g. '--', 'lts', 'hwe', 'hwe-edge') are setup
+        correct in kernel-series.yaml and in the meta and lrm packages.
+  - name: "Fix DKMS packages"
+    description: |
+      - Fix all the DKMS packages which are failing the build or tests with the
+        new kernel.
+      - Create a sub-task for each DKMS package that needs fixing.
+  - name: "Make sure all DKMS packages are really tested"
+    description: |
+      - On ADT, the "dkms" package is responsible for installing and building
+        the DKMS packages that don't explicitly define autopkgtests. There were
+        issues in the past where the "dkms" package reported "pass" even when
+        the DKMS packages were not built.
+      - This task is to make sure all the DKMS tests are reviewed and there are
+        not false positives.
+  - name: "Remove all dead DKMS packages from the archive"
+    description: |
+      - Before the release, make sure that all the DKMS packages which are not
+        supported anymore by the new kernel are removed from the archive.
+  - name: "Hint all ADT failures (generic kernel)"
+    description: |
+      - Before handing over the kernel to the Stable team, hint all known
+        failures on ADT for the generic kernel.
+  - name: "Hint all RT failures (generic kernel)"
+    description: |
+      - Before handing over the kernel to the Stable team, hint all known
+        failures on RT (Regression Tests) for the generic kernel.
+  - name: "Check transitional packages"
+    description: |
+      - Check whether all the transitional packages are produced correctly.
+  - name: "Remove all dead kernels from the archive"
+    description: |
+      - Remove from the archive all kernels copied during the series opening
+        which were replaced by transitionals.
+  - name: "Review security-related configs"
+    description: |
+      - Check with the security teams (Kernel and Security Engineering) whether
+        we need to review the kernel configs that affect security.
+  - name: "Review dropped.txt"
+    description: |
+      - Review and update the dropped.txt file.
+  - name: "Kernel snap for the generic kernel"
+    description: |
+      - Make sure the automation is producing and publishing the snap for the
+        generic kernel.
+  - name: "Update Ubuntu Release Chart"
+    description: |
+      - Work with the web team to update the release chart used on
+        https://ubuntu.com/kernel/lifecycle.
+  - name: "Update kernel.ubuntu.com"
+    description: |
+      - Update the main page at kernel.ubuntu.com once the development kernel
+        version is announced.
+  - name: "Review SAUCE patches"
+    description: |
+      - Check whether any of our SAUCE patches that can still be applied are
+        actually not needed anymore and can be dropped.
+  - name: "Review Secure Boot SAUCE patches"
+    description: |
+      - Review whether the SAUCE patches for Secure Boot are still needed and
+        up-to-date. Some of our patches are synced from the Fedora/ARK tree.
+    subtask-of: "Review SAUCE patches"
+  - name: "Check if ethtool is in sync with Debian"
+    description: |
+      - Before the release, check whether ethtool is in sync with Debian.
+  - name: "Check if iproute2 is in sync with Debian"
+    description: |
+      - Before the release, check whether iproute2 is in sync with Debian.
+  - name: "Update zfcpdump-kernel package (s390x)"
+    description: |
+      - If needed, update the zfcpdump-kernel package for s390x to match the
+        series base kernel version. Usually only needed for the LTS releases.
