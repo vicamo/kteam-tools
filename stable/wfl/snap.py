@@ -290,6 +290,7 @@ class SnapDebs:
         if parent_wb is not None and parent_wb.version != clamp:
             cinfo("parent tracker version has changed resetting snap versioning {} -> {}".format(clamp, parent_wb.version))
             self.bug.version = parent_wb.version
+            self.bug.update_title(suffix='snap-debs snap:' + self.name)
             self.bug.clamp_assign('parent', parent_wb.version)
         clamp = self.bug.clamp('self')
         if self.bug.version != clamp:
