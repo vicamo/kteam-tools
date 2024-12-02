@@ -14,7 +14,7 @@ from .errors import ShankError
 from datetime import datetime
 import subprocess
 
-from lazr.restfulclient.errors import NotFound
+from lazr.restfulclient.errors import ClientError, NotFound
 
 from ktl.msgq import MsgQueueCkct
 
@@ -366,17 +366,22 @@ class SnapDebs:
             return False
 
         # Request a snap build and return the request.
-        request = recipe.requestBuilds(
-            archive=recipe.auto_build_archive,
-            pocket=recipe.auto_build_pocket,
-            channels=recipe.auto_build_channels,
-        )
-        cinfo("snap_request: recipe.requestBuilds(archive={}, pocket={}, channels={}) = {}".format(
-            recipe.auto_build_archive,
-            recipe.auto_build_pocket,
-            recipe.auto_build_channels,
-            request,
-        ))
+        try:
+            request = recipe.requestBuilds(
+                archive=recipe.auto_build_archive,
+                pocket=recipe.auto_build_pocket,
+                channels=recipe.auto_build_channels,
+            )
+            cinfo("snap_request: recipe.requestBuilds(archive={}, pocket={}, channels={}) = {}".format(
+                recipe.auto_build_archive,
+                recipe.auto_build_pocket,
+                recipe.auto_build_channels,
+                request,
+            ))
+        except ClientError as e:
+            response = e.response
+            cerror(f"snap_request: failed={response.status} reason={response.reason} detail={e.content.decode('utf-8')}")
+            raise SnapError(f"snap build request failed {response.status} {response.reason} ({e.content.decode('utf-8')})")
         if request is None:
             return None
 
