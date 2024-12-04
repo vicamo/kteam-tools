@@ -88,15 +88,6 @@ clean:
 	    mv $@.tmp $@; \
 	fi
 
-.PHONY : kernel-sru-workflow.json
-kernel-sru-workflow.json:
-	cp kernel-sru-workflow-bare.json $@.tmp
-	timeout 1h scripts/cbd --db=$@.tmp
-	mv $@.tmp $@
-
-kernel-sru-workflow.html: kernel-sru-workflow.json
-	scripts/gen-workflow-report $< > $@
-
 .PHONY : kernel-cves.html
 kernel-cves.html: scripts/kernel-cves
 	(cd kteam-tools/cvescripts;python kernel-cves.py); mv kteam-tools/cvescripts/kernel-cves.html .
