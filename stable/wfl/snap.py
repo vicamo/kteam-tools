@@ -839,6 +839,7 @@ class SnapDebs:
             "series-name"    : s.series,
             "package"        : s.source.name,
             "snap-pkg"       : s.name,
+            "flavour"        : s.name,
             "kernel-version" : s.version,
             "channel"        : track + "/" + s.risk_stream(risk, s.bug.built_in),
         }
