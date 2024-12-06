@@ -1,3 +1,6 @@
+# Needed for python < 3.9 for type hint compatibility
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Optional
 from urllib.request import urlopen
