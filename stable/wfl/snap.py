@@ -837,8 +837,9 @@ class SnapDebs:
             "date"           : str(datetime.utcnow()),
             "sru-cycle"      : s.bug.sru_spin_name,
             "series-name"    : s.series,
-            "package"        : s.source.name,
+            "package"        : s.source.name + '-' + s.name,
             "snap-pkg"       : s.name,
+            "flavour"        : s.name,
             "kernel-version" : s.version,
             "channel"        : track + "/" + s.risk_stream(risk, s.bug.built_in),
         }
