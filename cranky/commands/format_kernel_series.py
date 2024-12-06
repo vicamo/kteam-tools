@@ -12,8 +12,11 @@ from ktl.format_kernel_series import KernelSeriesYamlFormat
 
 epilog_format_kernel_series = """
 Examples:
+
 $ cranky format-kernel-series
+
     Formats the kernel-series.yaml files modified in the current kernel-versions repo
+
     It MUST be run from the top of the kernel-versions repo
 """
 

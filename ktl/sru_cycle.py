@@ -159,6 +159,10 @@ class SruCycleSpinEntry:
     def notes_link(self):
         return self._notes_link
 
+    @property
+    def owner(self):
+        return self._owner
+
     def attach(self, table):
         self._sc = table
         return self

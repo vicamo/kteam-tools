@@ -16,6 +16,7 @@ _cranky() {
 		"close -h --help -d --dry-run -c --include-config -s --skip-master"
 		"cycles -h --help -v --dry-run destroy list -a --after -b --before -d --descending rebuild -p --package main meta signed lrm lrs lrg lum lbm HANDLE"
 		"diff-sauce -h --help TAG"
+        "distribute-kernels -h --help --cycle --step"
 		"dput-sources -h --help -f --force -c --current -e --email HANDLE"
 		"fdr -h --help -c --clean"
 		"fix -h --help"
