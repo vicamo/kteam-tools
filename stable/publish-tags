@@ -350,7 +350,7 @@ def publish_tags(targets, include_security=False, create_pkg_repos=False, dry_ru
 
     # Repos used for mainline tag management.
     logger.info("Loading linux repo")
-    linus_repo = GitRefsRepository('git://kernel.ubuntu.com/virgin/linux.git')
+    linus_repo = GitRefsRepository('git://git.launchpad.net/~ubuntu-kernel-test/+git/linus--linux')
 
     # Run through kernel-series data and pick out those which are included
     # in the cycle so we can freeze them.
