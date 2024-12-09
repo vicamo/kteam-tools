@@ -1,5 +1,5 @@
 
-from wfl.log                            import center, cleave, cinfo
+from wfl.log                            import center, cleave, cinfo, centerleave
 from .promoter                          import Promoter
 
 class PromoteToSecurity(Promoter):
@@ -20,6 +20,48 @@ class PromoteToSecurity(Promoter):
         s.jumper['Fix Committed'] = s._verify_promotion
 
         cleave(s.__class__.__name__ + '.__init__')
+
+    # _ready_to_promote
+    #
+    @centerleave
+    def _ready_to_promote(s):
+        # We can consider moving Confirmed as soon as promote-to-updates
+        # moves past 'Confirmed', then we will follow the packages separatly.
+        if s.bug.tasks_by_name['promote-to-updates'].status in ('New', 'Confirmed'):
+            return False
+
+        # Check we meet the release criteria for -security; currently
+        # that we have given the packages sufficient time to replicate.
+        if not s.bug.debs.ready_for_security:
+            if s.bug.tasks_by_name['promote-to-updates'].status == 'Fix Released':
+                if s.bug.debs.any_superseded_in_pocket("Updates"):
+                    s.task.reason = 'Stalled -- not ready for security (superseded binaries in Updates)'
+                elif not s.bug.debs.all_built_and_in_pocket('Updates'):
+                    s.task.reason = 'Stalled -- not ready for security (missing packages in Updates)'
+                else:
+                    s.task.reason = 'Holding -- not ready for security (replication dwell)'
+            return False
+
+        if s.bug.manual_block("promote-to-security") or s._kernel_block():
+            s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
+            return False
+
+        if s._in_blackout():
+            s.task.reason = 'Holding -- package in development blackout'
+            return False
+
+        if s._kernel_manual_release():
+            return False
+
+        if not s._cycle_ready() and not s._kernel_manual_release():
+            s.task.reason = 'Holding -- cycle not ready to release'
+            return False
+
+        if s._britney_freeze(s.bug.series) and not s._kernel_manual_release():
+            s.task.reason = "Holding -- cycle not ready to release (SRU freeze in place)"
+            return False
+
+        return True
 
     # _ready_for_security
     #
@@ -68,37 +110,7 @@ class PromoteToSecurity(Promoter):
                 retval = True
                 break
 
-            # We can consider moving Confirmed as soon as promote-to-updates
-            # moves past 'Confirmed', then we will follow the packages separatly.
-            if s.bug.tasks_by_name['promote-to-updates'].status in ('New', 'Confirmed'):
-                break
-
-            # Check we meet the release criteria for -security; currently
-            # that we have given the packages sufficient time to replicate.
-            if not s.bug.debs.ready_for_security:
-                if s.bug.tasks_by_name['promote-to-updates'].status == 'Fix Released':
-                    if s.bug.debs.any_superseded_in_pocket("Updates"):
-                        s.task.reason = 'Stalled -- not ready for security (superseded binaries in Updates)'
-                    elif not s.bug.debs.all_built_and_in_pocket('Updates'):
-                        s.task.reason = 'Stalled -- not ready for security (missing packages in Updates)'
-                    else:
-                        s.task.reason = 'Holding -- not ready for security (replication dwell)'
-                break
-
-            if s.bug.manual_block("promote-to-security") or s._kernel_block():
-                s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
-                break
-
-            if s._in_blackout():
-                s.task.reason = 'Holding -- package in development blackout'
-                break
-
-            if not s._cycle_ready() and not s._kernel_manual_release():
-                s.task.reason = 'Holding -- cycle not ready to release'
-                break
-
-            if s._britney_freeze(s.bug.series) and not s._kernel_manual_release():
-                s.task.reason = "Holding -- cycle not ready to release (SRU freeze in place)"
+            if not s._ready_to_promote():
                 break
 
             # Record what is missing as we move to Confirmed.
@@ -122,25 +134,7 @@ class PromoteToSecurity(Promoter):
             if s.task.status not in ('Confirmed'):
                 break
 
-            pull_back = False
-
-            if s._kernel_manual_release():
-                break
-
-            if s.bug.manual_block("promote-to-security") or s._kernel_block():
-                cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
-                pull_back = True
-            if s._in_blackout():
-                cinfo('            Package now in development blackout pulling back from Confirmed', 'yellow')
-                pull_back = True
-            if not s._cycle_ready() and not s._kernel_manual_release():
-                cinfo('            Cycle no longer ready for release pulling back from Confirmed', 'yellow')
-                pull_back = True
-            if s._britney_freeze(s.bug.series) and not s._kernel_manual_release():
-                cinfo('            Cycle no longer ready for release (britney freeze) pulling back from Confirmed', 'yellow')
-                pull_back = True
-
-            if pull_back:
+            if not s._ready_to_promote():
                 s.task.status = 'New'
                 retval = True
             break
