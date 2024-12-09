@@ -61,6 +61,10 @@ then
 fi
 echo 1 > $LOCK
 
+# Remove the lock on exit
+# shellcheck disable=SC2064
+trap "rm -f $LOCK" EXIT
+
 base_url="http://archive.ubuntu.com/ubuntu/pool"
 
 # Get our current orig files.
