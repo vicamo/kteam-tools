@@ -73,7 +73,7 @@ Action:
   --update FILE, -u FILE
                         Import a partial .config into annotations (only resync configs specified in FILE)
   --check FILE, -k FILE
-                        Validate kernel .config with annotations
+                        Validate kernel .config with annotations; requires --arch
 ```
 
 This script allows to query config settings (per arch/flavour/config),
@@ -81,7 +81,7 @@ export them into the Kconfig format (generating the real .config files)
 and check if the final .config matches the rules defined in the
 annotations.
 
-Examples (annotations is defined as an alias to `debian/scripts/annotations`):
+Examples (annotations is defined as an alias to `debian/scripts/misc/annotations`):
 
  - Show settings for `CONFIG_DEBUG_INFO_BTF` for master kernel across all the
    supported architectures and flavours:
