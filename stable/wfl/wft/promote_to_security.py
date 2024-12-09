@@ -50,14 +50,11 @@ class PromoteToSecurity(Promoter):
             s.task.reason = 'Holding -- package in development blackout'
             return False
 
-        if s._kernel_manual_release():
-            return False
-
-        if not s._cycle_ready() and not s._kernel_manual_release():
+        if not s._cycle_ready() and not s._kernel_manual_release() and not s.bug.manual_unblock("cycle-ready"):
             s.task.reason = 'Holding -- cycle not ready to release'
             return False
 
-        if s._britney_freeze(s.bug.series) and not s._kernel_manual_release():
+        if s._britney_freeze(s.bug.series) and not s._kernel_manual_release() and not s.bug.manual_unblock("sru-freeze"):
             s.task.reason = "Holding -- cycle not ready to release (SRU freeze in place)"
             return False
 
