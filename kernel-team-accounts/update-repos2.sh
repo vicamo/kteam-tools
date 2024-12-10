@@ -42,10 +42,10 @@ function fetch_repo()
 CWD=/usr3/ubuntu
 LOCK=/tmp/update-repos.lock
 
-here=`dirname $0`
+here=$(dirname "$0")
 case "$here" in
 /*) ;;
-*)  here="`pwd`/$here" ;;
+*)  here=$(pwd)/$here ;;
 esac
 
 if [ ! "$1" = "" ]
@@ -53,13 +53,13 @@ then
 	CWD="$1"
 fi
 
-cd $CWD || exit 1
+cd "$CWD" || exit 1
 
-if [ -f $LOCK ]
+if [ -f "$LOCK" ]
 then
 	exit 1
 fi
-echo 1 > $LOCK
+echo 1 > "$LOCK"
 
 # Remove the lock on exit
 # shellcheck disable=SC2064
@@ -69,20 +69,20 @@ base_url="http://archive.ubuntu.com/ubuntu/pool"
 
 # Get our current orig files.
 "$here/kta-config" origs | \
-while read supported version url
+while read -r supported version url
 do
-	file=`basename "$url"`
+	file=$(basename "$url")
 
 	if [ "$supported" = 'True' ]; then
 		if [ ! -f "$file" ]; then
 			echo Getting "$url"
-			
+
 			wget -q "$base_url/main/$url" || \
 			wget -q "$base_url/universe/$url"
 		fi
 
 		if [ "linux_${version}.orig.tar.gz" != "$file" ]; then
-			if [ -f "linux_${version}.orig.tar.gz" -a -f "$file" ]; then
+			if [ -f "linux_${version}.orig.tar.gz" ] && [ -f "$file" ]; then
 				if cmp "linux_${version}.orig.tar.gz" "$file"; then
 					echo "Linking linux_${version}.orig.tar.gz $file"
 					ln -f "linux_${version}.orig.tar.gz" "$file"
