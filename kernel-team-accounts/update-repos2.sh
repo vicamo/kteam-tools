@@ -1,5 +1,44 @@
 #!/bin/bash
 
+function fetch_repo()
+{
+	local repo url type bare ref
+
+	while read -r repo url type
+	do
+		echo "Syncing $repo from $url"
+
+		case "$repo" in
+			*.git) bare="--bare" ;;
+			*)     bare= ;;
+		esac
+
+		case "$type" in
+			"main") ref="linux-linus.git" ;;
+			*)      ref= ;;
+		esac
+		case "$url" in
+			*/+source/linux/*) ref="linux-linus.git" ;;
+		esac
+
+		if [ ! -d "$repo" ]; then
+			if [ -n "$ref" ]; then
+				# Note: we intentionally clone the local ref directly.
+				# shellcheck disable=SC2086
+				git clone $bare --reference "$ref" "$ref" "$repo"
+			else
+				# shellcheck disable=SC2086
+				git clone $bare "$url" "$repo"
+			fi
+		fi
+		(
+			cd "$repo" &&
+			git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
+			[ -d .git ] && git checkout -qf
+		)
+	done
+}
+
 CWD=/usr3/ubuntu
 LOCK=/tmp/update-repos.lock
 
