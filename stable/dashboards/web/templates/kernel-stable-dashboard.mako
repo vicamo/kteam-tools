@@ -385,7 +385,7 @@ from datetime import datetime, timezone
 
 def cycle_key(cycle):
     # Move any cycle type prefix character to the end.
-    if not cycle[0].isdigit():
+    if not cycle[0].isdigit() and cycle[0] != "d":
         cycle = cycle[1:] + cycle[0]
     return cycle
 
