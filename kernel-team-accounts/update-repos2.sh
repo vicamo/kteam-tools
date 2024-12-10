@@ -92,111 +92,34 @@ do
 done
 
 # Get a couple of special repos first
-while read repo url ref
-do
-	case "$repo" in
-	*.git)		bare='--bare' ;;
-	*)		bare='' ;;
-	esac
-
-	if [ ! -d "$repo" ]; then
-		if [ "$ref" != "-" ]; then
-			# Note: we intentionally clone the local ref directly.
-			#git clone $bare --reference "$ref" "$url" "$repo"
-			git clone $bare --reference "$ref" "$ref" "$repo"
-		else
-			git clone $bare "$url" "$repo"
-		fi
-	fi
-	(cd "$repo" && 
-		git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
-		[ -d .git ] && git checkout -qf)
-done <<EOL
-linux-linus.git  git://git.launchpad.net/~ubuntu-kernel-test/+git/linus--linux  -
-kteam-tools      git://git.launchpad.net/~canonical-kernel/+git/kteam-tools     -
+echo "Syncing mandatory repos"
+fetch_repo <<EOL
+linux-linus.git  git://git.launchpad.net/~ubuntu-kernel-test/+git/linus--linux
+kteam-tools      git://git.launchpad.net/~canonical-kernel/+git/kteam-tools
 EOL
 
 # If we will not have local developers we do not need general repository mirrors.
 [ -f "$HOME/.cod/disable-ubuntu-repositories" ] && { rm -f $LOCK; exit 0; }
 
-while read k_u_c lp master flags
-do
-	case ",$flags," in
-	*,inactive,*)		continue ;;
-	esac
+# Get the repos used on the mainline builders
+echo "Syncing builder repos"
+fetch_repo <<EOL
+autotest-client-tests.git       git://git.launchpad.net/~canonical-kernel-team/+git/autotest-client-tests
+autotest-client-virt-tests.git  git://git.launchpad.net/~canonical-kernel-team/+git/autotest-client-virt-tests
+autotest-docker.git             git://git.launchpad.net/~canonical-kernel-team/+git/autotest-docker
+autotest.git                    git://git.launchpad.net/~canonical-kernel-team/+git/autotest
+kernel-testing.git              git://git.launchpad.net/~canonical-kernel-team/+git/kernel-testing
+kteam-tools.git                 git://git.launchpad.net/~canonical-kernel/+git/kteam-tools
+adt-matrix-hints.git            git://git.launchpad.net/~canonical-kernel/+git/adt-matrix-hints
+linux-firmware.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware
+unstable.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
+EOL
 
-	[ "$k_u_c" = '-' ] && continue
-
-	# repository: the "normal form" is the name we use on wani.
-	repo=`basename "$k_u_c"`
-
-	# pick the master url.
-	case $master in
-	either|launchpad)	url=$lp ;;
-	wani)			url=$k_u_c ;;
-	*)
-		echo "Unknown master location: $master"
-		exit 1
-		;;
-	esac
-
-	# If this is +source/linux then we should reference linux.git.
-	case "$lp $k_u_c" in
-	*/+source/linux/*)	ref="linux-linus.git" ;;
-	*)			ref="-" ;;
-	esac
-
-	# If this ends .git we want it bare -- (currently always)
-	case "$repo" in
-	*.git)		bare='--bare' ;;
-	*)		bare='' ;;
-	esac
-
-	echo "Syncing info/repositories.txt $repo ($url) ..."
-	if [ ! -d "$repo" ]; then
-		if [ "$ref" != "-" ]; then
-			# Note: we intentionally clone the local ref directly.
-			#git clone $bare --reference "$ref" "$url" "$repo"
-			git clone $bare --reference "$ref" "$ref" "$repo"
-		else
-			git clone $bare "$url" "$repo"
-		fi
-	fi
-	(cd "$repo" && 
-		git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
-		[ -d .git ] && git checkout -qf)
-done <"$here/../info/repositories.txt" 
-
-# disco linux-signed-oem ubuntu-oem-disco-signed.git git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/disco
+echo "Syncing kernel-series repos"
 "$here/kta-config" repositories | \
-while read series source repo url type
+while read -r _series _source repo url type
 do
-	echo "Syncing kernel-series $repo ($url) ..."
-
-	# If this is +source/linux then we should reference linux.git.
-	case "$type" in
-	main)			ref="linux-linus.git" ;;
-	*)			ref="-" ;;
-	esac
-
-	# If this ends .git we want it bare -- (currently always)
-	case "$repo" in
-	*.git)		bare='--bare' ;;
-	*)		bare='' ;;
-	esac
-
-	if [ ! -d "$repo" ]; then
-		if [ "$ref" != "-" ]; then
-			# Note: we intentionally clone the local ref directly.
-			#git clone $bare --reference "$ref" "$url" "$repo"
-			git clone $bare --reference "$ref" "$ref" "$repo"
-		else
-			git clone $bare "$url" "$repo"
-		fi
-	fi
-	(cd "$repo" && 
-		git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
-		[ -d .git ] && git checkout -qf)
-done
+	echo "$repo $url $type"
+done | fetch_repo
 
 rm -f $LOCK
