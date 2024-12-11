@@ -71,6 +71,7 @@ def cranky_call(ctx, cmd):
 # single module (this file) and click does not need to be imported by subcommands.
 command = click.command
 option = click.option
+Path = click.Path
 
 
 def option_dry_run(help=None):

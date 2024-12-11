@@ -10,6 +10,7 @@ from subprocess import call
 
 from . import kernels_distribute as _kernels_distribute
 from . import push_refs as _push_refs
+from . import update_changelog as _update_changelog
 
 _ROOTPATH = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
 _LIBSPATH = os.path.abspath(os.path.join(_ROOTPATH, os.pardir, "libs"))
@@ -50,3 +51,7 @@ class Cranky:
     def push_refs(self, handle, cycle=None, dry_run=False):
         """Push refs (HEADs and tags) that make up the set of kernel packages"""
         return _push_refs.push_refs(handle, cycle=cycle, dry_run=dry_run)
+
+    def update_changelog(self, *args, **kwargs):
+        """Update the Ubuntu kernel changelog"""
+        return _update_changelog.update_changelog(*args, **kwargs)
