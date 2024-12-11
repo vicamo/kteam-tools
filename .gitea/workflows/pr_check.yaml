@@ -19,7 +19,6 @@ jobs:
         image:
           - ubuntu-22.04
           - ubuntu-20.04
-          - ubuntu-18.04
     runs-on: ${{ matrix.image }}
     steps:
       - step:
@@ -42,6 +41,7 @@ jobs:
           git config --global user.name "Bot"
           pip3 install xdg
           pip3 install pytest
+          pip3 install launchpadlib
           python3 -m pytest ktl
 
   multi-series-tests-remainder:
