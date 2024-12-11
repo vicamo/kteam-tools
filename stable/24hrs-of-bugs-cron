@@ -2,6 +2,5 @@
 
 here=$(dirname "$(readlink -f "${0}")")
 
-cd $here || exit
-
-"$here/24hrs-of-bugs"
+echo "II: $0 $@ ..."
+"$here/../sbin/oops-stream" "daily-bugs" "$here/24hrs-of-bugs" "$@"
