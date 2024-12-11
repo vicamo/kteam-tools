@@ -86,6 +86,8 @@ class ThisApp:
                 assignee = task.assignee.display_name
             except AttributeError:
                 assignee = "unassigned"
+            except ValueError:
+                assignee = "unknown"
 
             data[task.bug.id] = {
                 "id": task.bug.id,
