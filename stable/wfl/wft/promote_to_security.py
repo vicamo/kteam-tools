@@ -98,7 +98,7 @@ class PromoteToSecurity(Promoter):
                 break
 
             if s._britney_freeze(s.bug.series) and not s._kernel_manual_release():
-                s.task.reason = 'Holding -- cycle not ready to release (britney block)'
+                s.task.reason = "Holding -- cycle not ready to release (SRU freeze in place)"
                 break
 
             # Record what is missing as we move to Confirmed.
