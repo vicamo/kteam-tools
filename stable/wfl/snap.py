@@ -284,14 +284,20 @@ class SnapDebs:
         s.abi = s.bug.abi
 
     def check_version(self):
-        # Handle version changes.
         parent_wb = self.bug.master_bug
+        # If our parent already has a version and we do not drop our parent clamp.
+        # XXX: in theory this is not possible, but may happen via manual intervention.
+        if parent_wb is not None and parent_wb.version is not None and self.bug.version is None:
+            cinfo("parent tracker hand a version when we do not drop any record of parent version")
+            self.bug.clamp_assign('parent', None)
         clamp = self.bug.clamp('parent')
+        # If our parent version changes we should follow.
         if parent_wb is not None and parent_wb.version != clamp:
             cinfo("parent tracker version has changed resetting snap versioning {} -> {}".format(clamp, parent_wb.version))
-            self.bug.version = parent_wb.version
+            self.version = self.bug.version = parent_wb.version
             self.bug.update_title(suffix='snap-debs snap:' + self.name)
             self.bug.clamp_assign('parent', parent_wb.version)
+        # If our version has changed reset the tracker.
         clamp = self.bug.clamp('self')
         if self.bug.version != clamp:
             cinfo("tracker version has changed resetting tracker {} -> {}".format(clamp, self.bug.version))
