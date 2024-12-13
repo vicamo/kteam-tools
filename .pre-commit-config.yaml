@@ -52,6 +52,7 @@ files: >
     cranky/docs/.* |
     cranky/fixes.d/.* |
     info/.*\.yaml |
+    kernel-team-accounts/update-repos2.sh |
     ktl/format_kernel_series\.py |
     ktl/kernel_users\.py |
     ktl/new_release\.py |
