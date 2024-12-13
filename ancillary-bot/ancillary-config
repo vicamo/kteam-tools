@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from collections import namedtuple
 
 from ktl.kernel_series import KernelSeries
+from ktl.sru_cycle import SruCycle
 
 parser = ArgumentParser()
 parser.add_argument("--security", action="store_true", help="include security PPAs in list")
@@ -14,41 +15,38 @@ args = parser.parse_args()
 FakeRoute = namedtuple("FakeRoute", ["reference"])
 no_private = FakeRoute(reference="-")
 
-ks = KernelSeries()
-
-route_pairs = set()
-
-for ks_series in ks.series:
-    if not ks_series.supported and not ks_series.development:
-        continue
-    for ks_source in ks_series.sources:
+def scan_cycle(route_pairs, ks):
+    for ks_series in ks.series:
         if not ks_series.supported and not ks_series.development:
             continue
-        ancillaries = False
-        for ks_package in ks_source.packages:
-            if ks_package.ancillary_for is not None:
-                ancillaries = True
-        if not ancillaries:
-            continue
+        for ks_source in ks_series.sources:
+            if not ks_series.supported and not ks_series.development:
+                continue
+            ancillaries = False
+            for ks_package in ks_source.packages:
+                if ks_package.ancillary_for is not None:
+                    ancillaries = True
+            if not ancillaries:
+                continue
 
-        #print(ks_source.series.codename, ks_source.name)
-        ks_routing = ks_source.routing
-        if ks_routing is None:
-            continue
+            #print(ks_source.series.codename, ks_source.name)
+            ks_routing = ks_source.routing
+            if ks_routing is None:
+                continue
 
-        if args.regular:
-            build_routes = ks_routing.lookup_route("build")
-            build_private_routes = ks_routing.lookup_route("build-private")
-            if len(build_routes) != 0:
-                if len(build_private_routes) == 0:
-                    build_private_routes = [no_private] * len(build_routes)
-                for build_route, private_route in zip(build_routes, build_private_routes):
-                    route_pairs.add((build_route.reference, private_route.reference))
+            if args.regular:
+                build_routes = ks_routing.lookup_route("build")
+                build_private_routes = ks_routing.lookup_route("build-private")
+                if len(build_routes) != 0:
+                    if len(build_private_routes) == 0:
+                        build_private_routes = [no_private] * len(build_routes)
+                    for build_route, private_route in zip(build_routes, build_private_routes):
+                        route_pairs.add((build_route.reference, private_route.reference))
 
-        if args.security:
-            security_build_routes = ks_routing.lookup_route("security-build")
-            for build_route in security_build_routes:
-                route_pairs.add((build_route.reference, build_route.reference))
+            if args.security:
+                security_build_routes = ks_routing.lookup_route("security-build")
+                for build_route in security_build_routes:
+                    route_pairs.add((build_route.reference, build_route.reference))
 
 def route_pair_key(pair):
     public = pair[0]
@@ -69,6 +67,24 @@ def route_pair_key(pair):
     else:
         order = 50
     return order, public
+
+# Routing can change between cycles, so scan the tip to cover development
+# and scan all of the in-complete cycles.  In the majority case the
+# routing will be identicle; this is handled by accumulating them in
+# route_pairs before scanning.
+route_pairs = set()
+ks = KernelSeries()
+scan_cycle(route_pairs, ks)
+
+sc = SruCycle()
+for cycle in sc.cycles:
+    if cycle.complete:
+        break
+
+    ks = KernelSeries.for_cycle(cycle.name)
+    if ks is None:
+        continue
+    scan_cycle(route_pairs, ks)
 
 for build_ref, private_ref in sorted(route_pairs, key=route_pair_key):
     print(build_ref, private_ref)
