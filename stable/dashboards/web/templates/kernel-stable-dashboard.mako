@@ -387,7 +387,7 @@ def cycle_key(cycle):
     # Move any cycle type prefix character to the end.
     if not cycle[0].isdigit():
         cycle = cycle[1:] + cycle[0]
-    return cycle
+    return cycle[-1] != "d", cycle
 
 # Match the suffix on linux-uc20 and linux-uc22-efi style packages.  We will
 # subsitute this off as the primary "package" so that we consider them more
@@ -686,7 +686,7 @@ for bid in sorted(swm_trackers):
                                     <label for="limit-cycle">Cycle:</lable>
                                     <select name="limit-cycle" id="limit-cycle" onchange=selectAll() style="font-size: 0.8em">
                                         <option value="all">All</option>
-                                    % for cycle in sorted(cycles, key=cycle_key):
+                                    % for cycle in sorted(cycles, key=cycle_key, reverse=True):
                                         <option value="${cycle}">${cycle}</option>
                                     % endfor
                                     </select>
@@ -699,7 +699,7 @@ for bid in sorted(swm_trackers):
                                         cycle_first = True
                                         now = datetime.now(timezone.utc).date()
                                     %>
-                                    % for cycle in sorted(cycles, key=cycle_key):
+                                    % for cycle in sorted(cycles, key=cycle_key, reverse=True):
                                         % if cycle_first is False:
                                             <tr class="entry-any owner-any phase-any">
                                                 <td colspan="7">&nbsp;</td>
