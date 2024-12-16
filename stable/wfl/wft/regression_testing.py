@@ -54,10 +54,12 @@ class RegressionTestingResultsCycle:
 
         cycle_data = self.data.get(self.cycle)
         if cycle_data is None:
+            cdebug(f"lookup_result: no data for {self.cycle}")
             return None
 
         op_data = cycle_data.get("ops", {}).get(op)
         if op_data is None:
+            cdebug(f"lookup_result: no ops data for {op}")
             return None
 
         # Find the series by codename.
@@ -66,14 +68,17 @@ class RegressionTestingResultsCycle:
             if series_data.get("series-codename") == series:
                 break
         else:
+            cdebug(f"lookup_result: no series data for {series}")
             return None
 
         source_data = series_data.get("sources", {}).get(source)
         if source_data is None:
+            cdebug(f"lookup_result: no source data for {source}")
             return None
 
         version_data = source_data.get("versions", {}).get(version)
         if version_data is None:
+            cdebug(f"lookup_result: no version data for {version}")
             return None
 
         return version_data.get("summary", "UNKNOWN")
@@ -197,7 +202,11 @@ class RegressionTesting(TaskHandler):
                 s.bug.flag_assign('proposed-testing-requested', True)
 
             try:
-                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, s.bug.name, s.bug.version, 'sru')
+                if s.bug.has_snap:
+                    target = f"{s.bug.name}--{s.bug.snap.name}"
+                else:
+                    target = s.bug.name
+                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, target, s.bug.version, 'sru')
                 task_status = {
                         None: 'Triaged',
                         'noprov': 'Incomplete',
@@ -337,9 +346,11 @@ class BootTesting(TaskHandler):
                 s.bug.flag_assign('boot-testing-requested', True)
 
             try:
-                # snap kernel source package name submitted by SWM will be: package-snappkg
-                new_target = s.bug.target.replace(' / ', '-')
-                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, new_target, s.bug.version, 'boot')
+                if s.bug.has_snap:
+                    target = f"{s.bug.name}--{s.bug.snap.name}"
+                else:
+                    target = s.bug.name
+                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, target, s.bug.version, 'boot')
                 task_status = {
                         None: 'Triaged',
                         'noprov': 'Incomplete',
