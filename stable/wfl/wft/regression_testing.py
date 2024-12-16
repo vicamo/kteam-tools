@@ -342,9 +342,11 @@ class BootTesting(TaskHandler):
                 s.bug.flag_assign('boot-testing-requested', True)
 
             try:
-                # snap kernel source package name submitted by SWM will be: package-snappkg
-                new_target = s.bug.target.replace(' / ', '-')
-                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, new_target, s.bug.version, 'boot')
+                if s.bug.has_snap:
+                    target = f"{s.bug.name}-{s.bug.snap.name}"
+                else:
+                    target = s.bug.name
+                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, target, s.bug.version, 'boot')
                 task_status = {
                         None: 'Triaged',
                         'noprov': 'Incomplete',
