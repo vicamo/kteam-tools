@@ -202,7 +202,11 @@ class RegressionTesting(TaskHandler):
                 s.bug.flag_assign('proposed-testing-requested', True)
 
             try:
-                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, s.bug.name, s.bug.version, 'sru')
+                if s.bug.has_snap:
+                    target = f"{s.bug.name}--{s.bug.snap.name}"
+                else:
+                    target = s.bug.name
+                result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, target, s.bug.version, 'sru')
                 task_status = {
                         None: 'Triaged',
                         'noprov': 'Incomplete',
