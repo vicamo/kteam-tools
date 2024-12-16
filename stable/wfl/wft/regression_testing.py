@@ -343,7 +343,7 @@ class BootTesting(TaskHandler):
 
             try:
                 if s.bug.has_snap:
-                    target = f"{s.bug.name}-{s.bug.snap.name}"
+                    target = f"{s.bug.name}--{s.bug.snap.name}"
                 else:
                     target = s.bug.name
                 result = RegressionTestingResults.lookup_result(s.bug.sru_spin_name, s.bug.series, target, s.bug.version, 'boot')
