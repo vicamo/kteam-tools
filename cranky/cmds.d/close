@@ -3,7 +3,7 @@ export LC_ALL=C.UTF-8
 
 usage() {
 	cat << EOF
-Usage: ${P:-$(basename "$0")} [-h|--help] [-d|--dry-run] [-c|--include-config] [-s|--skip-master] [-b BASE_VERSION]
+Usage: ${P:-$(basename "$0")} [-h|--help] [-d|--dry-run] [-c|--include-config] [-s|--skip-master] [-b BASE_VERSION] [--use-cuc]
 
 Prepare the closing release commit. Include all the changelog entries
 in the current release, including the changes from the base
@@ -20,6 +20,7 @@ Optional arguments:
                         when changing the base derivative version of a
                         backport).
   -h, --help            Show this help message and exit.
+  --use-cuc             Use 'cranky update-changelog' instead of in-tree scripts.
 
 Examples:
   Simply close a release:
@@ -35,6 +36,7 @@ dry_run=0
 commit_configs=0
 skip_master_entries=0
 base_version=
+use_cuc=0
 while [ "$#" -gt 0 ]; do
 	case "$1" in
 		-h|--help)
@@ -53,6 +55,9 @@ while [ "$#" -gt 0 ]; do
 		-b)
 			shift
 			base_version="$1"
+			;;
+		--use-cuc)
+			use_cuc=1
 			;;
 		*)
 			usage
@@ -152,17 +157,39 @@ if [ $skip_master_entries == 0 ]; then
 		done
 	fi
 
-	master_version=$(dpkg-parsechangelog -l"${DEBIAN_MASTER}"/changelog -SVersion)
-	if ! [ "$master_version" ]; then
-		echo "Failed to retrieve current master version from changelog: $DEBIAN/changelog"
-		exit 1
+	if [ $use_cuc -eq 1 ] ; then
+		run "${C}" update-changelog --changelog "${DEBIAN}"/changelog \
+			--from-version "${base_version}" --from-changelog "${DEBIAN_MASTER}"/changelog
+	else
+		master_version=$(dpkg-parsechangelog -l"${DEBIAN_MASTER}"/changelog -SVersion)
+		if ! [ "$master_version" ]; then
+			echo "Failed to retrieve current master version from changelog: $DEBIAN/changelog"
+			exit 1
+		fi
+		run ./debian/scripts/misc/insert-ubuntu-changes "$DEBIAN/changelog" "$base_version" "$master_version" \
+			"$DEBIAN_MASTER/changelog"
 	fi
-	run ./debian/scripts/misc/insert-ubuntu-changes "$DEBIAN/changelog" "$base_version" "$master_version" \
-		"$DEBIAN_MASTER/changelog"
 fi
 
 # Insert local changes
-run fakeroot debian/rules insertchanges
+if [ $use_cuc -eq 1 ] ; then
+	prev_source=$(dpkg-parsechangelog -l "${DEBIAN}"/changelog -S Source -c 1 -o 1)
+	prev_version=$(dpkg-parsechangelog -l "${DEBIAN}"/changelog -S Version -c 1 -o 1)
+	prev_tag="Ubuntu${prev_source#linux}-${prev_version}"
+	prev_commit=$(git log --format="%H __%s__" | grep -m1 -F "__UBUNTU: ${prev_tag}__" || true)
+	if [ -z "${prev_commit}" ] ; then
+		echo "WARNING: Unable to find previous release commit. Using the last one." >&2
+		prev_commit=$(git log --format="%H __%s" | grep -m1 -F "__UBUNTU: Ubuntu-" || true)
+		if [ -z "${prev_commit}" ] ; then
+			echo "ERROR: Unable to find previous release commit." >&2
+			exit 1
+		fi
+	fi
+	run fakeroot debian/rules autoreconstruct finalchecks
+	run "${C}" update-changelog --changelog "${DEBIAN}"/changelog --from-commit "${prev_commit%% *}"
+else
+	run fakeroot debian/rules insertchanges
+fi
 
 # This should be the last step. If there were no changes to the
 # changelog, there is nothing to release, so nothing to commit.

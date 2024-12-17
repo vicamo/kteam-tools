@@ -12,7 +12,7 @@ _cranky() {
 		"check-packaging -h --help"
 		"checkout -h --help -r --reference -d --dissociate --depth --cycle --cleanup --pristine HANDLE"
 		"chroot -h --help create-base create-session map-session run destroy-session HANDLE"
-		"close -h --help -d --dry-run -c --include-config -s --skip-master"
+		"close -h --help -d --dry-run -c --include-config -s --skip-master --use-cuc"
 		"cycles -h --help -v --dry-run destroy list -a --after -b --before -d --descending rebuild -p --package main meta signed lrm lrs lrg lum lbm HANDLE"
 		"diff-sauce -h --help TAG"
         "distribute-kernels -h --help --cycle --step"
