@@ -1,0 +1,49 @@
+#!/bin/bash -eu
+#
+# Update a single virgin repo and mirror it to Launchpad
+#
+
+echo "II: $0 $*"
+
+here=$(dirname "$(readlink -f "${0}")")
+
+primary=$1
+mirror=$2
+
+master_main=
+# shellcheck disable=SC1091
+. "$here/lib-build"
+
+linux_linus="$master_main/virgin/linus--linux"
+mkdir -p "$master_main/virgin"
+
+mirror_dir="$master_main/virgin/$mirror"
+mirror_url="git://git.launchpad.net/~ubuntu-kernel-test/+git/$mirror"
+
+if ! [ -d "$mirror_dir" ]; then
+	echo "II: initial clone of $mirror ..."
+	if [ "$mirror_dir" = "$linux_linus" ]; then
+		git clone --mirror "$primary" "$mirror_dir"
+	else
+		git clone --reference "$linux_linus" --mirror "$primary" "$mirror_dir"
+	fi
+fi
+
+cd "$mirror_dir"
+
+echo "II: update clone of $mirror ..."
+remote_url=$(git config remote.origin.url || true)
+if [ "$remote_url" != "$primary" ] ; then
+	git remote set-url origin "$primary"
+fi
+git fetch --tags origin
+
+echo "II: update mirror of $mirror ..."
+remote_url=$(git config remote.mirror.url || true)
+if [ "$remote_url" != "$mirror_url" ]; then
+	if [ -n "${remote_url}" ]; then
+		git remote del mirror
+	fi
+	git remote add mirror "$mirror_url"
+fi
+git push --mirror mirror

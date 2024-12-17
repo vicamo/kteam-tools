@@ -60,6 +60,8 @@ files: >
     ktl/tests/test_new_release\.py |
     mainline-build/cod-mainline-dashboard |
     mainline-build/cod-tip-build |
+    mainline-build/cod-update-virgin |
+    mainline-build/cod-update-virgin-single |
     stable/24hrs-of-bugs |
     dashboard/ktml/.* |
     dashboard/ktml/tests/.*

@@ -1,51 +1,20 @@
 #!/bin/bash
-P="cod-update-virgin"
+#
+# Update virgin repos and mirror them to Launchpad
+#
 
-#set -e
+echo "II: $0 $*"
 
-here=`dirname $0`
-case "$here" in
-/*) ;;
-*)  here="`pwd`/$here" ;;
-esac
+here=$(dirname "$(readlink -f "${0}")")
 
-commit="$1"
-
-. "$here/lib-build"
-
-linux_linus="$master_main/virgin/linus--linux"
-mkdir -p "$master_main/virgin"
-
-while read primary mirror
+while read -r primary mirror
 do
-	name="$mirror"
-	directory="$master_main/virgin/$mirror"
-	mirror="git://git.launchpad.net/~ubuntu-kernel-test/+git/$mirror"
-
-	if [ ! -d "$directory" ]; then
-		echo "II: initial clone of $name ..."
-		if [ "$directory" = "$linux_linus" ]; then
-			git clone --mirror "$primary" "$directory"
-		else
-			git clone --reference "$linux_linus" --mirror "$primary" "$directory"
-		fi
-	fi
-	(
-		cd "$directory" || exit 1
-		echo "II: update clone of $name ..."
-		git fetch --tags origin
-
-		if ! git config remote.mirror.url >/dev/null; then
-			git remote add mirror "$mirror"
-		fi
-		echo "II: update mirror of $name ..."
-		git push --mirror mirror
-	)
+	"$here/../sbin/oops-stream" "update-virgin" "$here/cod-update-virgin-single" "$primary" "$mirror"
 done <<EOL
 git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git	linus--linux
 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git	linux-stable
 git://people.freedesktop.org/~airlied/linux				airlied--linux
-git://anongit.freedesktop.org/drm-intel					freedesktop--drm-intel
-git://anongit.freedesktop.org/drm-tip					freedesktop--drm-tip
+https://gitlab.freedesktop.org/drm/i915/kernel.git			freedesktop--drm-intel
+https://gitlab.freedesktop.org/drm/tip.git				freedesktop--drm-tip
 EOL
 #git://git.infradead.org/debloat-testing.git				infradead--debloat-testing
