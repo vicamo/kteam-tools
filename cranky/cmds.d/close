@@ -119,12 +119,6 @@ if ! [ -f debian/control ] ; then
 fi
 run "${C}" check-packaging
 
-# Check for FIPS kernels
-if [ -f "$DEBIAN/fips/files.list" ];then
-	echo "FIPS check:"
-	run "$C" check-fips "$@"
-fi
-
 # For normal trees the fact that the update.conf file exists means that they are rebase
 # kernels. There are some special trees which started with uc20-efi, which have that
 # file because they logically depend on another source but do not have the directory

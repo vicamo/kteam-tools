@@ -10,7 +10,6 @@ _cranky() {
 	local cmds=(
 		"build-sources -h --help -c --current --build-opts HANDLE"
 		"check-packaging -h --help"
-		"check-fips -h --help -p --previous -c --current"
 		"checkout -h --help -r --reference -d --dissociate --depth --cycle --cleanup --pristine HANDLE"
 		"chroot -h --help create-base create-session map-session run destroy-session HANDLE"
 		"close -h --help -d --dry-run -c --include-config -s --skip-master"
