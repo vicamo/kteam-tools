@@ -3207,8 +3207,8 @@ class Package():
                         continue
                     some = True
 
-                    meta_version_mainline = meta_version.split('.')[0:2]
-                    meta_version_prev_mainline = prev_version.split('.')[0:2]
+                    meta_version_mainline = ".".join(meta_version.split('.')[0:2])
+                    meta_version_prev_mainline = ".".join(prev_version.split('.')[0:2])
                     if meta_version_mainline != meta_version_prev_mainline:
                         cinfo("meta_check: major versions are different prev={} curr={}".format(meta_version_prev_mainline, meta_version_mainline))
                         version_change = True
