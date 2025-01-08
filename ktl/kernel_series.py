@@ -1,22 +1,17 @@
-#!/usr/bin/env python
-#
-
+import errno
+import io
+import json
+import os
+from gzip import GzipFile
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import urlopen
-from urllib.error import HTTPError, URLError
 
-import errno
-import json
-import io
-import os
 import yaml
-from gzip import GzipFile
-from warnings import warn
 
 from .signing_config import SigningConfig
 
 
-# XXX: python2/3 compatibility.
 def gzip_decompress(data):
     """Decompress a gzip compressed string in one shot.
     Return the decompressed string.
@@ -142,14 +137,13 @@ class KernelRoutingEntry:
     @property
     def routes(self):
         self._routes_init()
-        return [route for dest, route in self._routes.items()]
+        return [route for _, route in self._routes.items()]
 
     def lookup_route(self, route):
         self._routes_init()
         return self._routes.get(route, [])
 
     def lookup_destination(self, dest, primary=False):
-        routes = self.lookup_route(dest)
         simple = [[route.reference, route.pocket] for route in self.lookup_route(dest)]
         if len(simple) == 0:
             return None
@@ -527,7 +521,7 @@ class KernelSourceEntry:
 
     @property
     def derived_from_all(self):
-        """Return a list of sources that this kernel is derived from """
+        """Return a list of sources that this kernel is derived from"""
         if "derived-from" not in self._data:
             return []
 
@@ -758,10 +752,8 @@ class KernelSeriesEntry:
         return KernelSourceEntry(self._ks, self, source_key, sources[source_key])
 
 
-# KernelSeriesUrl
-#
 class KernelSeriesUrl:
-    def __init__(self, url=None, data=None, data_location=None, xc=None):
+    def __init__(self, url=None, data=None, data_location=None):
         if data is None and url is None:
             raise ValueError("expecting url or data")
 
@@ -860,7 +852,9 @@ class KernelSeriesCache:
                     path = ckt_info.abspath("info/kernel-series.yaml")
                     data_location = os.path.dirname(path)
                 except ImportError:
-                    data_location = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "kernel-versions", "info"))
+                    data_location = os.path.realpath(
+                        os.path.join(os.path.dirname(__file__), "..", "kernel-versions", "info")
+                    )
 
                 if which == "devel":
                     self.form_urls = self.form_urls_devel
@@ -876,7 +870,7 @@ class KernelSeriesCache:
         self.by_url = {}
 
     def form_urls_devel(self, cycle):
-            return [f"{self.data_location}/kernel-series.yaml"]
+        return [f"{self.data_location}/kernel-series.yaml"]
 
     def form_urls_regular(self, cycle):
         if cycle is not None:
@@ -923,10 +917,7 @@ class KernelSeriesCache:
         return self.for_cycle(None, **kwargs)
 
 
-# Important: We still need to support Python2 (shudder) and we want to
-# override __new__() so the class needs to be defined new-style so that it
-# inherits from object!
-class KernelSeries(object):
+class KernelSeries:
     _cache = KernelSeriesCache()
 
     def __new__(cls, *args, **kwargs):
@@ -946,6 +937,11 @@ class KernelSeries(object):
 
     key_series_name = KernelSeriesUrl.key_series_name
 
+
+# This file uses relative imports so it cannot be executed directly.
+# You can run the main below using the following command in the parent folder:
+#
+#     python3 -m ktl.kernel_series
 
 if __name__ == "__main__":
     db = KernelSeries()

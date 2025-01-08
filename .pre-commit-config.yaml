@@ -58,6 +58,7 @@ files: >
     ktl/new_release\.py |
     ktl/tests/test_kernel_users\.py |
     ktl/tests/test_new_release\.py |
+    ktl/kernel_series\.py |
     mainline-build/cod-mainline-dashboard |
     mainline-build/cod-tip-build |
     mainline-build/cod-update-virgin |

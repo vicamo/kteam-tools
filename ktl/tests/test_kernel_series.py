@@ -1,5 +1,4 @@
 import os
-import sys
 import unittest
 from testfixtures import TempDirectory
 
@@ -15,15 +14,7 @@ from ktl.kernel_series import (
 )
 
 
-class TestKernelSeriesCore(unittest.TestCase):
-
-    if sys.version_info[:3] > (3, 0):
-
-        def assertItemsEqual(self, a, b):
-            return self.assertCountEqual(a, b)
-
-
-class TestKernelSeries(TestKernelSeriesCore):
+class TestKernelSeries(unittest.TestCase):
 
     data_yaml = """
     '18.04':
@@ -95,10 +86,10 @@ class TestKernelSeries(TestKernelSeriesCore):
         ks = KernelSeries(data=self.data_yaml)
         series_names = [s.name for s in ks.series]
 
-        self.assertItemsEqual(series_names, self.data_series_names)
+        self.assertCountEqual(series_names, self.data_series_names)
 
 
-class TestKernelSeriesEntry(TestKernelSeriesCore):
+class TestKernelSeriesEntry(unittest.TestCase):
 
     def test_equal_true(self):
         data = """
@@ -564,7 +555,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         ks = KernelSeries(data=data)
         series = ks.lookup_series("18.04")
 
-        self.assertItemsEqual(series.sources, [])
+        self.assertCountEqual(series.sources, [])
 
     def test_sources_no_source_entries(self):
         data = """
@@ -574,7 +565,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         ks = KernelSeries(data=data)
         series = ks.lookup_series("18.04")
 
-        self.assertItemsEqual(series.sources, [])
+        self.assertCountEqual(series.sources, [])
 
     def test_sources_one(self):
         data = """
@@ -648,7 +639,7 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
         self.assertEqual(source3.name, "linux-snapdragon")
 
 
-class TestKernelSourceEntry(TestKernelSeriesCore):
+class TestKernelSourceEntry(unittest.TestCase):
 
     def test_series_linkage(self):
         data = """
@@ -741,7 +732,7 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
         series = ks.lookup_series("18.04")
         source = series.lookup_source("linux")
 
-        self.assertItemsEqual(source.versions, [1])
+        self.assertCountEqual(source.versions, [1])
         self.assertEqual(source.version, 1)
 
     def test_versions_present_many(self):
@@ -755,7 +746,7 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
         series = ks.lookup_series("18.04")
         source = series.lookup_source("linux")
 
-        self.assertItemsEqual(source.versions, [1, 2, 3, 10])
+        self.assertCountEqual(source.versions, [1, 2, 3, 10])
         self.assertEqual(source.version, 10)
 
     def test_versions_present_empty(self):
@@ -769,7 +760,7 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
         series = ks.lookup_series("18.04")
         source = series.lookup_source("linux")
 
-        self.assertItemsEqual(source.versions, [])
+        self.assertCountEqual(source.versions, [])
         self.assertEqual(source.version, None)
 
     def test_versions_absent(self):
@@ -1054,7 +1045,7 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
         series = ks.lookup_series("18.04")
         source = series.lookup_source("linux")
 
-        self.assertItemsEqual(source.packages, [])
+        self.assertCountEqual(source.packages, [])
 
     def test_packages_no_package_entries(self):
         data = """
@@ -1067,7 +1058,7 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
         series = ks.lookup_series("18.04")
         source = series.lookup_source("linux")
 
-        self.assertItemsEqual(source.packages, [])
+        self.assertCountEqual(source.packages, [])
 
     def test_packages_one(self):
         data = """
@@ -1117,7 +1108,7 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
         series = ks.lookup_series("18.04")
         source = series.lookup_source("linux")
 
-        self.assertItemsEqual(source.snaps, [])
+        self.assertCountEqual(source.snaps, [])
 
     def test_snaps_no_snap_entries(self):
         data = """
@@ -1130,7 +1121,7 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
         series = ks.lookup_series("18.04")
         source = series.lookup_source("linux")
 
-        self.assertItemsEqual(source.snaps, [])
+        self.assertCountEqual(source.snaps, [])
 
     def test_snaps_one(self):
         data = """
@@ -1570,7 +1561,7 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
         self.assertEqual(source.peer_reviewer, "botty-mc-bot-face")
 
 
-class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
+class TestKernelSourceTestingFlavourEntry(unittest.TestCase):
 
     def test_name(self):
         data = """
@@ -1744,7 +1735,7 @@ class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
         self.assertEqual(testable.clouds, ["cloud1", "cloud2", "cloud3"])
 
 
-class TestKernelPackageEntry(TestKernelSeriesCore):
+class TestKernelPackageEntry(unittest.TestCase):
 
     def test_source_linkage(self):
         data = """
@@ -2183,7 +2174,7 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
         self.assertEqual(package.signing_from.type, "generate")
 
 
-class TestKernelSnapEntry(TestKernelSeriesCore):
+class TestKernelSnapEntry(unittest.TestCase):
 
     def test_source_linkage(self):
         data = """
@@ -2607,7 +2598,7 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
         source = series.lookup_source("linux")
         snap = source.lookup_snap("pc-kernel")
 
-        self.assertItemsEqual(snap.arches, ["amd64"])
+        self.assertCountEqual(snap.arches, ["amd64"])
 
     def test_arches_present_many(self):
         data = """
@@ -2623,7 +2614,7 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
         source = series.lookup_source("linux")
         snap = source.lookup_snap("pc-kernel")
 
-        self.assertItemsEqual(snap.arches, ["arm64", "armhf"])
+        self.assertCountEqual(snap.arches, ["arm64", "armhf"])
 
     def test_arches_absent(self):
         data = """
@@ -3138,7 +3129,7 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
         self.assertTrue(snap.promote_to_risk("stable"))
 
 
-class TestKernelRepoEntry(TestKernelSeriesCore):
+class TestKernelRepoEntry(unittest.TestCase):
 
     def test_owner_linkage(self):
         data = """
@@ -3251,7 +3242,7 @@ class TestKernelRepoEntry(TestKernelSeriesCore):
         self.assertEqual(snap.repo.branch, "branch-name")
 
 
-class TestKernelRoutingEntry(TestKernelSeriesCore):
+class TestKernelRoutingEntry(unittest.TestCase):
 
     routing_data = """
         defaults:
@@ -3541,7 +3532,7 @@ class TestKernelRoutingEntry(TestKernelSeriesCore):
         self.assertFalse(source.private)
 
 
-class TestKernelSeriesCache(TestKernelSeriesCore):
+class TestKernelSeriesCache(unittest.TestCase):
 
     def test_form_urls_cycles(self):
         internal = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "..", "kernel-versions"))
