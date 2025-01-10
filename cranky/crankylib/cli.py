@@ -79,7 +79,7 @@ def option_dry_run(help=None):
         help = "Do not modify state."
 
     def wrapper(func):
-        return click.option("--dry-run", help=f"{help}", is_flag=True)(func)
+        return click.option("--dry-run", help=help, is_flag=True)(func)
 
     return wrapper
 
@@ -136,7 +136,7 @@ def option_cycle(help=None, required=False):
         help = "SRU or security cycle date in the form of 'YYYY.MM.DD' or 'sYYYY.MM.DD'."
 
     def wrapper(func):
-        return click.option("--cycle", help=f"{help}", type=str, required=required)(func)
+        return click.option("--cycle", help=help, type=str, required=required)(func)
 
     return wrapper
 
