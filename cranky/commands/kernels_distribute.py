@@ -18,11 +18,16 @@ $ cranky kernels-distribute --cycle 2024.02.05 --step 2
 """
 
 
-@cli.option_cycle(required=True)
-@cli.option_step(required=True)
 @cli.command(epilog=epilog_kernels_distribute)
+@cli.option_cycle(required=True)
+@cli.option(
+    "--step",
+    type=int,
+    required=True,
+    help="Used for cranky distribute that is done in 2 steps. It can be either 1 or 2.",
+)
 def kernels_distribute(cycle, step):
-    """Reassign kernels based on <kernel-versions>info/cranky_distribute input files"""
+    """Reassign kernels based on <kernel-versions>/info/cranky_distribute input files."""
     try:
         Cranky().kernels_distribute(cycle=cycle, step=step)
     except Exception as e:

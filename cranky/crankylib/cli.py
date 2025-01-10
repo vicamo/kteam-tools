@@ -133,21 +133,10 @@ def option_deprecated_nc():
 def option_cycle(help=None, required=False):
     """Common --cycle option decorator"""
     if not help:
-        help = "Date (YYYY.MM.DD/sYYYY.MM.DD) of sru/security cycle to show"
+        help = "SRU or security cycle date in the form of 'YYYY.MM.DD' or 'sYYYY.MM.DD'."
 
     def wrapper(func):
         return click.option("--cycle", help=f"{help}", type=str, required=required)(func)
-
-    return wrapper
-
-
-def option_step(help=None, required=False):
-    """Common --step option decorator"""
-    if not help:
-        help = "Used for cranky distribute that is done in 2 steps. It can be either 1 or 2"
-
-    def wrapper(func):
-        return click.option("--step", help=f"{help}", type=int, required=required)(func)
 
     return wrapper
 
