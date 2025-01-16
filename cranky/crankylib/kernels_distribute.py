@@ -129,12 +129,13 @@ class Helper:
         return kernels[shift_position:] + kernels[:shift_position]
 
     @classmethod
-    def distribute_kernels(cls, assignees: dict[str, int], kernels: list[str]) -> dict[str, str]:
+    def distribute_kernels(cls, assignees: dict[str, int], _kernels: list[str]) -> dict[str, str]:
         """Generic method to distribute a list of kernels to a list of people.
         The assignee param is a map that contains the id of people and their maximum number of kernels
         they can take.
         The results is a map of (kernel, assignee)
         """
+        kernels = _kernels.copy()
         result = {}
 
         i = 0
