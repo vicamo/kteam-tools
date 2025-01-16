@@ -88,7 +88,9 @@ for repo in "${repos[@]}" ; do
     else
         # Loop through all requested package types
         for include in ${includes//,/ } ; do
-            if [[ $repo == *$include* ]] ; then
+            PACKAGE=$(echo "$repo" | cut -d' ' -f2)
+
+            if [[ $PACKAGE == *$include* ]] ; then
                 open_repo "$repo"
             fi
         done
