@@ -68,6 +68,29 @@ opts=("${prev_ver}")
 if [ -d "${DEBIAN_MASTER}" ] ; then
     parent_ver=$(dpkg-parsechangelog -l"${DEBIAN_MASTER}"/changelog -SVersion)
     opts+=("-p" "${parent_ver}")
+elif [ -n "${DEBIAN_MASTER}" ] ; then
+    # Handle kernels without the DEBIAN_MASTER folder, such as Ubuntu Core
+    # snaps and Azure FDE kernels (Jammy and Focal).
+    # Find kernel name by removing everything before "debian." in DEBIAN_MASTER
+    split_debian_master="${DEBIAN_MASTER#*debian.}"
+    flavour=
+    if [ "${split_debian_master}" == "master" ]; then
+        flavour="linux"
+    else
+        flavour="linux-${split_debian_master}"
+    fi
+    series=$("${C}" shell-helper series-codename)
+    parent_ver=$("${C}" rmadison -s -p proposed "$series:$flavour" | grep "$flavour" | sort -r | head -n1 | cut -d\  -f2)
+    # If parent version is same as previous, don't change it, just warn user
+    if [ "${parent_ver}" != "${prev_ver%.*}" ]; then
+        # Strip off backport suffix (if any) from parent version
+        # so as to not duplicate it when newrelease is called
+        parent_ver="${parent_ver%%"~"*}"
+
+        opts+=("-p" "${parent_ver}")
+    else
+        echo -e "\n\e[1m***WARNING: Parent version same as the last crank! Check version before continuing. \nNew parent version may not have built yet.***\e[0m\n"
+    fi
 fi
 
 ver=$("${C}" shell-helper newrelease "${opts[@]}")
