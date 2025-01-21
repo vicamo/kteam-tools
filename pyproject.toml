@@ -12,6 +12,7 @@ dependencies = [
   "python-dateutil",
   "python-debian",
   "pyyaml",
+  "requests",
   "xdg",
 ]
 
