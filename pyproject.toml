@@ -7,10 +7,10 @@ requires-python = ">=3.8"
 readme = "README"
 version = "0.0.1"
 dependencies = [
+  "python-apt @ git+https://salsa.debian.org/apt-team/python-apt.git@2.8.0",
+  "python-dateutil",
   "python-debian",
   "pyyaml",
-  "python-dateutil",
-  "python-apt @ git+https://salsa.debian.org/apt-team/python-apt.git@2.8.0",
   "xdg",
 ]
 
@@ -22,9 +22,9 @@ py-modules = []
 dev = [
   "black",
   "pre-commit",
+  "pytest",
   "ruff",
   "testfixtures",
-  "pytest",
 ]
 
 [tool.black]
